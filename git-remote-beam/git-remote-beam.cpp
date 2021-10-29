@@ -14,6 +14,7 @@
 #include "wallet/core/contracts/shaders_manager.h"
 #include <thread>
 #include <map>
+#include <git2.h>
 
 using namespace std;
 using namespace beam;
@@ -21,6 +22,18 @@ using namespace beam::wallet;
 
 namespace
 {
+	struct GitInit
+	{
+		GitInit() noexcept
+		{
+			git_libgit2_init();
+		}
+		~GitInit() noexcept
+		{
+			git_libgit2_shutdown();
+		}
+	};
+
 	struct Ref
 	{
 		std::string hash;
@@ -183,6 +196,19 @@ int DoFetch(const vector<string_view>& args)
 {
 	return 0;
 }
+static int foreach_cb(const git_oid* oid, void* data)
+{
+	git_repository* repo = (git_repository*)data;
+	char buf[GIT_OID_HEXSZ + 1];
+	git_oid_fmt(buf, oid);
+	buf[GIT_OID_HEXSZ] = '\0';
+	printf("%s\n", buf);
+	git_object* object = nullptr;
+	git_object_lookup(object, )
+
+
+	return 0;
+}
 
 int DoPush(const vector<string_view>& args)
 {
@@ -190,7 +216,32 @@ int DoPush(const vector<string_view>& args)
 	for (size_t i = 1; i < args.size(); ++i)
 	{
 		auto& ref = args[i];
-		auto src = ref.substr(0, ref.find(':'));
+		string src(ref.substr(0, ref.find(':')));
+		git_repository* repo = nullptr;
+		git_revwalk* walk;
+		git_sort_t sort = GIT_SORT_NONE;
+		git_oid oid;
+		git_odb *odb = nullptr;
+		int error = git_repository_open(&repo, ".");
+
+		git_repository_odb(&odb, repo);
+		git_odb_foreach(odb, foreach_cb, repo);
+		git_odb_free(odb);
+
+		error = git_revwalk_new(&walk, repo);
+		error = git_revwalk_sorting(walk, sort);
+		//git_oid_fromstr(&oid, src.c_str());
+		git_revwalk_push_ref(walk, src.c_str());
+		while (!git_revwalk_next(&oid, walk))
+		{
+			char buf[GIT_OID_HEXSZ + 1];
+			git_oid_fmt(buf, &oid);
+			buf[GIT_OID_HEXSZ] = '\0';
+			printf("%s\n", buf);
+		}
+
+		git_revwalk_free(walk);
+
 		ostringstream ss;
 		ss << "git rev-list --objects " << src;
 		auto objects = DoSystemCall(ss.str());
@@ -250,6 +301,7 @@ int main(int argc, char* argv[])
 		cerr << "USAGE: git-remote-beam <remote> <url>" << endl;
 		return -1;
 	}
+	GitInit init;
 	cerr << "Hello Beam.\nRemote:\t" << argv[1] << "\nURL:\t" << argv[2] << endl;
 	string input;
 	while (getline(cin, input, '\n'))
@@ -288,5 +340,6 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 	}
+
 	return 0;
 }
