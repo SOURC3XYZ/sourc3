@@ -204,8 +204,28 @@ static int foreach_cb(const git_oid* oid, void* data)
 	buf[GIT_OID_HEXSZ] = '\0';
 	printf("%s\n", buf);
 	git_object* object = nullptr;
-	git_object_lookup(object, )
+	git_object_lookup(&object, repo, oid, GIT_OBJECT_ANY);
 
+//	object->
+
+	git_object_free(object);
+	git_odb* odb;
+	git_repository_odb(&odb, repo);
+	git_odb_object* dbobj = nullptr;
+
+	git_odb_read(&dbobj, odb, oid);
+	auto size = git_odb_object_size(dbobj);
+	auto* data2 = git_odb_object_data(dbobj);
+	auto type = git_odb_object_type(dbobj);
+	git_oid res_oid;
+	git_odb_hash(&res_oid, data2, size, type);
+
+	git_oid_fmt(buf, &res_oid);
+	buf[GIT_OID_HEXSZ] = '\0';
+	printf("%s --\n", buf);
+
+	git_odb_object_free(dbobj);
+	git_odb_free(odb);
 
 	return 0;
 }
