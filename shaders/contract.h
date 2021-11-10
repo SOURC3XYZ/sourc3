@@ -38,12 +38,14 @@ namespace GitRemoteBeam
 	{
 		static const uint32_t METHOD = 2;
 		char repo_name[MAX_NAME_SIZE];
+		PubKey owner;
 	};
 
 	struct DeleteRepoParams
 	{
 		static const uint32_t METHOD = 3;
 		char repo_name[MAX_NAME_SIZE];
+		PubKey owner;
 	};
 
 	struct AddUserParams
