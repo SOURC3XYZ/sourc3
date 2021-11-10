@@ -6,25 +6,22 @@
 namespace GitRemoteBeam
 {
 	static const size_t MAX_NAME_SIZE = 256;
-	static const size_t MAX_DATA_SIZE = 1024;
-	static const size_t MAX_REFS = 1024;
-	static const size_t MAX_OBJECTS = 1024;
 #pragma pack(push, 1)
 
 	struct RepoInfo
 	{
-		static const size_t MAX_USERS = 100;
-
 		char name[MAX_NAME_SIZE];
 		PubKey owner;
-		PubKey users[MAX_USERS];
+		size_t users_number;
+		PubKey users[];
 	};
 
 	struct GitObject
 	{
 		enum Type { BLOB, COMMIT, TREE } type;
 		git_oid hash;
-		char data[MAX_DATA_SIZE];
+		size_t data_size;
+		char data[];
 	};
 
 	struct GitRef
@@ -32,7 +29,6 @@ namespace GitRemoteBeam
 		char name[MAX_NAME_SIZE];
 		git_oid commit_hash;
 	};
-
 	struct InitialParams
 	{
 		static const uint32_t METHOD = 0;
@@ -69,8 +65,9 @@ namespace GitRemoteBeam
 		static const uint32_t METHOD = 6;
 		char repo_name[MAX_NAME_SIZE];
 		PubKey repo_owner;
-		GitObject objects[MAX_OBJECTS];
-		GitRef refs[MAX_REFS];
+		size_t objects_number;
+		size_t refs_number;
+		char objects_and_refs[];
 	};
 
 #pragma pack(pop)
