@@ -60,14 +60,22 @@ namespace GitRemoteBeam
 		PubKey user;
 	};
 
-	struct PushParams
+	struct PushObjectsParams
 	{
 		static const uint32_t METHOD = 6;
 		char repo_name[MAX_NAME_SIZE];
 		PubKey repo_owner;
 		size_t objects_number;
+		char objects[];
+	};
+
+	struct PushRefsParams
+	{
+		static const uint32_t METHOD = 7;
+		char repo_name[MAX_NAME_SIZE];
+		PubKey repo_owner;
 		size_t refs_number;
-		char objects_and_refs[];
+		char refs[];
 	};
 
 #pragma pack(pop)
