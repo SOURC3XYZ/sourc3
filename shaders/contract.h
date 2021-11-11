@@ -22,12 +22,28 @@ namespace GitRemoteBeam
 		git_oid hash;
 		size_t data_size;
 		char data[];
+
+		GitObject& operator=(const GitObject& from)
+		{
+			this->hash = from.hash;
+			this->data_size = from.data_size;
+			this->type = from.type;
+			Env::Memcpy(this->data, from.data, from.data_size);
+			return *this;
+		}
 	};
 
 	struct GitRef
 	{
 		char name[MAX_NAME_SIZE];
 		git_oid commit_hash;
+
+		GitRef& operator=(const GitRef& from)
+		{
+			this->commit_hash = from.commit_hash;
+			Env::Memcpy(this->name, from.name, MAX_NAME_SIZE);
+			return *this;
+		}
 	};
 
 	struct ObjectsInfo {
