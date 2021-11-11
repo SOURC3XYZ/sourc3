@@ -3,6 +3,7 @@
 #include "Shaders/Math.h"
 #include "contract.h"
 
+#include <algorithm>
 #include <tuple>
 
 using namespace GitRemoteBeam;
@@ -125,4 +126,86 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 	}
 
 	Env::AddSig(params.repo_owner);
+}
+
+
+BEAM_EXPORT void Method_6(const PushObjectsParams& params)
+{
+	auto key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REPO_SIZE);
+	size_t repo_size;
+
+	if (!Env::LoadVar_T(key, repo_size)) {
+		Env::Halt();
+	}
+
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REPO);
+	RepoInfo* repo_info = (RepoInfo*)Env::Heap_Alloc(repo_size);
+	Env::LoadVar(&key, sizeof(key), repo_info, repo_size, KeyTag::Internal);
+
+	auto it = std::find_if(repo_info->users, repo_info->users + repo_info->users_number, [&](const auto& a) {
+		return !Env::Memcmp(&params.user, &a, sizeof(params.user));
+	});
+
+	if (!Env::Memcmp(&params.repo_owner, &params.user, sizeof(params.user)) || it == &repo_info->users[repo_info->users_number]) {
+		Env::Halt();
+	}
+
+	size_t objects_number;
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::OBJECTS_NUMBER);
+	Env::LoadVar_T(key, objects_number);
+
+	ObjectsInfo* obj_info = (ObjectsInfo*)Env::Heap_Alloc(sizeof(ObjectsInfo) + (objects_number + params.objects_info.objects_number) * sizeof(GitObject));
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::OBJECTS);
+	if (objects_number != 0) {
+		Env::LoadVar(&key, sizeof(key), obj_info, sizeof(ObjectsInfo) + objects_number * sizeof(GitObject), KeyTag::Internal);
+	}
+	for (size_t i = objects_number; i < objects_number + params.objects_info.objects_number; ++i) {
+		obj_info->objects[i] = params.objects_info.objects[i - objects_number];
+	}
+	Env::SaveVar(&key, sizeof(key), obj_info, sizeof(ObjectsInfo) + (objects_number + params.objects_info.objects_number) * sizeof(GitObject), KeyTag::Internal);
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::OBJECTS_NUMBER);
+	Env::SaveVar_T(key, objects_number + params.objects_info.objects_number);
+
+	Env::AddSig(params.user);
+}
+
+BEAM_EXPORT void Method_7(const PushRefsParams& params)
+{
+	auto key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REPO_SIZE);
+	size_t repo_size;
+
+	if (!Env::LoadVar_T(key, repo_size)) {
+		Env::Halt();
+	}
+
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REPO);
+	RepoInfo* repo_info = (RepoInfo*)Env::Heap_Alloc(repo_size);
+	Env::LoadVar(&key, sizeof(key), repo_info, repo_size, KeyTag::Internal);
+
+	auto it = std::find_if(repo_info->users, repo_info->users + repo_info->users_number, [&](const auto& a) {
+		return !Env::Memcmp(&params.user, &a, sizeof(params.user));
+	});
+
+	if (!Env::Memcmp(&params.repo_owner, &params.user, sizeof(params.user)) || it == &repo_info->users[repo_info->users_number]) {
+		Env::Halt();
+	}
+
+	size_t refs_number;
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REFS_NUMBER);
+	Env::LoadVar_T(key, refs_number);
+
+	RefsInfo* obj_info = (RefsInfo*)Env::Heap_Alloc(sizeof(RefsInfo) + (refs_number + params.refs_info.refs_number) * sizeof(GitRef));
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REFS);
+	if (refs_number != 0) {
+		Env::LoadVar(&key, sizeof(key), obj_info, sizeof(RefsInfo) + refs_number * sizeof(GitRef), KeyTag::Internal);
+	}
+	for (size_t i = refs_number; i < refs_number + params.refs_info.refs_number; ++i) {
+		obj_info->refs[i] = params.refs_info.refs[i - refs_number];
+	}
+	Env::SaveVar(&key, sizeof(key), obj_info, sizeof(RefsInfo) + (refs_number + params.refs_info.refs_number) * sizeof(GitRef), KeyTag::Internal);
+	key = std::make_tuple(params.repo_owner, params.repo_name, ::Operations::REFS_NUMBER);
+	Env::SaveVar_T(key, refs_number + params.refs_info.refs_number);
+
+	Env::AddSig(params.user);
+
 }
