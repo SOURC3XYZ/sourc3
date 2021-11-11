@@ -29,6 +29,17 @@ namespace GitRemoteBeam
 		char name[MAX_NAME_SIZE];
 		git_oid commit_hash;
 	};
+
+	struct ObjectsInfo {
+		size_t objects_number;
+		GitObject objects[];
+	};
+
+	struct RefsInfo {
+		size_t refs_number;
+		GitRef refs[];
+	};
+
 	struct InitialParams
 	{
 		static const uint32_t METHOD = 0;
@@ -37,27 +48,31 @@ namespace GitRemoteBeam
 	struct CreateRepoParams
 	{
 		static const uint32_t METHOD = 2;
-		RepoInfo repo;
+		char repo_name[MAX_NAME_SIZE];
+		PubKey repo_owner;
 	};
 
 	struct DeleteRepoParams
 	{
 		static const uint32_t METHOD = 3;
-		RepoInfo repo;
+		char repo_name[MAX_NAME_SIZE];
+		PubKey repo_owner;
 	};
 
 	struct AddUserParams
 	{
 		static const uint32_t METHOD = 4;
+		char repo_name[MAX_NAME_SIZE];
+		PubKey repo_owner;
 		PubKey user;
-		RepoInfo repo;
 	};
 
 	struct RemoveUserParams
 	{
 		static const uint32_t METHOD = 5;
+		char repo_name[MAX_NAME_SIZE];
+		PubKey repo_owner;
 		PubKey user;
-		RepoInfo repo;
 	};
 
 	struct PushObjectsParams
@@ -65,8 +80,8 @@ namespace GitRemoteBeam
 		static const uint32_t METHOD = 6;
 		char repo_name[MAX_NAME_SIZE];
 		PubKey repo_owner;
-		size_t objects_number;
-		char objects[];
+		PubKey user;
+		ObjectsInfo objects_info;
 	};
 
 	struct PushRefsParams
@@ -74,8 +89,8 @@ namespace GitRemoteBeam
 		static const uint32_t METHOD = 7;
 		char repo_name[MAX_NAME_SIZE];
 		PubKey repo_owner;
-		size_t refs_number;
-		char refs[];
+		PubKey user;
+		RefsInfo refs_info;
 	};
 
 #pragma pack(pop)
