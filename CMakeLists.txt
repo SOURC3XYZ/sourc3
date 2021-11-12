@@ -17,7 +17,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include sub-projects.
 
-set(USE_SSH FALSE)
 add_subdirectory(3rdparty/libgit2)
 #message(STATUS "LIBGIT2_INCLUDES=${LIBGIT2_INCLUDES}")
 add_subdirectory (git-remote-beam)
