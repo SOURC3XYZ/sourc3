@@ -34,31 +34,6 @@ namespace
 		}
 	};
 
-	struct Ref
-	{
-		std::string hash;
-		std::string name;
-	};
-
-	enum struct ObjectType
-	{
-		Blob,
-		Commit,
-		Tree
-	};
-
-	struct Object
-	{
-		enum Type
-		{
-			Blob,
-			Commit,
-			Tree
-		};
-		string	type;
-		string	content;
-	};
-
 	struct MyManager
 		:public ManagerStdInWallet
 	{
@@ -196,6 +171,7 @@ int DoFetch(const vector<string_view>& args)
 {
 	return 0;
 }
+
 static int foreach_cb(const git_oid* oid, void* data)
 {
 	git_repository* repo = (git_repository*)data;
@@ -232,26 +208,38 @@ static int foreach_cb(const git_oid* oid, void* data)
 
 int DoPush(const vector<string_view>& args)
 {
-	map<string, Object> objects2;
 	for (size_t i = 1; i < args.size(); ++i)
 	{
-		auto& ref = args[i];
-		string src(ref.substr(0, ref.find(':')));
+		auto& ref2 = args[i];
+		string src(ref2.substr(0, ref2.find(':')));
 		git_repository* repo = nullptr;
 		git_revwalk* walk;
 		git_sort_t sort = GIT_SORT_NONE;
 		git_oid oid;
 		git_odb *odb = nullptr;
 		int error = git_repository_open(&repo, ".");
+		git_reference* ref = nullptr;
+		error = git_reference_lookup(&ref, repo, src.c_str());
 
+		if (git_revwalk_new(&walk, repo) < 0)
+			return -1;
+
+		git_revwalk_sorting(walk, GIT_SORT_TIME);
+		git_object_t type;
+		size_t size;
+		const git_oid* loid = git_reference_target(ref);
 		git_repository_odb(&odb, repo);
-		git_odb_foreach(odb, foreach_cb, repo);
-		git_odb_free(odb);
+		if (git_odb_read_header(&size, &type, odb, loid) < 0)
+			return -1;
 
-		error = git_revwalk_new(&walk, repo);
-		error = git_revwalk_sorting(walk, sort);
-		//git_oid_fromstr(&oid, src.c_str());
-		git_revwalk_push_ref(walk, src.c_str());
+		if (type == GIT_OBJECT_TAG) 
+		{
+			
+		}
+		else if (git_revwalk_push(walk, loid) < 0)
+		{
+			return -1;
+		}
 		while (!git_revwalk_next(&oid, walk))
 		{
 			char buf[GIT_OID_HEXSZ + 1];
@@ -261,35 +249,51 @@ int DoPush(const vector<string_view>& args)
 		}
 
 		git_revwalk_free(walk);
+		//git_odb_foreach(odb, foreach_cb, repo);
+		git_odb_free(odb);
 
-		ostringstream ss;
-		ss << "git rev-list --objects " << src;
-		auto objects = DoSystemCall(ss.str());
-		istringstream iss(objects);
-		string object;
-		while (getline(iss, object, '\n'))
-		{
-			auto hash = object.substr(0, object.find(' '));
-			ss.str({});
-			ss << "git cat-file -t " << hash;
-			auto type = DoSystemCall(ss.str());
-			ss.str({});
-			ss << "git cat-file " << type << " " << hash;
-			auto content = DoSystemCall(ss.str());
-			objects2[hash] = Object { type, content };
-			cerr
-				<< object << '\n'
-				<< hash << ' ' << type << endl;
+		//error = git_revwalk_new(&walk, repo);
+		//error = git_revwalk_sorting(walk, sort);
+		////git_oid_fromstr(&oid, src.c_str());
+		//git_revwalk_push_ref(walk, src.c_str());
+		//while (!git_revwalk_next(&oid, walk))
+		//{
+		//	char buf[GIT_OID_HEXSZ + 1];
+		//	git_oid_fmt(buf, &oid);
+		//	buf[GIT_OID_HEXSZ] = '\0';
+		//	printf("%s\n", buf);
+		//}
 
-			///
-			{
-				ofstream("f.txt") << content;
-			}
-			ss.str({});
-			ss << "git hash-object -t " << type << " -w --stdin < f.txt";
+		//git_revwalk_free(walk);
 
-			auto h = DoSystemCall(ss.str());
-		}
+		//ostringstream ss;
+		//ss << "git rev-list --objects " << src;
+		//auto objects = DoSystemCall(ss.str());
+		//istringstream iss(objects);
+		//string object;
+		//while (getline(iss, object, '\n'))
+		//{
+		//	auto hash = object.substr(0, object.find(' '));
+		//	ss.str({});
+		//	ss << "git cat-file -t " << hash;
+		//	auto type = DoSystemCall(ss.str());
+		//	ss.str({});
+		//	ss << "git cat-file " << type << " " << hash;
+		//	auto content = DoSystemCall(ss.str());
+		//	objects2[hash] = Object { type, content };
+		//	cerr
+		//		<< object << '\n'
+		//		<< hash << ' ' << type << endl;
+
+		//	///
+		//	{
+		//		ofstream("f.txt") << content;
+		//	}
+		//	ss.str({});
+		//	ss << "git hash-object -t " << type << " -w --stdin < f.txt";
+
+		//	auto h = DoSystemCall(ss.str());
+		//}
 	}
 	cout << endl;
 	return 0;
