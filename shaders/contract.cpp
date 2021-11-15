@@ -12,12 +12,11 @@ namespace {
 	enum Operations {
 		REPO_SIZE,
 		REPO,
-		OBJECTS_NUMBER,
 		OBJECTS,
 		REFS_NUMBER,
 		REFS,
 	};
-	constexpr Operations ALL_OPERATIONS[] = { REPO_SIZE, REPO, OBJECTS_NUMBER, OBJECTS, REFS_NUMBER, REFS };
+	constexpr Operations ALL_OPERATIONS[] = { REPO_SIZE, REPO, OBJECTS, REFS_NUMBER, REFS };
 }
 
 BEAM_EXPORT void Ctor(InitialParams& params)
@@ -61,9 +60,6 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	
 	key2 = std::make_pair(repo_id, ::Operations::REPO);
 	Env::SaveVar_T(key2, repo_info);
-
-	key2 = std::make_pair(repo_id, ::Operations::OBJECTS_NUMBER);
-	Env::SaveVar_T(key2, size_t(0));
 
 	key2 = std::make_pair(repo_id, ::Operations::REFS_NUMBER);
 	Env::SaveVar_T(key2, size_t(0));
@@ -144,7 +140,6 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 	Env::AddSig(repo_info->owner);
 }
 
-
 BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 {
 	auto key = std::make_pair(params.repo_id, ::Operations::REPO_SIZE);
@@ -166,21 +161,10 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 		Env::Halt();
 	}
 
-	size_t objects_number;
-	key = std::make_pair(params.repo_id, ::Operations::OBJECTS_NUMBER);
-	Env::LoadVar_T(key, objects_number);
-
-	ObjectsInfo* obj_info = (ObjectsInfo*)Env::Heap_Alloc(sizeof(ObjectsInfo) + (objects_number + params.objects_info.objects_number) * sizeof(GitObject));
-	key = std::make_pair(params.repo_id, ::Operations::OBJECTS);
-	if (objects_number != 0) {
-		Env::LoadVar(&key, sizeof(key), obj_info, sizeof(ObjectsInfo) + objects_number * sizeof(GitObject), KeyTag::Internal);
+	for (size_t i = 0; i < params.objects_info.objects_number; ++i) {
+		auto key = std::make_tuple(params.repo_id, params.objects_info.objects[i].hash, ::Operations::OBJECTS);
+		Env::SaveVar(&key, sizeof(key), &params.objects_info.objects[i], sizeof(GitObject) + params.objects_info.objects[i].data_size, KeyTag::Internal);
 	}
-	for (size_t i = objects_number; i < objects_number + params.objects_info.objects_number; ++i) {
-		obj_info->objects[i] = params.objects_info.objects[i - objects_number];
-	}
-	Env::SaveVar(&key, sizeof(key), obj_info, sizeof(ObjectsInfo) + (objects_number + params.objects_info.objects_number) * sizeof(GitObject), KeyTag::Internal);
-	key = std::make_pair(params.repo_id, ::Operations::OBJECTS_NUMBER);
-	Env::SaveVar_T(key, objects_number + params.objects_info.objects_number);
 
 	Env::AddSig(params.user);
 }
@@ -206,21 +190,10 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 		Env::Halt();
 	}
 
-	size_t refs_number;
-	key = std::make_pair(params.repo_id, ::Operations::REFS_NUMBER);
-	Env::LoadVar_T(key, refs_number);
-
-	RefsInfo* obj_info = (RefsInfo*)Env::Heap_Alloc(sizeof(RefsInfo) + (refs_number + params.refs_info.refs_number) * sizeof(GitRef));
-	key = std::make_pair(params.repo_id, ::Operations::REFS);
-	if (refs_number != 0) {
-		Env::LoadVar(&key, sizeof(key), obj_info, sizeof(RefsInfo) + refs_number * sizeof(GitRef), KeyTag::Internal);
+	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
+		auto key = std::make_tuple(params.repo_id, params.refs_info.refs[i].name, ::Operations::REFS);
+		Env::SaveVar_T(key, params.refs_info.refs[i].commit_hash);
 	}
-	for (size_t i = refs_number; i < refs_number + params.refs_info.refs_number; ++i) {
-		obj_info->refs[i] = params.refs_info.refs[i - refs_number];
-	}
-	Env::SaveVar(&key, sizeof(key), obj_info, sizeof(RefsInfo) + (refs_number + params.refs_info.refs_number) * sizeof(GitRef), KeyTag::Internal);
-	key = std::make_pair(params.repo_id, ::Operations::REFS_NUMBER);
-	Env::SaveVar_T(key, refs_number + params.refs_info.refs_number);
 
 	Env::AddSig(params.user);
 }
