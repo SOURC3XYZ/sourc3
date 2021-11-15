@@ -13,8 +13,6 @@ namespace GitRemoteBeam
 		char name[MAX_NAME_SIZE];
 		uint64_t repo_id;
 		PubKey owner;
-		size_t users_number;
-		PubKey users[];
 	};
 
 	struct GitObject
