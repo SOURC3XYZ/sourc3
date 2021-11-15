@@ -13,10 +13,9 @@ namespace {
 		REPO_SIZE,
 		REPO,
 		OBJECTS,
-		REFS_NUMBER,
 		REFS,
 	};
-	constexpr Operations ALL_OPERATIONS[] = { REPO_SIZE, REPO, OBJECTS, REFS_NUMBER, REFS };
+	constexpr Operations ALL_OPERATIONS[] = { REPO_SIZE, REPO, OBJECTS, REFS };
 }
 
 BEAM_EXPORT void Ctor(InitialParams& params)
@@ -60,9 +59,6 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	
 	key2 = std::make_pair(repo_id, ::Operations::REPO);
 	Env::SaveVar_T(key2, repo_info);
-
-	key2 = std::make_pair(repo_id, ::Operations::REFS_NUMBER);
-	Env::SaveVar_T(key2, size_t(0));
 
 	Env::AddSig(repo_info.owner);
 }
