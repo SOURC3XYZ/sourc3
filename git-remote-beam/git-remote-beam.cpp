@@ -26,6 +26,11 @@ bool operator<(const git_oid& left, const git_oid& right) noexcept
     return git_oid_cmp(&left, &right) < 0;
 }
 
+bool operator==(const git_oid& left, const git_oid& right) noexcept
+{
+    return git_oid_cmp(&left, &right) == 0;
+}
+
 namespace
 {
     struct GitInit
@@ -67,10 +72,12 @@ namespace
         ObjectCollector()
         {
             git_repository_open(&m_repo, ".");
+            git_repository_odb(&m_odb, m_repo);
         }
 
         ~ObjectCollector()
         {
+            git_odb_free(m_odb);
             git_repository_free(m_repo);
         }
 
@@ -102,7 +109,7 @@ namespace
                 git_commit_tree(&tree, commit);
 
                 m_set.emplace(*git_tree_id(tree));
-                m_objects.emplace_back(*git_tree_id(tree), GIT_OBJECT_TREE, ByteBuffer{});
+                CollectObject(*git_tree_id(tree));
                 TraverseTree(tree);
                 git_commit_free(commit);
                 git_tree_free(tree);
@@ -126,7 +133,7 @@ namespace
                 {
                 case GIT_OBJECT_TREE:
                 {
-                    auto& obj = m_objects.emplace_back(*entry_oid, GIT_OBJECT_TREE, ByteBuffer{});
+                    auto& obj = CollectObject(*entry_oid);
                     obj.name = git_tree_entry_name(entry);
                     git_tree* subTree = nullptr;
                     git_tree_lookup(&subTree, m_repo, entry_oid);
@@ -134,13 +141,27 @@ namespace
                 }	break;
                 case GIT_OBJECT_BLOB:
                 {
-                    auto& obj = m_objects.emplace_back(*entry_oid, GIT_OBJECT_BLOB, ByteBuffer{});
+                    auto& obj = CollectObject(*entry_oid);
                     obj.name = git_tree_entry_name(entry);
                 }	break;
                 default:
                     break;
                 }
             }
+        }
+
+        Object& CollectObject(const git_oid& oid)
+        {
+            git_odb_object* dbobj = nullptr;
+            git_odb_read(&dbobj, m_odb, &oid);
+            
+            const auto* data = static_cast<const uint8_t*>(git_odb_object_data(dbobj));
+            auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), ByteBuffer(data, data + git_odb_object_size(dbobj)));
+            git_oid res_oid;
+            git_odb_hash(&res_oid, obj.data.data(), obj.data.size(), obj.type);
+            assert(oid == res_oid);
+            git_odb_object_free(dbobj);
+            return obj;
         }
 
         void ThrowIfError(int res, std::string_view sv)
@@ -150,9 +171,10 @@ namespace
                 throw std::runtime_error(sv.data());
             }
         }
-        git_repository* m_repo;
-        std::set<git_oid>			m_set;
-        std::vector<Object>			m_objects;
+        git_repository              *m_repo;
+        git_odb                     *m_odb;
+        std::set<git_oid>           m_set;
+        std::vector<Object> m_objects;
     };
 
     struct MyManager
