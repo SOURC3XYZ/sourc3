@@ -14,6 +14,7 @@
 #include "wallet/core/contracts/shaders_manager.h"
 #include <thread>
 #include <map>
+#include <stack>
 #include <git2.h>
 
 using namespace std;
@@ -55,16 +56,36 @@ namespace
     {
         git_oid			oid;
         git_object_t	type;
-        ByteBuffer		data;
-        std::string		name;
+        git_odb_object* object;
 
-        Object(const git_oid& o, git_object_t t, ByteBuffer&& b)
+        std::string		name;
+        std::string     fullPath;
+
+        Object(const git_oid& o, git_object_t t, git_odb_object* obj)
             : oid(o)
             , type(t)
-            , data(std::move(b))
+            , object(obj)
         {
 
         }
+
+        ~Object()
+        {
+            git_odb_object_free(object);
+        }
+
+
+        std::string GetDataString() const
+        {
+            return beam::to_hex(git_odb_object_data(object), git_odb_object_size(object));
+        }
+
+        size_t GetSize() const
+        {
+            return git_odb_object_size(object);
+        }
+
+
     };
 
     struct ObjectCollector
@@ -135,14 +156,18 @@ namespace
                 {
                     auto& obj = CollectObject(*entry_oid);
                     obj.name = git_tree_entry_name(entry);
+                    obj.fullPath = Join(m_path, obj.name);
+                    m_path.push_back(obj.name);
                     git_tree* subTree = nullptr;
                     git_tree_lookup(&subTree, m_repo, entry_oid);
                     TraverseTree(subTree);
+                    m_path.pop_back();
                 }	break;
                 case GIT_OBJECT_BLOB:
                 {
                     auto& obj = CollectObject(*entry_oid);
                     obj.name = git_tree_entry_name(entry);
+                    obj.fullPath = Join(m_path, obj.name);
                 }	break;
                 default:
                     break;
@@ -150,17 +175,28 @@ namespace
             }
         }
 
+        std::string Join(const std::vector<std::string>& path, const std::string& name)
+        {
+            std::string res;
+            for (const auto& p : m_path)
+            {
+                res.append(p);
+                res.append("/");
+            }
+            res.append(name);
+            return res;
+        }
+
         Object& CollectObject(const git_oid& oid)
         {
             git_odb_object* dbobj = nullptr;
             git_odb_read(&dbobj, m_odb, &oid);
             
-            const auto* data = static_cast<const uint8_t*>(git_odb_object_data(dbobj));
-            auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), ByteBuffer(data, data + git_odb_object_size(dbobj)));
-            git_oid res_oid;
-            git_odb_hash(&res_oid, obj.data.data(), obj.data.size(), obj.type);
-            assert(oid == res_oid);
-            git_odb_object_free(dbobj);
+            auto objSize = git_odb_object_size(dbobj);
+            auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
+            m_maxSize = std::max(m_maxSize, objSize);
+            m_totalSize += objSize;
+
             return obj;
         }
 
@@ -174,7 +210,10 @@ namespace
         git_repository              *m_repo;
         git_odb                     *m_odb;
         std::set<git_oid>           m_set;
-        std::vector<Object> m_objects;
+        std::vector<Object>         m_objects;
+        size_t                      m_maxSize = 0;
+        size_t                      m_totalSize = 0;
+        std::vector<std::string>     m_path;
     };
 
     struct MyManager
@@ -229,8 +268,8 @@ namespace
         if (!contractShader.empty())
             MyManager::Compile(man.m_BodyContract, contractShader.c_str(), MyManager::Kind::Contract);
 
-        if (!args.empty())
-            man.AddArgs(args);
+        //if (!args.empty())
+        //    man.AddArgs(args);
 
         man.set_Privilege(1);
 
@@ -330,15 +369,44 @@ int DoPush(const vector<string_view>& args)
     ObjectCollector c;
     c.Traverse(refs);
 
-    char buf[GIT_OID_HEXSZ + 1];
     for (const auto& obj : c.m_objects)
     {
-        git_oid_fmt(buf, &obj.oid);
-        buf[GIT_OID_HEXSZ] = '\0';
-        cout << buf << '\t' << git_object_type2string(obj.type) << '\t' << obj.name;
-        cout << '\n';
+        std::stringstream ss;
+        ss << "beam-masternet-wallet shader --shader_app_file=app.wasm --shader_contract_file=contract.wasm -n 127.0.0.1:10005"
+            << " --shader_args=\"role=user,action=push,data="
+            ;
 
+        DoSystemCall(ss.str());
     }
+
+    
+
+    // test stats
+    //std::sort(c.m_objects.begin(), c.m_objects.end(),
+    //    [](auto& left, auto& right)
+    //    {
+    //        return left.data.size() > right.data.size();
+    //    }
+    //);
+    //char buf[GIT_OID_HEXSZ + 1];
+    //int i = 1000;
+    //for (const auto& obj : c.m_objects)
+    //{
+    //    if (obj.type != GIT_OBJECT_TREE)
+    //        continue;
+    //    if (i-- == 0)
+    //        break;
+    //    git_oid_fmt(buf, &obj.oid);
+    //    buf[GIT_OID_HEXSZ] = '\0';
+    //    cout << buf << '\t' << git_object_type2string(obj.type) << '\t' << obj.data.size() << '\t' << obj.fullPath;
+    //    cout << '\n';
+    //}
+    //
+    //cout << "Max size:\t" << c.m_maxSize << '\n'
+    //    << "Total size:\t" << c.m_totalSize << '\n'
+    //    << "Total objects:\t" << c.m_objects.size();
+
+
     cout << endl;
     return 0;
 }
