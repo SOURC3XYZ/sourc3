@@ -8,15 +8,6 @@
 
 using namespace GitRemoteBeam;
 
-namespace {
-	enum Operations {
-		REPO,
-		OBJECTS,
-		REFS,
-	};
-	constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
-}
-
 BEAM_EXPORT void Ctor(InitialParams& params)
 {
 	params.last_repo_id = 1;

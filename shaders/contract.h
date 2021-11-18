@@ -5,6 +5,13 @@
 
 namespace GitRemoteBeam
 {
+    enum Operations {
+        REPO,
+        OBJECTS,
+        REFS,
+    };
+    constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
+
 	static const size_t MAX_NAME_SIZE = 256;
 #pragma pack(push, 1)
 
