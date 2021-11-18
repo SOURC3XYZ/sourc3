@@ -1,12 +1,15 @@
 #pragma once
 
 #include <cstddef>
-#include <git2.h>
+#include "Shaders/common.h"
 
 namespace GitRemoteBeam
 {
 	static const size_t MAX_NAME_SIZE = 256;
+
 #pragma pack(push, 1)
+
+	typedef Opaque<20> git_oid;
 
 	struct RepoInfo
 	{
