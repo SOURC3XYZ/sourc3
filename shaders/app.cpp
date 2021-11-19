@@ -58,7 +58,7 @@ void On_action_view_contract_params(const ContractID& cid)
 	k.m_Prefix.m_Cid = cid;
 	k.m_KeyInContract = 0;
 
-	GitRemoteBeam::InitialParams params
+    GitRemoteBeam::InitialParams params;
 	if (!Env::VarReader::Read_T(k, params))
 		return On_error("Failed to read contract's initial params");
 
@@ -98,7 +98,7 @@ void On_action_my_repos(const ContractID& cid) {
     Env::DocGroup root("");
     Env::DocArray repos("repos");
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-        if (value.owner == my_key) {
+        if (_POD_(value.owner) == my_key) {
             Env::DocGroup repo_object("");
             Env::DocAddNum("repo_id", key.m_KeyInContract.first);
             Env::DocAddText("repo_name", value.name);

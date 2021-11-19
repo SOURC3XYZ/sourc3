@@ -45,7 +45,7 @@ include(ShaderTools)
 
 if(CMAKE_SYSTEM_NAME MATCHES "WASI")
     include(ShaderLib)
-
+    include(GenerateSID)
     set(CMAKE_EXECUTABLE_SUFFIX .wasm)
 
     string (REPLACE ";" " " BEAM_SHADER_CLANG_OPTIONS_STR "${BEAM_SHADER_CLANG_OPTIONS}")
