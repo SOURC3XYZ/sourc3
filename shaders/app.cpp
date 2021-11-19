@@ -70,7 +70,7 @@ void On_action_create_repo(const ContractID& cid) {
     Env::DerivePk(request.repo_owner, &cid, sizeof(cid));
     char repo_name[GitRemoteBeam::MAX_NAME_SIZE];
     if (!Env::DocGetText("repo_name", repo_name, sizeof(repo_name))) {
-        On_error("no repo_name");
+        return On_error("no repo_name");
     }
     _POD_(request.repo_name) = repo_name;
 
@@ -109,7 +109,7 @@ void On_action_my_repos(const ContractID& cid) {
 void On_action_delete_repo(const ContractID& cid) {
     uint64_t repo_id;
     if (!Env::DocGet("repo_id", repo_id)) {
-        On_error("no repo id for deleting");
+        return On_error("no repo id for deleting");
     }
 
     GitRemoteBeam::DeleteRepoParams request;
@@ -149,6 +149,32 @@ void On_action_remove_user_params(const ContractID& cid) {
                         nullptr, 0, &sig, 1, "remove user params", 0);
 }
 
+void On_action_push_objects(const ContractID& cid)
+{
+    auto dataLen = Env::DocGetBlob("data", nullptr, 0);
+    if (!dataLen) {
+        return On_error("there is no data to push");
+    }
+
+    auto argsSize = sizeof(GitRemoteBeam::PushObjectsParams) + dataLen;
+    auto* params = reinterpret_cast<GitRemoteBeam::PushObjectsParams*>(Env::Heap_Alloc(argsSize));
+    if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
+        return On_error("failed to read push data");
+    }
+    if (!Env::DocGet("repo_id", params->repo_id)) {
+        return On_error("failed to read 'repo_id'");
+    }
+
+    Env::DerivePk(params->user, &cid, sizeof(cid));
+
+    SigRequest sig;
+    sig.m_pID = &cid;
+    sig.m_nID = sizeof(cid);
+
+    Env::GenerateKernel(&cid, GitRemoteBeam::PushObjectsParams::METHOD, params, argsSize,
+                        nullptr, 0, &sig, 1, "Pushing objects", 0);
+}
+
 BEAM_EXPORT void Method_0()
 {
     Env::DocGroup root("");
@@ -186,7 +212,8 @@ BEAM_EXPORT void Method_1()
         {"my_repos", On_action_my_repos},
         {"delete_repo", On_action_delete_repo},
         {"add_user_params", On_action_add_user_params},
-        {"remove_user_params", On_action_remove_user_params}
+        {"remove_user_params", On_action_remove_user_params},
+        {"push_objects", On_action_push_objects}
 	};
 
 	const Actions_map_t VALID_MANAGER_ACTIONS = {
@@ -227,6 +254,6 @@ BEAM_EXPORT void Method_1()
 		Env::DocGet("cid", cid);
 		it_action->second(cid);
 	} else {
-		On_error("Invalid action");
+		return On_error("Invalid action");
 	}
 }

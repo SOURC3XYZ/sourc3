@@ -19,6 +19,7 @@
 #include <git2.h>
 #include <boost/program_options.hpp>
 #include "utility/cli/options.h"
+#include "utility/logger.h"
 
 namespace po = boost::program_options;
 
@@ -552,7 +553,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
         auto strData = beam::to_hex(buf.data(), buf.size());
         std::stringstream ss;
-        ss << "role=user,action=push,data="
+        ss << "role=user,action=push_objects,repo_id=1,data="
            << strData;
         wc.InvokeWallet(ss.str());
     }
@@ -615,8 +616,8 @@ int main(int argc, char* argv[])
     Rules::get().UpdateChecksum();
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
+    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, "", "");
     SimpleWalletClient walletClient(options);
-
     GitInit init;
     cerr << "Hello Beam.\nRemote:\t" << argv[1] << "\nURL:\t" << argv[2] << endl;
     string input;

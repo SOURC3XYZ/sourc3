@@ -17,11 +17,11 @@ target_link_libraries(git-remote-beam
 		wallet
 		cli)
 
-build_target(contract)
-generate_sid_for_file(contract ${PROJECT_BINARY_DIR}/shaders/shaders ${PROJECT_SOURCE_DIR}/shaders)
-build_target(app)
-
-
-add_dependencies(git-remote-beam contract_header)
-add_dependencies(git-remote-beam app_build)
-add_dependencies(app_build contract_header) 
+#build_target(contract)
+#generate_sid_for_file(contract ${PROJECT_BINARY_DIR}/shaders/shaders ${PROJECT_SOURCE_DIR}/shaders)
+#build_target(app)
+#
+#
+#add_dependencies(git-remote-beam contract_header)
+#add_dependencies(git-remote-beam app_build)
+#add_dependencies(app_build contract_header) 
