@@ -41,7 +41,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 
 	strncpy(repo_info.name, params.repo_name, MAX_NAME_SIZE);
 	repo_info.owner = params.repo_owner;
-	repo_info.repo_id = initial_params.last_repo_id++;
+	repo_info.repo_id = repo_id;
 
 	auto key2 = std::make_pair(repo_id, ::Operations::REPO);
 	Env::SaveVar_T(key2, repo_info);
