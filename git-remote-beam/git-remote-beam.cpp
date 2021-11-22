@@ -547,13 +547,30 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             const auto& obj = c.m_objects[i];
             serObj->data_size = static_cast<uint32_t>(obj.GetSize());
             serObj->type = obj.type;
+            git_oid_cpy(&serObj->hash, &obj.oid);
             auto* data = reinterpret_cast<uint8_t*>(serObj + 1);
             std::copy_n(obj.GetData(), obj.GetSize(), data);
             serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
         }
+
+        {
+            const GitObject* cur = reinterpret_cast<const GitObject*>(p + 1);
+            for (int i = 0; i < p->objects_number; ++i)
+            {
+                size_t s = cur->data_size;
+                char buf[GIT_OID_HEXSZ + 1];
+                git_oid_fmt(buf, &cur->hash);
+                buf[GIT_OID_HEXSZ] = '\0';
+                cerr << buf << '\n';
+                ++cur;
+                cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+            }
+            cerr << endl;
+        }
+
         auto strData = beam::to_hex(buf.data(), buf.size());
         std::stringstream ss;
-        ss << "role=user,action=push_objects,repo_id=1,data="
+        ss << "role=user,action=push_objects,repo_id=1,cid=f3307358b6d36b99ff0a31d289145a6449e78f6fe269e1e179cef519efa5f78d,data="
            << strData;
         wc.InvokeWallet(ss.str());
     }

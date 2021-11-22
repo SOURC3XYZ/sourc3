@@ -175,12 +175,23 @@ void On_action_push_objects(const ContractID& cid)
 
     auto argsSize = sizeof(GitRemoteBeam::PushObjectsParams) + dataLen;
     auto* params = reinterpret_cast<GitRemoteBeam::PushObjectsParams*>(Env::Heap_Alloc(argsSize));
+
     if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
         return On_error("failed to read push data");
     }
     if (!Env::DocGet("repo_id", params->repo_id)) {
         return On_error("failed to read 'repo_id'");
     }
+
+    Env::DocAddNum32("count", params->objects_info.objects_number);
+    Env::DocGroup gr("objects");
+    {
+        for (int i = 0; i < params->objects_info.objects_number; ++i)
+        {
+            Env::DocAddBlob("oid", &params->objects_info.objects[i].hash, 20);
+        }
+    }
+    
 
     Env::DerivePk(params->user, &cid, sizeof(cid));
 

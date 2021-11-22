@@ -38,7 +38,7 @@ namespace GitRemoteBeam
 
 	struct GitObject
 	{
-		enum Type { BLOB, COMMIT, TREE } type;
+		enum Type : uint32_t { BLOB, COMMIT, TREE } type;
 		git_oid hash;
 		size_t data_size;
 		char data[];
