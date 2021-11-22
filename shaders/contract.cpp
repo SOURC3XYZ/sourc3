@@ -21,8 +21,8 @@ BEAM_EXPORT void Dtor(void*)
 
 BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 {
-	auto key1 = std::make_pair(params.repo_owner, params.repo_name);
-	uint64_t repo_id;
+	auto key1 = RepoInfo::Key(params.repo_owner, params.repo_name);
+	uint64_t repo_id = 0;
 
 	// halt if repo exists
 	if (Env::LoadVar_T(key1, repo_id) && repo_id != 0) {
@@ -43,7 +43,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	repo_info.owner = params.repo_owner;
 	repo_info.repo_id = repo_id;
 
-	auto key2 = std::make_pair(repo_id, ::Operations::REPO);
+	auto key2 = std::make_pair(repo_id, Operations::REPO);
 	Env::SaveVar_T(key2, repo_info);
 
 	Env::AddSig(repo_info.owner);
@@ -51,14 +51,14 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 
 BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 {
-	auto key = std::make_pair(params.repo_id, ::Operations::REPO);
+	auto key = std::make_pair(params.repo_id, Operations::REPO);
 	RepoInfo repo_info;
 	
 	if (Env::LoadVar_T(key, repo_info)) {
-		Env::DelVar_T(std::make_pair(repo_info.owner, repo_info.name));
-		Env::DelVar_T(std::make_pair(repo_info.owner, repo_info.repo_id));
+		Env::DelVar_T(RepoInfo::Key(repo_info.owner, repo_info.name));
+		Env::DelVar_T(RepoUser::Key(repo_info.owner, repo_info.repo_id));
 		Env::AddSig(repo_info.owner);
-		for (auto op : ::ALL_OPERATIONS) {
+		for (auto op : ALL_OPERATIONS) {
 			auto key = std::make_pair(params.repo_id, op);
 			Env::DelVar_T(key);
 		}
@@ -69,14 +69,14 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 
 BEAM_EXPORT void Method_4(const AddUserParams& params)
 {
-	auto key = std::make_pair(params.repo_id, ::Operations::REPO);
+	auto key = std::make_pair(params.repo_id, Operations::REPO);
 	RepoInfo repo_info;
 
 	if (!Env::LoadVar_T(key, repo_info)) {
 		Env::Halt();
 	}
 
-	auto key_user = std::make_pair(params.user, repo_info.repo_id);
+	auto key_user = RepoUser::Key(params.user, repo_info.repo_id);
 	Env::SaveVar_T(key_user, true);
 
 	Env::AddSig(repo_info.owner);
@@ -84,14 +84,14 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 
 BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 {
-	auto key = std::make_pair(params.repo_id, ::Operations::REPO);
+	auto key = std::make_pair(params.repo_id, Operations::REPO);
 	RepoInfo repo_info;
 
 	if (!Env::LoadVar_T(key, repo_info)) {
 		Env::Halt();
 	}
 
-	auto key_user = std::make_pair(params.user, repo_info.repo_id);
+	auto key_user = RepoUser::Key(params.user, repo_info.repo_id);
 	bool is_exist;
 
 	if (Env::LoadVar_T(key_user, is_exist)) {
@@ -103,14 +103,14 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 
 BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 {
-	auto key = std::make_pair(params.repo_id, ::Operations::REPO);
+	auto key = std::make_pair(params.repo_id, Operations::REPO);
 	RepoInfo repo_info;
 
 	if (!Env::LoadVar_T(key, repo_info)) {
 		Env::Halt();
 	}
 
-	auto key_user = std::make_pair(params.user, repo_info.repo_id);
+	auto key_user = RepoUser::Key(params.user, repo_info.repo_id);
 	bool is_exist;
 
 	if (!Env::LoadVar_T(key_user, is_exist)) {
@@ -118,7 +118,7 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 	}
 	
 	for (size_t i = 0; i < params.objects_info.objects_number; ++i) {
-		auto key = std::make_tuple(params.repo_id, params.objects_info.objects[i].hash, ::Operations::OBJECTS);
+		auto key = std::make_tuple(params.repo_id, params.objects_info.objects[i].hash, Operations::OBJECTS);
 		Env::SaveVar(&key, sizeof(key), &params.objects_info.objects[i], sizeof(GitObject) + params.objects_info.objects[i].data_size, KeyTag::Internal);
 	}
 
@@ -127,14 +127,14 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 
 BEAM_EXPORT void Method_7(const PushRefsParams& params)
 {
-	auto key = std::make_pair(params.repo_id, ::Operations::REPO);
+	auto key = std::make_pair(params.repo_id, Operations::REPO);
 	RepoInfo repo_info;
 
 	if (!Env::LoadVar_T(key, repo_info)) {
 		Env::Halt();
 	}
 
-	auto key_user = std::make_pair(params.user, repo_info.repo_id);
+	auto key_user = RepoUser::Key(params.user, repo_info.repo_id);
 	bool is_exist;
 
 	if (!Env::LoadVar_T(key_user, is_exist)) {
@@ -142,7 +142,7 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 	}
 
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
-		auto key = std::make_tuple(params.repo_id, params.refs_info.refs[i].name, ::Operations::REFS);
+		auto key = std::make_tuple(params.repo_id, params.refs_info.refs[i].name, Operations::REFS);
 		Env::SaveVar_T(key, params.refs_info.refs[i].commit_hash);
 	}
 

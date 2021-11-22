@@ -12,7 +12,7 @@ namespace GitRemoteBeam
     };
     constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
 
-	static const size_t MAX_NAME_SIZE = 256;
+	static const size_t MAX_NAME_SIZE = 128;
 
 #pragma pack(push, 1)
 
@@ -20,8 +20,19 @@ namespace GitRemoteBeam
 
 	struct RepoInfo
 	{
+		struct Key
+		{
+			PubKey owner;
+			char name[MAX_NAME_SIZE];
+			Key(const PubKey& o, const char n[MAX_NAME_SIZE])
+				: owner(o)
+			{
+				Env::Memcpy(&name, n, MAX_NAME_SIZE);
+			}
+		};
+		using ID = uint64_t;
 		char name[MAX_NAME_SIZE];
-		uint64_t repo_id;
+		ID repo_id;
 		PubKey owner;
 	};
 
@@ -55,14 +66,29 @@ namespace GitRemoteBeam
 		}
 	};
 
-	struct ObjectsInfo {
+	struct ObjectsInfo 
+	{
 		size_t objects_number;
 		GitObject objects[];
 	};
 
-	struct RefsInfo {
+	struct RefsInfo
+	{
 		size_t refs_number;
 		GitRef refs[];
+	};
+
+	struct RepoUser
+	{
+		struct Key
+		{
+			PubKey user;
+			RepoInfo::ID repo_id;
+			Key(const PubKey& u, RepoInfo::ID id)
+				: user(u)
+				, repo_id(id)
+			{}
+		};
 	};
 
 	struct InitialParams
