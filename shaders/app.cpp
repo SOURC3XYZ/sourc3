@@ -1,5 +1,10 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
+
+namespace Env {
+#include "bvm2_cost.h"
+} // namespace Env
+
 #include "contract.h"
 
 #include <algorithm>
@@ -78,8 +83,20 @@ void On_action_create_repo(const ContractID& cid) {
     sig.m_pID = &cid;
     sig.m_nID = sizeof(cid);
 
+    // estimate change
+    uint32_t charge = 
+        Env::Cost::CallFar + 
+        Env::Cost::LoadVar_For(sizeof(GitRemoteBeam::InitialParams)) +
+        Env::Cost::LoadVar_For(sizeof(uint64_t)) + 
+        Env::Cost::SaveVar_For(sizeof(GitRemoteBeam::InitialParams)) +
+        Env::Cost::SaveVar_For(sizeof(GitRemoteBeam::CreateRepoParams)) +
+        Env::Cost::SaveVar_For(sizeof(uint64_t)) +
+        Env::Cost::AddSig +
+        Env::Cost::MemOpPerByte * (sizeof(GitRemoteBeam::RepoInfo) + sizeof(GitRemoteBeam::CreateRepoParams)) +
+        Env::Cost::Cycle * 300; // should be enought
+
     Env::GenerateKernel(&cid, GitRemoteBeam::CreateRepoParams::METHOD, &request, sizeof(request),
-                        nullptr, 0, &sig, 1, "create repo", 0);
+                        nullptr, 0, &sig, 1, "create repo", charge);
 }
 
 void On_action_my_repos(const ContractID& cid) {
@@ -120,7 +137,7 @@ void On_action_delete_repo(const ContractID& cid) {
     sig.m_nID = sizeof(cid);
 
     Env::GenerateKernel(&cid, GitRemoteBeam::DeleteRepoParams::METHOD, &request, sizeof(request),
-                        nullptr, 0, &sig, 1, "delete repo", 0);
+                        nullptr, 0, &sig, 1, "delete repo", 10000000);
 }
 
 void On_action_add_user_params(const ContractID& cid) {
@@ -172,7 +189,8 @@ void On_action_push_objects(const ContractID& cid)
     sig.m_nID = sizeof(cid);
 
     Env::GenerateKernel(&cid, GitRemoteBeam::PushObjectsParams::METHOD, params, argsSize,
-                        nullptr, 0, &sig, 1, "Pushing objects", 0);
+                        nullptr, 0, &sig, 1, "Pushing objects", 10000000);
+    Env::Heap_Free(params);
 }
 
 BEAM_EXPORT void Method_0()
