@@ -189,8 +189,15 @@ void On_action_push_objects(const ContractID& cid)
     sig.m_nID = sizeof(cid);
 
     Env::GenerateKernel(&cid, GitRemoteBeam::PushObjectsParams::METHOD, params, argsSize,
-                        nullptr, 0, &sig, 1, "Pushing objects", 10000000);
+                        nullptr, 0, &sig, 1, "Pushing objects", 20000000);
     Env::Heap_Free(params);
+}
+
+void On_action_user_get_key(const ContractID& cid)
+{
+    PubKey pk;
+    Env::DerivePk(pk, &cid, sizeof(cid));
+    Env::DocAddBlob_T("key", pk);
 }
 
 BEAM_EXPORT void Method_0()
@@ -231,7 +238,8 @@ BEAM_EXPORT void Method_1()
         {"delete_repo", On_action_delete_repo},
         {"add_user_params", On_action_add_user_params},
         {"remove_user_params", On_action_remove_user_params},
-        {"push_objects", On_action_push_objects}
+        {"push_objects", On_action_push_objects},
+        {"get_key", On_action_user_get_key}
 	};
 
 	const Actions_map_t VALID_MANAGER_ACTIONS = {
