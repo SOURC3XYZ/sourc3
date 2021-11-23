@@ -44,6 +44,9 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	repo_info.owner = params.repo_owner;
 	repo_info.repo_id = repo_id;
 
+	auto key_user = RepoUser::Key(params.repo_owner, repo_info.repo_id);
+	Env::SaveVar_T(key_user, true);
+
 	auto key2 = std::make_pair(repo_id, Operations::REPO);
 	Env::SaveVar_T(key2, repo_info);
 
