@@ -168,13 +168,14 @@ void On_action_remove_user_params(const ContractID& cid) {
 
 void On_action_push_objects(const ContractID& cid)
 {
+    using namespace GitRemoteBeam;
     auto dataLen = Env::DocGetBlob("data", nullptr, 0);
     if (!dataLen) {
         return On_error("there is no data to push");
     }
 
-    auto argsSize = sizeof(GitRemoteBeam::PushObjectsParams) + dataLen;
-    auto* params = reinterpret_cast<GitRemoteBeam::PushObjectsParams*>(Env::Heap_Alloc(argsSize));
+    auto argsSize = sizeof(PushObjectsParams) + dataLen;
+    auto* params = reinterpret_cast<PushObjectsParams*>(Env::Heap_Alloc(argsSize));
 
     if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
         return On_error("failed to read push data");
@@ -183,12 +184,21 @@ void On_action_push_objects(const ContractID& cid)
         return On_error("failed to read 'repo_id'");
     }
 
-    Env::DocAddNum32("count", params->objects_info.objects_number);
+    // dump objects for debug
     Env::DocGroup gr("objects");
     {
-        for (int i = 0; i < params->objects_info.objects_number; ++i)
-        {
-            Env::DocAddBlob("oid", &params->objects_info.objects[i].hash, 20);
+        Env::DocAddNum32("count", params->objects_info.objects_number);
+
+        auto* obj = reinterpret_cast<const GitObject*>(&params->objects_info + 1);
+        for (uint32_t i = 0; i < params->objects_info.objects_number; ++i) {
+
+            uint32_t size = obj->data_size;
+            Env::DocGroup gr2("object");
+            Env::DocAddBlob("oid", &(obj->hash), 20);
+            Env::DocAddNum32("size", size);
+            Env::DocAddNum32("type", obj->type);
+            ++obj; // skip header
+            obj = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
         }
     }
     

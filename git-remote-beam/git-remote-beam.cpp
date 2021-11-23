@@ -40,10 +40,10 @@ bool operator==(const git_oid& left, const git_oid& right) noexcept
 
 namespace
 {
-#pragma pack(push)
+#pragma pack(push, 1)
     struct GitObject
     {
-        git_object_t type;
+        int8_t type;
         git_oid hash;
         uint32_t data_size;
         // followed by data
@@ -537,6 +537,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         if (count == 0)
             break;
         
+        // serializing
         ByteBuffer buf;
         buf.resize(size);
         auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
@@ -546,7 +547,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         {
             const auto& obj = c.m_objects[i];
             serObj->data_size = static_cast<uint32_t>(obj.GetSize());
-            serObj->type = obj.type;
+            serObj->type = static_cast<int8_t>(obj.type);
             git_oid_cpy(&serObj->hash, &obj.oid);
             auto* data = reinterpret_cast<uint8_t*>(serObj + 1);
             std::copy_n(obj.GetData(), obj.GetSize(), data);
@@ -555,13 +556,13 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
         {
             const GitObject* cur = reinterpret_cast<const GitObject*>(p + 1);
-            for (int i = 0; i < p->objects_number; ++i)
+            for (uint32_t i = 0; i < p->objects_number; ++i)
             {
                 size_t s = cur->data_size;
                 char buf[GIT_OID_HEXSZ + 1];
                 git_oid_fmt(buf, &cur->hash);
                 buf[GIT_OID_HEXSZ] = '\0';
-                cerr << buf << '\n';
+                cerr << buf << '\t' << s << '\t' << (int)cur->type << '\n';
                 ++cur;
                 cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
             }
@@ -570,7 +571,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
         auto strData = beam::to_hex(buf.data(), buf.size());
         std::stringstream ss;
-        ss << "role=user,action=push_objects,repo_id=1,cid=f3307358b6d36b99ff0a31d289145a6449e78f6fe269e1e179cef519efa5f78d,data="
+        ss << "role=user,action=push_objects,repo_id=1,cid=6f91de7052eec3b9365a109a3f74e77278ea19bb7fa0c793bd7945481cdb0823,data="
            << strData;
         wc.InvokeWallet(ss.str());
     }

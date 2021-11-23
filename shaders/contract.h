@@ -5,7 +5,7 @@
 
 namespace GitRemoteBeam
 {
-    enum Operations {
+    enum Operations : uint8_t {
         REPO,
         OBJECTS,
         REFS,
@@ -38,9 +38,28 @@ namespace GitRemoteBeam
 
 	struct GitObject
 	{
-		enum Type : uint32_t { BLOB, COMMIT, TREE } type;
+		struct Key
+		{
+			RepoInfo::ID	repo_id;
+			git_oid			hash;
+			Operations		tag;
+			Key(RepoInfo::ID rid, const git_oid& oid, Operations t)
+				: repo_id(rid)
+				, tag(t)
+			{
+				Env::Memcpy(&hash, &oid, sizeof(oid));
+			}
+		};
+		enum Type : int8_t 
+		{
+			// excerpt from libgit2
+			GIT_OBJECT_COMMIT = 1, /**< A commit object. */
+			GIT_OBJECT_TREE = 2, /**< A tree (directory listing) object. */
+			GIT_OBJECT_BLOB = 3, /**< A file revision object. */
+			GIT_OBJECT_TAG = 4, /**< An annotated tag object. */
+		} type;
 		git_oid hash;
-		size_t data_size;
+		uint32_t data_size;
 		char data[];
 
 		GitObject& operator=(const GitObject& from)
@@ -69,7 +88,8 @@ namespace GitRemoteBeam
 	struct ObjectsInfo 
 	{
 		size_t objects_number;
-		GitObject objects[];
+		//GitObject objects[];
+		// data
 	};
 
 	struct RefsInfo

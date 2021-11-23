@@ -117,9 +117,14 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 		Env::Halt();
 	}
 	
-	for (size_t i = 0; i < params.objects_info.objects_number; ++i) {
-		auto key = std::make_tuple(params.repo_id, params.objects_info.objects[i].hash, Operations::OBJECTS);
-		Env::SaveVar(&key, sizeof(key), &params.objects_info.objects[i], sizeof(GitObject) + params.objects_info.objects[i].data_size, KeyTag::Internal);
+	auto* obj = reinterpret_cast<const GitObject*>(&params.objects_info + 1);
+	for (uint32_t i = 0; i < params.objects_info.objects_number; ++i) {
+		auto key = GitObject::Key(params.repo_id, obj->hash, Operations::OBJECTS);
+		Env::Halt_if(Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal)); // halt if object exists
+		Env::SaveVar(&key, sizeof(key), obj->data, obj->data_size, KeyTag::Internal);
+		auto size = obj->data_size;
+		++obj; // skip header
+		obj = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
 	}
 
 	Env::AddSig(params.user);
