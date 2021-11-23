@@ -7,33 +7,35 @@ namespace GitRemoteBeam
 {
     enum Operations : uint8_t {
         REPO,
+		REPO_SIZE,
         OBJECTS,
         REFS,
     };
-    constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
-
-	static const size_t MAX_NAME_SIZE = 128;
+    constexpr Operations ALL_OPERATIONS[] = { REPO, REPO_SIZE, OBJECTS, REFS };
 
 #pragma pack(push, 1)
 
 	typedef Opaque<20> git_oid;
+	typedef Opaque<32> Hash256;
 
 	struct RepoInfo
 	{
 		struct Key
 		{
 			PubKey owner;
-			char name[MAX_NAME_SIZE];
-			Key(const PubKey& o, const char n[MAX_NAME_SIZE])
+			Hash256 name_hash;
+			Key(const PubKey& o, const Hash256& h)
 				: owner(o)
 			{
-				Env::Memcpy(&name, n, MAX_NAME_SIZE);
+				Env::Memcpy(&name_hash, &h, sizeof(name_hash));
 			}
 		};
 		using ID = uint64_t;
-		char name[MAX_NAME_SIZE];
+		Hash256 name_hash;
 		ID repo_id;
 		PubKey owner;
+		size_t name_length;
+		char name[];
 	};
 
 	struct GitObject
@@ -74,13 +76,25 @@ namespace GitRemoteBeam
 
 	struct GitRef
 	{
-		char name[MAX_NAME_SIZE];
+		struct Key
+		{
+			RepoInfo::ID	repo_id;
+			Hash256			name_hash;
+			Operations		tag;
+			Key(RepoInfo::ID rid, const Hash256& nh, Operations t)
+				: repo_id(rid), name_hash(nh), tag(t)
+			{
+				Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
+			}
+		};
 		git_oid commit_hash;
+		size_t name_length;
+		char name[];
 
 		GitRef& operator=(const GitRef& from)
 		{
 			this->commit_hash = from.commit_hash;
-			Env::Memcpy(this->name, from.name, MAX_NAME_SIZE);
+			Env::Memcpy(this->name, from.name, from.name_length);
 			return *this;
 		}
 	};
@@ -124,8 +138,9 @@ namespace GitRemoteBeam
 	struct CreateRepoParams
 	{
 		static const uint32_t METHOD = 2;
-		char repo_name[MAX_NAME_SIZE];
 		PubKey repo_owner;
+		size_t repo_name_length;
+		char repo_name[];
 	};
 
 	struct DeleteRepoParams
