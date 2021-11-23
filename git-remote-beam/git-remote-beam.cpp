@@ -239,6 +239,12 @@ namespace
         std::string remoteRef;
     };
 
+    struct Ref
+    {
+        std::string name;
+        git_oid     target;
+    };
+
     struct Object
     {
         git_oid			oid;
@@ -337,6 +343,9 @@ namespace
             for (const auto& ref : refs)
             {
                 git_revwalk_push_ref(walk, ref.localRef.c_str());
+                auto& r = m_refs.emplace_back();
+                git_reference_name_to_id(&r.target, m_repo, ref.localRef.c_str());
+                r.name = ref.remoteRef;
             }
             git_oid oid;
             while (!git_revwalk_next(&oid, walk))
@@ -440,9 +449,10 @@ namespace
         git_odb                     *m_odb;
         std::set<git_oid>           m_set;
         std::vector<Object>         m_objects;
+        std::vector<Ref>            m_refs;
         size_t                      m_maxSize = 0;
         size_t                      m_totalSize = 0;
-        std::vector<std::string>     m_path;
+        std::vector<std::string>    m_path;
     };
 }
 
@@ -571,8 +581,13 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
         auto strData = beam::to_hex(buf.data(), buf.size());
         std::stringstream ss;
-        ss << "role=user,action=push_objects,repo_id=1,cid=6f91de7052eec3b9365a109a3f74e77278ea19bb7fa0c793bd7945481cdb0823,data="
-           << strData;
+        ss << "role=user,action=push_objects,repo_id=1,cid=1046e4e470720138f5e66229f44cf9768896f883db017db78ba3999331663714,data="
+            << strData << ',';
+        for (const auto& r : c.m_refs)
+        {
+            ss << "ref=" << r.name << ",ref_target=" << beam::to_hex(&r.target, sizeof(r.target));
+        }
+
         wc.InvokeWallet(ss.str());
     }
     
