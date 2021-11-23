@@ -111,10 +111,14 @@ namespace GitRemoteBeam
 		};
 	};
 
+	struct ContractState
+	{
+		uint64_t last_repo_id;
+	};
+
 	struct InitialParams
 	{
 		static const uint32_t METHOD = 0;
-		uint64_t last_repo_id;
 	};
 
 	struct CreateRepoParams

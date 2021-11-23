@@ -8,10 +8,11 @@
 
 using namespace GitRemoteBeam;
 
-BEAM_EXPORT void Ctor(InitialParams& params)
+BEAM_EXPORT void Ctor(const InitialParams& params)
 {
-	params.last_repo_id = 1;
-	Env::SaveVar_T(0, params);
+	ContractState cs;
+	cs.last_repo_id = 1;
+	Env::SaveVar_T(0, cs);
 }
 
 BEAM_EXPORT void Dtor(void*)
@@ -29,13 +30,13 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 		Env::Halt();
 	}
 
-	InitialParams initial_params;
-	Env::LoadVar_T(0, initial_params);
+	ContractState cs;
+	Env::LoadVar_T(0, cs);
 
-	repo_id = initial_params.last_repo_id++;
+	repo_id = cs.last_repo_id++;
 
-	Env::SaveVar_T(key1, initial_params.last_repo_id);
-	Env::SaveVar_T(0, initial_params);
+	Env::SaveVar_T(key1, cs.last_repo_id);
+	Env::SaveVar_T(0, cs);
 
 	RepoInfo repo_info;
 
