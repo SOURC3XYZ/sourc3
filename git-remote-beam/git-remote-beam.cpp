@@ -21,7 +21,11 @@
 #include "utility/cli/options.h"
 #include "utility/logger.h"
 
+#include "3rdparty/nlohmann/json.hpp"
+
 namespace po = boost::program_options;
+
+using json = nlohmann::json;
 
 using namespace std;
 using namespace beam;
@@ -109,6 +113,7 @@ namespace
             std::string password;
             std::string appPath;
             std::string contractPath;
+            std::string repoName;
         };
 
         SimpleWalletClient(const Options& options)
@@ -150,6 +155,7 @@ namespace
             , const std::string& contractShader
             , std::string args)
         {
+            m_result = "";
             MyManager man(GetWalletDB(), GetWallet());
 
             if (appShader.empty())
@@ -176,12 +182,16 @@ namespace
                 {
                     // abort, propagate it
                     io::Reactor::get_Current().stop();
+                    m_result = man.m_Out.str();
                     return false;
                 }
             }
 
             if (man.m_Err || man.m_vInvokeData.empty())
+            {
+                m_result = man.m_Out.str();
                 return false;
+            }
 
             const auto comment = bvm2::getFullComment(man.m_vInvokeData);
 
@@ -196,9 +206,13 @@ namespace
             return true;
         }
 
-        void InvokeWallet(std::string args)
+        std::string InvokeWallet(std::string args)
         {
+            args.append(",repo=")
+                .append(m_repoName)
+                .append(", cid = 1046e4e470720138f5e66229f44cf9768896f883db017db78ba3999331663714");
             InvokeShader(m_AppPath, m_ContractPath, std::move(args));
+            return m_result;
         }
 
     private:
@@ -219,6 +233,8 @@ namespace
         size_t m_TxCount = 0;
         std::string     m_AppPath;
         std::string     m_ContractPath;
+        std::string     m_repoName;
+        std::string     m_result;
     };
 
     struct GitInit
@@ -480,16 +496,14 @@ struct Command
 int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
 int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
 {
-    //if (args[1] == "for-push")
-    //{
-    //	cout
-    //		<< "@" << "refs/heads/master " << "HEAD" << '\n'
-    //		<< "0f7dbc7b1e5b5b37183488594a5a5365ad3571ea" << " " << "refs/heads/master" << '\n'
-    //		<< endl;
-    //}
-    //else
+    std::stringstream ss;
+    ss << "role=user,action=list";
+
+    auto res = wc.InvokeWallet(ss.str());
+    json refs = json::parse(res);
+    for(const auto& r : refs)
     {
-        cout << "0e7dbc7b1e5b5b37183488594a5a5365ad3571ea" << " " << "refs/heads/master" << '\n' << endl;
+        cout << r["name"] << " " << r["target"] << '\n' << endl;
     }
     return 0;
 }
@@ -581,7 +595,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
         auto strData = beam::to_hex(buf.data(), buf.size());
         std::stringstream ss;
-        ss << "role=user,action=push_objects,repo_id=1,cid=1046e4e470720138f5e66229f44cf9768896f883db017db78ba3999331663714,data="
+        ss << "role=user,action=push_objects,data="
             << strData << ',';
         for (const auto& r : c.m_refs)
         {
@@ -650,9 +664,11 @@ int main(int argc, char* argv[])
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
     auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, "", "");
+    options.repoName = string_view(argv[2]).substr(7).data();
     SimpleWalletClient walletClient(options);
     GitInit init;
     cerr << "Hello Beam.\nRemote:\t" << argv[1] << "\nURL:\t" << argv[2] << endl;
+    
     string input;
     while (getline(cin, input, '\n'))
     {
