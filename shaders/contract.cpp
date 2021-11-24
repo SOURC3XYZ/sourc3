@@ -51,7 +51,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	Env::Memcpy(repo_info->name, params.repo_name, repo_info->name_length);
 
 	auto key_user = RepoUser::Key(params.repo_owner, repo_info->repo_id);
-	Env::SaveVar_T(key_user, true);
+	Env::SaveVar_T(key_user, UserInfo{.permissions = ALL});
 
 	auto key_repo = GeneralKey{Operations::REPO, repo_id};
 	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, repo_id};
@@ -71,10 +71,17 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+
+	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
+	UserInfo user_info;
+	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+
+	Env::Halt_if(!(user_info.permissions & DELETE_REPO));
+
+	Env::AddSig(params.user);
 	
 	Env::DelVar_T(RepoInfo::Key(repo_info->owner, repo_info->name_hash));
 	Env::DelVar_T(RepoUser::Key(repo_info->owner, repo_info->repo_id));
-	Env::AddSig(repo_info->owner);
 	for (auto op : ALL_OPERATIONS) {
 		auto key = GeneralKey{op, params.repo_id};
 		Env::DelVar_T(key);
@@ -89,13 +96,17 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
 	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	Env::SaveVar_T(key_user, true);
+	auto key_user = RepoUser::Key(params.initiator, repo_info->repo_id);
+	UserInfo user_info;
+	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+	Env::Halt_if(!(user_info.permissions & ADD_USER));
 
-	Env::AddSig(repo_info->owner);
+	key_user = RepoUser::Key(params.user, repo_info->repo_id);
+	Env::SaveVar_T(key_user, UserInfo{.permissions = params.permissions});
+
+	Env::AddSig(params.initiator);
 }
 
 BEAM_EXPORT void Method_5(const RemoveUserParams& params)
@@ -108,15 +119,19 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	
+	auto key_user = RepoUser::Key(params.initiator, repo_info->repo_id);
+	UserInfo user_info;
+	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+	Env::Halt_if(!(user_info.permissions & REMOVE_USER));
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	bool is_exist;
+	key_user = RepoUser::Key(params.user, repo_info->repo_id);
 
-	if (Env::LoadVar_T(key_user, is_exist)) {
+	if (Env::LoadVar_T(key_user, user_info)) {
 		Env::DelVar_T(key_user);
 	}
 
-	Env::AddSig(repo_info->owner);
+	Env::AddSig(params.initiator);
 }
 
 BEAM_EXPORT void Method_6(const PushObjectsParams& params)
@@ -131,10 +146,11 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
 	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	bool is_exist;
+	UserInfo user_info;
 
-	Env::Halt_if(!Env::LoadVar_T(key_user, is_exist));
-	
+	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+	Env::Halt_if(!(user_info.permissions & PUSH));
+
 	auto* obj = reinterpret_cast<const GitObject*>(&params.objects_info + 1);
 	for (uint32_t i = 0; i < params.objects_info.objects_number; ++i) {
 		auto key = GitObject::Key(params.repo_id, obj->hash, Operations::OBJECTS);
@@ -160,9 +176,10 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
 	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	bool is_exist;
+	UserInfo user_info;
 
-	Env::Halt_if(!Env::LoadVar_T(key_user, is_exist));
+	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+	Env::Halt_if(!(user_info.permissions & PUSH));
 
 	// TODO: replace tuple
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {

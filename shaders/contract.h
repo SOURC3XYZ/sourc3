@@ -13,6 +13,14 @@ namespace GitRemoteBeam
     };
     constexpr Operations ALL_OPERATIONS[] = { REPO, REPO_SIZE, OBJECTS, REFS };
 
+	enum Permissions : uint8_t {
+		DELETE_REPO = 0b0001,
+		ADD_USER = 0b0010,
+		REMOVE_USER = 0b0100,
+		PUSH = 0b1000,
+		ALL = DELETE_REPO | ADD_USER | REMOVE_USER | PUSH,
+	};
+
 #pragma pack(push, 1)
 
 	typedef Opaque<20> git_oid;
@@ -131,6 +139,11 @@ namespace GitRemoteBeam
 		};
 	};
 
+	struct UserInfo
+	{
+		uint8_t permissions;
+	};
+
 	struct ContractState
 	{
 		uint64_t last_repo_id;
@@ -153,13 +166,16 @@ namespace GitRemoteBeam
 	{
 		static const uint32_t METHOD = 3;
 		uint64_t repo_id;
+		PubKey user;
 	};
 
 	struct AddUserParams
 	{
 		static const uint32_t METHOD = 4;
 		uint64_t repo_id;
+		PubKey initiator;
 		PubKey user;
+		uint8_t permissions;
 	};
 
 	struct RemoveUserParams
@@ -167,6 +183,7 @@ namespace GitRemoteBeam
 		static const uint32_t METHOD = 5;
 		uint64_t repo_id;
 		PubKey user;
+		PubKey initiator;
 	};
 
 	struct PushObjectsParams
