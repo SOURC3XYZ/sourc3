@@ -22,11 +22,10 @@ BEAM_EXPORT void Dtor(void*)
 
 BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 {
-	HashObj* hash256_obj = Env::HashCreateSha256();
+	HashProcessor::Sha256 hash_obj;
 	Hash256 repo_name_hash;
-	Env::HashWrite(hash256_obj, params.repo_name, params.repo_name_length);
-	Env::HashGetValue(hash256_obj, &repo_name_hash, sizeof(repo_name_hash));
-	Env::HashFree(hash256_obj);
+	hash_obj.Write(params.repo_name, params.repo_name_length);
+	hash_obj >> repo_name_hash;
 
 	auto key1 = RepoInfo::Key(params.repo_owner, repo_name_hash);
 	uint64_t repo_id = 0;
