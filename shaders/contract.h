@@ -18,6 +18,12 @@ namespace GitRemoteBeam
 	typedef Opaque<20> git_oid;
 	typedef Opaque<32> Hash256;
 
+	struct GeneralKey
+	{
+		Operations op;
+		uint64_t repo_id;
+	};
+
 	struct RepoInfo
 	{
 		struct Key

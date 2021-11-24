@@ -53,8 +53,8 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	auto key_user = RepoUser::Key(params.repo_owner, repo_info->repo_id);
 	Env::SaveVar_T(key_user, true);
 
-	auto key_repo = std::make_pair(Operations::REPO, repo_id);
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, repo_id);
+	auto key_repo = GeneralKey{Operations::REPO, repo_id};
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, repo_id};
 	Env::SaveVar(&key_repo, sizeof(key_repo), repo_info.get(), sizeof(RepoInfo) + repo_info->name_length, KeyTag::Internal);
 	Env::SaveVar_T(key_repo_size, sizeof(RepoInfo) + repo_info->name_length);
 
@@ -63,8 +63,8 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 
 BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 {
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, params.repo_id);
-	auto key_repo = std::make_pair(Operations::REPO, params.repo_id);
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
+	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
 	size_t repo_size;
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
@@ -76,15 +76,15 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 	Env::DelVar_T(RepoUser::Key(repo_info->owner, repo_info->repo_id));
 	Env::AddSig(repo_info->owner);
 	for (auto op : ALL_OPERATIONS) {
-		auto key = std::make_pair(params.repo_id, op);
+		auto key = GeneralKey{op, params.repo_id};
 		Env::DelVar_T(key);
 	}
 }
 
 BEAM_EXPORT void Method_4(const AddUserParams& params)
 {
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, params.repo_id);
-	auto key_repo = std::make_pair(Operations::REPO, params.repo_id);
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
+	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
 	size_t repo_size;
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
@@ -100,8 +100,8 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 
 BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 {
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, params.repo_id);
-	auto key_repo = std::make_pair(Operations::REPO, params.repo_id);
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
+	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
 	size_t repo_size;
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
@@ -121,8 +121,8 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 
 BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 {
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, params.repo_id);
-	auto key_repo = std::make_pair(Operations::REPO, params.repo_id);
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
+	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
 	size_t repo_size;
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
@@ -150,8 +150,8 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 
 BEAM_EXPORT void Method_7(const PushRefsParams& params)
 {
-	auto key_repo_size = std::make_pair(Operations::REPO_SIZE, params.repo_id);
-	auto key_repo = std::make_pair(Operations::REPO, params.repo_id);
+	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
+	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
 	size_t repo_size;
 
 	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
