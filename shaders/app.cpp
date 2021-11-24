@@ -73,33 +73,41 @@ namespace
         Env::DocGroup gr("params");
     }
 
-    void On_action_create_repo(const ContractID& cid) {
-        GitRemoteBeam::CreateRepoParams request;
-        Env::DerivePk(request.repo_owner, &cid, sizeof(cid));
-        char repo_name[GitRemoteBeam::MAX_NAME_SIZE];
-        if (!Env::DocGetText("repo_name", repo_name, sizeof(repo_name))) {
-            return On_error("no repo_name");
+    void On_action_create_repo(const ContractID& cid)
+    {
+        using namespace GitRemoteBeam;
+
+        char repoName[RepoInfo::MAX_NAME_SIZE + 1];
+        auto nameLen = Env::DocGetText("repo_name", repoName, sizeof(repoName));
+        if (nameLen <= 1) {
+            return On_error("'repo_name' required");
         }
-        _POD_(request.repo_name) = repo_name;
+        --nameLen; // remove 0-term
+        auto argsSize = sizeof(CreateRepoParams) + nameLen;
+        auto buf = std::make_unique<uint8_t[]>(argsSize);
+        auto* request = reinterpret_cast<CreateRepoParams*>(buf.get());
+        Env::DerivePk(request->repo_owner, &cid, sizeof(cid));
+        request->repo_name_length = nameLen;
+        Env::Memcpy(request->repo_name, repoName, nameLen);
 
         SigRequest sig;
         sig.m_pID = &cid;
         sig.m_nID = sizeof(cid);
 
         // estimate change
-        uint32_t charge =
-            Env::Cost::CallFar +
-            Env::Cost::LoadVar_For(sizeof(GitRemoteBeam::InitialParams)) +
-            Env::Cost::LoadVar_For(sizeof(uint64_t)) +
-            Env::Cost::SaveVar_For(sizeof(GitRemoteBeam::InitialParams)) +
-            Env::Cost::SaveVar_For(sizeof(GitRemoteBeam::CreateRepoParams)) +
-            Env::Cost::SaveVar_For(sizeof(uint64_t)) +
-            Env::Cost::AddSig +
-            Env::Cost::MemOpPerByte * (sizeof(GitRemoteBeam::RepoInfo) + sizeof(GitRemoteBeam::CreateRepoParams)) +
-            Env::Cost::Cycle * 300; // should be enought
+        //uint32_t charge =
+        //    Env::Cost::CallFar +
+        //    Env::Cost::LoadVar_For(sizeof(InitialParams)) +
+        //    Env::Cost::LoadVar_For(sizeof(uint64_t)) +
+        //    Env::Cost::SaveVar_For(sizeof(InitialParams)) +
+        //    Env::Cost::SaveVar_For(sizeof(CreateRepoParams)) +
+        //    Env::Cost::SaveVar_For(sizeof(uint64_t)) +
+        //    Env::Cost::AddSig +
+        //    Env::Cost::MemOpPerByte * (sizeof(RepoInfo) + sizeof(CreateRepoParams)) +
+        //    Env::Cost::Cycle * 300; // should be enought
 
-        Env::GenerateKernel(&cid, GitRemoteBeam::CreateRepoParams::METHOD, &request, sizeof(request),
-            nullptr, 0, &sig, 1, "create repo", charge);
+        Env::GenerateKernel(&cid, CreateRepoParams::METHOD, request, argsSize,
+                            nullptr, 0, &sig, 1, "create repo", 10000000);
     }
 
     void On_action_my_repos(const ContractID& cid) {
@@ -116,6 +124,8 @@ namespace
         PubKey my_key;
         Env::DerivePk(my_key, &cid, sizeof(cid));
         Env::DocGroup root("");
+        Env::DocAddBlob("start", &start, sizeof(start));
+        Env::DocAddBlob("end", &end, sizeof(end));
         Env::DocArray repos("repos");
         for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
             if (_POD_(value.owner) == my_key) {
@@ -178,30 +188,33 @@ namespace
         }
 
         auto argsSize = sizeof(PushObjectsParams) + dataLen;
-        auto objectsMemory = std::make_unique<uint8_t>(argsSize);
-        auto* params = reinterpret_cast<PushObjectsParams*>(objectsMemory.get());
-
-        if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
+        auto buf = std::make_unique<uint8_t[]>(argsSize);;
+        auto* params = reinterpret_cast<PushObjectsParams*>(buf.get());
+        if (Env::DocGetBlob("data", params+1, dataLen) != dataLen) {
             return On_error("failed to read push data");
         }
         if (!Env::DocGet("repo_id", params->repo_id)) {
             return On_error("failed to read 'repo_id'");
         }
 
+        char refName[GitRef::MAX_NAME_SIZE + 1];
+        auto nameLen = Env::DocGetText("ref", refName, _countof(refName));
+        if (nameLen <= 1) {
+            return On_error("failed to read 'ref'");
+        }
+        --nameLen; // remove '0'-term;
         size_t refsCount = 1; // single ref for now
-        auto refArgsSize = sizeof(PushRefsParams) + sizeof(GitRef) * refsCount;
-        auto resMemory = std::make_unique<uint8_t>(refArgsSize);
+        auto refArgsSize = sizeof(PushRefsParams) + sizeof(GitRef) + nameLen;
+        auto resMemory = std::make_unique<uint8_t[]>(refArgsSize);
         auto* refsParams = reinterpret_cast<PushRefsParams*>(resMemory.get());
         refsParams->repo_id = params->repo_id;
         refsParams->refs_info.refs_number = refsCount;
         auto* ref = reinterpret_cast<GitRef*>(refsParams + 1);
-        if (!Env::DocGetText("ref", ref->name, _countof(ref->name))) {
-            return On_error("failed to read 'ref'");
-        }
-
         if (!Env::DocGetBlob("ref_target", &ref->commit_hash, sizeof(git_oid))) {
             return On_error("failed to read 'ref_target'");
         }
+        ref->name_length = nameLen;
+        Env::Memcpy(ref->name, refName, nameLen);
 
         // dump refs for debug
         Env::DocGroup grr("refs");
@@ -237,10 +250,10 @@ namespace
         sig.m_pID = &cid;
         sig.m_nID = sizeof(cid);
 
-        Env::GenerateKernel(&cid, GitRemoteBeam::PushObjectsParams::METHOD, params, argsSize,
+        Env::GenerateKernel(&cid, PushObjectsParams::METHOD, params, argsSize,
             nullptr, 0, &sig, 1, "Pushing objects", 20000000);
 
-        Env::GenerateKernel(&cid, GitRemoteBeam::PushRefsParams::METHOD, refsParams, refArgsSize,
+        Env::GenerateKernel(&cid, PushRefsParams::METHOD, refsParams, refArgsSize,
             nullptr, 0, &sig, 1, "Pushing refs", 10000000);
     }
 

@@ -8,6 +8,17 @@
 #include <tuple>
 
 using namespace GitRemoteBeam;
+namespace GitRemoteBeam
+{
+	Hash256 get_name_hash(const char* name, size_t len)
+	{
+		Hash256 res;
+		HashProcessor::Sha256 hp;
+		hp.Write(name, len);
+		hp >> res;
+		return res;
+	}
+}
 
 BEAM_EXPORT void Ctor(const InitialParams& params)
 {
@@ -182,9 +193,13 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 	Env::Halt_if(!(user_info.permissions & PUSH));
 
 	// TODO: replace tuple
+	auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
-		auto key = std::make_tuple(params.repo_id, params.refs_info.refs[i].name, Operations::REFS);
-		Env::SaveVar_T(key, params.refs_info.refs[i].commit_hash);
+		auto size = ref->name_length;
+		auto key = GitRef::Key(params.repo_id, ref->name, ref->name_length, Operations::REFS);
+		Env::SaveVar_T(key, ref->commit_hash);
+		++ref; // skip 
+		ref = reinterpret_cast<const GitRef*>(reinterpret_cast<const uint8_t*>(ref) + size); // move to next ref
 	}
 
 	Env::AddSig(params.user);

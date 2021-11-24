@@ -32,8 +32,11 @@ namespace GitRemoteBeam
 		uint64_t repo_id;
 	};
 
+	Hash256 get_name_hash(const char* name, size_t len);
+
 	struct RepoInfo
 	{
+		static constexpr size_t MAX_NAME_SIZE = 256;
 		struct Key
 		{
 			PubKey owner;
@@ -90,6 +93,7 @@ namespace GitRemoteBeam
 
 	struct GitRef
 	{
+		static constexpr size_t MAX_NAME_SIZE = 256;
 		struct Key
 		{
 			RepoInfo::ID	repo_id;
@@ -99,6 +103,12 @@ namespace GitRemoteBeam
 				: repo_id(rid), name_hash(nh), tag(t)
 			{
 				Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
+			}
+
+			Key(RepoInfo::ID rid, const char* name, size_t len, Operations t)
+				: repo_id(rid), name_hash(get_name_hash(name, len)), tag(t)
+			{
+
 			}
 		};
 		git_oid commit_hash;
