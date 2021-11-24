@@ -84,7 +84,7 @@ namespace
         }
         --nameLen; // remove 0-term
         auto argsSize = sizeof(CreateRepoParams) + nameLen;
-        auto buf = std::make_unique<uint8_t>(argsSize);
+        auto buf = std::make_unique<uint8_t[]>(argsSize);
         auto* request = reinterpret_cast<CreateRepoParams*>(buf.get());
         Env::DerivePk(request->repo_owner, &cid, sizeof(cid));
         request->repo_name_length = nameLen;
@@ -95,19 +95,19 @@ namespace
         sig.m_nID = sizeof(cid);
 
         // estimate change
-        uint32_t charge =
-            Env::Cost::CallFar +
-            Env::Cost::LoadVar_For(sizeof(InitialParams)) +
-            Env::Cost::LoadVar_For(sizeof(uint64_t)) +
-            Env::Cost::SaveVar_For(sizeof(InitialParams)) +
-            Env::Cost::SaveVar_For(sizeof(CreateRepoParams)) +
-            Env::Cost::SaveVar_For(sizeof(uint64_t)) +
-            Env::Cost::AddSig +
-            Env::Cost::MemOpPerByte * (sizeof(RepoInfo) + sizeof(CreateRepoParams)) +
-            Env::Cost::Cycle * 300; // should be enought
+        //uint32_t charge =
+        //    Env::Cost::CallFar +
+        //    Env::Cost::LoadVar_For(sizeof(InitialParams)) +
+        //    Env::Cost::LoadVar_For(sizeof(uint64_t)) +
+        //    Env::Cost::SaveVar_For(sizeof(InitialParams)) +
+        //    Env::Cost::SaveVar_For(sizeof(CreateRepoParams)) +
+        //    Env::Cost::SaveVar_For(sizeof(uint64_t)) +
+        //    Env::Cost::AddSig +
+        //    Env::Cost::MemOpPerByte * (sizeof(RepoInfo) + sizeof(CreateRepoParams)) +
+        //    Env::Cost::Cycle * 300; // should be enought
 
-        Env::GenerateKernel(&cid, CreateRepoParams::METHOD, &request, sizeof(request),
-                            nullptr, 0, &sig, 1, "create repo", charge);
+        Env::GenerateKernel(&cid, CreateRepoParams::METHOD, request, argsSize,
+                            nullptr, 0, &sig, 1, "create repo", 10000000);
     }
 
     void On_action_my_repos(const ContractID& cid) {
@@ -124,6 +124,8 @@ namespace
         PubKey my_key;
         Env::DerivePk(my_key, &cid, sizeof(cid));
         Env::DocGroup root("");
+        Env::DocAddBlob("start", &start, sizeof(start));
+        Env::DocAddBlob("end", &end, sizeof(end));
         Env::DocArray repos("repos");
         for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
             if (_POD_(value.owner) == my_key) {
@@ -186,10 +188,9 @@ namespace
         }
 
         auto argsSize = sizeof(PushObjectsParams) + dataLen;
-        auto objectsMemory = std::make_unique<uint8_t>(argsSize);
-        auto* params = reinterpret_cast<PushObjectsParams*>(objectsMemory.get());
-
-        if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
+        auto buf = std::make_unique<uint8_t[]>(argsSize);;
+        auto* params = reinterpret_cast<PushObjectsParams*>(buf.get());
+        if (Env::DocGetBlob("data", params+1, dataLen) != dataLen) {
             return On_error("failed to read push data");
         }
         if (!Env::DocGet("repo_id", params->repo_id)) {
@@ -204,7 +205,7 @@ namespace
         --nameLen; // remove '0'-term;
         size_t refsCount = 1; // single ref for now
         auto refArgsSize = sizeof(PushRefsParams) + sizeof(GitRef) + nameLen;
-        auto resMemory = std::make_unique<uint8_t>(refArgsSize);
+        auto resMemory = std::make_unique<uint8_t[]>(refArgsSize);
         auto* refsParams = reinterpret_cast<PushRefsParams*>(resMemory.get());
         refsParams->repo_id = params->repo_id;
         refsParams->refs_info.refs_number = refsCount;
