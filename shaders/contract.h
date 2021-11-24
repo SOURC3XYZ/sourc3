@@ -20,6 +20,7 @@ namespace GitRemoteBeam
 
 	struct RepoInfo
 	{
+		static constexpr size_t MAX_NAME_SIZE = 256;
 		struct Key
 		{
 			PubKey owner;
@@ -76,6 +77,7 @@ namespace GitRemoteBeam
 
 	struct GitRef
 	{
+		static constexpr size_t MAX_NAME_SIZE = 256;
 		struct Key
 		{
 			RepoInfo::ID	repo_id;
