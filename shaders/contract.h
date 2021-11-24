@@ -18,6 +18,8 @@ namespace GitRemoteBeam
 	typedef Opaque<20> git_oid;
 	typedef Opaque<32> Hash256;
 
+	Hash256 get_name_hash(const char* name, size_t len);
+
 	struct RepoInfo
 	{
 		static constexpr size_t MAX_NAME_SIZE = 256;
@@ -87,6 +89,12 @@ namespace GitRemoteBeam
 				: repo_id(rid), name_hash(nh), tag(t)
 			{
 				Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
+			}
+
+			Key(RepoInfo::ID rid, const char* name, size_t len, Operations t)
+				: repo_id(rid), name_hash(get_name_hash(name, len)), tag(t)
+			{
+
 			}
 		};
 		git_oid commit_hash;

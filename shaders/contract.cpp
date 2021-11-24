@@ -7,6 +7,17 @@
 #include <tuple>
 
 using namespace GitRemoteBeam;
+namespace GitRemoteBeam
+{
+	Hash256 get_name_hash(const char* name, size_t len)
+	{
+		Hash256 res;
+		HashProcessor::Sha256 hp;
+		hp.Write(name, len);
+		hp >> res;
+		return res;
+	}
+}
 
 BEAM_EXPORT void Ctor(const InitialParams& params)
 {
@@ -157,26 +168,30 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 
 BEAM_EXPORT void Method_7(const PushRefsParams& params)
 {
-	auto key_repo_size = std::make_pair(params.repo_id, Operations::REPO_SIZE);
-	auto key_repo = std::make_pair(params.repo_id, Operations::REPO);
-	size_t repo_size;
+	//auto key_repo_size = std::make_pair(params.repo_id, Operations::REPO_SIZE);
+	//auto key_repo = std::make_pair(params.repo_id, Operations::REPO);
+	//size_t repo_size;
 
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	RepoInfo* repo_info = static_cast<RepoInfo*>(Env::Heap_Alloc(repo_size));
+	//Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
+	//RepoInfo* repo_info = static_cast<RepoInfo*>(Env::Heap_Alloc(repo_size));
 	
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info, repo_size, KeyTag::Internal);
+	//Env::LoadVar(&key_repo, sizeof(key_repo), repo_info, repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
+	auto key_user = RepoUser::Key(params.user, params.repo_id);
 	bool is_exist;
 
 	Env::Halt_if(!Env::LoadVar_T(key_user, is_exist));
 
 	// TODO: replace tuple
+	auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
-		auto key = std::make_tuple(params.repo_id, params.refs_info.refs[i].name, Operations::REFS);
-		Env::SaveVar_T(key, params.refs_info.refs[i].commit_hash);
+		auto size = ref->name_length;
+		auto key = GitRef::Key(params.repo_id, ref->name, ref->name_length, Operations::REFS);
+		Env::SaveVar_T(key, ref->commit_hash);
+		++ref; // skip 
+		ref = reinterpret_cast<const GitRef*>(reinterpret_cast<const uint8_t*>(ref) + size); // move to next ref
 	}
 
 	Env::AddSig(params.user);
-	Env::Heap_Free(repo_info);
+	//Env::Heap_Free(repo_info);
 }
