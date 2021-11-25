@@ -2,7 +2,7 @@
 #include "Shaders/app_common_impl.h"
 
 namespace Env {
-#include "bvm2_cost.h"
+#include "../beam/bvm/bvm2_cost.h"
 } // namespace Env
 
 #include "contract.h"
@@ -12,6 +12,8 @@ namespace Env {
 #include <utility>
 #include <string_view>
 #include <memory>
+
+#include "../try-to-add-libgit2/full_git.h"
 
 namespace GitRemoteBeam
 {
@@ -266,6 +268,83 @@ namespace
         Env::DerivePk(pk, &cid, sizeof(cid));
         Env::DocAddBlob_T("key", pk);
     }
+
+    void On_action_user_get_repo(const ContractID& cid) {
+        using RepoKey = std::pair<uint64_t, GitRemoteBeam::Operations>;
+        using GitRemoteBeam::RepoInfo;
+        char repoName[RepoInfo::MAX_NAME_SIZE + 1];
+        auto nameLen = Env::DocGetText("repo_name", repoName, sizeof(repoName));
+        if (nameLen <= 1) {
+            return On_error("'repo_name' required");
+        }
+        --nameLen; // remove 0-term
+
+        Env::Key_T<RepoKey> start, end;
+        start.m_KeyInContract.first = 0;
+        start.m_KeyInContract.second = GitRemoteBeam::REPO;
+        _POD_(start.m_Prefix.m_Cid) = cid;
+        _POD_(end) = start;
+        end.m_KeyInContract.first = std::numeric_limits<uint64_t>::max();
+
+        Env::Key_T<RepoKey> key;
+        GitRemoteBeam::RepoInfo value;
+        PubKey my_key;
+        Env::DerivePk(my_key, &cid, sizeof(cid));
+        Env::DocGroup root("");
+        Env::DocGroup repos("repos");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            if (Env::Memcmp(value.name, repoName, nameLen) == 0) {
+                Env::DocGroup repo_object("");
+                Env::DocAddNum("repo_id", value.repo_id);
+                Env::DocAddBlob_T("repo_owner", value.owner);
+            }
+        }
+    }
+
+    void On_action_get_repo_data(const ContractID& cid) {
+        using GitRemoteBeam::RepoInfo;
+        using GitRemoteBeam::GitObject;
+        using GitRemoteBeam::git_oid;
+        RepoInfo::ID repo_id;
+        if (!Env::DocGet("repo_id", repo_id)) {
+            On_error("No repo_id");
+            return;
+        }
+
+        git_oid start_oid;
+        _POD_(start_oid).SetZero();
+        git_oid end_oid;
+        _POD_(end_oid).SetObject(0xFF);
+
+        Env::Key_T<GitObject::Key> start = {
+                .m_KeyInContract = {
+                        repo_id, start_oid
+                },
+        }, end = {
+                .m_KeyInContract = {
+                        repo_id, end_oid
+                },
+        };
+
+        _POD_(start.m_Prefix.m_Cid) = cid;
+        _POD_(end) = start;
+
+        Env::Key_T<GitObject::Key> key = {
+                .m_KeyInContract = {
+                        repo_id, start_oid
+                }
+        }; // dummy values to initialize;
+
+        GitObject value;
+        Env::DocGroup root("");
+        Env::DocGroup objects("objects");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            Env::DocGroup obj("");
+            Env::DocAddBlob_T("object_hash", value.hash);
+            Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+            Env::DocAddBlob("object_data", value.data, value.data_size);
+        }
+    }
 }
 
 
@@ -308,7 +387,9 @@ BEAM_EXPORT void Method_1()
         {"add_user_params", On_action_add_user_params},
         {"remove_user_params", On_action_remove_user_params},
         {"push_objects", On_action_push_objects},
-        {"get_key", On_action_user_get_key}
+        {"get_key", On_action_user_get_key},
+        {"repo_id_by_name", On_action_user_get_repo},
+        {"repo_get_data", On_action_get_repo_data}
 	};
 
 	const Actions_map_t VALID_MANAGER_ACTIONS = {
