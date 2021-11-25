@@ -113,14 +113,13 @@ namespace
     void On_action_my_repos(const ContractID& cid) 
     {
         using namespace GitRemoteBeam;
-        Env::Key_T<GeneralKey> start, end;
-        start.m_KeyInContract.repo_id = 0;
-        start.m_KeyInContract.op = REPO;
+        using RepoKey = Env::Key_T<RepoInfo::Key>;
+        RepoKey start, end;
         _POD_(start.m_Prefix.m_Cid) = cid;
         _POD_(end) = start;
         end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
-
-        Env::Key_T<GeneralKey> key;
+        
+        RepoKey key;
         PubKey my_key;
         Env::DerivePk(my_key, &cid, sizeof(cid));
         Env::DocGroup root("");
@@ -132,7 +131,7 @@ namespace
             auto* value = reinterpret_cast<RepoInfo*>(buf.get());
             if (_POD_(value->owner) == my_key) {
                 Env::DocGroup repo_object("");
-                Env::DocAddNum("repo_id", key.m_KeyInContract.repo_id);
+                Env::DocAddNum("repo_id", value->repo_id);
                 Env::DocAddText("repo_name", value->name);
             }
             valueLen = 0;

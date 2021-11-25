@@ -25,28 +25,46 @@ namespace GitRemoteBeam
 	typedef Opaque<20> git_oid;
 	typedef Opaque<32> Hash256;
 
-	struct GeneralKey
-	{
-		Operations op;
-		uint64_t repo_id;
-	};
-
 	Hash256 get_name_hash(const char* name, size_t len);
 
 	struct RepoInfo
 	{
 		static constexpr size_t MAX_NAME_SIZE = 256;
-		struct Key
+		struct NameKey
 		{
-			PubKey owner;
-			Hash256 name_hash;
-			Key(const PubKey& o, const Hash256& h)
+			PubKey	owner;
+			Hash256	name_hash;
+			NameKey(const PubKey& o, const Hash256& h)
 				: owner(o)
 			{
 				Env::Memcpy(&name_hash, &h, sizeof(name_hash));
 			}
 		};
-		using ID = uint64_t;
+		using ID = uint64_t; // big-endinan
+		struct BaseKey
+		{
+			Operations	tag;
+			ID			repo_id;
+			BaseKey(Operations t, RepoInfo::ID id)
+				: tag(t)
+				, repo_id(Utils::FromBE(id)) // swap bytes
+			{
+
+			}
+		};
+		struct Key : BaseKey
+		{
+			Key(RepoInfo::ID id)
+				: BaseKey(REPO, id)
+			{
+
+			}
+			Key() : Key(0)
+			{
+
+			}
+		};
+
 		Hash256 name_hash;
 		ID repo_id;
 		PubKey owner;
@@ -56,14 +74,11 @@ namespace GitRemoteBeam
 
 	struct GitObject
 	{
-		struct Key
+		struct Key : RepoInfo::BaseKey
 		{
-			RepoInfo::ID	repo_id;
-			git_oid			hash;
-			Operations		tag;
-			Key(RepoInfo::ID rid, const git_oid& oid, Operations t)
-				: repo_id(rid)
-				, tag(t)
+			git_oid	hash;
+			Key(RepoInfo::ID rid, const git_oid& oid)
+				: RepoInfo::BaseKey(OBJECTS, rid)
 			{
 				Env::Memcpy(&hash, &oid, sizeof(oid));
 			}
@@ -93,23 +108,23 @@ namespace GitRemoteBeam
 	struct GitRef
 	{
 		static constexpr size_t MAX_NAME_SIZE = 256;
-		struct Key
+		struct Key : RepoInfo::BaseKey
 		{
-			RepoInfo::ID	repo_id;
-			Hash256			name_hash;
-			Operations		tag;
-			Key(RepoInfo::ID rid, const Hash256& nh, Operations t)
-				: repo_id(rid), name_hash(nh), tag(t)
+			Hash256 name_hash;
+			Key(RepoInfo::ID rid, const Hash256& nh)
+				: RepoInfo::BaseKey(REFS, rid)
+				, name_hash(nh)
 			{
 				Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
 			}
 
-			Key(RepoInfo::ID rid, const char* name, size_t len, Operations t)
-				: repo_id(rid), name_hash(get_name_hash(name, len)), tag(t)
+			Key(RepoInfo::ID rid, const char* name, size_t len)
+				: RepoInfo::BaseKey(REFS, rid)
+				, name_hash(get_name_hash(name, len))
 			{
-
 			}
 		};
+
 		git_oid commit_hash;
 		size_t name_length;
 		char name[];

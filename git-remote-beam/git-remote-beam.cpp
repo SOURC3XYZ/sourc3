@@ -208,9 +208,9 @@ namespace
 
         std::string InvokeWallet(std::string args)
         {
-            args.append(",repo_id=2")
+            args.append(",repo_id=1")
                 //.append(m_repoName)
-                .append(",cid=e1d34e694bd9ec13efff479c134c7828231164ffae11c2f6e9c35e0b61822316");
+                .append(",cid=6188bc77d1b258c386390a0240c6c7f61f0fa50766b8de51ce2c178742a911fe");
             InvokeShader(m_AppPath, m_ContractPath, std::move(args));
             return m_result;
         }
