@@ -150,11 +150,7 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	UserInfo user_info;
-
-	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
-	Env::Halt_if(!(user_info.permissions & PUSH));
+	check_permissions(params.user, repo_info->repo_id, PUSH);
 
 	auto* obj = reinterpret_cast<const GitObject*>(&params.objects_info + 1);
 	for (uint32_t i = 0; i < params.objects_info.objects_number; ++i) {
@@ -180,13 +176,8 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	UserInfo user_info;
+	check_permissions(params.user, repo_info->repo_id, PUSH);
 
-	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
-	Env::Halt_if(!(user_info.permissions & PUSH));
-
-	// TODO: replace tuple
 	auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
 		auto size = ref->name_length;

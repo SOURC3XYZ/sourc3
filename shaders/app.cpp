@@ -135,6 +135,7 @@ namespace
                 Env::DocAddNum("repo_id", key.m_KeyInContract.repo_id);
                 Env::DocAddText("repo_name", value->name);
             }
+            valueLen = 0;
         }
     }
 
@@ -192,7 +193,7 @@ namespace
         auto argsSize = sizeof(PushObjectsParams) + dataLen;
         auto buf = std::make_unique<uint8_t[]>(argsSize);;
         auto* params = reinterpret_cast<PushObjectsParams*>(buf.get());
-        if (Env::DocGetBlob("data", params+1, dataLen) != dataLen) {
+        if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
             return On_error("failed to read push data");
         }
         if (!Env::DocGet("repo_id", params->repo_id)) {
