@@ -160,7 +160,7 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 	for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
 		auto size = ref->name_length;
 		auto key = GitRef::Key(params.repo_id, ref->name, ref->name_length, Operations::REFS);
-		Env::SaveVar_T(key, ref->commit_hash);
+		Env::SaveVar(&key, sizeof(key), ref, sizeof(GitRef) + size, KeyTag::Internal);
 		++ref; // skip 
 		ref = reinterpret_cast<const GitRef*>(reinterpret_cast<const uint8_t*>(ref) + size); // move to next ref
 	}

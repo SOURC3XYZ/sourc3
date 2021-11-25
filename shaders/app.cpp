@@ -248,6 +248,7 @@ namespace
 
 
         Env::DerivePk(params->user, &cid, sizeof(cid));
+        Env::DerivePk(refsParams->user, &cid, sizeof(cid));
 
         SigRequest sig;
         sig.m_pID = &cid;
