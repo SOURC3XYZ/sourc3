@@ -208,9 +208,9 @@ namespace
 
         std::string InvokeWallet(std::string args)
         {
-            args.append(",repo=")
-                .append(m_repoName)
-                .append(", cid = 1046e4e470720138f5e66229f44cf9768896f883db017db78ba3999331663714");
+            args.append(",repo_id=1")
+                //.append(m_repoName)
+                .append(",cid=7fc580d74d507bc7eba9810e495aded9994bf5b29561e5705a4d339dc735a9a3");
             InvokeShader(m_AppPath, m_ContractPath, std::move(args));
             return m_result;
         }
@@ -499,12 +499,12 @@ int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
     std::stringstream ss;
     ss << "role=user,action=list";
 
-    auto res = wc.InvokeWallet(ss.str());
+    /*auto res = wc.InvokeWallet(ss.str());
     json refs = json::parse(res);
     for(const auto& r : refs)
     {
         cout << r["name"] << " " << r["target"] << '\n' << endl;
-    }
+    }*/
     return 0;
 }
 

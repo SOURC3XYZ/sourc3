@@ -110,28 +110,30 @@ namespace
                             nullptr, 0, &sig, 1, "create repo", 10000000);
     }
 
-    void On_action_my_repos(const ContractID& cid) {
-        using RepoKey = std::pair<uint64_t, GitRemoteBeam::Operations>;
-        Env::Key_T<RepoKey> start, end;
-        start.m_KeyInContract.first = 0;
-        start.m_KeyInContract.second = GitRemoteBeam::REPO;
+    void On_action_my_repos(const ContractID& cid) 
+    {
+        using namespace GitRemoteBeam;
+        Env::Key_T<GeneralKey> start, end;
+        start.m_KeyInContract.repo_id = 0;
+        start.m_KeyInContract.op = REPO;
         _POD_(start.m_Prefix.m_Cid) = cid;
         _POD_(end) = start;
-        end.m_KeyInContract.first = std::numeric_limits<uint64_t>::max();
+        end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
 
-        Env::Key_T<RepoKey> key;
-        GitRemoteBeam::RepoInfo value;
+        Env::Key_T<GeneralKey> key;
         PubKey my_key;
         Env::DerivePk(my_key, &cid, sizeof(cid));
         Env::DocGroup root("");
-        Env::DocAddBlob("start", &start, sizeof(start));
-        Env::DocAddBlob("end", &end, sizeof(end));
         Env::DocArray repos("repos");
-        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-            if (_POD_(value.owner) == my_key) {
+        uint32_t valueLen = 0, keyLen = sizeof(PubKey);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            auto* value = reinterpret_cast<RepoInfo*>(buf.get());
+            if (_POD_(value->owner) == my_key) {
                 Env::DocGroup repo_object("");
-                Env::DocAddNum("repo_id", key.m_KeyInContract.first);
-                Env::DocAddText("repo_name", value.name);
+                Env::DocAddNum("repo_id", key.m_KeyInContract.repo_id);
+                Env::DocAddText("repo_name", value->name);
             }
         }
     }

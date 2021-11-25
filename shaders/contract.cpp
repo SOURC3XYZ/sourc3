@@ -18,6 +18,14 @@ namespace GitRemoteBeam
 		hp >> res;
 		return res;
 	}
+
+	void check_permissions(const PubKey& user, RepoInfo::ID repo_id, Permissions p)
+	{
+		auto key_user = RepoUser::Key(user, repo_id);
+		UserInfo user_info;
+		Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+		Env::Halt_if(!(user_info.permissions & p));
+	}
 }
 
 BEAM_EXPORT void Ctor(const InitialParams& params)
@@ -34,10 +42,7 @@ BEAM_EXPORT void Dtor(void*)
 
 BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 {
-	HashProcessor::Sha256 hash_obj;
-	Hash256 repo_name_hash;
-	hash_obj.Write(params.repo_name, params.repo_name_length);
-	hash_obj >> repo_name_hash;
+	auto repo_name_hash = get_name_hash(params.repo_name, params.repo_name_length);
 
 	auto key1 = RepoInfo::Key(params.repo_owner, repo_name_hash);
 	uint64_t repo_id = 0;
@@ -54,8 +59,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	Env::SaveVar_T(key1, repo_id);
 
 	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(sizeof(RepoInfo) + params.repo_name_length)));
-
-	Env::Memcpy(&repo_info->name_hash, &repo_name_hash, sizeof(repo_name_hash));
+	_POD_(repo_info->name_hash) = repo_name_hash;
 	repo_info->owner = params.repo_owner;
 	repo_info->repo_id = repo_id;
 	repo_info->name_length = params.repo_name_length;
@@ -83,11 +87,7 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
-	UserInfo user_info;
-	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
-
-	Env::Halt_if(!(user_info.permissions & DELETE_REPO));
+	check_permissions(params.user, repo_info->repo_id, DELETE_REPO);
 
 	Env::AddSig(params.user);
 	
@@ -109,12 +109,9 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 
-	auto key_user = RepoUser::Key(params.initiator, repo_info->repo_id);
-	UserInfo user_info;
-	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
-	Env::Halt_if(!(user_info.permissions & ADD_USER));
+	check_permissions(params.initiator, repo_info->repo_id, ADD_USER);
 
-	key_user = RepoUser::Key(params.user, repo_info->repo_id);
+	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
 	Env::SaveVar_T(key_user, UserInfo{.permissions = params.permissions});
 
 	Env::AddSig(params.initiator);
@@ -131,13 +128,10 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 	
 	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
 	
-	auto key_user = RepoUser::Key(params.initiator, repo_info->repo_id);
+	check_permissions(params.initiator, repo_info->repo_id, REMOVE_USER);
+
+	auto key_user = RepoUser::Key(params.user, repo_info->repo_id);
 	UserInfo user_info;
-	Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
-	Env::Halt_if(!(user_info.permissions & REMOVE_USER));
-
-	key_user = RepoUser::Key(params.user, repo_info->repo_id);
-
 	if (Env::LoadVar_T(key_user, user_info)) {
 		Env::DelVar_T(key_user);
 	}
