@@ -126,7 +126,7 @@ namespace
         Env::DerivePk(my_key, &cid, sizeof(cid));
         Env::DocGroup root("");
         Env::DocArray repos("repos");
-        uint32_t valueLen = 0, keyLen = sizeof(PubKey);
+        uint32_t valueLen = 0, keyLen = sizeof(RepoKey);
         for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
@@ -262,6 +262,37 @@ namespace
             nullptr, 0, &sig, 1, "Pushing refs", 10000000);
     }
 
+    void On_action_list_refs(const ContractID& cid)
+    {
+        using namespace GitRemoteBeam;
+        using Key = Env::Key_T<GitRef::Key>;
+        Key start, end;
+        RepoInfo::ID repo_id = 0;
+        if (!Env::DocGet("repo_id", repo_id)) {
+            return On_error("failed to read 'repo_id'");
+        }
+
+        start.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
+        _POD_(start.m_Prefix.m_Cid) = cid;
+        _POD_(start.m_KeyInContract.name_hash).SetZero();
+        _POD_(end) = start;
+        _POD_(end.m_KeyInContract.name_hash).SetObject(0xff);
+
+        Key key;
+        Env::DocGroup root("");
+        Env::DocArray repos("refs");
+        uint32_t valueLen = 0, keyLen = sizeof(Key);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            auto* value = reinterpret_cast<GitRef*>(buf.get());
+            Env::DocGroup repo_object("");
+            Env::DocAddText("name", value->name);
+            Env::DocAddBlob("commit_hash", &value->commit_hash, sizeof(value->commit_hash));
+            valueLen = 0;
+        }
+    }
+
     void On_action_user_get_key(const ContractID& cid)
     {
         PubKey pk;
@@ -347,7 +378,6 @@ namespace
     }
 }
 
-
 BEAM_EXPORT void Method_0()
 {
     Env::DocGroup root("");
@@ -387,6 +417,7 @@ BEAM_EXPORT void Method_1()
         {"add_user_params", On_action_add_user_params},
         {"remove_user_params", On_action_remove_user_params},
         {"push_objects", On_action_push_objects},
+        {"list_refs", On_action_list_refs},
         {"get_key", On_action_user_get_key},
         {"repo_id_by_name", On_action_user_get_repo},
         {"repo_get_data", On_action_get_repo_data}

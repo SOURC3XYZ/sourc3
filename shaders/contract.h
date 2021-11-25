@@ -123,6 +123,11 @@ namespace GitRemoteBeam
 				, name_hash(get_name_hash(name, len))
 			{
 			}
+
+			Key() : RepoInfo::BaseKey(REFS, 0)
+			{
+
+			}
 		};
 
 		git_oid commit_hash;

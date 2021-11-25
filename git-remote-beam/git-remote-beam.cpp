@@ -497,14 +497,22 @@ int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
 int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     std::stringstream ss;
-    ss << "role=user,action=list";
+    ss << "role=user,action=list_refs";
 
-    /*auto res = wc.InvokeWallet(ss.str());
+    auto res = wc.InvokeWallet(ss.str());
     json refs = json::parse(res);
-    for(const auto& r : refs)
+    json head;
+    assert(!head.is_object());
+    for(const auto& r : refs["refs"])
     {
-        cout << r["name"] << " " << r["target"] << '\n' << endl;
-    }*/
+        head = r;
+        cout << r["name"] << " " << r["commit_hash"] << '\n';
+    }
+    if (head.is_object())
+    {
+        cout << "@" << head["name"] << " HEAD\n";
+    }
+    cout << endl;
     return 0;
 }
 
@@ -517,6 +525,23 @@ int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
 
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
+    std::stringstream ss;
+    ss << "role=user,action=list_refs";
+
+    auto res = wc.InvokeWallet(ss.str());
+    json refs = json::parse(res);
+    json head;
+    assert(!head.is_object());
+    for (const auto& r : refs["refs"])
+    {
+        head = r;
+        cout << r["name"] << " " << r["commit_hash"] << '\n';
+    }
+    if (head.is_object())
+    {
+        cout << "@" << head["name"] << " HEAD\n";
+    }
+    cout << endl;
     return 0;
 }
 
