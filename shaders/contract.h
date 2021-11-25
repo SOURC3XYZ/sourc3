@@ -7,11 +7,10 @@ namespace GitRemoteBeam
 {
     enum Operations : uint8_t {
         REPO,
-		REPO_SIZE,
         OBJECTS,
         REFS,
     };
-    constexpr Operations ALL_OPERATIONS[] = { REPO, REPO_SIZE, OBJECTS, REFS };
+    constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
 
 	enum Permissions : uint8_t {
 		DELETE_REPO = 0b0001,

@@ -26,6 +26,20 @@ namespace GitRemoteBeam
 		Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
 		Env::Halt_if(!(user_info.permissions & p));
 	}
+
+	std::unique_ptr<RepoInfo> load_repo(const RepoInfo::ID& repo_id)
+	{
+		auto key_repo = GeneralKey{Operations::REPO, repo_id};
+		size_t repo_size = Env::LoadVar(&key_repo, sizeof(key_repo), nullptr, 0, KeyTag::Internal);
+
+		Env::Halt_if(!repo_size);
+
+		std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
+		
+		Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+
+		return repo_info;
+	}
 }
 
 BEAM_EXPORT void Ctor(const InitialParams& params)
@@ -69,23 +83,14 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	Env::SaveVar_T(key_user, UserInfo{.permissions = ALL});
 
 	auto key_repo = GeneralKey{Operations::REPO, repo_id};
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, repo_id};
 	Env::SaveVar(&key_repo, sizeof(key_repo), repo_info.get(), sizeof(RepoInfo) + repo_info->name_length, KeyTag::Internal);
-	Env::SaveVar_T(key_repo_size, sizeof(RepoInfo) + repo_info->name_length);
 
 	Env::AddSig(repo_info->owner);
 }
 
 BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 {
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
-	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
-	size_t repo_size;
-
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
 	check_permissions(params.user, repo_info->repo_id, DELETE_REPO);
 
@@ -101,13 +106,7 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 
 BEAM_EXPORT void Method_4(const AddUserParams& params)
 {
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
-	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
-	size_t repo_size;
-
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
 	check_permissions(params.initiator, repo_info->repo_id, ADD_USER);
 
@@ -119,14 +118,7 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 
 BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 {
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
-	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
-	size_t repo_size;
-
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 	
 	check_permissions(params.initiator, repo_info->repo_id, REMOVE_USER);
 
@@ -141,14 +133,7 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 
 BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 {
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
-	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
-	size_t repo_size;
-
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
 	check_permissions(params.user, repo_info->repo_id, PUSH);
 
@@ -167,14 +152,7 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 
 BEAM_EXPORT void Method_7(const PushRefsParams& params)
 {
-	auto key_repo_size = GeneralKey{Operations::REPO_SIZE, params.repo_id};
-	auto key_repo = GeneralKey{Operations::REPO, params.repo_id};
-	size_t repo_size;
-
-	Env::Halt_if(!Env::LoadVar_T(key_repo_size, repo_size));
-	std::unique_ptr<RepoInfo> repo_info(static_cast<RepoInfo*>(::operator new(repo_size)));
-	
-	Env::LoadVar(&key_repo, sizeof(key_repo), repo_info.get(), repo_size, KeyTag::Internal);
+	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
 	check_permissions(params.user, repo_info->repo_id, PUSH);
 
