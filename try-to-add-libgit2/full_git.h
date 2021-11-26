@@ -1,23 +1,34 @@
 #ifndef GITPARSING_FULL_GIT_H
 #define GITPARSING_FULL_GIT_H
 
-//static void check_error(int error_code, const char *action)
-//{
-//    const git_error *error = git_error_last();
-//    if (!error_code)
-//        return;
-//
-//    printf("Error %d %s - %s\n", error_code, action,
-//           (error && error->message) ? error->message : "???");
-//
-//    exit(1);
+#include <string_view>
+
+//size_t strlen(const char* data) {
+//    return std::string_view(data).size();
 //}
+//
+//const char* memchr (const char* data, char value, size_t length) {
+//    return data + std::string_view(data, length).find(value);
+//}
+
+char *strdup(const char *src) {
+    char *dst = (char *) Env::Heap_Alloc(strlen(src) + 1);  // Space for length plus nul
+    if (dst == NULL) return NULL;          // No memory
+    Env::Memcpy(dst, src, strlen(src) + 1);                      // Copy the characters
+    return dst;                            // Return the new string
+}
+
+void* calloc(size_t num, size_t size) {
+    return Env::Heap_Alloc(num * size);
+}
 
 /** Size (in bytes) of a raw/binary oid */
 #define GIT_OID_RAWSZ 20
 
 /** Size (in bytes) of a hex formatted oid */
 #define GIT_OID_HEXSZ (GIT_OID_RAWSZ * 2)
+
+//#define UINT16_MAX 65535
 
 typedef int64_t git_off_t;
 typedef int64_t git_time_t; /**< time in seconds from epoch */
@@ -122,7 +133,7 @@ int git__fromhex(char h) {
 int git_oid_fromstrn(mygit2::git_oid *out, const char *str, size_t length) {
     size_t p;
     int v;
-    memset(out->id, 0, GIT_OID_RAWSZ);
+    Env::Memset(out->id, 0, GIT_OID_RAWSZ);
     for (p = 0; p < length; p++) {
         v = git__fromhex(str[p]);
         out->id[p / 2] |= (unsigned char) (v << (p % 2 ? 0 : 4));
@@ -163,11 +174,11 @@ int git_oid_nfmt(char *str, size_t n, const mygit2::git_oid *oid) {
     size_t i, max_i;
 
     if (!oid) {
-        memset(str, 0, n);
+        Env::Memset(str, 0, n);
         return 0;
     }
     if (n > GIT_OID_HEXSZ) {
-        memset(&str[GIT_OID_HEXSZ], 0, n - GIT_OID_HEXSZ);
+        Env::Memset(&str[GIT_OID_HEXSZ], 0, n - GIT_OID_HEXSZ);
         n = GIT_OID_HEXSZ;
     }
 
@@ -197,7 +208,7 @@ int git_oid__parse(
     if (buffer + (header_len + sha_len + 1) > buffer_end)
         return -1;
 
-    if (memcmp(buffer, header, header_len) != 0)
+    if (Env::Memcmp(buffer, header, header_len) != 0)
         return -1;
 
     if (buffer[header_len + sha_len] != '\n')
@@ -221,7 +232,7 @@ typedef git_array_t(char) git_array_generic_t;
 
 static void *stdalloc__reallocarray(void *ptr, size_t nelem, size_t elsize) {
     size_t newsize = nelem * elsize;
-    return realloc(ptr, newsize);
+    return Env::Heap_Alloc(newsize);
 }
 
 int git_array_grow(void *_a, size_t item_size) {
@@ -236,7 +247,8 @@ int git_array_grow(void *_a, size_t item_size) {
         new_size /= 2;
     }
 
-    if ((new_array = (char *) stdalloc__reallocarray(a->ptr, new_size, item_size)) == NULL);
+    if ((new_array = (char *) stdalloc__reallocarray(a->ptr, new_size, item_size)) == nullptr) {
+    }
 
     a->ptr = new_array;
     a->asize = new_size;
@@ -277,10 +289,10 @@ static bool is_crud(unsigned char c) {
 static char *stdalloc__substrdup(const char *start, size_t n) {
     char *ptr;
     size_t alloclen = n + 1;
-    if (!(ptr = (char *) malloc(alloclen)))
+    if (!(ptr = (char *) Env::Heap_Alloc(alloclen)))
         return NULL;
 
-    memcpy(ptr, start, n);
+    Env::Memcpy(ptr, start, n);
     ptr[n] = '\0';
     return ptr;
 }
@@ -414,7 +426,7 @@ int git__strntol32(int32_t *result, const char *nptr, size_t nptr_len, const cha
 
     tmp_int = tmp_long & 0xFFFFFFFF;
     if (tmp_int != tmp_long) {
-        int len = (int) (tmp_endptr - nptr);
+//        int len = (int) (tmp_endptr - nptr);
 //		git_error_set(GIT_ERROR_INVALID, "failed to convert: '%.*s' is too large", len, nptr);
         return -1;
     }
@@ -431,7 +443,7 @@ int git_signature__parse(mygit2::git_signature *sig, const char **buffer_out,
     const char *buffer = *buffer_out;
     const char *email_start, *email_end;
 
-    memset(sig, 0, sizeof(mygit2::git_signature));
+    Env::Memset(sig, 0, sizeof(mygit2::git_signature));
 
     if (ender &&
         (buffer_end = (const char *) memchr(buffer, ender, buffer_end - buffer)) == NULL)
@@ -440,7 +452,7 @@ int git_signature__parse(mygit2::git_signature *sig, const char **buffer_out,
     if (header) {
         const size_t header_len = strlen(header);
 
-        if (buffer + header_len >= buffer_end || memcmp(buffer, header, header_len) != 0)
+        if (buffer + header_len >= buffer_end || Env::Memcmp(buffer, header, header_len) != 0)
             return -1;
 
         buffer += header_len;
@@ -463,8 +475,8 @@ int git_signature__parse(mygit2::git_signature *sig, const char **buffer_out,
 
         if (git__strntol64(&sig->when.time, time_start,
                            buffer_end - time_start, &time_end, 10) < 0) {
-            free(sig->name);
-            free(sig->email);
+            Env::Heap_Free(sig->name);
+            Env::Heap_Free(sig->email);
             sig->name = sig->email = NULL;
             return -1;
         }
@@ -557,11 +569,11 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
 
     while (git_oid__parse(&parent_id, &buffer, buffer_end, "parent ") == 0) {
         auto *new_id = (mygit2::git_oid *) git_array_alloc(commit->parent_ids);
-        memcpy(parent_id.id, new_id->id, sizeof(parent_id.id));
+        Env::Memcpy(parent_id.id, new_id->id, sizeof(parent_id.id));
     }
 
     if (!(flags & GIT_COMMIT_PARSE_QUICK)) {
-        commit->author = (mygit2::git_signature *) malloc(sizeof(mygit2::git_signature));
+        commit->author = (mygit2::git_signature *) Env::Heap_Alloc(sizeof(mygit2::git_signature));
         if (git_signature__parse(commit->author, &buffer, buffer_end, "author ", '\n') < 0)
             return -1;
     }
@@ -571,12 +583,12 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
         if (git_signature__parse(&dummy_sig, &buffer, buffer_end, "author ", '\n') < 0)
             return -1;
 
-        free(dummy_sig.name);
-        free(dummy_sig.email);
+        Env::Heap_Free(dummy_sig.name);
+        Env::Heap_Free(dummy_sig.email);
     }
 
     /* Always parse the committer; we need the commit time */
-    commit->committer = (mygit2::git_signature *) malloc(sizeof(mygit2::git_signature));
+    commit->committer = (mygit2::git_signature *) Env::Heap_Alloc(sizeof(mygit2::git_signature));
 
     if (git_signature__parse(commit->committer, &buffer, buffer_end, "committer ", '\n') < 0)
         return -1;

@@ -150,7 +150,7 @@ namespace
         sig.m_nID = sizeof(cid);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::DeleteRepoParams::METHOD, &request, sizeof(request),
-            nullptr, 0, &sig, 1, "delete repo", 10000000);
+                nullptr, 0, &sig, 1, "delete repo", 10000000);
     }
 
     void On_action_add_user_params(const ContractID& cid) {
@@ -317,9 +317,7 @@ namespace
         Env::DerivePk(my_key, &cid, sizeof(cid));
         GitRemoteBeam::Hash256 name_hash = get_name_hash(repoName, nameLen);
         RepoKey key(my_key, name_hash);
-        Env::Key_T<RepoKey> reader_key = {
-                .m_KeyInContract = key
-        };
+        Env::Key_T<RepoKey> reader_key = { .m_KeyInContract = key };
         reader_key.m_Prefix.m_Cid = cid;
         RepoInfo::ID repo_id = 0;
         if (!Env::VarReader::Read_T(reader_key, repo_id)) {
@@ -328,159 +326,104 @@ namespace
         Env::DocAddNum("repo_id", repo_id);
     }
 
-//    void On_action_get_repo_data(const ContractID& cid) {
-//        using GitRemoteBeam::RepoInfo;
-//        using GitRemoteBeam::GitObject;
-//        using GitRemoteBeam::git_oid;
-//        RepoInfo::ID repo_id;
-//        if (!Env::DocGet("repo_id", repo_id)) {
-//            On_error("No repo_id");
-//            return;
-//        }
-//
-//        git_oid start_oid;
-//        _POD_(start_oid).SetZero();
-//        git_oid end_oid;
-//        _POD_(end_oid).SetObject(0xFF);
-//
-//        Env::Key_T<GitObject::Key> start = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                },
-//        }, end = {
-//                .m_KeyInContract = {
-//                        repo_id, end_oid
-//                },
-//        };
-//
-//        _POD_(start.m_Prefix.m_Cid) = cid;
-//        _POD_(end.m_Prefix.m_Cid) = cid;
-//
-//        Env::Key_T<GitObject::Key> key = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                }
-//        }; // dummy values to initialize;
-//
-//        GitObject value;
-//        Env::DocGroup objects("objects");
-//        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-//            Env::DocGroup obj("");
-//            Env::DocAddBlob_T("object_hash", value.hash);
-//            Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
-//            Env::DocAddBlob("object_data", value.data, value.data_size);
-//        }
-//    }
-//
-//    void On_action_get_commits(const ContractID& cid) {
-//        using GitRemoteBeam::RepoInfo;
-//        using GitRemoteBeam::GitObject;
-//        using GitRemoteBeam::git_oid;
-//        RepoInfo::ID repo_id;
-//        if (!Env::DocGet("repo_id", repo_id)) {
-//            On_error("No repo_id");
-//            return;
-//        }
-//
-//        git_oid start_oid;
-//        _POD_(start_oid).SetZero();
-//        git_oid end_oid;
-//        _POD_(end_oid).SetObject(0xFF);
-//
-//        Env::Key_T<GitObject::Key> start = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                },
-//        }, end = {
-//                .m_KeyInContract = {
-//                        repo_id, end_oid
-//                },
-//        };
-//
-//        _POD_(start.m_Prefix.m_Cid) = cid;
-//        _POD_(end.m_Prefix.m_Cid) = cid;
-//
-//        Env::Key_T<GitObject::Key> key = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                }
-//        }; // dummy values to initialize;
-//
-//        GitObject value;
-//        Env::DocGroup objects("commits");
-//        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-//            if (value.type == GitObject::GIT_OBJECT_COMMIT) {
-//                Env::DocGroup comm("");
-//                Env::DocAddBlob_T("object_hash", value.hash);
-//                Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
-//
-//                mygit2::git_commit commit;
-//                commit_parse(&commit, value.data, value.data_size, 0); // Fast parse
-//                Env::DocAddText("raw_message", commit.raw_header);
-//                Env::DocAddText("raw_message", commit.raw_message);
-//                Env::DocAddText("summary", commit.summary);
-//                Env::DocAddText("body", commit.body);
-//                Env::DocAddText("author_name", commit.author->name);
-//                Env::DocAddText("author_email", commit.author->email);
-//                Env::DocAddNum("author_commit_time", static_cast<uint32_t>(commit.author->when.time));
-//                Env::DocAddText("committer_name", commit.committer->name);
-//                Env::DocAddText("committer_email", commit.committer->email);
-//                Env::DocAddNum("committer_commit_time", static_cast<uint32_t>(commit.committer->when.time));
-//            }
-//        }
-//    }
-//
-//    void On_action_get_trees(const ContractID& cid) {
-//        using GitRemoteBeam::RepoInfo;
-//        using GitRemoteBeam::GitObject;
-//        using GitRemoteBeam::git_oid;
-//        RepoInfo::ID repo_id;
-//        if (!Env::DocGet("repo_id", repo_id)) {
-//            On_error("No repo_id");
-//            return;
-//        }
-//
-//        git_oid start_oid;
-//        _POD_(start_oid).SetZero();
-//        git_oid end_oid;
-//        _POD_(end_oid).SetObject(0xFF);
-//
-//        Env::Key_T<GitObject::Key> start = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                },
-//        }, end = {
-//                .m_KeyInContract = {
-//                        repo_id, end_oid
-//                },
-//        };
-//
-//        _POD_(start.m_Prefix.m_Cid) = cid;
-//        _POD_(end.m_Prefix.m_Cid) = cid;
-//
-//        Env::Key_T<GitObject::Key> key = {
-//                .m_KeyInContract = {
-//                        repo_id, start_oid
-//                }
-//        }; // dummy values to initialize;
-//
-//        GitObject value;
-//        Env::DocGroup objects("trees");
-//        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-//            if (value.type == GitObject::GIT_OBJECT_TREE) {
-//                Env::DocGroup tr("");
-//                Env::DocAddBlob_T("object_hash", value.hash);
-//                Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
-//
-//                mygit2::git_tree tree;
-//                tree_parse(&tree, value.data, value.data_size);
-//            }
-//        }
-//    }
+    using MetaKey = Env::Key_T<GitRemoteBeam::GitObject::Meta::Key>;
+    using DataKey = Env::Key_T<GitRemoteBeam::GitObject::Data::Key>;
+
+    std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
+        using GitRemoteBeam::RepoInfo;
+        using GitRemoteBeam::GitObject;
+        using GitRemoteBeam::git_oid;
+
+        RepoInfo::ID repo_id;
+        Env::DocGet("repo_id", repo_id);
+        repo_id = Utils::FromBE(repo_id);
+        MetaKey start = { .m_KeyInContract = { repo_id, 0 } };
+        MetaKey end = { .m_KeyInContract = { repo_id, std::numeric_limits<GitObject::ID>::max() } };
+
+        start.m_Prefix.m_Cid = cid;
+        end.m_Prefix.m_Cid = cid;
+        MetaKey key = { .m_KeyInContract = { repo_id, 0 } }; // dummy values to initialize;
+        return {start, end, key};
+    }
+
+    void On_action_get_repo_data(const ContractID &cid) {
+        using GitRemoteBeam::GitObject;
+        auto[start, end, key] = PrepareGetObject(cid);
+
+        GitObject::Meta value;
+        Env::DocGroup objects("objects");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            Env::DocGroup obj("");
+            Env::DocAddBlob_T("object_hash", value.hash);
+            Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+
+            DataKey data_key { .m_KeyInContract = { key.m_KeyInContract.repo_id, value.hash } };
+            GitObject::Data data;
+            if (Env::VarReader::Read_T(data_key, data)) {
+                Env::DocAddBlob("object_data", data.data, value.data_size);
+            }
+        }
+    }
+
+    void On_action_get_commits(const ContractID &cid) {
+        using GitRemoteBeam::GitObject;
+        auto[start, end, key] = PrepareGetObject(cid);
+
+        GitObject::Meta value;
+        Env::DocGroup objects("commits");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            if (value.type == GitObject::Meta::GIT_OBJECT_COMMIT) {
+                Env::DocGroup comm("");
+                Env::DocAddBlob_T("object_hash", value.hash);
+                Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+
+                DataKey data_key { .m_KeyInContract = { key.m_KeyInContract.repo_id, value.hash } };
+                GitObject::Data data;
+                if (Env::VarReader::Read_T(data_key, data)) {
+                    mygit2::git_commit commit;
+                    commit_parse(&commit, data.data, value.data_size, 0); // Fast parse
+                    Env::DocAddText("raw_message", commit.raw_header);
+                    Env::DocAddText("raw_message", commit.raw_message);
+                    Env::DocAddText("summary", commit.summary);
+                    Env::DocAddText("body", commit.body);
+                    Env::DocAddText("author_name", commit.author->name);
+                    Env::DocAddText("author_email", commit.author->email);
+                    Env::DocAddNum("author_commit_time", static_cast<uint32_t>(commit.author->when.time));
+                    Env::DocAddText("committer_name", commit.committer->name);
+                    Env::DocAddText("committer_email", commit.committer->email);
+                    Env::DocAddNum("committer_commit_time", static_cast<uint32_t>(commit.committer->when.time));
+                }
+            }
+        }
+    }
+
+    void On_action_get_trees(const ContractID &cid) {
+        using GitRemoteBeam::GitObject;
+        auto[start, end, key] = PrepareGetObject(cid);
+
+        GitObject::Meta value;
+        Env::DocGroup objects("trees");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            if (value.type == GitObject::Meta::GIT_OBJECT_TREE) {
+                Env::DocGroup tr("");
+                Env::DocAddBlob_T("object_hash", value.hash);
+                Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+
+                DataKey data_key { .m_KeyInContract = { key.m_KeyInContract.repo_id, value.hash } };
+                GitObject::Data data;
+                if (Env::VarReader::Read_T(data_key, data)) {
+                    mygit2::git_tree tree;
+                    tree_parse(&tree, data.data, value.data_size);
+                    (void) tree;
+                } else {
+                    On_error("No data for tree");
+                }
+            }
+        }
+    }
 }
 
-BEAM_EXPORT void Method_0()
-{
+BEAM_EXPORT void Method_0() {
     Env::DocGroup root("");
     {
         Env::DocGroup gr("roles");
@@ -496,10 +439,10 @@ BEAM_EXPORT void Method_0()
             {
                 Env::DocGroup grMethod("view_contracts");
             }
-			{
-				Env::DocGroup grMethod("view_contract_params");
-				Env::DocAddText("cid", "ContractID");
-			}
+            {
+                Env::DocGroup grMethod("view_contract_params");
+                Env::DocAddText("cid", "ContractID");
+            }
         }
         {
             Env::DocGroup grRole("user");
@@ -561,65 +504,70 @@ BEAM_EXPORT void Method_0()
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
             }
+            {
+                Env::DocGroup grMethod("repo_get_trees");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+            }
         }
     }
 }
 
-BEAM_EXPORT void Method_1()
-{
+BEAM_EXPORT void Method_1() {
     Env::DocGroup root("");
-	const Actions_map_t VALID_USER_ACTIONS = {
-        {"create_repo", On_action_create_repo},
-        {"my_repos", On_action_my_repos},
-        {"delete_repo", On_action_delete_repo},
-        {"add_user_params", On_action_add_user_params},
-        {"remove_user_params", On_action_remove_user_params},
-        {"push_objects", On_action_push_objects},
-        {"list_refs", On_action_list_refs},
-        {"get_key", On_action_user_get_key},
-        {"repo_id_by_name", On_action_user_get_repo},
-//        {"repo_get_data", On_action_get_repo_data},
-//        {"repo_get_commits", On_action_get_commits},
+    const Actions_map_t VALID_USER_ACTIONS = {
+            {"create_repo",        On_action_create_repo},
+            {"my_repos",           On_action_my_repos},
+            {"delete_repo",        On_action_delete_repo},
+            {"add_user_params",    On_action_add_user_params},
+            {"remove_user_params", On_action_remove_user_params},
+            {"push_objects",       On_action_push_objects},
+            {"list_refs",          On_action_list_refs},
+            {"get_key",            On_action_user_get_key},
+            {"repo_id_by_name",    On_action_user_get_repo},
+            {"repo_get_data",      On_action_get_repo_data},
+            {"repo_get_commits",   On_action_get_commits},
+            {"repo_get_trees",     On_action_get_trees},
     };
 
-	const Actions_map_t VALID_MANAGER_ACTIONS = {
-		{"create_contract", On_action_create_contract},
-		{"destroy_contract", On_action_destroy_contract},
-		{"view_contracts", On_action_view_contracts},
-		{"view_contract_params", On_action_view_contract_params},
-	};
+    const Actions_map_t VALID_MANAGER_ACTIONS = {
+            {"create_contract",      On_action_create_contract},
+            {"destroy_contract",     On_action_destroy_contract},
+            {"view_contracts",       On_action_view_contracts},
+            {"view_contract_params", On_action_view_contract_params},
+    };
 
-	/* Add your new role's actions here */
+    /* Add your new role's actions here */
 
-	const Roles_map_t VALID_ROLES = {
-		{"user", VALID_USER_ACTIONS},
-		{"manager", VALID_MANAGER_ACTIONS},
-		/* Add your new role here */
-	};
+    const Roles_map_t VALID_ROLES = {
+            {"user",    VALID_USER_ACTIONS},
+            {"manager", VALID_MANAGER_ACTIONS},
+            /* Add your new role here */
+    };
 
-	char action[ACTION_BUF_SIZE], role[ROLE_BUF_SIZE];
+    char action[ACTION_BUF_SIZE], role[ROLE_BUF_SIZE];
 
-	if (!Env::DocGetText("role", role, sizeof(role))) {
-		return On_error("Role not specified");
-	}
+    if (!Env::DocGetText("role", role, sizeof(role))) {
+        return On_error("Role not specified");
+    }
 
-	auto it_role = find_if_contains(role, VALID_ROLES);
+    auto it_role = find_if_contains(role, VALID_ROLES);
 
-	if (it_role == VALID_ROLES.end()) {
-		return On_error("Invalid role");
-	}
+    if (it_role == VALID_ROLES.end()) {
+        return On_error("Invalid role");
+    }
 
-	if (!Env::DocGetText("action", action, sizeof(action))) {
-		return On_error("Action not specified");
-	}
+    if (!Env::DocGetText("action", action, sizeof(action))) {
+        return On_error("Action not specified");
+    }
 
-	auto it_action = find_if_contains(action, it_role->second);
+    auto it_action = find_if_contains(action, it_role->second);
 
-	if (it_action != it_role->second.end()) {
-		ContractID cid;
-		Env::DocGet("cid", cid);
-		it_action->second(cid);
-	} else {
-		return On_error("Invalid action");
-	}
+    if (it_action != it_role->second.end()) {
+        ContractID cid;
+        Env::DocGet("cid", cid);
+        it_action->second(cid);
+    } else {
+        return On_error("Invalid action");
+    }
 }
