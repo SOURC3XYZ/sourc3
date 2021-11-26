@@ -67,6 +67,7 @@ namespace GitRemoteBeam
 
 		Hash256 name_hash;
 		ID repo_id;
+		size_t cur_objs_number;
 		PubKey owner;
 		size_t name_length;
 		char name[];
@@ -74,27 +75,45 @@ namespace GitRemoteBeam
 
 	struct GitObject
 	{
-		struct Key : RepoInfo::BaseKey
-		{
-			git_oid	hash;
-			Key(RepoInfo::ID rid, const git_oid& oid)
-				: RepoInfo::BaseKey(OBJECTS, rid)
-			{
-				Env::Memcpy(&hash, &oid, sizeof(oid));
-			}
-		};
-		enum Type : int8_t 
-		{
-			// excerpt from libgit2
-			GIT_OBJECT_COMMIT = 1, /**< A commit object. */
-			GIT_OBJECT_TREE = 2, /**< A tree (directory listing) object. */
-			GIT_OBJECT_BLOB = 3, /**< A file revision object. */
-			GIT_OBJECT_TAG = 4, /**< An annotated tag object. */
-		} type;
-		git_oid hash;
-		uint32_t data_size;
-		char data[];
+		using ID = uint64_t;
 
+		struct Meta
+		{
+			struct Key : RepoInfo::BaseKey
+			{
+				ID obj_id;
+				Key(RepoInfo::ID rid, const ID& oid)
+					: RepoInfo::BaseKey(OBJECTS, rid), obj_id(oid)
+				{}
+			};
+			enum Type : int8_t 
+			{
+				// excerpt from libgit2
+				GIT_OBJECT_COMMIT = 1, /**< A commit object. */
+				GIT_OBJECT_TREE = 2, /**< A tree (directory listing) object. */
+				GIT_OBJECT_BLOB = 3, /**< A file revision object. */
+				GIT_OBJECT_TAG = 4, /**< An annotated tag object. */
+			} type;
+			ID id;
+			git_oid hash;
+			uint32_t data_size;
+		} meta;
+
+		struct Data
+		{
+			struct Key : RepoInfo::BaseKey
+			{
+				git_oid	hash;
+				Key(RepoInfo::ID rid, const git_oid& oid)
+					: RepoInfo::BaseKey(OBJECTS, rid)
+				{
+					Env::Memcpy(&hash, &oid, sizeof(oid));
+				}
+			};
+			char data[];
+		} data;
+
+		/*
 		GitObject& operator=(const GitObject& from)
 		{
 			this->hash = from.hash;
@@ -103,6 +122,7 @@ namespace GitRemoteBeam
 			Env::Memcpy(this->data, from.data, from.data_size);
 			return *this;
 		}
+		*/
 	};
 
 	struct GitRef
