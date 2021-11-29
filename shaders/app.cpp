@@ -352,7 +352,11 @@ namespace
 
         GitObject::Meta value;
         Env::DocGroup objects("objects");
-        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+        uint32_t valueLen = 0, keyLen = sizeof(MetaKey);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            value = *reinterpret_cast<GitObject::Meta*>(buf.get());
             Env::DocGroup obj("");
             Env::DocAddBlob_T("object_hash", value.hash);
             Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
@@ -361,6 +365,8 @@ namespace
             GitObject::Data data;
             if (Env::VarReader::Read_T(data_key, data)) {
                 Env::DocAddBlob("object_data", data.data, value.data_size);
+            } else {
+                On_error("sorry, but no object_data(");
             }
         }
     }
@@ -371,7 +377,11 @@ namespace
 
         GitObject::Meta value;
         Env::DocGroup objects("commits");
-        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+        uint32_t valueLen = 0, keyLen = sizeof(MetaKey);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            value = *reinterpret_cast<GitObject::Meta*>(buf.get());
             if (value.type == GitObject::Meta::GIT_OBJECT_COMMIT) {
                 Env::DocGroup comm("");
                 Env::DocAddBlob_T("object_hash", value.hash);
@@ -403,7 +413,11 @@ namespace
 
         GitObject::Meta value;
         Env::DocGroup objects("trees");
-        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+        uint32_t valueLen = 0, keyLen = sizeof(MetaKey);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            value = *reinterpret_cast<GitObject::Meta*>(buf.get());
             if (value.type == GitObject::Meta::GIT_OBJECT_TREE) {
                 Env::DocGroup tr("");
                 Env::DocAddBlob_T("object_hash", value.hash);
