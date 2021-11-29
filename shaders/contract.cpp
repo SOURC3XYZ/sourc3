@@ -143,16 +143,22 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 
 	check_permissions(params.user, repo_info->repo_id, PUSH);
 
-	auto* obj = reinterpret_cast<const GitObject*>(&params.objects_info + 1);
-	for (uint32_t i = 0; i < params.objects_info.objects_number; ++i) {
-		GitObject::Meta::Key meta_key(params.repo_id, repo_info->cur_objs_number++);
-		GitObject::Data::Key data_key(params.repo_id, obj->meta.hash);
-		//Env::Halt_if(Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal)); // halt if object exists
-		Env::SaveVar(&data_key, sizeof(data_key), obj->data.data, obj->meta.data_size, KeyTag::Internal);
-		Env::SaveVar(&meta_key, sizeof(meta_key), &obj->meta, sizeof(obj->meta), KeyTag::Internal);
-		auto size = obj->meta.data_size;
+	auto* obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(&params + 1);
+	for (uint32_t i = 0; i < params.objects_number; ++i) {
+		GitObject::Meta meta;
+		meta.type = GitObject::Meta::Type(obj->type);
+		meta.hash = obj->hash;
+		meta.id = repo_info->cur_objs_number++;
+		meta.data_size = obj->data_size;
+		GitObject::Meta::Key meta_key(params.repo_id, meta.id);
+		GitObject::Data::Key data_key(params.repo_id, obj->hash);
+		Env::Halt_if(Env::LoadVar(&data_key, sizeof(data_key), nullptr, 0, KeyTag::Internal)); // halt if object exists
+		Env::SaveVar(&data_key, sizeof(data_key), obj + 1, obj->data_size, KeyTag::Internal);
+		
+		Env::SaveVar(&meta_key, sizeof(meta_key), &meta, sizeof(meta), KeyTag::Internal);
+		auto size = obj->data_size;
 		++obj; // skip header
-		obj = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
+		obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
 	}
 
 	save_repo(repo_info);

@@ -238,9 +238,17 @@ namespace GitRemoteBeam
 	struct PushObjectsParams
 	{
 		static const uint32_t METHOD = 6;
+		struct PackedObject
+		{
+			int8_t type;
+			git_oid hash;
+			uint32_t data_size;
+			// followed by data
+		};
 		uint64_t repo_id;
 		PubKey user;
-		ObjectsInfo objects_info;
+		size_t objects_number;
+		// packed objects after this
 	};
 
 	struct PushRefsParams
