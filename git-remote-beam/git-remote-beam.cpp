@@ -155,7 +155,7 @@ namespace
             , const std::string& contractShader
             , std::string args)
         {
-            m_result = "";
+            m_Result = "";
             MyManager man(GetWalletDB(), GetWallet());
 
             if (appShader.empty())
@@ -182,14 +182,14 @@ namespace
                 {
                     // abort, propagate it
                     io::Reactor::get_Current().stop();
-                    m_result = man.m_Out.str();
+                    m_Result = man.m_Out.str();
                     return false;
                 }
             }
 
             if (man.m_Err || man.m_vInvokeData.empty())
             {
-                m_result = man.m_Out.str();
+                m_Result = man.m_Out.str();
                 return false;
             }
 
@@ -206,13 +206,31 @@ namespace
             return true;
         }
 
+        std::string GetCID()
+        {
+            if (m_cid.empty())
+            {
+                InvokeShader(m_AppPath, m_ContractPath, "role=manager,action=view_contracts");
+                json root = json::parse(m_Result);
+                
+                assert(root.is_object());
+                auto& contracts = root["contracts"];
+                if (!contracts.empty())
+                {
+                    m_cid = contracts[0]["cid"].get<std::string>();
+                }
+            }
+            return m_cid;
+        }
+
         std::string InvokeWallet(std::string args)
         {
             args.append(",repo_id=1")
-                //.append(m_repoName)
-                .append(",cid=6188bc77d1b258c386390a0240c6c7f61f0fa50766b8de51ce2c178742a911fe");
+                //.append(m_RepoName)
+                .append(",cid=")
+                .append(GetCID());
             InvokeShader(m_AppPath, m_ContractPath, std::move(args));
-            return m_result;
+            return m_Result;
         }
 
     private:
@@ -233,8 +251,9 @@ namespace
         size_t m_TxCount = 0;
         std::string     m_AppPath;
         std::string     m_ContractPath;
-        std::string     m_repoName;
-        std::string     m_result;
+        std::string     m_RepoName;
+        std::string     m_Result;
+        std::string     m_cid;
     };
 
     struct GitInit
