@@ -186,11 +186,10 @@ namespace
         if (!dataLen) {
             return On_error("there is no data to push");
         }
-
         auto argsSize = sizeof(PushObjectsParams) + dataLen;
         auto buf = std::make_unique<uint8_t[]>(argsSize);;
         auto* params = reinterpret_cast<PushObjectsParams*>(buf.get());
-        if (Env::DocGetBlob("data", &params->objects_info, dataLen) != dataLen) {
+        if (Env::DocGetBlob("data", reinterpret_cast<char*>(params+1), dataLen) != dataLen) {
             return On_error("failed to read push data");
         }
         if (!Env::DocGet("repo_id", params->repo_id)) {
@@ -228,10 +227,10 @@ namespace
         // dump objects for debug
         Env::DocGroup gr("objects");
         {
-            Env::DocAddNum32("count", params->objects_info.objects_number);
+            Env::DocAddNum32("count", params->objects_number);
 
-            auto* obj = reinterpret_cast<const GitObject*>(&params->objects_info + 1);
-            for (uint32_t i = 0; i < params->objects_info.objects_number; ++i) {
+            auto* obj = reinterpret_cast<const GitObject*>(params + 1);
+            for (uint32_t i = 0; i < params->objects_number; ++i) {
 
                 uint32_t size = obj->meta.data_size;
                 Env::DocGroup gr2("object");
@@ -242,7 +241,6 @@ namespace
                 obj = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
             }
         }
-
 
         Env::DerivePk(params->user, &cid, sizeof(cid));
         Env::DerivePk(refsParams->user, &cid, sizeof(cid));
