@@ -187,14 +187,16 @@ namespace
             return On_error("there is no data to push");
         }
         auto argsSize = sizeof(PushObjectsParams) + dataLen;
-        auto buf = std::make_unique<uint8_t[]>(argsSize);;
+        auto buf = std::make_unique<uint8_t[]>(argsSize);
         auto* params = reinterpret_cast<PushObjectsParams*>(buf.get());
-        if (Env::DocGetBlob("data", reinterpret_cast<char*>(params+1), dataLen) != dataLen) {
+        auto* p = reinterpret_cast<uint8_t*>(&params->objects_number);
+        if (Env::DocGetBlob("data", p, dataLen) != dataLen) {
             return On_error("failed to read push data");
         }
         if (!Env::DocGet("repo_id", params->repo_id)) {
             return On_error("failed to read 'repo_id'");
         }
+        Env::DocAddNum("repo_id", params->repo_id);
 
         char refName[GitRef::MAX_NAME_SIZE + 1];
         auto nameLen = Env::DocGetText("ref", refName, _countof(refName));
@@ -229,16 +231,16 @@ namespace
         {
             Env::DocAddNum32("count", params->objects_number);
 
-            auto* obj = reinterpret_cast<const GitObject*>(params + 1);
+            auto* obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(params + 1);
             for (uint32_t i = 0; i < params->objects_number; ++i) {
 
-                uint32_t size = obj->meta.data_size;
+                uint32_t size = obj->data_size;
                 Env::DocGroup gr2("object");
-                Env::DocAddBlob("oid", &obj->meta.hash, sizeof(git_oid));
+                Env::DocAddBlob("oid", &obj->hash, sizeof(git_oid));
                 Env::DocAddNum32("size", size);
-                Env::DocAddNum32("type", obj->meta.type);
+                Env::DocAddNum32("type", obj->type);
                 ++obj; // skip header
-                obj = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
+                obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
             }
         }
 
