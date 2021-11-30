@@ -75,9 +75,9 @@ namespace
             m_Err = !!pExc;
 
             if (pExc)
-                std::cout << "Shader exec error: " << pExc->what() << std::endl;
+                std::cerr << "Shader exec error: " << pExc->what() << std::endl;
             else
-                std::cout << "Shader output: " << m_Out.str() << std::endl;
+                std::cerr << "Shader output: " << m_Out.str() << std::endl;
 
             if (m_Async)
                 io::Reactor::get_Current().stop();
@@ -123,6 +123,7 @@ namespace
             , m_NodeNet(std::make_shared<proto::FlyClient::NetworkStd>(*m_Wallet))
             , m_AppPath(options.appPath)
             , m_ContractPath(options.contractPath)
+            , m_RepoName(options.repoName)
         {
             m_NodeNet->m_Cfg.m_vNodes.push_back(m_NodeAddress);
             m_NodeNet->Connect();
@@ -206,7 +207,7 @@ namespace
             return true;
         }
 
-        std::string GetCID()
+        const std::string& GetCID()
         {
             if (m_cid.empty())
             {
@@ -223,10 +224,29 @@ namespace
             return m_cid;
         }
 
+        const std::string& GetRepoID()
+        {
+            if (m_RepoID.empty())
+            {
+                std::string request = "role=user,action=repo_id_by_name,repo_name=";
+                request.append(m_RepoName)
+                    .append(",cid=")
+                    .append(GetCID());
+                InvokeShader(m_AppPath, m_ContractPath, request);
+                json root = json::parse(m_Result);
+
+                assert(root.is_object());
+                auto& id = root["repo_id"];
+                m_RepoID = std::to_string(id.get<uint32_t>());
+            }
+            return m_RepoID;
+        }
+
+
         std::string InvokeWallet(std::string args)
         {
-            args.append(",repo_id=1")
-                //.append(m_RepoName)
+            args.append(",repo_id=")
+                .append(GetRepoID())
                 .append(",cid=")
                 .append(GetCID());
             InvokeShader(m_AppPath, m_ContractPath, std::move(args));
@@ -252,6 +272,7 @@ namespace
         std::string     m_AppPath;
         std::string     m_ContractPath;
         std::string     m_RepoName;
+        std::string     m_RepoID;
         std::string     m_Result;
         std::string     m_cid;
     };
@@ -525,11 +546,11 @@ int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
     for(const auto& r : refs["refs"])
     {
         head = r;
-        cout << r["name"] << " " << r["commit_hash"] << '\n';
+        cout << r["commit_hash"].get<std::string>() << " " << r["name"].get<std::string>() << '\n';
     }
     if (head.is_object())
     {
-        cout << "@" << head["name"] << " HEAD\n";
+        cout << "@" << head["name"].get<std::string>() << " HEAD\n";
     }
     cout << endl;
     return 0;
@@ -545,21 +566,23 @@ int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     std::stringstream ss;
-    ss << "role=user,action=list_refs";
+    ss << "role=user,action=repo_get_data";
 
     auto res = wc.InvokeWallet(ss.str());
-    json refs = json::parse(res);
-    json head;
-    assert(!head.is_object());
-    for (const auto& r : refs["refs"])
-    {
-        head = r;
-        cout << r["name"] << " " << r["commit_hash"] << '\n';
-    }
-    if (head.is_object())
-    {
-        cout << "@" << head["name"] << " HEAD\n";
-    }
+    json root = json::parse(res);
+    //json head;
+    //assert(!head.is_object());
+    //for (const auto& r : refs["refs"])
+    //{
+    //    head = r;
+    //    cout << r["name"] << " " << r["commit_hash"] << '\n';
+
+    //}
+    //if (head.is_object())
+    //{
+    //    cout << "@" << head["name"] << " HEAD\n";
+    //}
+    cout << endl;
     cout << endl;
     return 0;
 }
@@ -667,7 +690,7 @@ Command g_Commands[] =
 {
     {"capabilities",	DoCapabilities},
     {"list",			DoList },
-    {"option",			DoOption},
+    //{"option",			DoOption},
     {"fetch",			DoFetch},
     {"push",			DoPush}
 };
