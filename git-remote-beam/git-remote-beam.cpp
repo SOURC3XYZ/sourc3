@@ -75,9 +75,9 @@ namespace
             m_Err = !!pExc;
 
             if (pExc)
-                std::cout << "Shader exec error: " << pExc->what() << std::endl;
+                std::cerr << "Shader exec error: " << pExc->what() << std::endl;
             else
-                std::cout << "Shader output: " << m_Out.str() << std::endl;
+                std::cerr << "Shader output: " << m_Out.str() << std::endl;
 
             if (m_Async)
                 io::Reactor::get_Current().stop();
@@ -546,11 +546,11 @@ int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
     for(const auto& r : refs["refs"])
     {
         head = r;
-        cout << r["name"] << " " << r["commit_hash"] << '\n';
+        cout << r["commit_hash"].get<std::string>() << " " << r["name"].get<std::string>() << '\n';
     }
     if (head.is_object())
     {
-        cout << "@" << head["name"] << " HEAD\n";
+        cout << "@" << head["name"].get<std::string>() << " HEAD\n";
     }
     cout << endl;
     return 0;
@@ -566,21 +566,23 @@ int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     std::stringstream ss;
-    ss << "role=user,action=list_refs";
+    ss << "role=user,action=repo_get_data";
 
     auto res = wc.InvokeWallet(ss.str());
-    json refs = json::parse(res);
-    json head;
-    assert(!head.is_object());
-    for (const auto& r : refs["refs"])
-    {
-        head = r;
-        cout << r["name"] << " " << r["commit_hash"] << '\n';
-    }
-    if (head.is_object())
-    {
-        cout << "@" << head["name"] << " HEAD\n";
-    }
+    json root = json::parse(res);
+    //json head;
+    //assert(!head.is_object());
+    //for (const auto& r : refs["refs"])
+    //{
+    //    head = r;
+    //    cout << r["name"] << " " << r["commit_hash"] << '\n';
+
+    //}
+    //if (head.is_object())
+    //{
+    //    cout << "@" << head["name"] << " HEAD\n";
+    //}
+    cout << endl;
     cout << endl;
     return 0;
 }
@@ -688,7 +690,7 @@ Command g_Commands[] =
 {
     {"capabilities",	DoCapabilities},
     {"list",			DoList },
-    {"option",			DoOption},
+    //{"option",			DoOption},
     {"fetch",			DoFetch},
     {"push",			DoPush}
 };
