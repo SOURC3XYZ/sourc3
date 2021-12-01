@@ -372,11 +372,15 @@ namespace
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
         Env::DocGet("data_size", data_size);
-        DataKey data_key { .m_KeyInContract = { repo_id, hash } };
-        data_key.m_Prefix.m_Cid = cid;
-        GitObject::Data data;
-        if (Env::VarReader::Read_T(data_key, data)) {
-            Env::DocAddBlob("object_data", data.data, data_size);
+        DataKey key { .m_KeyInContract = {repo_id, hash} };
+        key.m_Prefix.m_Cid = cid;
+        uint32_t valueLen = 0, keyLen = 0;
+        Env::VarReader reader(key, key);
+        if (reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
+            auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
+            Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             On_error("sorry, but no object_data(");
         }
@@ -392,23 +396,28 @@ namespace
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
         Env::DocGet("data_size", data_size);
-        DataKey data_key { .m_KeyInContract = { repo_id, hash } };
-        data_key.m_Prefix.m_Cid = cid;
-        GitObject::Data data;
-        if (Env::VarReader::Read_T(data_key, data)) {
+        DataKey key { .m_KeyInContract = {repo_id, hash} };
+        key.m_Prefix.m_Cid = cid;
+        uint32_t valueLen = 0, keyLen = 0;
+        Env::VarReader reader(key, key);
+        if (reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
+            auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_commit commit;
-            commit_parse(&commit, data.data, data_size, 0); // Fast parse
+            commit_parse(&commit, value->data, valueLen, 0); // Fast parse
             Env::DocGroup commit_obj("commit");
-            Env::DocAddText("raw_message", commit.raw_header);
+            Env::DocAddText("raw_header", commit.raw_header);
             Env::DocAddText("raw_message", commit.raw_message);
-            Env::DocAddText("summary", commit.summary);
-            Env::DocAddText("body", commit.body);
+//            Env::DocAddText("summary", commit.summary);
+//            Env::DocAddText("body", commit.body);
             Env::DocAddText("author_name", commit.author->name);
             Env::DocAddText("author_email", commit.author->email);
-            Env::DocAddNum("author_commit_time", static_cast<uint32_t>(commit.author->when.time));
+//            Env::DocAddNum("author_commit_time", static_cast<uint64_t>(commit.author->when.time));
             Env::DocAddText("committer_name", commit.committer->name);
             Env::DocAddText("committer_email", commit.committer->email);
-            Env::DocAddNum("committer_commit_time", static_cast<uint32_t>(commit.committer->when.time));
+//            Env::DocAddNum("committer_commit_time", static_cast<uint64_t>(commit.committer->when.time));
+            Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             On_error("sorry, but no object_data(");
         }
@@ -424,14 +433,19 @@ namespace
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
         Env::DocGet("data_size", data_size);
-        DataKey data_key { .m_KeyInContract = { repo_id, hash } };
-        data_key.m_Prefix.m_Cid = cid;
-        GitObject::Data data;
-        if (Env::VarReader::Read_T(data_key, data)) {
+        DataKey key { .m_KeyInContract = {repo_id, hash} };
+        key.m_Prefix.m_Cid = cid;
+        uint32_t valueLen = 0, keyLen = 0;
+        Env::VarReader reader(key, key);
+        if (reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
+            auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             Env::DocGroup tree_obj("tree");
             mygit2::git_tree tree;
-            tree_parse(&tree, data.data, data_size);
+            tree_parse(&tree, value->data, valueLen);
             (void) tree;
+            Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             On_error("No data for tree");
         }
@@ -525,11 +539,15 @@ BEAM_EXPORT void Method_0() {
                 Env::DocGroup grMethod("repo_get_commit");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("obj_id", "Object hash");
+                Env::DocAddText("data_size", "Size of data");
             }
             {
                 Env::DocGroup grMethod("repo_get_tree");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("obj_id", "Object hash");
+                Env::DocAddText("data_size", "Size of data");
             }
         }
     }
