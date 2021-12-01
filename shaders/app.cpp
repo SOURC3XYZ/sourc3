@@ -368,10 +368,8 @@ namespace
         using GitRemoteBeam::git_oid;
         RepoInfo::ID repo_id;
         git_oid hash;
-        uint32_t data_size;
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
-        Env::DocGet("data_size", data_size);
         DataKey key { .m_KeyInContract = {repo_id, hash} };
         key.m_Prefix.m_Cid = cid;
         uint32_t valueLen = 0, keyLen = 0;
