@@ -135,7 +135,7 @@ namespace
         Env::DocArray repos("repos");
         uint32_t valueLen = 0, keyLen = sizeof(RepoKey);
         for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
-            auto buf = std::make_unique<uint8_t[]>(valueLen);
+            auto buf = std::make_unique<uint8_t[]>(valueLen + 1); // 0-term
             reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
             auto* value = reinterpret_cast<RepoInfo*>(buf.get());
             if (_POD_(value->owner) == my_key) {
