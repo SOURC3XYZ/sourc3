@@ -12,6 +12,7 @@ namespace Env {
 #include <utility>
 #include <string_view>
 #include <memory>
+#include <charconv>
 
 #include "../try-to-add-libgit2/full_git.h"
 
@@ -442,7 +443,21 @@ namespace
             Env::DocGroup tree_obj("tree");
             mygit2::git_tree tree;
             tree_parse(&tree, value->data, valueLen);
-            (void) tree;
+            Env::DocAddNum("entries_num", static_cast<uint64_t>(tree.entries.size));
+            char oid_buffer[GIT_OID_HEXSZ + 1];
+            oid_buffer[GIT_OID_HEXSZ] = '\0';
+            char entry_buffer[32];
+            entry_buffer[0] = 'e'; entry_buffer[1] = 'n'; entry_buffer[2] = 't'; entry_buffer[3] = 'r';
+            entry_buffer[4] = 'y';
+            for (size_t i = 0; i < tree.entries.size; ++i) {
+                auto[ptr, ec] = std::to_chars(entry_buffer + 5, entry_buffer + 32, i);
+                *ptr = '\0';
+                Env::DocGroup tree_entry(std::string_view(entry_buffer, ptr - entry_buffer).data());
+                Env::DocAddText("filename", tree.entries.ptr[i].filename);
+                git_oid_fmt(oid_buffer, tree.entries.ptr[i].oid);
+                Env::DocAddNum("attributes", static_cast<uint32_t>(tree.entries.ptr[i].attr));
+                Env::DocAddText("oid", oid_buffer);
+            }
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             On_error("No data for tree");
