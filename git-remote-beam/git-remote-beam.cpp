@@ -857,13 +857,23 @@ int main(int argc, char* argv[])
         (cli::SHADER_BYTECODE_CONTRACT, po::value<string>(&options.contractPath)->default_value("contract.wasm"), "Path to the shader file for the contract (if the contract is being-created)");
 
     po::variables_map vm;
-    ReadCfgFromFile(vm, desc, "beam-remote.cfg");
+#ifdef WIN32
+    const auto* homeDir = std::getenv("HOMEPATH");
+#else
+    const auto* homeDir = std::getenv("HOME");
+#endif
+    std::string configPath = "beam-remote.cfg";
+    if (homeDir)
+    {
+        configPath = std::string(homeDir) + "/.beam/" + configPath;
+    }
+    ReadCfgFromFile(vm, desc, configPath.c_str());
     vm.notify();
 
     Rules::get().UpdateChecksum();
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
-    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, "", "");
+    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, LOG_LEVEL_DEBUG, "", "");
     options.repoName = string_view(argv[2]).substr(7).data();
     auto* gitDir = std::getenv("GIT_DIR"); // set during clone
     if (gitDir)
