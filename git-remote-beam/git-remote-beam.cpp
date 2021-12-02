@@ -780,7 +780,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         auto* serObj = reinterpret_cast<GitObject*>(p + 1);
         for (size_t i = 0; i < count; ++i)
         {
-            const auto& obj = c.m_objects[i];
+            const auto& obj = c.m_objects[indecies[i]];
             serObj->data_size = static_cast<uint32_t>(obj.GetSize());
             serObj->type = static_cast<int8_t>(obj.type);
             git_oid_cpy(&serObj->hash, &obj.oid);
