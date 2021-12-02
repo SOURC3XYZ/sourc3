@@ -252,7 +252,9 @@ namespace
                 Env::DocAddNum32("size", size);
                 Env::DocAddNum32("type", obj->type);
                 ++obj; // skip header
-                obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(reinterpret_cast<const uint8_t*>(obj) + size); // move to next object
+                const auto* data = reinterpret_cast<const uint8_t*>(obj);
+
+                obj = reinterpret_cast<const PushObjectsParams::PackedObject*>(data + size); // move to next object
             }
         }
 

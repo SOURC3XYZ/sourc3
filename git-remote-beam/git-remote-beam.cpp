@@ -169,7 +169,7 @@ namespace
             , const std::string& contractShader
             , std::string args)
         {
-            cerr << "Invoking shader: " << args << endl;
+            //cerr << "Invoking shader: " << args << endl;
             m_Result = "";
             MyManager man(GetWalletDB(), GetWallet());
 
@@ -424,11 +424,15 @@ namespace
     struct ObjectCollector : GitRepoAccessor
     {
         using GitRepoAccessor::GitRepoAccessor;
-        void Traverse(const std::vector<Refs> refs)
+        void Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden)
         {
             git_revwalk* walk = nullptr;
             git_revwalk_new(&walk, m_repo);
             git_revwalk_sorting(walk, GIT_SORT_TIME);
+            for (const auto& h : hidden)
+            {
+                git_revwalk_hide(walk, &h);
+            }
             for (const auto& ref : refs)
             {
                 git_revwalk_push_ref(walk, ref.localRef.c_str());
@@ -523,15 +527,7 @@ namespace
             auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
             git_oid r;
             git_odb_hash(&r, git_odb_object_data(dbobj), objSize, git_odb_object_type(dbobj));
-            if (!(r == oid))
-            {
-                ::MessageBox(nullptr, "sas", "sa", MB_OK);
-            }
-            if ("2dc527ac53632a64b6907f08545b30e36852309e" == to_string(oid))
-            {
-                cerr << beam::to_hex(git_odb_object_data(dbobj), objSize) << endl;
-                ::MessageBox(nullptr, "sas", "sa", MB_OK);
-            }
+
             m_maxSize = std::max(m_maxSize, objSize);
             m_totalSize += objSize;
 
@@ -562,24 +558,36 @@ struct Command
     Action action;
 };
 
-int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
-int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
+std::vector<Ref> RequestRefs(SimpleWalletClient& wc)
 {
     std::stringstream ss;
     ss << "role=user,action=list_refs";
 
     auto res = wc.InvokeWallet(ss.str());
-    json refs = json::parse(res);
+    json root = json::parse(res);
+    std::vector<Ref> refs;
+    for (const auto& r : root["refs"])
+    {
+        auto& ref = refs.emplace_back();
+        ref.name = r["name"].get<std::string>();
+        git_oid_fromstr(&ref.target, r["commit_hash"].get<std::string>().c_str());
+    }
+    return refs;
+}
+
+int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
+int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
+{
+    auto refs = RequestRefs(wc);
     json head;
     assert(!head.is_object());
-    for(const auto& r : refs["refs"])
+    for(const auto& r : refs)
     {
-        head = r;
-        cout << r["commit_hash"].get<std::string>() << " " << r["name"].get<std::string>() << '\n';
+        cout << std::to_string(r.target) << " " << r.name << '\n';
     }
-    if (head.is_object())
+    if (!refs.empty())
     {
-        cout << "@" << head["name"].get<std::string>() << " HEAD\n";
+        cout << "@" << refs.back().name << " HEAD\n";
     }
     cout << endl;
     return 0;
@@ -603,9 +611,11 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         if (receivedObjects.find(oid) == receivedObjects.end())
             objectHashes.push_back(oid);
     };
+
     GitRepoAccessor accessor(wc.GetRepoDir());
     std::vector<GitObject> objects;
-    { // hack Collect objects metainfo
+    {
+        // hack Collect objects metainfo
         auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
         json root = json::parse(res);
         for (const auto& obj : root["objects"])
@@ -619,7 +629,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
                 receivedObjects.insert(s);
         }
     }
-    
+
     while (!objectHashes.empty())
     {
         std::stringstream ss;
@@ -635,7 +645,6 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) {return o.hash == oid; });
         if (it == objects.end())
         {
-            cerr << "Failed\n";
             cout << "failed\n";
             break;
         }
@@ -645,22 +654,9 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         git_object_t type = git_object_t(it->type);
         git_oid r;
         git_odb_hash(&r, buf.data(), buf.size(), type);
-        if (!(r == oid))
-        {
-            ::MessageBox(nullptr, "sdsas", "sa", MB_OK);
-        }
-        if ("2dc527ac53632a64b6907f08545b30e36852309e" == to_string(oid))
-        {
-            ::MessageBox(nullptr, "sas", "sa", MB_OK);
-        }
-        if (git_odb_write(&res_oid, accessor.m_odb, buf.data(), buf.size(), type) < 0)
-            cerr << "!!!!!!!!!!!!!!!! Failed to store " << to_string(oid) << endl;
-
-
-
+        git_odb_write(&res_oid, accessor.m_odb, buf.data(), buf.size(), type);
         if (type == GIT_OBJECT_TREE)
         {
-            cerr << "Got tree: " << to_string(oid) << '\n';
             git_tree* tree = nullptr;
             git_tree_lookup(&tree, accessor.m_repo, &oid);
 
@@ -669,7 +665,6 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             {
                 auto* entry = git_tree_entry_byindex(tree, i);
                 auto s = to_string(*git_tree_entry_id(entry));
-                cerr << "Enqueued tree entry: " << s << '\n';
                 enuqueObject(s);
             }
 
@@ -677,7 +672,6 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         }
         else if (type == GIT_OBJECT_COMMIT)
         {
-            cerr << "Got commit: " << to_string(oid) << '\n';
             git_commit* commit = nullptr;
             git_commit_lookup(&commit, accessor.m_repo, &oid);
             auto count = git_commit_parentcount(commit);
@@ -685,11 +679,10 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             {
                 auto* id = git_commit_parent_id(commit, i);
                 auto s = to_string(*id);
-                cerr << "Enqueued commit parent: " << s << '\n';
                 enuqueObject(s);
             }
             enuqueObject(to_string(*git_commit_tree_id(commit)));
-            
+
             git_commit_free(commit);
         }
 
@@ -701,7 +694,9 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 
 int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 {
+    ObjectCollector c(wc.GetRepoDir());
     std::vector<Refs> refs;
+    std::vector<git_oid> localRefs;
     for (size_t i = 1; i < args.size(); ++i)
     {
         auto& arg = args[i];
@@ -709,10 +704,47 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         auto& r = refs.emplace_back();
         r.localRef = arg.substr(0, p);
         r.remoteRef = arg.substr(p + 1);
+        git_reference* localRef = nullptr;
+        git_reference_lookup(&localRef, c.m_repo, r.localRef.c_str());
+        auto& lr = localRefs.emplace_back();
+        git_oid_cpy(&lr, git_reference_target(localRef));
+        git_reference_free(localRef);
     }
 
-    ObjectCollector c(wc.GetRepoDir());
-    c.Traverse(refs);
+    std::set<git_oid> uploadedObjects;
+    {
+        // hack Collect objects metainfo
+        auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
+        json root = json::parse(res);
+        for (const auto& obj : root["objects"])
+        {
+            auto s = obj["object_hash"].get<std::string>();
+            git_oid oid;
+            git_oid_fromstr(&oid, s.c_str());
+            uploadedObjects.insert(oid);
+        }
+    }
+
+    auto remoteRefs = RequestRefs(wc);
+    std::vector<git_oid> mergeBases;
+    for (const auto& remoteRef : remoteRefs)
+    {
+        for (const auto& localRef : localRefs)
+        {
+            auto& base = mergeBases.emplace_back();
+            git_merge_base(&base, c.m_repo, &remoteRef.target, &localRef);
+        }
+    }
+
+    c.Traverse(refs, mergeBases);
+
+    for (auto& obj : c.m_objects)
+    {
+        if (uploadedObjects.find(obj.oid) != uploadedObjects.end())
+        {
+            obj.selected = true;
+        }
+    }
 
     constexpr size_t SIZE_THRESHOLD = 500000;
     while (true)
@@ -742,7 +774,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         
         // serializing
         ByteBuffer buf;
-        buf.resize(size);
+        buf.resize(size + sizeof(ObjectsInfo)); // objects count size
         auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
         p->objects_number = count;
         auto* serObj = reinterpret_cast<GitObject*>(p + 1);
@@ -782,11 +814,6 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
     }
     
     wc.Listen(true);
-    for (const auto& obj : c.m_objects)
-    {
-        cerr << to_string(obj.oid) << '\t' << git_object_type2string(obj.type) << '\t' << obj.GetSize() << '\t' << obj.fullPath;
-        cerr << '\n';
-    }
 
     cout << endl;
     return 0;
@@ -821,7 +848,7 @@ int main(int argc, char* argv[])
 
     SimpleWalletClient::Options options;
     po::options_description desc("Git Remote Beam config options");
-    ::MessageBox(nullptr, "wewe", "asas", MB_OK);
+
     desc.add_options()
         (cli::NODE_ADDR_FULL, po::value<std::string>(&options.nodeURI), "address of node")
         (cli::WALLET_STORAGE, po::value<std::string>(&options.walletPath)->default_value("wallet.db"), "path to wallet file")
@@ -836,25 +863,21 @@ int main(int argc, char* argv[])
     Rules::get().UpdateChecksum();
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
-    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_LEVEL_ERROR, LOG_SINK_DISABLED, "", "");
+    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, "", "");
     options.repoName = string_view(argv[2]).substr(7).data();
     auto* gitDir = std::getenv("GIT_DIR"); // set during clone
     if (gitDir)
     {
         options.repoPath = gitDir;
     }
-    SimpleWalletClient walletClient(options);
-    GitInit init;
     cerr << "Hello Beam.\nRemote:\t" << argv[1]
         << "\nURL:\t" << argv[2]
         << "\nWorking dir:\t" << std::filesystem::current_path()
         << "\nRepo folder:\t" << options.repoPath
         << endl;
-    for (int i = 0; i < argc; ++i)
-    {
-        cerr << "argv[" << i << "]:\t" << argv[i] << endl;
-    }
-    
+    SimpleWalletClient walletClient(options);
+    GitInit init;
+
     string input;
     while (getline(cin, input, '\n'))
     {
