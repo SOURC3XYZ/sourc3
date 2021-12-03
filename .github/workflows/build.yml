@@ -71,6 +71,7 @@ jobs:
         echo "BOOST_LIBRARYDIR=${{runner.workspace}}/boost_prebuild/lib/" >> $GITHUB_ENV
     
     - name: Beam Shader SDK
+      shell: bash
       run: |
         git clone --depth=1 https://github.com/BeamMW/shader-sdk.git ${{runner.workspace}}/shader-sdk
         cd ${{runner.workspace}}/shader-sdk
