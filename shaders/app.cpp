@@ -148,6 +148,31 @@ namespace
         }
     }
 
+    void On_action_all_repos(const ContractID& cid)
+    {
+        using namespace GitRemoteBeam;
+        using RepoKey = Env::Key_T<RepoInfo::Key>;
+        RepoKey start, end;
+        _POD_(start.m_Prefix.m_Cid) = cid;
+        _POD_(end) = start;
+        end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
+
+        RepoKey key;
+        PubKey my_key;
+        Env::DerivePk(my_key, &cid, sizeof(cid));
+        Env::DocArray repos("repos");
+        uint32_t valueLen = 0, keyLen = sizeof(RepoKey);
+        for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
+            auto buf = std::make_unique<uint8_t[]>(valueLen + 1); // 0-term
+            reader.MoveNext(&key, keyLen, buf.get(), valueLen, 1);
+            auto* value = reinterpret_cast<RepoInfo*>(buf.get());
+            Env::DocGroup repo_object("");
+            Env::DocAddNum("repo_id", value->repo_id);
+            Env::DocAddText("repo_name", value->name);
+            valueLen = 0;
+        }
+    }
+
     void On_action_delete_repo(const ContractID& cid) {
         uint64_t repo_id;
         if (!Env::DocGet("repo_id", repo_id)) {
@@ -500,6 +525,10 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("cid", "ContractID");
             }
             {
+                Env::DocGroup grMethod("all_repos");
+                Env::DocAddText("cid", "ContractID");
+            }
+            {
                 Env::DocGroup grMethod("delete_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
@@ -573,6 +602,7 @@ BEAM_EXPORT void Method_1() {
     const Actions_map_t VALID_USER_ACTIONS = {
             {"create_repo",        On_action_create_repo},
             {"my_repos",           On_action_my_repos},
+            {"all_repos",          On_action_all_repos},
             {"delete_repo",        On_action_delete_repo},
             {"add_user_params",    On_action_add_user_params},
             {"remove_user_params", On_action_remove_user_params},
