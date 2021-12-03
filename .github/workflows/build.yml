@@ -74,7 +74,7 @@ jobs:
     - name: Beam Shader SDK
       shell: bash
       run: |
-        WORKSPACE=${{runner.workspace}}
+        WORKSPACE='${{runner.workspace}}'
         WORKSPACE=${WORKSPACE//\\//}
         git clone --depth=1 https://github.com/BeamMW/shader-sdk.git $WORKSPACE/shader-sdk
         cd $WORKSPACE/shader-sdk
