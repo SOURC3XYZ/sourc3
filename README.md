@@ -1,7 +1,7 @@
 # git-remote-beam
 
 ## Demo
-1. Add `git-beam-remote` to system PATH. For Windows it can be added via system settings, for Linux using `export PATH=$PATH:/path/`;
+1. Add `git-remote-beam` to system PATH. For Windows it can be added via system settings, for Linux using `export PATH=$PATH:/path/`;
 2. Setup beam node;
 3. Setup beam wallet;
 4. Properly fill `beam-remote.cfg`. `pass` is password for your wallet, without quotes, `node_addr` -- address of node from step 2, i.e. `127.0.0.1:10005`, `wallet_path` -- path to your `wallet.db` file. Ensure that `pass` is a password from your wallet located in `wallet_path`, `shader_app_file`, `shader_contract_file` -- full path for `app.wasm` and `contract.wasm` of git-remote-beam. All paths should not contains quotes;
@@ -22,7 +22,7 @@ git init
 ```
 8. Fill local repository with usual stuff
 ```
-git add -a
+git add -A
 git commit -m "Some commit message"
 ```
 9. Add __git remote__ to the local repository. Use `beam://name_of_repo`, where `name_of_repo` equals name in `repo_name` shader arguments from step 5
