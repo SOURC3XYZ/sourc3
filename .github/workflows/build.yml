@@ -1,0 +1,213 @@
+name: Build
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+  BUILD_CONFIG: RelWithDebInfo
+
+jobs:
+###############################################################################
+# Build Desktop
+###############################################################################
+  build_desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-10.15, ubuntu-18.04, windows-2019]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+###############################################################################
+# Create Build Environment
+###############################################################################
+
+    - name: Create Build Environment [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        echo $GITHUB_WORKSPACE
+        echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
+
+    - name: Create Build Environment [ununtu all]
+      shell: bash
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        sudo apt-get update
+        sudo apt-get install libssl-dev curl libxi-dev libcups2-dev -y
+      
+    - name: Create Build Environment [ubuntu-18.04]
+      shell: bash
+      if: matrix.os == 'ubuntu-18.04'
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install g++-7
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+        sudo update-alternatives --set gcc "/usr/bin/gcc-7"
+
+    - name: Create Build Environment [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        git clone --depth=1 https://github.com/BeamMW/libs.git c:/beam-libs
+        echo "OPENSSL_ROOT_DIR=c:\beam-libs\openssl" >> $GITHUB_ENV
+        git clone https://github.com/BeamMW/boost_prebuild_${{matrix.os}}.git c:/boost_prebuild
+        echo "BOOST_ROOT=c:\boost_prebuild" >> $GITHUB_ENV
+
+    - name: Download boost [ubuntu && macos]
+      if: matrix.os != 'windows-2019'
+      shell: bash
+      run: |
+        git clone --depth=1 https://github.com/BeamMW/boost_prebuild_${{matrix.os}}.git ${{runner.workspace}}/boost_prebuild
+        echo "BOOST_INCLUDEDIR=${{runner.workspace}}/boost_prebuild/include" >> $GITHUB_ENV
+        echo "BOOST_LIBRARYDIR=${{runner.workspace}}/boost_prebuild/lib/" >> $GITHUB_ENV
+
+###############################################################################
+# Configure CMake
+###############################################################################
+    - name: Configure CMake [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBEAM_LINK_TYPE=Static -DBRANCH_NAME=${GITHUB_REF##*/} -DBEAM_HW_WALLET=Off .
+
+    - name: Configure CMake [ununtu all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBEAM_LINK_TYPE=Static -DBEAM_USE_STATIC_RUNTIME=ON -DBRANCH_NAME=${GITHUB_REF##*/} -DBEAM_HW_WALLET=Off .
+
+    - name: Configure CMake [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DBEAM_LINK_TYPE=Static -DBEAM_USE_STATIC_RUNTIME=On -DBRANCH_NAME=${GITHUB_REF##*/} -DBEAM_HW_WALLET=Off .
+
+    - name: Save version info
+      shell: bash
+      run: |
+        echo "BEAM_VERSION=$(cat beam_version.gen)" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
+        rm beam_version.gen
+
+###############################################################################
+# Build
+###############################################################################
+    - name: Build [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: cmake --build . --parallel --config $BUILD_TYPE
+
+    - name: Build [ununtu all]
+      shell: bash
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: make -j$(nproc)
+
+    - name: Build [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: cmake --build . --config $BUILD_CONFIG --parallel
+
+###############################################################################
+# Test
+###############################################################################
+    - name: Test [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      continue-on-error: false
+      run: ctest -C $BUILD_TYPE --verbose
+
+    - name: Test [ununtu all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      continue-on-error: false
+      shell: bash
+      run: ctest --verbose
+
+    - name: Test [windows]
+      if: matrix.os == 'windows-2019'
+      continue-on-error: false
+      shell: bash
+      run: ctest -C $BUILD_CONFIG --verbose
+
+###############################################################################
+# Collect artifacts
+###############################################################################
+    - name: Import Code-Signing Certificates [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      uses: Apple-Actions/import-codesign-certs@v1
+      with:
+        p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+        p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+    - name: Sign the mac binaries [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp git-remote-beam/git-remote-beam
+
+    - name: Checksum [ubuntu]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os =='ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        sha256sum git-remote-beam/git-remote-beam > git-remote-beam/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+
+    - name: Checksum [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        shasum -a 256 git-remote-beam/git-remote-beam > git-remote-beam/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+
+    - name: Collect [macos-10.15 && ununtu all]
+      shell: bash
+      if: matrix.os != 'windows-2019'
+      run: |
+        mkdir artifacts
+        tar -cvf artifacts/pit.tar -C git-remote-beam git-remote-beam git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt beam-remote.cfg
+
+    - name: Collect [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        mkdir artifacts
+        cp git-remote-beam/${{env.BUILD_CONFIG}}/git-remote-beam.exe artifacts/git-remote-beam.exe
+        cp git-remote-beam/beam-remote.cfg artifacts/beam-remote.cfg
+
+    - name: Collect pdb [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        mkdir pdb
+        cp git-remote-beam/${{env.BUILD_CONFIG}}/git-remote-beam.pdb pdb/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}.pdb
+
+    - name: Checksum [windows]
+      if: matrix.os == 'windows-2019'
+      run: |
+        certUtil -hashfile artifacts/git-remote-beam.exe SHA256 > artifacts/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+
+    - name: OS name [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: echo "PLATFORM_NAME=mac" >> $GITHUB_ENV
+
+    - name: OS name [ununtu all]
+      shell: bash
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: echo "PLATFORM_NAME=linux" >> $GITHUB_ENV
+
+    - name: OS name [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: echo "PLATFORM_NAME=win" >> $GITHUB_ENV
+
+###############################################################################
+# Upload
+###############################################################################
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{env.PLATFORM_NAME}}-pit${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        path: artifacts/*
+        if-no-files-found: error
+
+###############################################################################
+# Upload windows pdb
+###############################################################################
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'windows-2019'
+      with:
+        name: pdb${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        path: pdb
+        if-no-files-found: error
