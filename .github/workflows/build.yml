@@ -76,11 +76,11 @@ jobs:
       run: |
         WORKSPACE=${{runner.workspace}}
         WORKSPACE=${WORKSPACE//\\//}
-        git clone --depth=1 https://github.com/BeamMW/shader-sdk.git '${WORKSPACE}'/shader-sdk
-        cd '${{runner.workspace}}'/shader-sdk
+        git clone --depth=1 https://github.com/BeamMW/shader-sdk.git $WORKSPACE/shader-sdk
+        cd $WORKSPACE/shader-sdk
         ./shade init
-        echo "BEAM_SHADER_SDK=${WORKSPACE}/shader-sdk" >> $GITHUB_ENV
-        echo "WASI_SDK_PREFIX=${WORKSPACE}/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
+        echo "BEAM_SHADER_SDK=$WORKSPACE/shader-sdk" >> $GITHUB_ENV
+        echo "WASI_SDK_PREFIX=$WORKSPACE/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
         
 
 ###############################################################################
