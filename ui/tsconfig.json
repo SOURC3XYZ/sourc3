@@ -1,0 +1,39 @@
+{
+	"compilerOptions": {
+		"target": "es2020",
+		"lib": [
+			"dom",
+			"dom.iterable",
+			"esnext"
+		],
+		"baseUrl": "src/",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"paths": {
+			"@components/*": ["components/*"],
+			"@libs/*": ["libs/*"],
+			"@assets/*": ["assets/*"],
+			"@types": ["types"]
+		},
+		"sourceMap": true,
+		"types": [
+			"node"
+		],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": false,
+		"jsx": "react-jsx"
+	},
+  "include": ["**/*"],
+  "exclude": ["node_modules", "**/*.config.js", "dist"]
+}
