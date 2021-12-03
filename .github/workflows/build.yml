@@ -71,7 +71,7 @@ jobs:
         cd ${{runner.workspace}}/shader-sdk
         ./shade init
         echo "BEAM_SHADER_SDK=${{runner.workspace}}/shader-sdk" >> $GITHUB_ENV
-        echo "WASI_SDK=${{runner.workspace}}/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
+        echo "WASI_SDK_PREFIX=${{runner.workspace}}/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
         
 
 ###############################################################################
