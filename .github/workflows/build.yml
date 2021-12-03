@@ -105,7 +105,6 @@ jobs:
       run: |
         echo "BEAM_VERSION=$(cat beam/beam_version.gen)" >> $GITHUB_ENV
         echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        rm beam_version.gen
 
 ###############################################################################
 # Build
