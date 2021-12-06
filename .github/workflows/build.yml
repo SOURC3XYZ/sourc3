@@ -76,6 +76,7 @@ jobs:
       run: |
         WORKSPACE='${{runner.workspace}}'
         WORKSPACE=${WORKSPACE//\\//}
+        echo cloning to $WORKSPACE
         git clone --depth=1 https://github.com/BeamMW/shader-sdk.git $WORKSPACE/shader-sdk
         cd $WORKSPACE/shader-sdk
         ./shade init
