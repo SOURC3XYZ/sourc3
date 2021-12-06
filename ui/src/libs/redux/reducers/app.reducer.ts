@@ -1,6 +1,6 @@
+import { ACTIONS } from '@libs/constants';
 import { RepoType, TxItem } from '@types';
 import { ActionCreators } from '../action-creators/action-creators';
-import { ACTIONS } from '../constants';
 
 interface IApp {
   repos: RepoType[]

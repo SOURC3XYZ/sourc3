@@ -1,10 +1,12 @@
 import wasm from '@assets/app.wasm';
 import { BeamAPI } from '@libs/beam';
 import { CONTRACT } from '@libs/constants';
-import { BeamApiRes, ReposResponse } from '@types';
+import {
+  BeamApiRes, ReposResponse, SetPropertiesType, TxResponse
+} from '@types';
 import { AppThunkDispatch } from '../store';
+import { AC } from './action-creators';
 import { RequestCreators, RC } from './request-creators';
-import AC from './action-creators';
 
 const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
 
@@ -31,5 +33,31 @@ export const thunks = {
         const output = JSON.parse(res.result.output) as ReposResponse;
         dispatch(AC.setRepos(output.repos));
       }
+    },
+
+  checkTxStatus: (
+    callback: SetPropertiesType<TxResponse>
+  ) => () => (res: BeamApiRes) => {
+    callback({
+      message: res.result.comment,
+      status_string: res.result.status_string
+    });
+  },
+
+  startTx: () => (dispatch: AppThunkDispatch) => (res: BeamApiRes) => {
+    dispatch(AC.setTx(res.result.txid));
+  },
+
+  getTxStatus: (
+    txId:string,
+    callback: SetPropertiesType<TxResponse>
+  ) => async () => {
+    const res = await beam.callApi(RC.getTxStatus(txId)) as BeamApiRes;
+    if (res.result) {
+      callback({
+        message: res.result.comment,
+        status_string: res.result.status_string
+      });
     }
+  }
 };

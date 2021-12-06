@@ -1,14 +1,20 @@
 import path from 'path';
+import fs from 'fs';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+// import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import MomentTimezoneDataPlugin from 'moment-timezone-data-webpack-plugin';
 import * as webpack from 'webpack';
 
-export default {
-  devtool: 'source-map',
+const lessToJs = require('less-vars-to-js');
+
+const themeVariables = lessToJs(
+  fs.readFileSync(path.join(__dirname, './ant-theme-vars.less'), 'utf8')
+);
+
+const build:any = {
   entry: './src/index.tsx',
   output: {
     path: path.join(__dirname, 'dist'),
@@ -28,6 +34,11 @@ export default {
       path.join(__dirname, 'node_modules')
     ]
   },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  },
   devServer: {
     watchFiles: path.join(__dirname, 'src'),
     port: 5000,
@@ -44,7 +55,7 @@ export default {
           plugins: [
             [
               'import',
-              { libraryName: 'antd', libraryDirectory: 'lib' },
+              { libraryName: 'antd', libraryDirectory: 'es', style: true },
               'antd'
             ],
             // modularly import the JS that we use from ‘@ant-design/icons’
@@ -67,12 +78,33 @@ export default {
         test: /\.css$/,
         use: [
           {
-            loader: MiniCssExtractPlugin.loader
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: './build/styles'
+            }
           },
           {
             loader: 'css-loader',
             options: {
-              url: true
+              modules: {
+                localIdentName: '[name]--[hash:base64:5]'
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: /\.less$/,
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true,
+                modifyVars: themeVariables
+              }
             }
           }
         ]
@@ -85,11 +117,11 @@ export default {
     ]
   },
   plugins: [
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
     new webpack.ProvidePlugin({
       React: 'react'
     }),
-    new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /(en)$/),
+    new webpack.ContextReplacementPlugin(/moment[/\\]locale$/),
     new MomentTimezoneDataPlugin({
       startYear: 1950,
       endYear: 2100,
@@ -99,7 +131,8 @@ export default {
       template: path.join(__dirname, 'src', 'index.html')
     }),
     new MiniCssExtractPlugin({
-      filename: 'styles.css'
+      filename: '[name].css',
+      chunkFilename: '[id].css'
     }),
     new CompressionPlugin({
       include: /\/includes/,
@@ -107,3 +140,6 @@ export default {
     })
   ]
 };
+if (process.env.NODE_ENV !== 'production') build.devtool = 'eval-source-map';
+
+export default build;

@@ -1,6 +1,6 @@
 import { BeamApiRes } from '@types';
 import { AppThunkDispatch } from '../store';
-import AC from './action-creators';
+import { AC } from './action-creators';
 
 export const errorHandler = (dispatch: AppThunkDispatch) => (
   handler: (res: BeamApiRes) => void

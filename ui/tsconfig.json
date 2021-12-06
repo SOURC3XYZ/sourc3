@@ -1,6 +1,11 @@
 {
 	"compilerOptions": {
 		"target": "es2020",
+		"plugins": [
+			{
+				"plugins": [{ "name": "typescript-plugin-css-modules" }]
+			}
+		],
 		"lib": [
 			"dom",
 			"dom.iterable",
@@ -11,10 +16,18 @@
 			"node_modules/@types"
 		],
 		"paths": {
-			"@components/*": ["components/*"],
-			"@libs/*": ["libs/*"],
-			"@assets/*": ["assets/*"],
-			"@types": ["types"]
+			"@components/*": [
+				"components/*"
+			],
+			"@libs/*": [
+				"libs/*"
+			],
+			"@assets/*": [
+				"assets/*"
+			],
+			"@types": [
+				"types"
+			]
 		},
 		"sourceMap": true,
 		"types": [
@@ -34,6 +47,12 @@
 		"noEmit": false,
 		"jsx": "react-jsx"
 	},
-  "include": ["**/*"],
-  "exclude": ["node_modules", "**/*.config.js", "dist"]
+	"include": [
+		"**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"**/*.config.js",
+		"dist"
+	]
 }

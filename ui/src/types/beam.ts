@@ -36,7 +36,7 @@ export type TxItem = {
   notified: boolean
 };
 
-export type setPropertiesType<T> = React.Dispatch<
+export type SetPropertiesType<T> = React.Dispatch<
 React.SetStateAction<T>
 >;
 

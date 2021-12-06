@@ -1,6 +1,19 @@
 import { PropertiesType } from '@types';
 
 export const RC = {
+  startTx: (data: number[]) => ({
+    callID: 'start_tx',
+    method: 'process_invoke_data',
+    params: { data }
+  }),
+
+  getTxStatus: (txId: string) => ({
+    callID: `tx_status_${txId}`,
+    method: 'tx_status',
+    params: {
+      txId
+    }
+  }),
   zeroMethodCall: () => ({
     callID: 'zero_method_call',
     method: 'invoke_contract',

@@ -1,8 +1,8 @@
+import { ACTIONS } from '@libs/constants';
 import { PropertiesType, TxItem } from '@types';
 import { RepoType } from 'types/contract';
-import { ACTIONS } from '../constants';
 
-const AC = {
+export const AC = {
   setTx: (payload: string) => ({
     type: ACTIONS.SET_TX,
     payload
@@ -41,5 +41,3 @@ const AC = {
 };
 
 export type ActionCreators = ReturnType<PropertiesType<typeof AC>>;
-
-export default AC;

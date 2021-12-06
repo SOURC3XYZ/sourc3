@@ -6,10 +6,3 @@ export enum ACTIONS {
   SET_TX = 'SET_TX',
   ERROR = 'ERROR'
 }
-
-export enum STATUS {
-  IN_PROGRESS = 'in progress',
-  FAILED = 'failed',
-  COMPLETED = 'completed',
-  PENDING = 'pending'
-}
