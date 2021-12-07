@@ -426,6 +426,8 @@ namespace
         key.m_Prefix.m_Cid = cid;
         uint32_t valueLen = 0, keyLen = 0;
         Env::VarReader reader(key, key);
+        char oid_buffer[GIT_OID_HEXSZ + 1];
+        oid_buffer[GIT_OID_HEXSZ] = '\0';
         if (reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
@@ -435,6 +437,8 @@ namespace
             Env::DocGroup commit_obj("commit");
             Env::DocAddText("raw_header", commit.raw_header);
             Env::DocAddText("raw_message", commit.raw_message);
+            git_oid_fmt(oid_buffer, &commit.tree_id);
+            Env::DocAddText("tree_oid", oid_buffer);
 //            Env::DocAddText("summary", commit.summary);
 //            Env::DocAddText("body", commit.body);
             Env::DocAddText("author_name", commit.author->name);
