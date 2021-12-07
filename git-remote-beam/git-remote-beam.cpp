@@ -24,7 +24,6 @@
 
 #include "3rdparty/nlohmann/json.hpp"
 
-namespace po = boost::program_options;
 
 using json = nlohmann::json;
 
