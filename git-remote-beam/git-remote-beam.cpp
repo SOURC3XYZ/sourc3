@@ -16,15 +16,14 @@
 #include <thread>
 #include <map>
 #include <stack>
-#include <filesystem>
 #include <git2.h>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include "utility/cli/options.h"
 #include "utility/logger.h"
 
 #include "3rdparty/nlohmann/json.hpp"
 
-namespace po = boost::program_options;
 
 using json = nlohmann::json;
 
@@ -882,7 +881,7 @@ int main(int argc, char* argv[])
     }
     cerr << "Hello Beam.\nRemote:\t" << argv[1]
         << "\nURL:\t" << argv[2]
-        << "\nWorking dir:\t" << std::filesystem::current_path()
+        << "\nWorking dir:\t" << boost::filesystem::current_path()
         << "\nRepo folder:\t" << options.repoPath
         << endl;
     SimpleWalletClient walletClient(options);
