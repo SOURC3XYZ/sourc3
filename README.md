@@ -5,7 +5,7 @@
 2. Setup beam node;
 3. Setup beam wallet;
 4. Properly fill `beam-remote.cfg`. `pass` is password for your wallet, without quotes, `node_addr` -- address of node from step 2, i.e. `127.0.0.1:10005`, `wallet_path` -- path to your `wallet.db` file. Ensure that `pass` is a password from your wallet located in `wallet_path`, `shader_app_file`, `shader_contract_file` -- full path for `app.wasm` and `contract.wasm` of git-remote-beam. All paths should not contains quotes;
-5. Copy `beam-remote.cfg` to `$HOME/.beam` on Linux `C:\Users\<user name>\.beam`
+5. Copy `beam-remote.cfg` to `$HOME/.beam` on Linux `C:\Users\<user name>\.beam` on Windows
 6. Create new remote repository on Beam;
 ```powershell
 wallet shader --shader_app_file=app.wasm \
