@@ -1,5 +1,6 @@
 import { ListRender } from '@components/shared';
-import { RootState, AppThunkDispatch, thunks } from '@libs/redux';
+import { thunks } from '@libs/action-creators';
+import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoType } from '@types';
 import React from 'react';
 import { connect } from 'react-redux';

@@ -1,8 +1,9 @@
 import React from 'react';
-import { RootState, AppThunkDispatch, thunks } from '@libs/redux';
+import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AllRepos, Notifications } from '@components/container';
+import { AllRepos, Notifications, Repo } from '@components/container';
+import { thunks } from '@libs/action-creators';
 import styles from './main.module.css';
 
 type MainProps = {
@@ -31,7 +32,7 @@ const Main = ({
               />
               <Route
                 path="repos/:id/tree/"
-                element={<AllRepos />}
+                element={<Repo />}
               />
             </Routes>
           )

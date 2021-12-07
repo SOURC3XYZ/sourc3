@@ -13,9 +13,11 @@ const ListRender = ({ elements }:ListItemProps) => (
       <List.Item key={item.repo_id}>
         <List.Item.Meta
           title={(
-            <Link to={
-              `/repos/${item.repo_id}/tree`
-            }
+            <Link
+              to={
+                `/repos/${item.repo_id}/tree`
+              }
+              state={{ id: item.repo_id }}
             >
               {item.repo_name}
             </Link>

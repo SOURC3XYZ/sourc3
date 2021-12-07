@@ -1,6 +1,8 @@
 import { ACTIONS } from '@libs/constants';
-import { PropertiesType, TxItem } from '@types';
-import { RepoType } from 'types/contract';
+import {
+  PropertiesType, RepoCommit, RepoMeta, RepoRef, RepoType, TxItem
+} from '@types';
+import { DataNode } from 'antd/lib/tree';
 
 export const AC = {
   setTx: (payload: string) => ({
@@ -36,6 +38,26 @@ export const AC = {
     } | null
   ) => ({
     type: ACTIONS.ERROR,
+    payload
+  } as const),
+
+  setRepoMeta: (payload: RepoMeta[]) => ({
+    type: ACTIONS.REPO_META,
+    payload
+  } as const),
+
+  setRepoRefs: (payload: RepoRef[]) => ({
+    type: ACTIONS.REPO_REFS,
+    payload
+  } as const),
+
+  setCommitData: (payload: RepoCommit | null) => ({
+    type: ACTIONS.COMMIT,
+    payload
+  } as const),
+
+  setTreeData: (payload: DataNode[]) => ({
+    type: ACTIONS.TREE_DATA,
     payload
   } as const)
 };

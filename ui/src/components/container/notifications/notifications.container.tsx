@@ -1,7 +1,7 @@
 import { NotificationElement } from '@components/shared';
+import { AC, thunks } from '@libs/action-creators';
 import {
-  AC,
-  AppThunkDispatch, RootState, thunks
+  AppThunkDispatch, RootState
 } from '@libs/redux';
 import { SetPropertiesType, TxItem, TxResponse } from '@types';
 import { connect } from 'react-redux';

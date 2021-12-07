@@ -1,6 +1,6 @@
+import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import { RepoType, TxItem } from '@types';
-import { ActionCreators } from '../action-creators/action-creators';
 
 interface IApp {
   repos: RepoType[]
@@ -37,7 +37,6 @@ const reducer = (
       newState.repos = [...action.payload as RepoType[]];
       break;
     }
-
     default:
   }
 
