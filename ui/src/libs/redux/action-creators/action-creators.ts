@@ -23,11 +23,6 @@ export const AC = {
     payload
   }),
 
-  createRepos: (payload: RepoType[]) => ({
-    type: ACTIONS.CREATE_REPOS,
-    payload
-  }),
-
   setIsConnected: (payload: boolean) => ({
     type: ACTIONS.CONNECTION,
     payload

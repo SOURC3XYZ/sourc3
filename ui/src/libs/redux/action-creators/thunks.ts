@@ -73,9 +73,18 @@ export const thunks = {
         dispatch(AC.setTx(tx.result.txid));
       }
     }
+  },
+
+  deleteRepos: (delete_repo: number) => async (dispatch: AppThunkDispatch) => {
+    const res = await beam.callApi(RC.deleteRepos(delete_repo)) as BeamApiRes;
+    if (res.result?.raw_data) {
+      console.log(res);
+      const tx = (await beam.callApi(
+        RC.startTx(res.result.raw_data)
+      )) as BeamApiRes;
+      if (tx.result?.txid) {
+        dispatch(AC.setTx(tx.result.txid));
+      }
+    }
   }
-  // deleteRepos: () => async (dispatch: AppThunkDispatch) => {
-  //   const res = await beam.callApi(RC.createRepos(resp_name)) as BeamApiRes;
-  //   console.log(res)
-  // }
 };

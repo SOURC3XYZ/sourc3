@@ -4,6 +4,7 @@ import { RepoType } from '@types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'antd';
+// import { DownloadOutlined } from 'antd/lib/icons';
 
 type AllReposProps = {
   repos: RepoType[],
