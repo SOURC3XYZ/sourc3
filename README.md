@@ -8,7 +8,7 @@
 5. Copy `beam-remote.cfg` to `$HOME/.beam` on Linux `C:\Users\<user name>\.beam` on Windows
 6. Create new remote repository on Beam;
 ```powershell
-wallet shader --shader_app_file=app.wasm \
+beam-wallet shader --shader_app_file=app.wasm \
 --shader_args="role=user,action=create_repo,repo_name=testrepo,cid=fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10" \
 --log_level=debug -n node_address
 ```
