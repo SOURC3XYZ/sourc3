@@ -10,7 +10,7 @@ type AllReposProps = {
   repos: RepoType[],
   getAllRepos: () => void,
   createRepos: () => void,
-  // resp_name: string
+  // repo_name: string
 };
 
 const AllRepos = ({
@@ -43,9 +43,9 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
     dispatch(thunks.getAllRepos());
   },
   createRepos: () => {
-    const resp_name = prompt('Enter repository name');
-    if (resp_name == null) return;
-    dispatch(thunks.createRepos(resp_name));
+    const repo_name = prompt('Enter repository name');
+    if (repo_name == null) return;
+    dispatch(thunks.createRepos(repo_name));
   }
 });
 

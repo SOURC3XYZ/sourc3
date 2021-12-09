@@ -32,14 +32,14 @@ export const RC = {
     }
   } as const),
 
-  createRepos: (resp_name:string) => ({
+  createRepos: (repo_name:string) => ({
     callID: 'create_repo',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'create_repo',
-        repo_name: resp_name,
+        repo_name
       },
       create_tx: false
     }

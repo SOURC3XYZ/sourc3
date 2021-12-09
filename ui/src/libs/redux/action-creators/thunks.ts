@@ -62,9 +62,9 @@ export const thunks = {
       }
     },
 
-  createRepos: (resp_name: string) => async (dispatch: AppThunkDispatch) => {
-    console.log(resp_name);
-    const res = (await beam.callApi(RC.createRepos(resp_name))) as BeamApiRes;
+  createRepos: (repo_name: string) => async (dispatch: AppThunkDispatch) => {
+    console.log(repo_name);
+    const res = (await beam.callApi(RC.createRepos(repo_name))) as BeamApiRes;
     if (res.result?.raw_data) {
       const tx = (await beam.callApi(
         RC.startTx(res.result.raw_data)
