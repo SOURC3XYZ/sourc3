@@ -182,6 +182,8 @@ namespace
         GitRemoteBeam::DeleteRepoParams request;
         request.repo_id = repo_id;
 
+        Env::DerivePk(request.user, &cid, sizeof(cid));
+
         SigRequest sig;
         sig.m_pID = &cid;
         sig.m_nID = sizeof(cid);
