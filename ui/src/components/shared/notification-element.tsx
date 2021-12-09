@@ -1,6 +1,7 @@
 import { STATUS } from '@libs/constants';
 import { SetPropertiesType, TxItem, TxResponse } from '@types';
-import notification, { NotificationPlacement } from 'antd/lib/notification';
+import { notification } from 'antd';
+import { NotificationPlacement } from 'antd/lib/notification';
 import React from 'react';
 
 type NotificationElementProps = {

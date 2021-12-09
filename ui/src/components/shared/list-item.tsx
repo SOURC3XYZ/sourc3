@@ -1,8 +1,9 @@
 import { RepoType } from '@types';
 import { List, Button } from 'antd';
 import { Link } from 'react-router-dom';
-import { AppThunkDispatch, thunks } from '@libs/redux';
+import { AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
+import { thunks } from '@libs/action-creators';
 
 type ListItemProps = {
   elements: RepoType[],
@@ -16,9 +17,11 @@ const ListRender = ({ elements, deleteRepos }:ListItemProps) => (
       <List.Item key={item.repo_id}>
         <List.Item.Meta
           title={(
-            <Link to={
-              `/repos/${item.repo_id}/tree`
-            }
+            <Link
+              to={
+                `/repos/${item.repo_id}/tree`
+              }
+              state={{ id: item.repo_id }}
             >
               {item.repo_name}
             </Link>

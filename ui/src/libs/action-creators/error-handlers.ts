@@ -1,5 +1,5 @@
+import { AppThunkDispatch } from '@libs/redux';
 import { BeamApiRes } from '@types';
-import { AppThunkDispatch } from '../store';
 import { AC } from './action-creators';
 
 export const errorHandler = (dispatch: AppThunkDispatch) => (

@@ -39,5 +39,3 @@ export type TxItem = {
 export type SetPropertiesType<T> = React.Dispatch<
 React.SetStateAction<T>
 >;
-
-export type Pic = { id:number, pic: string | null, name: string };
