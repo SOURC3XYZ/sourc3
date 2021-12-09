@@ -66,7 +66,8 @@ export type RepoTreeResponse = {
     entries_num: 6;
     object_data: string;
     entries: TreeElement[]
-  }
+  },
+  error?: string;
 };
 
 export interface IDataNodeCustom extends DataNode{

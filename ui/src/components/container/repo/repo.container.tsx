@@ -31,10 +31,7 @@ const Repo = ({
   refs, commitData, tree, setCommitToNull, repoGetRefs, getCommit, updateTree
 }:TreeProps) => {
   const location = useParams<'id' & 'oid'>() as LocationState;
-
   const { id } = location;
-
-  console.log('location', location);
   const [commitHash, setHash] = React.useState<CommitHash | null>(null);
 
   React.useEffect(() => {

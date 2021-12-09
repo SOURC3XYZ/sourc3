@@ -19,11 +19,11 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
   .map((el) => {
     const { dataRef } = el as IDataNodeCustom;
     const newEl = { ...el };
-    if (el.isLeaf) {
-      const node = <Link to={`/data/${id}/${dataRef.oid}`}>{el.title}</Link>;
-      if (el.children) newEl.children = treeLinkNodeUpdate(id)(el.children);
-      return { ...newEl, dataRef, title: node };
-    } return el;
+    if (newEl.isLeaf) {
+      newEl.title = <Link to={`/data/${id}/${dataRef.oid}`}>{el.title}</Link>;
+    }
+    if (newEl.children) newEl.children = treeLinkNodeUpdate(id)(newEl.children);
+    return { ...newEl, dataRef };
   });
 
 const TreeList = ({

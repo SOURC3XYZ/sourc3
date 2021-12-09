@@ -2,15 +2,14 @@ import { ListRender } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoType } from '@types';
-import React from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import { Button } from 'antd';
-// import { DownloadOutlined } from 'antd/lib/icons';
+import { Button, Modal, Input } from 'antd';
 
 type AllReposProps = {
   repos: RepoType[],
   getAllRepos: () => void,
-  createRepos: () => void,
+  createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void
   // resp_name: string
 };
@@ -21,16 +20,43 @@ const AllRepos = ({
   React.useEffect(() => {
     getAllRepos();
   }, []);
-  // const createRepos = (dispatch:AppThunkDispatch):void => {
-  //  dispatch(thunks.getAllRepos());
-  //   console.log(2);
-  // };
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [inputRepoName, setInputRepoName] = useState('');
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+    createRepos(inputRepoName);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInputRepoName(e.target.value);
+  };
+
   return (
     <>
-      <div className="control">
-        <Button onClick={createRepos}>New Rep</Button>
-      </div>
-      <ListRender elements={repos} deleteRepos={deleteRepos} />
+      <Button onClick={showModal}>New Repository</Button>
+      <Modal
+        title="Basic Modal"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Input
+          placeholder="Enter name repository"
+          value={inputRepoName}
+          onChange={handleChange}
+          onPressEnter={handleOk}
+        />
+      </Modal>
+      <ListRender deleteRepos={deleteRepos} elements={repos} />
     </>
   );
 };
@@ -44,10 +70,9 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   getAllRepos: () => {
     dispatch(thunks.getAllRepos());
   },
-  createRepos: () => {
-    const resp_name = prompt('Enter repository name');
-    if (resp_name == null) return;
-    dispatch(thunks.createRepos(resp_name));
+  createRepos: (repo_name:string) => {
+    if (repo_name === null) return;
+    dispatch(thunks.createRepos(repo_name));
   },
   deleteRepos: (repo_id: number) => {
     dispatch(thunks.deleteRepos(repo_id));
