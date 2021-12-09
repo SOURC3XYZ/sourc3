@@ -4,7 +4,7 @@ import {
 import { DataNode } from 'antd/lib/tree';
 
 export const treeDataMaker = (
-  tree: TreeElement[], parentKey?: React.Key
+  tree: TreeElement[] = [], parentKey?: React.Key
 ):IDataNodeCustom[] => {
   const newTree = tree.map((el, i) => ({
     title: el.filename,

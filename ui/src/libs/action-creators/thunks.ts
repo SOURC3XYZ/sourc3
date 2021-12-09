@@ -101,10 +101,36 @@ export const thunks = {
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.RepoTreeResponse;
       const updated = updateTreeData(
-        tree, treeDataMaker(output.tree.entries, key), key
+        tree, treeDataMaker(output.tree?.entries, key), key
       );
       dispatch(AC.setTreeData(updated));
       if (resolve) resolve();
+    }
+  },
+
+  createRepos: (resp_name: string) => async (dispatch: AppThunkDispatch) => {
+    console.log(resp_name);
+    const res = (await beam.callApi(RC.createRepos(resp_name))) as T.BeamApiRes;
+    if (res.result?.raw_data) {
+      const tx = (await beam.callApi(
+        RC.startTx(res.result.raw_data)
+      )) as T.BeamApiRes;
+      if (tx.result?.txid) {
+        dispatch(AC.setTx(tx.result.txid));
+      }
+    }
+  },
+
+  deleteRepos: (delete_repo: number) => async (dispatch: AppThunkDispatch) => {
+    const res = await beam.callApi(RC.deleteRepos(delete_repo)) as T.BeamApiRes;
+    if (res.result?.raw_data) {
+      console.log(res);
+      const tx = (await beam.callApi(
+        RC.startTx(res.result.raw_data)
+      )) as T.BeamApiRes;
+      if (tx.result?.txid) {
+        dispatch(AC.setTx(tx.result.txid));
+      }
     }
   }
 };

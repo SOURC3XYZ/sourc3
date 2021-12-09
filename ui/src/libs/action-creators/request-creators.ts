@@ -86,6 +86,32 @@ export const RC = {
       },
       create_tx: false
     }
+  } as const),
+
+  createRepos: (resp_name:string) => ({
+    callID: 'create_repo',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'create_repo',
+        repo_name: resp_name
+      },
+      create_tx: false
+    }
+  } as const),
+
+  deleteRepos: (repo_id:RepoId) => ({
+    callID: 'delete_repo',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'delete_repo',
+        repo_id
+      },
+      create_tx: false
+    }
   } as const)
 
 };
