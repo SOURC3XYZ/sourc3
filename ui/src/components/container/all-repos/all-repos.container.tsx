@@ -4,31 +4,52 @@ import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoType } from '@types';
 import React from 'react';
 import { connect } from 'react-redux';
-import { Button } from 'antd';
-// import { DownloadOutlined } from 'antd/lib/icons';
+import { Button, Modal, Input } from 'antd';
+import {useState} from "react";
+import { ChangeEvent } from 'react';
 
 type AllReposProps = {
   repos: RepoType[],
   getAllRepos: () => void,
-  createRepos: () => void,
-  // repo_name: string
+  createRepos: (repo_name:string) => void,
+  repo_name: string
 };
 
 const AllRepos = ({
-  repos, getAllRepos, createRepos
+  repos, getAllRepos, createRepos, repo_name
 }:AllReposProps) => {
   React.useEffect(() => {
     getAllRepos();
   }, []);
-  // const createRepos = (dispatch:AppThunkDispatch):void => {
-  //  dispatch(thunks.getAllRepos());
-  //   console.log(2);
-  // };
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+    createRepos(repo_name)
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    repo_name = e.target.value
+  };
+
+  const onChange = (e: ChangeEvent<HTMLInputElement>)=> {
+    const repo_name = e.target.value;
+  }
+
   return (
     <>
-      <div className="control">
-        <Button onClick={createRepos}>New Rep</Button>
-      </div>
+      <Button onClick={showModal}>New Repository</Button>
+      <Modal title="Basic Modal" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Input placeholder="Enter name repository" value={repo_name} onChange={handleChange} onPressEnter={handleOk}/>
+      </Modal>
       <ListRender elements={repos} />
     </>
   );
@@ -43,8 +64,7 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   getAllRepos: () => {
     dispatch(thunks.getAllRepos());
   },
-  createRepos: () => {
-    const repo_name = prompt('Enter repository name');
+  createRepos: (repo_name:string) => {
     if (repo_name == null) return;
     dispatch(thunks.createRepos(repo_name));
   }

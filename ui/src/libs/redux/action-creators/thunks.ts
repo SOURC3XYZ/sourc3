@@ -8,7 +8,7 @@ import {
   TxResponse
 } from '@types';
 import { AppThunkDispatch } from '../store';
-import { AC } from './action-creators';
+import { AC } from '@libs/action-creators';
 import { RequestCreators, RC } from './request-creators';
 
 const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
