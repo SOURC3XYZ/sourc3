@@ -2,7 +2,7 @@ import wasm from '@assets/app.wasm';
 import { BeamAPI } from '@libs/beam';
 import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { treeDataMaker, updateTreeData } from '@libs/utils';
+import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
 import * as T from '@types';
 import { AC } from './action-creators';
 import { RC, RequestCreators } from './request-creators';
@@ -131,6 +131,17 @@ export const thunks = {
       if (tx.result?.txid) {
         dispatch(AC.setTx(tx.result.txid));
       }
+    }
+  },
+
+  getTextData: (
+    repoId: T.RepoId, oid: T.TreeElementOid
+  ) => async (dispatch: AppThunkDispatch) => {
+    const res = await beam
+      .callApi(RC.getData(repoId, oid)) as T.BeamApiRes;
+    if (res.result?.output) {
+      const output = JSON.parse(res.result.output) as T.ObjectDataResponse;
+      dispatch(AC.setFileText(hexParser(output.object_data)));
     }
   }
 };

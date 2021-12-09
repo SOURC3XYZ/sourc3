@@ -1,5 +1,5 @@
 import {
-  CommitHash, PropertiesType, RepoId, TreeOid
+  CommitHash, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
 
 export const RC = {
@@ -109,6 +109,20 @@ export const RC = {
         role: 'user',
         action: 'delete_repo',
         repo_id
+      },
+      create_tx: false
+    }
+  } as const),
+
+  getData: (repo_id:RepoId, obj_id: TreeElementOid) => ({
+    callID: 'repo_get_data',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'repo_get_data',
+        repo_id,
+        obj_id
       },
       create_tx: false
     }

@@ -10,6 +10,7 @@ export type MetaObjectSize = number;
 export type TreeOid = string;
 export type TreeElementFilename = string;
 export type TreeElementOid = string;
+export type ObjectData = string;
 
 export type RepoType = {
   repo_name: RepoName;
@@ -77,4 +78,8 @@ export type UpdateProps = {
   oid: TreeOid,
   key?: React.Key,
   resolve?: () => void
+};
+
+export type ObjectDataResponse = {
+  object_data: ObjectData
 };

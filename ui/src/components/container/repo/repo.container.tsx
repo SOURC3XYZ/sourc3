@@ -5,17 +5,16 @@ import {
 } from '@libs/redux';
 import {
   CommitHash,
-  RepoCommit, RepoId, RepoRef, UpdateProps
+  RepoCommit, RepoId, RepoRef, TreeElementOid, UpdateProps
 } from '@types';
 import { Button, Select, Typography } from 'antd';
 import { DataNode } from 'antd/lib/tree';
 import React from 'react';
 import { batch, connect } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type LocationState = {
-  refs: RepoRef[];
-  id:number;
+  id:RepoId;
 };
 
 type TreeProps = {
@@ -31,8 +30,11 @@ type TreeProps = {
 const Repo = ({
   refs, commitData, tree, setCommitToNull, repoGetRefs, getCommit, updateTree
 }:TreeProps) => {
-  const { state: { id } } = useLocation() as { state: LocationState };
+  const location = useParams<'id' & 'oid'>() as LocationState;
 
+  const { id } = location;
+
+  console.log('location', location);
   const [commitHash, setHash] = React.useState<CommitHash | null>(null);
 
   React.useEffect(() => {
@@ -50,6 +52,8 @@ const Repo = ({
     }
   }, [commitHash]);
 
+  const navigate = useNavigate();
+
   const children = refs.map(
     (el) => (
       <Select.Option
@@ -63,7 +67,7 @@ const Repo = ({
 
   return (
     <>
-      <Link to="/repos"><Button type="link">Return</Button></Link>
+      <Button onClick={() => navigate(-1)} type="link">Return</Button>
       {children.length ? (
         <>
           <Select
@@ -114,6 +118,10 @@ const mapDispatch = (dispatch:AppThunkDispatch) => ({
       dispatch(AC.setCommitData(null));
       dispatch(AC.setTreeData([]));
     });
+  },
+
+  getFileData: (repoId: RepoId, oid: TreeElementOid) => {
+    dispatch(thunks.getTextData(repoId, oid));
   },
 
   updateTree: (props: UpdateProps) => {

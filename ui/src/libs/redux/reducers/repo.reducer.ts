@@ -9,14 +9,16 @@ interface IRepo {
   meta: RepoMeta[],
   refs: RepoRef[],
   commitData: RepoCommit | null,
-  tree: DataNode[]
+  tree: DataNode[],
+  fileText: string
 }
 
 const initialState:IRepo = {
   meta: [],
   refs: [],
   commitData: null,
-  tree: []
+  tree: [],
+  fileText: ''
 };
 
 const reducer = (
@@ -41,6 +43,11 @@ const reducer = (
 
     case ACTIONS.TREE_DATA: {
       newState.tree = [...action.payload as DataNode[]];
+      break;
+    }
+
+    case ACTIONS.SET_FILE_TEXT: {
+      newState.fileText = action.payload as string;
       break;
     }
 

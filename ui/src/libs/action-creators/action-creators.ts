@@ -59,6 +59,11 @@ export const AC = {
   setTreeData: (payload: DataNode[]) => ({
     type: ACTIONS.TREE_DATA,
     payload
+  } as const),
+
+  setFileText: (payload: string) => ({
+    type: ACTIONS.SET_FILE_TEXT,
+    payload
   } as const)
 };
 

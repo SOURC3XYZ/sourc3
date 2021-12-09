@@ -2,7 +2,9 @@ import React from 'react';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AllRepos, Notifications, Repo } from '@components/container';
+import {
+  AllRepos, FileText, Notifications, Repo
+} from '@components/container';
 import { thunks } from '@libs/action-creators';
 import styles from './main.module.css';
 
@@ -34,6 +36,11 @@ const Main = ({
                 path="repos/:id/tree/"
                 element={<Repo />}
               />
+
+              <Route
+                path="data/:id/:oid"
+                element={<FileText />}
+              />
             </Routes>
           )
         }
@@ -50,9 +57,6 @@ const mapState = ({ app: { isConnected } }: RootState) => ({
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   connectApi: () => {
     dispatch(thunks.connectBeamApi());
-  },
-  getAllRepos: () => {
-    dispatch(thunks.getAllRepos());
   }
 });
 

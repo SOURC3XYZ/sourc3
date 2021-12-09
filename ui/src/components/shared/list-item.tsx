@@ -1,9 +1,6 @@
 import { RepoType } from '@types';
 import { List, Button } from 'antd';
 import { Link } from 'react-router-dom';
-import { AppThunkDispatch } from '@libs/redux';
-import { connect } from 'react-redux';
-import { thunks } from '@libs/action-creators';
 
 type ListItemProps = {
   elements: RepoType[],
@@ -39,16 +36,4 @@ const ListRender = ({ elements, deleteRepos }:ListItemProps) => (
   />
 );
 
-const mapState = (
-  _:undefined, { elements }: { elements: RepoType[] }
-) => ({
-  elements
-});
-
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  deleteRepos: (repo_id: number) => {
-    dispatch(thunks.deleteRepos(repo_id));
-  }
-});
-
-export default connect(mapState, mapDispatch)(ListRender);
+export default ListRender;
