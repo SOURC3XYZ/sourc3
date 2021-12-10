@@ -95,9 +95,8 @@ export const thunks = {
     }: T.UpdateProps
   ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
     const { repo: { tree } } = getState();
-    const res = await beam.callApi(
-      RC.repoGetTree(id, oid)
-    ) as T.BeamApiRes;
+    const res = await beam
+      .callApi(RC.repoGetTree(id, oid)) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.RepoTreeResponse;
       if (!output.error) {

@@ -3,10 +3,11 @@ import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
-  AllRepos, FileText, Notifications, Repo
+  AllRepos, Notifications
 } from '@components/container';
 import { thunks } from '@libs/action-creators';
 import styles from './main.module.css';
+import { Repo } from './container';
 
 type MainProps = {
   connectApi: () => void,
@@ -29,17 +30,12 @@ const Main = ({
             <Routes>
               <Route path="/" element={<Navigate replace to="/repos" />} />
               <Route
-                path="/repos"
+                path="/repos/"
                 element={<AllRepos />}
               />
               <Route
-                path="repos/:id/tree/"
+                path="/repo/:id/*"
                 element={<Repo />}
-              />
-
-              <Route
-                path="data/:id/:oid"
-                element={<FileText />}
               />
             </Routes>
           )

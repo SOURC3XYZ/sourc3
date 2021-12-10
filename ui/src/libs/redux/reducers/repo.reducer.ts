@@ -37,6 +37,7 @@ const reducer = (
     }
 
     case ACTIONS.COMMIT: {
+      console.log('commit');
       newState.commitData = action.payload as RepoCommit;
       break;
     }

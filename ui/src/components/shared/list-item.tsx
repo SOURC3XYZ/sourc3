@@ -16,7 +16,7 @@ const ListRender = ({ elements, deleteRepos }:ListItemProps) => (
           title={(
             <Link
               to={
-                `/repos/${item.repo_id}/tree`
+                `/repo/${item.repo_id}/tree`
               }
               state={{ id: item.repo_id }}
             >

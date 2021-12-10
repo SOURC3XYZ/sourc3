@@ -1,10 +1,11 @@
-import { thunks } from '@libs/action-creators';
+import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { RepoId, TreeElementOid } from '@types';
-import { Button, Typography } from 'antd';
 import React from 'react';
 import { connect } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 type LocationState = {
   oid: TreeElementOid;
@@ -14,23 +15,22 @@ type LocationState = {
 type FileTextProps = {
   fileText: string;
   getFileData: (repoId: RepoId, oid: TreeElementOid) => void
+  killTextData: () => void
 };
 
-const FileText = ({ fileText, getFileData }: FileTextProps) => {
+const FileText = ({ fileText, getFileData, killTextData }: FileTextProps) => {
   const { id, oid } = useParams<'id' & 'oid'>() as LocationState;
-
-  const navigate = useNavigate();
 
   React.useEffect(() => {
     getFileData(id, oid);
+    return () => killTextData();
   }, []);
 
   return (
     <>
-      <Button onClick={() => navigate(-1)} type="link">Return</Button>
-      <Typography.Text type="secondary">
-        <pre><code>{fileText}</code></pre>
-      </Typography.Text>
+      <SyntaxHighlighter style={docco}>
+        {fileText}
+      </SyntaxHighlighter>
     </>
   );
 };
@@ -42,6 +42,9 @@ const mapState = ({ repo: { fileText } }:RootState) => ({
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   getFileData: (repoId: RepoId, oid: TreeElementOid) => {
     dispatch(thunks.getTextData(repoId, oid));
+  },
+  killTextData: () => {
+    dispatch(AC.setFileText(''));
   }
 });
 
