@@ -412,6 +412,35 @@ namespace
         }
     }
 
+    void AddCommit(const mygit2::git_commit& commit) {
+        Env::DocGroup commit_obj("commit");
+        char oid_buffer[GIT_OID_HEXSZ + 1];
+        oid_buffer[GIT_OID_HEXSZ] = '\0';
+        Env::DocAddText("raw_header", commit.raw_header);
+        Env::DocAddText("raw_message", commit.raw_message);
+        git_oid_fmt(oid_buffer, &commit.tree_id);
+        Env::DocAddText("tree_oid", oid_buffer);
+        Env::DocAddText("author_name", commit.author->name);
+        Env::DocAddText("author_email", commit.author->email);
+        Env::DocAddText("committer_name", commit.committer->name);
+        Env::DocAddText("committer_email", commit.committer->email);
+    }
+
+    void AddTree(const mygit2::git_tree& tree) {
+        Env::DocGroup tree_obj("tree");
+        Env::DocAddNum("entries_num", static_cast<uint64_t>(tree.entries.size));
+        char oid_buffer[GIT_OID_HEXSZ + 1];
+        oid_buffer[GIT_OID_HEXSZ] = '\0';
+        Env::DocArray entries("entries");
+        for (size_t i = 0; i < tree.entries.size; ++i) {
+            Env::DocGroup entry("");
+            Env::DocAddText("filename", tree.entries.ptr[i].filename);
+            git_oid_fmt(oid_buffer, tree.entries.ptr[i].oid);
+            Env::DocAddNum("attributes", static_cast<uint32_t>(tree.entries.ptr[i].attr));
+            Env::DocAddText("oid", oid_buffer);
+        }
+    }
+
     void On_action_get_commit(const ContractID &cid) {
         using GitRemoteBeam::RepoInfo;
         using GitRemoteBeam::GitObject;
@@ -426,27 +455,13 @@ namespace
         key.m_Prefix.m_Cid = cid;
         uint32_t valueLen = 0, keyLen = 0;
         Env::VarReader reader(key, key);
-        char oid_buffer[GIT_OID_HEXSZ + 1];
-        oid_buffer[GIT_OID_HEXSZ] = '\0';
         if (reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_commit commit;
             commit_parse(&commit, value->data, valueLen, 0); // Fast parse
-            Env::DocGroup commit_obj("commit");
-            Env::DocAddText("raw_header", commit.raw_header);
-            Env::DocAddText("raw_message", commit.raw_message);
-            git_oid_fmt(oid_buffer, &commit.tree_id);
-            Env::DocAddText("tree_oid", oid_buffer);
-//            Env::DocAddText("summary", commit.summary);
-//            Env::DocAddText("body", commit.body);
-            Env::DocAddText("author_name", commit.author->name);
-            Env::DocAddText("author_email", commit.author->email);
-//            Env::DocAddNum("author_commit_time", static_cast<uint64_t>(commit.author->when.time));
-            Env::DocAddText("committer_name", commit.committer->name);
-            Env::DocAddText("committer_email", commit.committer->email);
-//            Env::DocAddNum("committer_commit_time", static_cast<uint64_t>(commit.committer->when.time));
+            AddCommit(commit);
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             On_error("sorry, but no object_data(");
@@ -471,24 +486,60 @@ namespace
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
-            Env::DocGroup tree_obj("tree");
             mygit2::git_tree tree;
             tree_parse(&tree, value->data, valueLen);
-            Env::DocAddNum("entries_num", static_cast<uint64_t>(tree.entries.size));
-            char oid_buffer[GIT_OID_HEXSZ + 1];
-            oid_buffer[GIT_OID_HEXSZ] = '\0';
             Env::DocAddBlob("object_data", value->data, valueLen);
-            Env::DocArray entries("entries");
-            for (size_t i = 0; i < tree.entries.size; ++i) {
-                Env::DocGroup entry("");
-                Env::DocAddText("filename", tree.entries.ptr[i].filename);
-                git_oid_fmt(oid_buffer, tree.entries.ptr[i].oid);
-                Env::DocAddNum("attributes", static_cast<uint32_t>(tree.entries.ptr[i].attr));
-                Env::DocAddText("oid", oid_buffer);
-            }
+            AddTree(tree);
         } else {
             On_error("No data for tree");
         }
+    }
+
+    void GetObjects(const ContractID& cid, GitRemoteBeam::GitObject::Meta::Type type) {
+        using GitRemoteBeam::RepoInfo;
+        using GitRemoteBeam::GitObject;
+        auto[start, end, key] = PrepareGetObject(cid);
+        GitObject::Meta value;
+        char oid_buffer[GIT_OID_HEXSZ + 1];
+        oid_buffer[GIT_OID_HEXSZ] = '\0';
+        Env::DocArray objects_array("objects");
+        for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+            if (value.type == type) {
+                Env::DocGroup obj("");
+                Env::DocAddBlob_T("object_hash", value.hash);
+                Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+                Env::DocAddNum("object_size", value.data_size);
+                // Leave here, if we need to return already objects
+//                DataKey data_key { .m_KeyInContract = { Utils::FromBE(key.m_KeyInContract.repo_id), value.hash } };
+//                data_key.m_Prefix.m_Cid = cid;
+//                uint32_t valueLen = 0, keyLen = 0;
+//                Env::VarReader data_reader(data_key, data_key);
+//                if (data_reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
+//                    auto buf = std::make_unique<uint8_t[]>(valueLen);
+//                    data_reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
+//                    auto *data_value = reinterpret_cast<GitObject::Data *>(buf.get());
+//                    Env::DocAddBlob("object_data", data_value->data, valueLen);
+//
+//                    if (type == GitObject::Meta::GIT_OBJECT_COMMIT) {
+//                        mygit2::git_commit commit;
+//                        commit_parse(&commit, data_value->data, valueLen, 0); // Fast parse
+//                        AddCommit(commit);
+//                    } else if (type == GitObject::Meta::GIT_OBJECT_TREE) {
+//                        mygit2::git_tree tree;
+//                        tree_parse(&tree, data_value->data, valueLen);
+//                        AddTree(tree);
+//                    }
+//                }
+            }
+        }
+    }
+
+    void On_action_get_commits(const ContractID& cid) {
+        GetObjects(cid, GitRemoteBeam::GitObject::Meta::GIT_OBJECT_COMMIT);
+    }
+
+    void On_action_get_trees(const ContractID& cid) {
+        GetObjects(cid, GitRemoteBeam::GitObject::Meta::GIT_OBJECT_TREE);
     }
 }
 
@@ -593,6 +644,16 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("obj_id", "Object hash");
                 Env::DocAddText("data_size", "Size of data");
             }
+            {
+                Env::DocGroup grMethod("list_commits");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+            }
+            {
+                Env::DocGroup grMethod("list_trees");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+            }
         }
     }
 }
@@ -614,6 +675,8 @@ BEAM_EXPORT void Method_1() {
             {"repo_get_meta",      On_action_get_repo_meta},
             {"repo_get_commit",    On_action_get_commit},
             {"repo_get_tree",      On_action_get_tree},
+            {"list_commits",       On_action_get_commits},
+            {"list_trees",         On_action_get_trees}
     };
 
     const Actions_map_t VALID_MANAGER_ACTIONS = {
