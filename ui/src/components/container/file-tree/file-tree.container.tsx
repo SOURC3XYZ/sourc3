@@ -26,7 +26,7 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
     if (newEl.isLeaf) {
       newEl.title = (
         <Link
-          style={{ textDecoration: 'none', color: 'black' }}
+          style={{ textDecoration: 'none', color: '#fff' }}
           to={`/repo/${id}/${dataRef.oid}`}
         >
           {el.title}

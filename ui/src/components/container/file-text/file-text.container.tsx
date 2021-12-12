@@ -4,8 +4,11 @@ import { RepoId, TreeElementOid } from '@types';
 import React from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { syntax } from './syntax';
+
+syntax.forEach((el) => SyntaxHighlighter.registerLanguage(el.ext, el.data));
 
 type LocationState = {
   oid: TreeElementOid;
@@ -28,7 +31,12 @@ const FileText = ({ fileText, getFileData, killTextData }: FileTextProps) => {
 
   return (
     <>
-      <SyntaxHighlighter style={docco}>
+      <SyntaxHighlighter
+        language="cpp"
+        wrapLongLine
+        showLineNumbers
+        style={prism}
+      >
         {fileText}
       </SyntaxHighlighter>
     </>

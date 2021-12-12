@@ -1,10 +1,10 @@
-import { ListRender } from '@components/shared';
+import { BeamButton, ListRender } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import { Button, Modal, Input } from 'antd';
+import { Modal, Input } from 'antd';
 
 type AllReposProps = {
   repos: RepoType[],
@@ -42,7 +42,7 @@ const AllRepos = ({
 
   return (
     <>
-      <Button onClick={showModal}>New Repository</Button>
+      <BeamButton title="New Repository" callback={showModal} />
       <Modal
         title="Basic Modal"
         visible={isModalVisible}

@@ -121,6 +121,11 @@ const build:any = {
     new webpack.ProvidePlugin({
       React: 'react'
     }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/),
     new MomentTimezoneDataPlugin({
       startYear: 1950,
@@ -140,6 +145,6 @@ const build:any = {
     })
   ]
 };
-if (process.env.NODE_ENV !== 'production') build.devtool = 'eval-source-map';
+// if (process.env.NODE_ENV !== 'production') build.devtool = 'eval-source-map';
 
 export default build;
