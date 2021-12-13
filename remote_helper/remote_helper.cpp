@@ -867,7 +867,9 @@ int main(int argc, char* argv[])
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
     auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, LOG_LEVEL_DEBUG, "", "");
-    options.repoName = string_view(argv[2]).substr(7).data();
+    string_view sv(argv[2]);
+    const string_view SCHEMA = "pit://";
+    options.repoName = sv.substr(SCHEMA.size()).data();
     auto* gitDir = std::getenv("GIT_DIR"); // set during clone
     if (gitDir)
     {

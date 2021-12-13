@@ -2,7 +2,7 @@
 #include "Shaders/app_common_impl.h"
 
 namespace Env {
-#include "../beam/bvm/bvm2_cost.h"
+#include "../3rdparty/beam/bvm/bvm2_cost.h"
 } // namespace Env
 
 #include "contract.h"
