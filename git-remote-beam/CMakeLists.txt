@@ -1,15 +1,13 @@
-﻿# CMakeList.txt : CMake project for git-remote-beam, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.17)
+﻿cmake_minimum_required (VERSION 3.17)
 
-# Add source to this project's executable.
-add_executable (git-remote-beam "git-remote-beam.cpp" "git-remote-beam.h")
+set(TARGET_NAME git-remote-pit)
 
-target_include_directories(git-remote-beam PUBLIC ${LIBGIT2_INCLUDES})
-target_include_directories(git-remote-beam PUBLIC SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
+add_executable (${TARGET_NAME} remote_helper.cpp)
 
-target_link_libraries(git-remote-beam 
+target_include_directories(${TARGET_NAME} PUBLIC ${LIBGIT2_INCLUDES})
+target_include_directories(${TARGET_NAME} PUBLIC SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
+
+target_link_libraries(${TARGET_NAME} 
 	PUBLIC
 		beam
 		bvm
@@ -22,6 +20,6 @@ target_link_libraries(git-remote-beam
 #build_target(app)
 #
 #
-#add_dependencies(git-remote-beam contract_header)
-#add_dependencies(git-remote-beam app_build)
+#add_dependencies(${TARGET_NAME} contract_header)
+#add_dependencies(${TARGET_NAME} app_build)
 #add_dependencies(app_build contract_header) 

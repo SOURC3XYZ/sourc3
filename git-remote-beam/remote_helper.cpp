@@ -1,9 +1,4 @@
-﻿// git-remote-beam.cpp : Defines the entry point for the application.
-//
-
-#include "git-remote-beam.h"
-
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <string_view>
 #include <algorithm>
