@@ -105,7 +105,7 @@ jobs:
     - name: Save version info
       shell: bash
       run: |
-        echo "BEAM_VERSION=$(cat beam/beam_version.gen)" >> $GITHUB_ENV
+        echo "BEAM_VERSION=$(cat 3rdparty/beam/beam_version.gen)" >> $GITHUB_ENV
         echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
 
 ###############################################################################
@@ -157,44 +157,44 @@ jobs:
     - name: Sign the mac binaries [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp git-remote-beam/git-remote-beam
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp remote_helper/git-remote-pit
 
     - name: Checksum [ubuntu]
       if: matrix.os == 'ubuntu-16.04' || matrix.os =='ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       run: |
-        sha256sum git-remote-beam/git-remote-beam > git-remote-beam/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        sha256sum remote_helper/git-remote-pit > remote_helper/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
     - name: Checksum [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        shasum -a 256 git-remote-beam/git-remote-beam > git-remote-beam/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        shasum -a 256 remote_helper/git-remote-pit > remote_helper/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
     - name: Collect [macos-10.15 && ununtu all]
       shell: bash
       if: matrix.os != 'windows-2019'
       run: |
         mkdir artifacts
-        tar -cvf artifacts/pit.tar -C git-remote-beam git-remote-beam git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt beam-remote.cfg
+        tar -cvf artifacts/pit.tar -C remote_helper git-remote-pit git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt pit-remote.cfg
 
     - name: Collect [windows]
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
         mkdir artifacts
-        cp git-remote-beam/${{env.BUILD_CONFIG}}/git-remote-beam.exe artifacts/git-remote-beam.exe
-        cp git-remote-beam/beam-remote.cfg artifacts/beam-remote.cfg
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-pit.exe artifacts/git-remote-pit.exe
+        cp remote_helper/pit-remote.cfg artifacts/pit-remote.cfg
 
     - name: Collect pdb [windows]
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
         mkdir pdb
-        cp git-remote-beam/${{env.BUILD_CONFIG}}/git-remote-beam.pdb pdb/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}.pdb
+        cp remote_pit/${{env.BUILD_CONFIG}}/git-remote-pit.pdb pdb/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}.pdb
 
     - name: Checksum [windows]
       if: matrix.os == 'windows-2019'
       run: |
-        certUtil -hashfile artifacts/git-remote-beam.exe SHA256 > artifacts/git-remote-beam${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        certUtil -hashfile artifacts/git-remote-pit.exe SHA256 > artifacts/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
     - name: OS name [macos-10.15]
       if: matrix.os == 'macos-10.15'
