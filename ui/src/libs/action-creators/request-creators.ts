@@ -34,6 +34,18 @@ export const RC = {
     }
   } as const),
 
+  getMyRepos: () => ({
+    callID: 'my_repos',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'my_repos'
+      },
+      create_tx: false
+    }
+  } as const),
+
   repoGetMeta: (repo_id:number) => ({
     callID: 'repo_get_meta',
     method: 'invoke_contract',

@@ -24,6 +24,10 @@ export const AC = {
     type: ACTIONS.GET_ALL_REPOS,
     payload
   }),
+  setMyRepos: (payload: RepoType[]) => ({
+    type: ACTIONS.GET_MY_REPOS,
+    payload
+  }),
 
   setIsConnected: (payload: boolean) => ({
     type: ACTIONS.CONNECTION,

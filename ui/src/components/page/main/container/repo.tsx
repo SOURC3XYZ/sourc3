@@ -10,7 +10,7 @@ type LocationState = {
   id:RepoId;
 };
 
-const Repo = () => {
+const UserRepos = () => {
   const location = useParams<'id' & 'oid'>() as LocationState;
   const { id } = location;
   const navigate = useNavigate();
@@ -36,4 +36,4 @@ const Repo = () => {
   );
 };
 
-export default Repo;
+export default UserRepos;

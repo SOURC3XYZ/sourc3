@@ -3,7 +3,8 @@ import { ACTIONS } from '@libs/constants';
 import { RepoType, TxItem } from '@types';
 
 interface IApp {
-  repos: RepoType[]
+  repos: RepoType[],
+  myRepos: RepoType[],
   isConnected: boolean;
   txs: Set<TxItem>
   error: {
@@ -15,6 +16,7 @@ interface IApp {
 
 const initialState:IApp = {
   repos: [],
+  myRepos: [],
   isConnected: false,
   txs: new Set(),
   error: null
@@ -35,6 +37,10 @@ const reducer = (
     }
     case ACTIONS.GET_ALL_REPOS: {
       newState.repos = [...action.payload as RepoType[]];
+      break;
+    }
+    case ACTIONS.GET_MY_REPOS: {
+      newState.myRepos = [...action.payload as RepoType[]];
       break;
     }
     case ACTIONS.SET_TX:

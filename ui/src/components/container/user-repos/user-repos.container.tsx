@@ -5,21 +5,21 @@ import { RepoId, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import { Button, Modal, Input } from 'antd';
-import {Nav} from "@components/container/nav";
+import { Nav } from '@components/container/nav';
 
-type AllReposProps = {
-  repos: RepoType[],
-  getAllRepos: () => void,
+type UserReposType = {
+  myRepos: RepoType[],
+  getMyRepos: () => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void
   // resp_name: string
 };
 
-const AllRepos = ({
-  repos, getAllRepos, createRepos, deleteRepos
-}:AllReposProps) => {
+const UserRepos = ({
+  myRepos, getMyRepos, createRepos, deleteRepos
+}:UserReposType) => {
   React.useEffect(() => {
-    getAllRepos();
+    getMyRepos();
   }, []);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -58,19 +58,19 @@ const AllRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
-      <ListRender deleteRepos={deleteRepos} elements={repos} />
+      <ListRender deleteRepos={deleteRepos} elements={myRepos} />
     </>
   );
 };
 
-const mapState = ({ app: { isConnected, repos } }: RootState) => ({
+const mapState = ({ app: { isConnected, myRepos } }: RootState) => ({
   isConnected,
-  repos
+  myRepos
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getAllRepos: () => {
-    dispatch(thunks.getAllRepos());
+  getMyRepos: () => {
+    dispatch(thunks.getMyRepos());
   },
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;
@@ -81,4 +81,4 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   }
 });
 
-export default connect(mapState, mapDispatch)(AllRepos);
+export default connect(mapState, mapDispatch)(UserRepos);
