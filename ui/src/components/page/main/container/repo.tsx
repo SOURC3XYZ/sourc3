@@ -1,7 +1,6 @@
 import { BranchSelect, FileText, FileTree } from '@components/container';
 import { RepoId } from '@types';
 import { Button } from 'antd';
-import React from 'react';
 import {
   Route, Routes, useNavigate, useParams
 } from 'react-router-dom';
@@ -14,8 +13,6 @@ const UserRepos = () => {
   const location = useParams<'id' & 'oid'>() as LocationState;
   const { id } = location;
   const navigate = useNavigate();
-
-  React.useEffect(() => console.log(`${id} repo mounted`), []);
 
   return (
     <>

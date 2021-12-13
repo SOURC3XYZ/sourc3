@@ -1,0 +1,8 @@
+.beamButton {
+	display: inline-block;
+}
+
+.beamButton:hover [class~=ant-btn] {
+	box-shadow: 0 0 8px white;
+	transition: none;
+}

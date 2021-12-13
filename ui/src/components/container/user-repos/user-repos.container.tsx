@@ -1,11 +1,17 @@
-import { ListRender } from '@components/shared';
+import { BeamButton, ListRender } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import { Button, Modal, Input } from 'antd';
 import { Nav } from '@components/container/nav';
+import { Modal, Input } from 'antd';
+import { useParams } from 'react-router-dom';
+import styles from './user-repos.module.css';
+
+type LocationState = {
+  page: string
+};
 
 type UserReposType = {
   myRepos: RepoType[],
@@ -21,6 +27,8 @@ const UserRepos = ({
   React.useEffect(() => {
     getMyRepos();
   }, []);
+
+  const location = useParams<'page' & 'oid'>() as LocationState;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
@@ -44,7 +52,9 @@ const UserRepos = ({
   return (
     <>
       <Nav />
-      <Button onClick={showModal}>New Repository</Button>
+      <div className={styles.repoHeader}>
+        <BeamButton title="New" callback={showModal} />
+      </div>
       <Modal
         title="Basic Modal"
         visible={isModalVisible}
@@ -58,7 +68,12 @@ const UserRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
-      <ListRender deleteRepos={deleteRepos} elements={myRepos} />
+      <ListRender
+        page={+location.page}
+        deleteRepos={deleteRepos}
+        elements={myRepos}
+        url="my-repos"
+      />
     </>
   );
 };

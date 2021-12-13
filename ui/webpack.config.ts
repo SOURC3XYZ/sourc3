@@ -6,7 +6,13 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import MomentTimezoneDataPlugin from 'moment-timezone-data-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as webpack from 'webpack';
+import { Configuration } from 'webpack';
+
+interface IConfig extends Configuration {
+  devServer: { [key:string]: any }
+}
 
 const lessToJs = require('less-vars-to-js');
 
@@ -14,17 +20,38 @@ const themeVariables = lessToJs(
   fs.readFileSync(path.join(__dirname, './ant-theme-vars.less'), 'utf8')
 );
 
-const build:any = {
+const build:IConfig = {
   entry: './src/index.tsx',
+  bail: true,
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].js',
     assetModuleFilename: 'assets/[name][ext]'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
   optimization: {
     nodeEnv: 'production',
     minimize: true
+
+    // splitChunks: {
+    //   chunks: 'all',
+    //   minSize: 30000,
+    //   maxAsyncRequests: 5,
+    //   maxInitialRequests: 3,
+    //   automaticNameDelimiter: '~',
+
+    //   cacheGroups: {
+    //     vendors: {
+    //       chunks: 'all',
+    //       // eslint-disable-next-line max-len
+    //       test: /(react|react-dom|react-router-dom|react-redux|antd|prism)/,
+    //       priority: 100,
+    //       name: 'vendors'
+    //     }
+    //   }
+    // }
   },
   resolve: {
     extensions: ['.ts', '.js', '.tsx'],
@@ -50,29 +77,7 @@ const build:any = {
       {
         test: /\.(js|jsx|tsx|ts)$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        options: {
-          plugins: [
-            [
-              'import',
-              { libraryName: 'antd', libraryDirectory: 'es', style: true },
-              'antd'
-            ],
-            // modularly import the JS that we use from ‘@ant-design/icons’
-            [
-              'import',
-              {
-                libraryName: '@ant-design/icons',
-                libraryDirectory: 'es/icons'
-              },
-              'antd-icons'
-            ],
-            'lodash'
-          ],
-          presets: [
-            ['@babel/env', { targets: { node: 6 } }]
-          ]
-        }
+        loader: 'babel-loader'
       },
       {
         test: /\.css$/,
@@ -118,8 +123,12 @@ const build:any = {
   },
   plugins: [
     // new BundleAnalyzerPlugin(),
+    new CleanWebpackPlugin(),
     new webpack.ProvidePlugin({
       React: 'react'
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production')
     }),
     new webpack.ContextReplacementPlugin(/moment[/\\]locale$/),
     new MomentTimezoneDataPlugin({
@@ -131,8 +140,8 @@ const build:any = {
       template: path.join(__dirname, 'src', 'index.html')
     }),
     new MiniCssExtractPlugin({
-      filename: '[name].css',
-      chunkFilename: '[id].css'
+      filename: 'styles/[name].css',
+      chunkFilename: 'styles/[id].css'
     }),
     new CompressionPlugin({
       include: /\/includes/,
@@ -140,6 +149,4 @@ const build:any = {
     })
   ]
 };
-if (process.env.NODE_ENV !== 'production') build.devtool = 'eval-source-map';
-
 export default build;

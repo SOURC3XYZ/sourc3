@@ -22,7 +22,6 @@ const NotificationElement = ({
   const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const checkTx = (time: number = 0) => {
-    console.log(txItem.id, 'start');
     timeoutIdRef.current = setTimeout(() => {
       checkTxStatus(txItem.id, setProperties as SetPropertiesType<TxResponse>);
     }, time);

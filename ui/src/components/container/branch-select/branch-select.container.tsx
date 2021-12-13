@@ -3,7 +3,7 @@ import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
   CommitHash, RepoId, RepoRef
 } from '@types';
-import { Select } from 'antd';
+import { Select, Typography } from 'antd';
 import React from 'react';
 import { batch, connect } from 'react-redux';
 
@@ -46,8 +46,7 @@ const BranchSelect = ({
 
   return (
     <>
-      {commitHash
-      && (
+      {commitHash ? (
         <Select
           defaultValue={commitHash}
           size="small"
@@ -56,7 +55,7 @@ const BranchSelect = ({
         >
           { refs.map(selectOptionMap) }
         </Select>
-      )}
+      ) : <Typography.Text>no commits</Typography.Text>}
     </>
   );
 };

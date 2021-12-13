@@ -1,18 +1,23 @@
-import { ListRender } from '@components/shared';
+import { BeamButton, ListRender } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import { Button, Modal, Input } from 'antd';
-import {Nav} from "@components/container/nav";
+import { Nav } from '@components/container/nav';
+import { Modal, Input } from 'antd';
+import { useParams } from 'react-router-dom';
+import styles from './all-repos.module.css';
+
+type LocationState = {
+  page: string
+};
 
 type AllReposProps = {
   repos: RepoType[],
   getAllRepos: () => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void
-  // resp_name: string
 };
 
 const AllRepos = ({
@@ -21,6 +26,8 @@ const AllRepos = ({
   React.useEffect(() => {
     getAllRepos();
   }, []);
+
+  const location = useParams<'page' & 'oid'>() as LocationState;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
@@ -44,12 +51,14 @@ const AllRepos = ({
   return (
     <>
       <Nav />
-      <Button onClick={showModal}>New Repository</Button>
+      <div className={styles.repoHeader}>
+        <BeamButton title="New" callback={showModal} />
+      </div>
       <Modal
-        title="Basic Modal"
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
+        closable={false}
       >
         <Input
           placeholder="Enter name repository"
@@ -58,7 +67,12 @@ const AllRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
-      <ListRender deleteRepos={deleteRepos} elements={repos} />
+      <ListRender
+        page={+location.page}
+        deleteRepos={deleteRepos}
+        elements={repos}
+        url="repos"
+      />
     </>
   );
 };

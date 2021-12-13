@@ -28,13 +28,13 @@ const Main = ({
           isConnected
           && (
             <Routes>
-              <Route path="/" element={<Navigate replace to="/repos" />} />
+              <Route path="/" element={<Navigate replace to="/repos/1" />} />
               <Route
-                path="/repos/"
+                path="/repos/:page"
                 element={<AllRepos />}
               />
               <Route
-                path="/my-repos/"
+                path="/my-repos/:page"
                 element={<UserRepos />}
               />
               <Route
