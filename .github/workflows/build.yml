@@ -189,7 +189,7 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         mkdir pdb
-        cp remote_pit/${{env.BUILD_CONFIG}}/git-remote-pit.pdb pdb/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}.pdb
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-pit.pdb pdb/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}.pdb
 
     - name: Checksum [windows]
       if: matrix.os == 'windows-2019'

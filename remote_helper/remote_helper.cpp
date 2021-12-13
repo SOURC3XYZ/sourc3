@@ -835,12 +835,12 @@ int main(int argc, char* argv[])
 {
     if (argc != 3)
     {
-        cerr << "USAGE: git-remote-beam <remote> <url>" << endl;
+        cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
         return -1;
     }
 
     SimpleWalletClient::Options options;
-    po::options_description desc("Git Remote Beam config options");
+    po::options_description desc("PIT config options");
 
     desc.add_options()
         (cli::NODE_ADDR_FULL, po::value<std::string>(&options.nodeURI), "address of node")
@@ -855,10 +855,10 @@ int main(int argc, char* argv[])
 #else
     const auto* homeDir = std::getenv("HOME");
 #endif
-    std::string configPath = "beam-remote.cfg";
+    std::string configPath = "pit-remote.cfg";
     if (homeDir)
     {
-        configPath = std::string(homeDir) + "/.beam/" + configPath;
+        configPath = std::string(homeDir) + "/.pit/" + configPath;
     }
     ReadCfgFromFile(vm, desc, configPath.c_str());
     vm.notify();
@@ -873,7 +873,7 @@ int main(int argc, char* argv[])
     {
         options.repoPath = gitDir;
     }
-    cerr << "Hello Beam.\nRemote:\t" << argv[1]
+    cerr << "Hello PIT.\nRemote:\t" << argv[1]
         << "\nURL:\t" << argv[2]
         << "\nWorking dir:\t" << boost::filesystem::current_path()
         << "\nRepo folder:\t" << options.repoPath
