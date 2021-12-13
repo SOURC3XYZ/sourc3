@@ -1,5 +1,5 @@
 [submodule "beam"]
-	path = beam
+	path = 3rdparty/beam
 	url = https://github.com/BeamMW/beam.git
 [submodule "3rdparty/libgit2"]
 	path = 3rdparty/libgit2
