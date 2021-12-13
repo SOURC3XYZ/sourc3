@@ -5,5 +5,5 @@
 	"jsxSingleQuote": true,
 	"arrowParens": "always",
 	"trailingComma" : "none",
-	"endOfLine":"crlf"
+	"endOfLine":"lf"
 }

@@ -27,9 +27,6 @@
 			],
 			"@types": [
 				"types"
-			],
-			"antd": [
-				"components/antd"
 			]
 		},
 		"sourceMap": true,

@@ -3,15 +3,17 @@ import { colorizer, setGradient } from '@libs/utils';
 import { RepoType } from '@types';
 import { List } from 'antd';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { BeamButton } from './beam-button';
 
 type ListItemProps = {
+  page: number,
   elements: RepoType[],
   deleteRepos: (repo_id: number) => void
 };
 
-const ListRender = ({ elements, deleteRepos }:ListItemProps) => {
+const ListRender = ({ page = 1, elements, deleteRepos }:ListItemProps) => {
+  const navigate = useNavigate();
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
   return (
     <List
@@ -20,7 +22,9 @@ const ListRender = ({ elements, deleteRepos }:ListItemProps) => {
       loading={Boolean(!elements.length)}
       size="small"
       pagination={{
-        pageSize: 8
+        current: page,
+        pageSize: 8,
+        onChange: (next) => navigate(`/repos/${next}`)
       }}
       dataSource={elements}
       renderItem={(item) => {

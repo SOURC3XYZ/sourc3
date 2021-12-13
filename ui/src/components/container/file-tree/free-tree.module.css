@@ -1,0 +1,3 @@
+.customTree [class~=ant-tree-treenode]{
+	width: max-content;
+}

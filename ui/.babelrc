@@ -9,7 +9,20 @@
 		// 	"libraryDirectory": "es", "style": true}, "antd"],
 		// ["import", { "libraryName": "antd", "libraryDirectory": "lib"}, "antd"],
 		// ["import", { "libraryName": "antd-mobile", "libraryDirectory": "lib"}, "antd-mobile"],
-    "@babel/plugin-proposal-class-properties",
-		"@babel/proposal-object-rest-spread"
+			"@babel/plugin-proposal-class-properties",
+
+			"@babel/plugin-syntax-dynamic-import",
+			
+			"@babel/plugin-proposal-object-rest-spread",
+			"lodash",
+			[
+				"import",
+				{
+						"libraryName": "antd",
+						"libraryDirectory": "es",
+						"style": true
+				},
+				"antd" // define name with third parameter, to use different import plugin configs for different modules
+		]
   ]
 }

@@ -5,6 +5,12 @@ import { RepoId, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
+import { useParams } from 'react-router-dom';
+import styles from './all-repos.module.css';
+
+type LocationState = {
+  page: string
+};
 
 type AllReposProps = {
   repos: RepoType[],
@@ -20,6 +26,8 @@ const AllRepos = ({
   React.useEffect(() => {
     getAllRepos();
   }, []);
+
+  const location = useParams<'page' & 'oid'>() as LocationState;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
@@ -42,12 +50,14 @@ const AllRepos = ({
 
   return (
     <>
-      <BeamButton title="New Repository" callback={showModal} />
+      <div className={styles.repoHeader}>
+        <BeamButton title="New Repository" callback={showModal} />
+      </div>
       <Modal
-        title="Basic Modal"
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
+        closable={false}
       >
         <Input
           placeholder="Enter name repository"
@@ -56,7 +66,11 @@ const AllRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
-      <ListRender deleteRepos={deleteRepos} elements={repos} />
+      <ListRender
+        page={+location.page}
+        deleteRepos={deleteRepos}
+        elements={repos}
+      />
     </>
   );
 };

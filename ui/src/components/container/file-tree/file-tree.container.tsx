@@ -10,6 +10,7 @@ import { DataNode } from 'antd/lib/tree';
 import React from 'react';
 import { batch, connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import style from './free-tree.module.css';
 
 type TreeListProps = {
   id: RepoId;
@@ -54,12 +55,14 @@ const FileTree = ({
     <>
       {oid
       && (
-        <Tree.DirectoryTree
-          multiple
-          defaultExpandAll
-          loadData={onLoadData(id, updateTree)}
-          treeData={treeLinkNodeUpdate(id)(tree)}
-        />
+        <div className={style.customTree}>
+          <Tree.DirectoryTree
+            defaultExpandAll
+            selectable={false}
+            loadData={onLoadData(id, updateTree)}
+            treeData={treeLinkNodeUpdate(id)(tree)}
+          />
+        </div>
       )}
     </>
   );
