@@ -63,7 +63,7 @@ else()
     #include(AddShader)
     find_package(Boost REQUIRED COMPONENTS program_options)
     add_subdirectory(3rdparty/libgit2)
-    add_subdirectory (git-remote-beam)
+    add_subdirectory (remote_helper)
     
 endif()
 
