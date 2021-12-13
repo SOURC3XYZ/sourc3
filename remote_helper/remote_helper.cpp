@@ -1,4 +1,10 @@
-﻿#include <iostream>
+﻿#include "wallet/core/contracts/shaders_manager.h"
+#include "wallet/core/wallet_network.h"
+#include "utility/cli/options.h"
+#include "utility/logger.h"
+#include "3rdparty/nlohmann/json.hpp"
+
+#include <iostream>
 #include <string>
 #include <string_view>
 #include <algorithm>
@@ -6,19 +12,12 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
-#include "wallet/core/contracts/shaders_manager.h"
-#include "wallet/core/wallet_network.h"
 #include <thread>
 #include <map>
 #include <stack>
 #include <git2.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include "utility/cli/options.h"
-#include "utility/logger.h"
-
-#include "3rdparty/nlohmann/json.hpp"
-
 
 using json = nlohmann::json;
 
