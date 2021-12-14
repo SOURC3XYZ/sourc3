@@ -34,25 +34,24 @@ const build:IConfig = {
   devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
   optimization: {
     nodeEnv: 'production',
-    minimize: true
+    minimize: true,
 
-    // splitChunks: {
-    //   chunks: 'all',
-    //   minSize: 30000,
-    //   maxAsyncRequests: 5,
-    //   maxInitialRequests: 3,
-    //   automaticNameDelimiter: '~',
+    splitChunks: {
+      chunks: 'all',
+      minSize: 30000,
+      maxAsyncRequests: 5,
+      maxInitialRequests: 3,
+      automaticNameDelimiter: '~',
 
-    //   cacheGroups: {
-    //     vendors: {
-    //       chunks: 'all',
-    //       // eslint-disable-next-line max-len
-    //       test: /(react|react-dom|react-router-dom|react-redux|antd|prism)/,
-    //       priority: 100,
-    //       name: 'vendors'
-    //     }
-    //   }
-    // }
+      cacheGroups: {
+        vendors: {
+          chunks: 'all',
+          test: /(antd|prism)/,
+          priority: 100,
+          name: 'vendors'
+        }
+      }
+    }
   },
   resolve: {
     extensions: ['.ts', '.js', '.tsx'],

@@ -30,8 +30,6 @@ const AllRepos = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
 
-  console.log(type);
-
   React.useEffect(() => {
     loadingData(getAllRepos(type))
       .then(() => setIsLoadin(false));

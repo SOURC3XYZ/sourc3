@@ -1,6 +1,6 @@
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { onLoadData } from '@libs/utils';
+import { extCheck, onLoadData } from '@libs/utils';
 import {
   IDataNodeCustom,
   RepoId, TreeOid, UpdateProps
@@ -28,9 +28,9 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
       newEl.title = (
         <Link
           className={style.leaf}
-          to={`/repo/${id}/${dataRef.oid}`}
+          to={`/repo/${id}/${dataRef.oid}&${extCheck(dataRef.filename)}`}
         >
-          {el.title}
+          {dataRef.filename}
         </Link>
       );
     }
@@ -44,10 +44,7 @@ const FileTree = ({
   React.useEffect(() => () => killRef(), []);
   React.useEffect(() => {
     if (oid) {
-      updateTree({
-        id,
-        oid
-      });
+      updateTree({ id, oid });
     }
   }, [oid]);
 

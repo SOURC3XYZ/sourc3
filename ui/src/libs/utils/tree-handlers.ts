@@ -3,14 +3,19 @@ import {
 } from '@types';
 import { DataNode } from 'antd/lib/tree';
 
-const extCheck = (filename:string) => filename.split('.').length > 1;
+export const extCheck = (fileName:string):string | undefined => {
+  const re = /(?:\.([^.]+))?$/;
+  const compare = re.exec(fileName);
+  if (compare && compare?.length > 1) return compare[1];
+  return undefined;
+};
 
 export const fileSorter = (a:TreeElement, b:TreeElement) => {
   const aLow = a.filename.toLocaleLowerCase();
   const bLow = b.filename.toLocaleLowerCase();
-  const aExt = extCheck(a.filename);
-  const bExt = extCheck(b.filename);
-  if (aExt < bExt || aLow < bLow) { return -1; }
+  const aExt = !!extCheck(a.filename);
+  const bExt = !!extCheck(b.filename);
+  if (+aExt < +bExt || aLow < bLow) { return -1; }
   if (aExt > bExt || aLow > bLow) { return 1; }
   return 0;
 };

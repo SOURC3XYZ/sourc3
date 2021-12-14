@@ -23,16 +23,18 @@ type FileTextProps = {
 
 const FileText = ({ fileText, getFileData, killTextData }: FileTextProps) => {
   const { id, oid } = useParams<'id' & 'oid'>() as LocationState;
-
+  const [hash, ext] = oid.split('&');
   React.useEffect(() => {
-    getFileData(id, oid);
+    if (hash) {
+      getFileData(id, hash);
+    }
     return () => killTextData();
   }, []);
 
   return (
     <>
       <SyntaxHighlighter
-        language="cpp"
+        language={ext || ''}
         wrapLongLine
         showLineNumbers
         style={prism}
