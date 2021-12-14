@@ -11,12 +11,13 @@ import { loadingData } from '@libs/utils';
 import styles from './all-repos.module.css';
 
 type LocationState = {
-  page: string
+  page: string,
+  type: string
 };
 
 type AllReposProps = {
   repos: RepoType[],
-  getAllRepos: (resolve: () => void) => void,
+  getAllRepos: (type: string) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void
 };
@@ -24,15 +25,17 @@ type AllReposProps = {
 const AllRepos = ({
   repos, getAllRepos, createRepos, deleteRepos
 }:AllReposProps) => {
-  const location = useParams<'page' & 'oid'>() as LocationState;
+  const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [isLoading, setIsLoadin] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
 
+  console.log(type);
+
   React.useEffect(() => {
-    loadingData<void>(getAllRepos)
+    loadingData(getAllRepos(type))
       .then(() => setIsLoadin(false));
-  }, []);
+  }, [type]);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -71,10 +74,10 @@ const AllRepos = ({
       </Modal>
       <ListRender
         isLoading={isLoading}
-        page={+location.page}
+        page={+page}
         deleteRepos={deleteRepos}
         elements={repos}
-        url="repos"
+        type={type}
       />
     </>
   );
@@ -86,8 +89,8 @@ const mapState = ({ app: { isConnected, repos } }: RootState) => ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getAllRepos: (resolve: () => void) => {
-    dispatch(thunks.getAllRepos(resolve));
+  getAllRepos: (type: string) => (resolve: () => void) => {
+    dispatch(thunks.getAllRepos(type, resolve));
   },
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;

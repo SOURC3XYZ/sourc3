@@ -6,15 +6,14 @@ const Nav = () => (
   <>
     <div className={style.nav}>
       <Menu
-        defaultSelectedKeys={['1']}
-        defaultOpenKeys={['1']}
+        defaultSelectedKeys={['all']}
         mode="horizontal"
       >
-        <Menu.Item key="1">
-          <Link to="/repos/1">All Repos</Link>
+        <Menu.Item key="all">
+          <Link to="/repos/all/1">All Repository</Link>
         </Menu.Item>
-        <Menu.Item key="2">
-          <Link to="/my-repos/1">My repository</Link>
+        <Menu.Item key="my">
+          <Link to="/repos/my/1">My repository</Link>
         </Menu.Item>
       </Menu>
     </div>

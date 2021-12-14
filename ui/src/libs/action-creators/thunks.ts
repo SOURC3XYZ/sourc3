@@ -27,20 +27,13 @@ export const thunks = {
       }
     },
 
-  getAllRepos: (resolve?: () => void) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getAllRepos())) as T.BeamApiRes;
+  getAllRepos: (type:string, resolve?: () => void) => async (dispatch: AppThunkDispatch) => {
+    const res = (await beam.callApi(RC.getAllRepos(type))) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.ReposResponse;
       dispatch(AC.setRepos(output.repos));
     }
     if (resolve) resolve();
-  },
-  getMyRepos: () => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getMyRepos())) as T.BeamApiRes;
-    if (res.result?.output) {
-      const output = JSON.parse(res.result.output) as T.ReposResponse;
-      dispatch(AC.setMyRepos(output.repos));
-    }
   },
 
   checkTxStatus:

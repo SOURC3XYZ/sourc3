@@ -10,12 +10,12 @@ type ListItemProps = {
   page: number,
   elements: RepoType[],
   deleteRepos: (repo_id: number) => void
-  url: string;
+  type: string;
   isLoading: boolean;
 };
 
 const ListRender = ({
-  page = 1, elements, deleteRepos, isLoading, url = 'repos'
+  page = 1, elements, deleteRepos, isLoading, type = 'repos'
 }:ListItemProps) => {
   const navigate = useNavigate();
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
@@ -28,7 +28,7 @@ const ListRender = ({
       pagination={{
         current: page,
         pageSize: 8,
-        onChange: (next) => navigate(`/${url}/${next}`)
+        onChange: (next) => navigate(`/repos/${type}/${next}`)
       }}
       dataSource={elements}
       renderItem={(item) => {

@@ -3,7 +3,7 @@ import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
-  AllRepos, Notifications, UserRepos
+  AllRepos, Notifications
 } from '@components/container';
 import { thunks } from '@libs/action-creators';
 import styles from './main.module.css';
@@ -28,14 +28,15 @@ const Main = ({
           isConnected
           && (
             <Routes>
-              <Route path="/" element={<Navigate replace to="/repos/1" />} />
               <Route
-                path="/repos/:page"
-                element={<AllRepos />}
+                path="/"
+                element={
+                  <Navigate replace to="/repos/all/1" />
+                }
               />
               <Route
-                path="/my-repos/:page"
-                element={<UserRepos />}
+                path="/repos/:type/:page"
+                element={<AllRepos />}
               />
               <Route
                 path="/repo/:id/*"

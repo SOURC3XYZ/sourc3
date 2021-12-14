@@ -22,25 +22,13 @@ export const RC = {
     params: { create_tx: false }
   } as const),
 
-  getAllRepos: () => ({
+  getAllRepos: (type:string) => ({
     callID: 'all_repos',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
-        action: 'all_repos'
-      },
-      create_tx: false
-    }
-  } as const),
-
-  getMyRepos: () => ({
-    callID: 'my_repos',
-    method: 'invoke_contract',
-    params: {
-      args: {
-        role: 'user',
-        action: 'my_repos'
+        action: `${type}_repos`
       },
       create_tx: false
     }
