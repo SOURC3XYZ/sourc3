@@ -59,7 +59,6 @@ export type { SkeletonProps } from 'antd/lib/skeleton';
 export type { SliderSingleProps } from 'antd/lib/slider';
 export type { SpaceProps } from 'antd/lib/space';
 export type { SpinProps } from 'antd/lib/spin';
-export { default as Spin } from 'antd/lib/spin';
 export type { StepProps, StepsProps } from 'antd/lib/steps';
 export type { SwitchProps } from 'antd/lib/switch';
 export type {
@@ -76,7 +75,6 @@ export type {
   AntTreeNodeProps as TreeNodeProps,
   DataNode as TreeDataNode
 } from 'antd/lib/tree';
-export { default as Tree } from 'antd/lib/tree';
 export type { TreeSelectProps } from 'antd/lib/tree-select';
 export type { TabsProps, TabPaneProps } from 'antd/lib/tabs';
 export type { TagProps, TagType } from 'antd/lib/tag';

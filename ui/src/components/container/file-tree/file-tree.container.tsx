@@ -5,7 +5,7 @@ import {
   IDataNodeCustom,
   RepoId, TreeOid, UpdateProps
 } from '@types';
-import { Tree } from 'antd';
+import { Spin, Tree } from 'antd';
 import { DataNode } from 'antd/lib/tree';
 import React from 'react';
 import { batch, connect } from 'react-redux';
@@ -27,7 +27,7 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
     if (newEl.isLeaf) {
       newEl.title = (
         <Link
-          style={{ textDecoration: 'none', color: '#fff' }}
+          className={style.leaf}
           to={`/repo/${id}/${dataRef.oid}`}
         >
           {el.title}
@@ -54,16 +54,16 @@ const FileTree = ({
   return (
     <>
       {oid
-      && (
-        <div className={style.customTree}>
-          <Tree.DirectoryTree
-            defaultExpandAll
-            selectable={false}
-            loadData={onLoadData(id, updateTree)}
-            treeData={treeLinkNodeUpdate(id)(tree)}
-          />
-        </div>
-      )}
+        ? (
+          <div className={style.customTree}>
+            <Tree.DirectoryTree
+              defaultExpandAll
+              selectable={false}
+              loadData={onLoadData(id, updateTree)}
+              treeData={treeLinkNodeUpdate(id)(tree)}
+            />
+          </div>
+        ) : <Spin />}
     </>
   );
 };

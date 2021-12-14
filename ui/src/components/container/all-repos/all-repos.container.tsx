@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import { Nav } from '@components/container/nav';
 import { Modal, Input } from 'antd';
 import { useParams } from 'react-router-dom';
+import { loadingData } from '@libs/utils';
 import styles from './all-repos.module.css';
 
 type LocationState = {
@@ -15,7 +16,7 @@ type LocationState = {
 
 type AllReposProps = {
   repos: RepoType[],
-  getAllRepos: () => void,
+  getAllRepos: (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void
 };
@@ -23,14 +24,15 @@ type AllReposProps = {
 const AllRepos = ({
   repos, getAllRepos, createRepos, deleteRepos
 }:AllReposProps) => {
-  React.useEffect(() => {
-    getAllRepos();
-  }, []);
-
   const location = useParams<'page' & 'oid'>() as LocationState;
-
+  const [isLoading, setIsLoadin] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
+
+  React.useEffect(() => {
+    loadingData<void>(getAllRepos)
+      .then(() => setIsLoadin(false));
+  }, []);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -68,6 +70,7 @@ const AllRepos = ({
         />
       </Modal>
       <ListRender
+        isLoading={isLoading}
         page={+location.page}
         deleteRepos={deleteRepos}
         elements={repos}
@@ -83,8 +86,8 @@ const mapState = ({ app: { isConnected, repos } }: RootState) => ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getAllRepos: () => {
-    dispatch(thunks.getAllRepos());
+  getAllRepos: (resolve: () => void) => {
+    dispatch(thunks.getAllRepos(resolve));
   },
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;

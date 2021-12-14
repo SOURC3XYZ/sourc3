@@ -27,7 +27,8 @@ const build:IConfig = {
     path: path.join(__dirname, 'dist'),
     filename: '[name].bundle.js',
     chunkFilename: '[name].js',
-    assetModuleFilename: 'assets/[name][ext]'
+    assetModuleFilename: 'assets/[name][ext]',
+    publicPath: '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
@@ -67,6 +68,7 @@ const build:IConfig = {
     maxAssetSize: 512000
   },
   devServer: {
+    historyApiFallback: true,
     watchFiles: path.join(__dirname, 'src'),
     port: 5000,
     open: true,
@@ -137,7 +139,7 @@ const build:IConfig = {
       matchZones: /^America\//
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'index.html')
+      template: path.join(__dirname, 'src', 'public', 'index.html')
     }),
     new MiniCssExtractPlugin({
       filename: 'styles/[name].css',

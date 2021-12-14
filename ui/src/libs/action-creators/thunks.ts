@@ -27,12 +27,13 @@ export const thunks = {
       }
     },
 
-  getAllRepos: () => async (dispatch: AppThunkDispatch) => {
+  getAllRepos: (resolve?: () => void) => async (dispatch: AppThunkDispatch) => {
     const res = (await beam.callApi(RC.getAllRepos())) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.ReposResponse;
       dispatch(AC.setRepos(output.repos));
     }
+    if (resolve) resolve();
   },
   getMyRepos: () => async (dispatch: AppThunkDispatch) => {
     const res = (await beam.callApi(RC.getMyRepos())) as T.BeamApiRes;
@@ -77,12 +78,15 @@ export const thunks = {
     }
   },
 
-  repoGetRefs: (id: T.RepoId) => async (dispatch: AppThunkDispatch) => {
+  repoGetRefs: (
+    id: T.RepoId, resolve?: () => void
+  ) => async (dispatch: AppThunkDispatch) => {
     const res = (await beam.callApi(RC.repoGetRefs(id))) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.RepoRefsResponse;
       dispatch(AC.setRepoRefs(output.refs));
     }
+    if (resolve) resolve();
   },
 
   getCommit: (
