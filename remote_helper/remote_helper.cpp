@@ -879,6 +879,7 @@ int main(int argc, char* argv[])
         << "\nURL:\t" << argv[2]
         << "\nWorking dir:\t" << boost::filesystem::current_path()
         << "\nRepo folder:\t" << options.repoPath
+        << "\nWallet folder:\t" << options.walletPath
         << endl;
     SimpleWalletClient walletClient(options);
     GitInit init;
