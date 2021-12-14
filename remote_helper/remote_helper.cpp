@@ -1,7 +1,8 @@
-﻿// git-remote-beam.cpp : Defines the entry point for the application.
-//
-
-#include "git-remote-beam.h"
+﻿#include "wallet/core/contracts/shaders_manager.h"
+#include "wallet/core/wallet_network.h"
+#include "utility/cli/options.h"
+#include "utility/logger.h"
+#include "3rdparty/nlohmann/json.hpp"
 
 #include <iostream>
 #include <string>
@@ -11,19 +12,12 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
-#include "wallet/core/contracts/shaders_manager.h"
-#include "wallet/core/wallet_network.h"
 #include <thread>
 #include <map>
 #include <stack>
 #include <git2.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include "utility/cli/options.h"
-#include "utility/logger.h"
-
-#include "3rdparty/nlohmann/json.hpp"
-
 
 using json = nlohmann::json;
 
@@ -841,12 +835,12 @@ int main(int argc, char* argv[])
 {
     if (argc != 3)
     {
-        cerr << "USAGE: git-remote-beam <remote> <url>" << endl;
+        cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
         return -1;
     }
 
     SimpleWalletClient::Options options;
-    po::options_description desc("Git Remote Beam config options");
+    po::options_description desc("PIT config options");
 
     desc.add_options()
         (cli::NODE_ADDR_FULL, po::value<std::string>(&options.nodeURI), "address of node")
@@ -857,15 +851,18 @@ int main(int argc, char* argv[])
 
     po::variables_map vm;
 #ifdef WIN32
+    const auto* drive = std::getenv("HOMEDRIVE");
     const auto* homeDir = std::getenv("HOMEPATH");
 #else
+    const auto* drive = "";
     const auto* homeDir = std::getenv("HOME");
 #endif
-    std::string configPath = "beam-remote.cfg";
-    if (homeDir)
+    std::string configPath = "pit-remote.cfg";
+    if (homeDir && drive)
     {
-        configPath = std::string(homeDir) + "/.beam/" + configPath;
+        configPath = std::string(drive) + std::string(homeDir) + "/.pit/" + configPath;
     }
+    cerr << "Reading config from: " << configPath << "..." << endl;
     ReadCfgFromFile(vm, desc, configPath.c_str());
     vm.notify();
 
@@ -873,16 +870,19 @@ int main(int argc, char* argv[])
     io::Reactor::Ptr reactor = io::Reactor::create();
     io::Reactor::Scope scope(*reactor);
     auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, LOG_LEVEL_DEBUG, "", "");
-    options.repoName = string_view(argv[2]).substr(7).data();
+    string_view sv(argv[2]);
+    const string_view SCHEMA = "pit://";
+    options.repoName = sv.substr(SCHEMA.size()).data();
     auto* gitDir = std::getenv("GIT_DIR"); // set during clone
     if (gitDir)
     {
         options.repoPath = gitDir;
     }
-    cerr << "Hello Beam.\nRemote:\t" << argv[1]
+    cerr << "Hello PIT.\nRemote:\t" << argv[1]
         << "\nURL:\t" << argv[2]
         << "\nWorking dir:\t" << boost::filesystem::current_path()
         << "\nRepo folder:\t" << options.repoPath
+        << "\nWallet folder:\t" << options.walletPath
         << endl;
     SimpleWalletClient walletClient(options);
     GitInit init;
