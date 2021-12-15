@@ -16,6 +16,7 @@ export const RC = {
       txId
     }
   }),
+
   zeroMethodCall: () => ({
     callID: 'zero_method_call',
     method: 'invoke_contract',

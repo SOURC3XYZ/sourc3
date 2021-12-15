@@ -1,9 +1,8 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
-import { RepoType, TxItem } from '@types';
+import { TxItem } from '@types';
 
 interface IApp {
-  repos: RepoType[],
   isConnected: boolean;
   txs: Set<TxItem>
   error: {
@@ -14,7 +13,6 @@ interface IApp {
 }
 
 const initialState:IApp = {
-  repos: [],
   isConnected: false,
   txs: new Set(),
   error: null
@@ -31,10 +29,6 @@ const reducer = (
   switch (action.type) {
     case ACTIONS.CONNECTION: {
       newState.isConnected = <boolean>action.payload;
-      break;
-    }
-    case ACTIONS.GET_ALL_REPOS: {
-      newState.repos = [...action.payload as RepoType[]];
       break;
     }
     case ACTIONS.SET_TX:

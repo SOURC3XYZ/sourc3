@@ -2,11 +2,11 @@ import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { extCheck, onLoadData } from '@libs/utils';
 import {
+  DataNode,
   IDataNodeCustom,
   RepoId, TreeOid, UpdateProps
 } from '@types';
-import { Spin, Tree } from 'antd';
-import { DataNode } from 'antd/lib/tree';
+import { Tree } from 'antd';
 import React from 'react';
 import { batch, connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -50,17 +50,16 @@ const FileTree = ({
 
   return (
     <>
-      {oid
-        ? (
-          <div className={style.customTree}>
-            <Tree.DirectoryTree
-              defaultExpandAll
-              selectable={false}
-              loadData={onLoadData(id, updateTree)}
-              treeData={treeLinkNodeUpdate(id)(tree)}
-            />
-          </div>
-        ) : <Spin />}
+      {oid && (
+        <div className={style.customTree}>
+          <Tree.DirectoryTree
+            defaultExpandAll
+            selectable={false}
+            loadData={onLoadData(id, updateTree)}
+            treeData={treeLinkNodeUpdate(id)(tree)}
+          />
+        </div>
+      )}
     </>
   );
 };

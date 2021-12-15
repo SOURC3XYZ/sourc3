@@ -31,7 +31,8 @@
 		},
 		"sourceMap": true,
 		"types": [
-			"node"
+			"node",
+			"jest"
 		],
 		"allowJs": true,
 		"skipLibCheck": true,

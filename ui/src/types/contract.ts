@@ -11,6 +11,9 @@ export type TreeOid = string;
 export type TreeElementFilename = string;
 export type TreeElementOid = string;
 export type ObjectData = string;
+export type RepoListType = 'all' | 'my';
+
+export type BeamReqAction = { [key: string]: string };
 
 export type RepoType = {
   repo_name: RepoName;

@@ -5,6 +5,7 @@ import { List } from 'antd';
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BeamButton } from './beam-button';
+import Excretion from './excretion';
 
 type ListItemProps = {
   page: number,
@@ -12,10 +13,11 @@ type ListItemProps = {
   deleteRepos: (repo_id: number) => void
   type: string;
   isLoading: boolean;
+  searchText: string;
 };
 
 const ListRender = ({
-  page = 1, elements, deleteRepos, isLoading, type = 'repos'
+  page = 1, elements, searchText, deleteRepos, isLoading, type = 'repos'
 }:ListItemProps) => {
   const navigate = useNavigate();
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
@@ -55,10 +57,18 @@ const ListRender = ({
                   }
                   state={{ id: item.repo_id }}
                 >
-                  {item.repo_name}
+                  <Excretion name={item.repo_name} inputText={searchText} />
                 </Link>
               )}
-              description={`repo id: ${item.repo_id}`}
+              description={(
+                <>
+                  <span>id: </span>
+                  <Excretion
+                    name={String(item.repo_id)}
+                    inputText={searchText}
+                  />
+                </>
+              )}
             />
           </List.Item>
         );

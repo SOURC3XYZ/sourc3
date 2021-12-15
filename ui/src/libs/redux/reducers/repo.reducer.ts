@@ -1,24 +1,28 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import {
-  RepoRef, RepoMeta, RepoCommit
+  RepoRef, RepoMeta, RepoCommit, RepoType
 } from '@types';
 import { DataNode } from 'antd/lib/tree';
 
 interface IRepo {
+  repos: RepoType[]
   meta: RepoMeta[],
   refs: RepoRef[],
   commitData: RepoCommit | null,
   tree: DataNode[],
-  fileText: string
+  fileText: string,
+  searchText: string
 }
 
 const initialState:IRepo = {
+  repos: [],
   meta: [],
   refs: [],
   commitData: null,
   tree: [],
-  fileText: ''
+  fileText: '',
+  searchText: ''
 };
 
 const reducer = (
@@ -30,14 +34,16 @@ const reducer = (
       newState.meta = action.payload as RepoMeta[];
       break;
     }
-
+    case ACTIONS.GET_ALL_REPOS: {
+      newState.repos = [...action.payload as RepoType[]];
+      break;
+    }
     case ACTIONS.REPO_REFS: {
       newState.refs = action.payload as RepoRef[];
       break;
     }
 
     case ACTIONS.COMMIT: {
-      console.log('commit');
       newState.commitData = action.payload as RepoCommit;
       break;
     }
@@ -49,6 +55,11 @@ const reducer = (
 
     case ACTIONS.SET_FILE_TEXT: {
       newState.fileText = action.payload as string;
+      break;
+    }
+
+    case ACTIONS.SET_SEARCH: {
+      newState.searchText = action.payload as string;
       break;
     }
 

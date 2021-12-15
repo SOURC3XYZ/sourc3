@@ -1,34 +1,42 @@
-import { BeamButton, ListRender } from '@components/shared';
-import { thunks } from '@libs/action-creators';
+import { BeamButton, ListRender, Search } from '@components/shared';
+import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
-import { RepoId, RepoType } from '@types';
+import { RepoId, RepoListType, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
 import { Nav } from '@components/container/nav';
-import { Modal, Input } from 'antd';
+import {
+  Modal, Input, Row, Col
+} from 'antd';
 import { useParams } from 'react-router-dom';
-import { loadingData } from '@libs/utils';
+import { loadingData, searchFilter } from '@libs/utils';
 import styles from './all-repos.module.css';
 
 type LocationState = {
   page: string,
-  type: string
+  type: RepoListType
 };
 
 type AllReposProps = {
   repos: RepoType[],
-  getAllRepos: (type: string) => (resolve: () => void) => void,
+  searchText: string,
+  getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
-  deleteRepos: (repo_id: RepoId) => void
+  deleteRepos: (repo_id: RepoId) => void,
+  setInputText: (inputText: string) => void
 };
 
 const AllRepos = ({
-  repos, getAllRepos, createRepos, deleteRepos
+  repos, searchText, getAllRepos, createRepos, deleteRepos, setInputText
 }:AllReposProps) => {
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [isLoading, setIsLoadin] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [inputRepoName, setInputRepoName] = useState('');
+
+  const filteredRepos = React.useMemo(() => searchFilter(
+    searchText, repos, ['repo_id', 'repo_name']
+  ), [searchText, repos]);
 
   React.useEffect(() => {
     loadingData(getAllRepos(type))
@@ -53,10 +61,17 @@ const AllRepos = ({
 
   return (
     <>
-      <Nav />
-      <div className={styles.repoHeader}>
-        <BeamButton title="New" callback={showModal} />
-      </div>
+      <Nav type={type} />
+      <Row className={styles.repoHeader}>
+        <Col span={8}>
+          <BeamButton title="New" callback={showModal} />
+        </Col>
+        <Col span={8} offset={8}>
+
+          <Search text={searchText} setInputText={setInputText} />
+        </Col>
+      </Row>
+
       <Modal
         visible={isModalVisible}
         onOk={handleOk}
@@ -71,23 +86,28 @@ const AllRepos = ({
         />
       </Modal>
       <ListRender
+        searchText={searchText}
         isLoading={isLoading}
         page={+page}
         deleteRepos={deleteRepos}
-        elements={repos}
+        elements={filteredRepos}
         type={type}
       />
     </>
   );
 };
 
-const mapState = ({ app: { isConnected, repos } }: RootState) => ({
+const mapState = ({
+  app: { isConnected },
+  repo: { repos, searchText }
+}: RootState) => ({
   isConnected,
-  repos
+  repos,
+  searchText
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getAllRepos: (type: string) => (resolve: () => void) => {
+  getAllRepos: (type: RepoListType) => (resolve: () => void) => {
     dispatch(thunks.getAllRepos(type, resolve));
   },
   createRepos: (repo_name:string) => {
@@ -96,6 +116,9 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   deleteRepos: (repo_id: number) => {
     dispatch(thunks.deleteRepos(repo_id));
+  },
+  setInputText: (inputText: string) => {
+    dispatch(AC.setSearch(inputText));
   }
 });
 

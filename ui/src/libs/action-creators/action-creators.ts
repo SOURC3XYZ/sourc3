@@ -1,8 +1,7 @@
 import { ACTIONS } from '@libs/constants';
 import {
-  PropertiesType, RepoCommit, RepoMeta, RepoRef, RepoType, TxItem
+  TxItem, RepoType, RepoMeta, RepoRef, RepoCommit, PropertiesType, DataNode
 } from '@types';
-import { DataNode } from 'antd/lib/tree';
 
 export const AC = {
   setTx: (payload: string) => ({
@@ -64,7 +63,13 @@ export const AC = {
   setFileText: (payload: string) => ({
     type: ACTIONS.SET_FILE_TEXT,
     payload
-  } as const)
+  } as const),
+
+  setSearch: (inputText: string) => ({
+    type: ACTIONS.SET_SEARCH,
+    payload: inputText
+  }) as const
+
 };
 
 export type ActionCreators = ReturnType<PropertiesType<typeof AC>>;

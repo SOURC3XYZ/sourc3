@@ -4,6 +4,7 @@ import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
 import * as T from '@types';
+import { RepoListType } from '@types';
 import { AC } from './action-creators';
 import { RC, RequestCreators } from './request-creators';
 
@@ -27,7 +28,9 @@ export const thunks = {
       }
     },
 
-  getAllRepos: (type:string, resolve?: () => void) => async (dispatch: AppThunkDispatch) => {
+  getAllRepos: (
+    type:RepoListType, resolve?: () => void
+  ) => async (dispatch: AppThunkDispatch) => {
     const res = (await beam.callApi(RC.getAllRepos(type))) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.ReposResponse;

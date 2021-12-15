@@ -1,12 +1,17 @@
+import { RepoListType } from '@types';
 import { Menu } from 'antd';
 import { Link } from 'react-router-dom';
 import style from './nav.module.css';
 
-const Nav = () => (
+type NavProps = {
+  type: RepoListType
+};
+
+const Nav = ({ type }:NavProps) => (
   <>
     <div className={style.nav}>
       <Menu
-        defaultSelectedKeys={['all']}
+        defaultSelectedKeys={[type]}
         mode="horizontal"
       >
         <Menu.Item key="all">

@@ -12,6 +12,8 @@
     "browser": true
   },
   "rules": {
+		"no-bitwise": ["off"],
+		"import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/*.test.ts", "**/*.spec.ts", "webpack.config.ts"]}],
 		"import/prefer-default-export": "off",
 		"react/react-in-jsx-scope": "off",
   "no-nested-ternary": "off",

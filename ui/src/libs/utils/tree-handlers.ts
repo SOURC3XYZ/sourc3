@@ -6,7 +6,8 @@ import { DataNode } from 'antd/lib/tree';
 export const extCheck = (fileName:string):string | undefined => {
   const re = /(?:\.([^.]+))?$/;
   const compare = re.exec(fileName);
-  if (compare && compare?.length > 1) return compare[1];
+  const condition = compare && compare?.length > 1 && fileName !== '.vscode';
+  if (condition) return compare[1];
   return undefined;
 };
 
@@ -26,7 +27,7 @@ export const treeDataMaker = (
   const newTree = tree.sort(fileSorter).map((el, i) => ({
     title: el.filename,
     key: parentKey !== undefined ? `${parentKey}-${i}` : i,
-    isLeaf: el.filename.split('.').length > 1,
+    isLeaf: !!extCheck(el.filename),
     dataRef: el
   }));
   return newTree;

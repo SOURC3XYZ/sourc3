@@ -3,7 +3,7 @@ import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { loadingData } from '@libs/utils';
 import {
-  CommitHash, RepoId, RepoRef
+  CommitHash, RepoCommit, RepoId, RepoRef
 } from '@types';
 import { Select } from 'antd';
 import React from 'react';
@@ -14,6 +14,7 @@ type GetRefs = (repo_id: RepoId) => (resolve: () => void) => void;
 type BranchSelectProps = {
   id:RepoId;
   refs: RepoRef[];
+  commitData: RepoCommit | null;
   getRefs: GetRefs
   setCommitToNull: () => void;
   getCommit: (obj_id: CommitHash, repo_id: RepoId) => void
@@ -29,7 +30,7 @@ const selectOptionMap = (el: RepoRef) => (
 );
 
 const BranchSelect = ({
-  id, refs, getRefs, setCommitToNull, getCommit
+  id, refs, commitData, getRefs, setCommitToNull, getCommit
 }:BranchSelectProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [commitHash, setHash] = React.useState<CommitHash | null>(null);
@@ -42,6 +43,7 @@ const BranchSelect = ({
   React.useEffect(() => {
     loadingData<void>(getRefs(id))
       .then(() => setIsLoading(false));
+    return setCommitToNull;
   }, [id]);
 
   React.useEffect(() => {
@@ -54,28 +56,48 @@ const BranchSelect = ({
   return (
     <>
       {isLoading
-        ? <Info message="loading refs..." />
+        ? <Info title="loading refs..." message="" />
         : commitHash ? (
-          <Select
-            defaultValue={commitHash}
-            size="small"
-            style={{ width: 200 }}
-            onChange={setHash}
-          >
-            { refs.map(selectOptionMap) }
-          </Select>
-        ) : <Info message="no commits" />}
+          <>
+            <Select
+              defaultValue={commitHash}
+              size="small"
+              style={{ width: 200 }}
+              onChange={setHash}
+            >
+              { refs.map(selectOptionMap) }
+            </Select>
+          </>
+        ) : <Info title="no commits" message="" />}
+
+      {commitData && (
+        <>
+          {' '}
+          <Info
+            title="author: "
+            message={commitData.author_name}
+            link={commitData.author_email}
+          />
+          {' '}
+          <Info
+            title="last comitter: "
+            message={commitData.committer_name}
+            link={commitData.committer_email}
+          />
+        </>
+      )}
 
     </>
   );
 };
 
 const mapState = (
-  { repo: { refs } }:RootState,
+  { repo: { refs, commitData } }:RootState,
   { id }: { id:RepoId }
 ) => ({
   id,
-  refs
+  refs,
+  commitData
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
