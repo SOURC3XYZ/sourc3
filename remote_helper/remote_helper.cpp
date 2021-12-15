@@ -851,16 +851,14 @@ int main(int argc, char* argv[])
 
     po::variables_map vm;
 #ifdef WIN32
-    const auto* drive = std::getenv("HOMEDRIVE");
-    const auto* homeDir = std::getenv("HOMEPATH");
+    const auto* homeDir = std::getenv("USERPROFILE");
 #else
-    const auto* drive = "";
     const auto* homeDir = std::getenv("HOME");
 #endif
     std::string configPath = "pit-remote.cfg";
-    if (homeDir && drive)
+    if (homeDir)
     {
-        configPath = std::string(drive) + std::string(homeDir) + "/.pit/" + configPath;
+        configPath = std::string(homeDir) + "/.pit/" + configPath;
     }
     cerr << "Reading config from: " << configPath << "..." << endl;
     ReadCfgFromFile(vm, desc, configPath.c_str());
