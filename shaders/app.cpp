@@ -410,7 +410,8 @@ namespace
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
-            On_error("sorry, but no object_data(");
+            Env::DocAddBlob("object_data", nullptr, 0);
+//            On_error("sorry, but no object_data(");
         }
     }
 
@@ -466,7 +467,8 @@ namespace
             AddCommit(commit);
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
-            On_error("sorry, but no object_data(");
+            Env::DocAddBlob("object_data", nullptr, 0);
+//            On_error("sorry, but no object_data(");
         }
     }
 
