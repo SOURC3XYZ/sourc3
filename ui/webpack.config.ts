@@ -25,33 +25,31 @@ const build:IConfig = {
   bail: true,
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: '[name].bundle.js',
-    chunkFilename: '[name].js',
-    assetModuleFilename: 'assets/[name][ext]',
-    publicPath: '/'
+    filename: 'bundle.js',
+    assetModuleFilename: 'assets/[name][ext]'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
   optimization: {
     nodeEnv: 'production',
-    minimize: true,
+    minimize: true
 
-    splitChunks: {
-      chunks: 'all',
-      minSize: 30000,
-      maxAsyncRequests: 5,
-      maxInitialRequests: 3,
-      automaticNameDelimiter: '~',
+    // splitChunks: {
+    //   chunks: 'all',
+    //   minSize: 30000,
+    //   maxAsyncRequests: 5,
+    //   maxInitialRequests: 3,
+    //   automaticNameDelimiter: '~',
 
-      cacheGroups: {
-        vendors: {
-          chunks: 'all',
-          test: /(antd|prism)/,
-          priority: 100,
-          name: 'vendors'
-        }
-      }
-    }
+    //   cacheGroups: {
+    //     vendors: {
+    //       chunks: 'all',
+    //       test: /(antd|prism)/,
+    //       priority: 100,
+    //       name: 'vendors'
+    //     }
+    //   }
+    // }
   },
   resolve: {
     extensions: ['.ts', '.js', '.tsx'],

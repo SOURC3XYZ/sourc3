@@ -141,7 +141,7 @@ export const thunks = {
   },
 
   getTextData: (
-    repoId: T.RepoId, oid: T.TreeElementOid
+    repoId: T.RepoId, oid: T.TreeElementOid, resolve: () => void
   ) => async (dispatch: AppThunkDispatch) => {
     const res = await beam
       .callApi(RC.getData(repoId, oid)) as T.BeamApiRes;
@@ -149,5 +149,6 @@ export const thunks = {
       const output = JSON.parse(res.result.output) as T.ObjectDataResponse;
       dispatch(AC.setFileText(hexParser(output.object_data)));
     }
+    if (resolve) resolve();
   }
 };

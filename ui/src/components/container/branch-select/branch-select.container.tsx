@@ -3,7 +3,7 @@ import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { loadingData } from '@libs/utils';
 import {
-  CommitHash, RepoCommit, RepoId, RepoRef
+  CommitHash, RepoId, RepoRef
 } from '@types';
 import { Select } from 'antd';
 import React from 'react';
@@ -14,7 +14,9 @@ type GetRefs = (repo_id: RepoId) => (resolve: () => void) => void;
 type BranchSelectProps = {
   id:RepoId;
   refs: RepoRef[];
-  commitData: RepoCommit | null;
+  commitHash: CommitHash | null;
+  setHash: React.Dispatch<React.SetStateAction<string | null>>
+  killRef: () => void;
   getRefs: GetRefs
   setCommitToNull: () => void;
   getCommit: (obj_id: CommitHash, repo_id: RepoId) => void
@@ -30,11 +32,12 @@ const selectOptionMap = (el: RepoRef) => (
 );
 
 const BranchSelect = ({
-  id, refs, commitData, getRefs, setCommitToNull, getCommit
+  id, refs, commitHash, setHash, getRefs, killRef, setCommitToNull, getCommit
 }:BranchSelectProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [commitHash, setHash] = React.useState<CommitHash | null>(null);
   const noRefInfo = refs.length && !commitHash;
+
+  React.useEffect(() => killRef, []);
 
   React.useEffect(() => {
     if (noRefInfo) setHash(refs[0].commit_hash);
@@ -69,33 +72,13 @@ const BranchSelect = ({
             </Select>
           </>
         ) : <Info title="no commits" message="" />}
-
-      {commitData && (
-        <>
-          {' '}
-          <Info
-            title="author: "
-            message={commitData.author_name}
-            link={commitData.author_email}
-          />
-          {' '}
-          <Info
-            title="last comitter: "
-            message={commitData.committer_name}
-            link={commitData.committer_email}
-          />
-        </>
-      )}
-
     </>
   );
 };
 
 const mapState = (
-  { repo: { refs, commitData } }:RootState,
-  { id }: { id:RepoId }
+  { repo: { refs, commitData } }:RootState
 ) => ({
-  id,
   refs,
   commitData
 });
@@ -107,6 +90,10 @@ const mapDispatch = (dispatch:AppThunkDispatch) => ({
 
   getCommit: (obj_id: CommitHash, repo_id: RepoId) => {
     dispatch(thunks.getCommit(obj_id, repo_id));
+  },
+
+  killRef: () => {
+    dispatch(AC.setRepoRefs([]));
   },
 
   setCommitToNull: () => {

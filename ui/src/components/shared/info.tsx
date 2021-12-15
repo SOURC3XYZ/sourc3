@@ -15,9 +15,9 @@ const Info = ({ message, title, link }:InfoProps) => (
     )}
 
     {link && (
-      <Typography.Link href={`mailto:${link}`} target="_blank">
+      <Typography.Text type="secondary" copyable={{ text: link }}>
         {message}
-      </Typography.Link>
+      </Typography.Text>
     )}
   </>
 );

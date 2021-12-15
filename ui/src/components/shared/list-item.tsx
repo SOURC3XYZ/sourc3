@@ -12,24 +12,30 @@ type ListItemProps = {
   elements: RepoType[],
   deleteRepos: (repo_id: number) => void
   type: string;
-  isLoading: boolean;
+  loading: boolean;
   searchText: string;
 };
 
 const ListRender = ({
-  page = 1, elements, searchText, deleteRepos, isLoading, type = 'repos'
+  page = 1, elements, searchText, deleteRepos, loading, type = 'repos'
 }:ListItemProps) => {
   const navigate = useNavigate();
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
+
+  React.useEffect(() => {
+    navigate(`/repos/${type}/${1}`);
+  }, [elements]);
+
   return (
     <List
       split
       bordered
-      loading={isLoading}
+      loading={loading}
       size="small"
       pagination={{
-        current: page,
+        hideOnSinglePage: true,
         pageSize: 8,
+        current: page,
         onChange: (next) => navigate(`/repos/${type}/${next}`)
       }}
       dataSource={elements}
@@ -53,7 +59,7 @@ const ListRender = ({
               title={(
                 <Link
                   to={
-                    `/repo/${item.repo_id}/tree`
+                    `/repo/${item.repo_id}&${item.repo_name}/tree`
                   }
                   state={{ id: item.repo_id }}
                 >

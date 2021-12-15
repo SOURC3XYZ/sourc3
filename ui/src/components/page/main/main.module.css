@@ -1,3 +1,5 @@
 .main {
-padding: 1rem;
+  padding: 1rem;
+  max-width: 74rem;
+  margin: 0 auto;
 }

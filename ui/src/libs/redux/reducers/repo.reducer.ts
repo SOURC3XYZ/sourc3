@@ -15,7 +15,7 @@ interface IRepo {
   searchText: string
 }
 
-const initialState:IRepo = {
+export const initialState:IRepo = {
   repos: [],
   meta: [],
   refs: [],

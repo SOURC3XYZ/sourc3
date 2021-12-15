@@ -22,7 +22,7 @@ const Search = ({ text, setInputText }:SearchProps) => {
 
   return (
     <Input
-      placeholder="enter repo name"
+      placeholder="enter repo name or id"
       value={text}
       onChange={onSearchChange}
     />

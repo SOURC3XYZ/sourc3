@@ -77,7 +77,6 @@ const mapState = (
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
   killRef: () => {
     batch(() => {
-      dispatch(AC.setRepoRefs([]));
       dispatch(AC.setTreeData([]));
     });
   },

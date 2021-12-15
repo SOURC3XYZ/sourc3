@@ -1,5 +1,7 @@
 body{
-  overflow-y: scroll;
+  overflow-y: scroll !important;
+  width: unset !important;
+  
 }
 
 body::-webkit-scrollbar {

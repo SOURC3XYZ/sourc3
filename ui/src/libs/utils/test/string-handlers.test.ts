@@ -1,4 +1,4 @@
-import { searchFilter } from './string-handlers';
+import { searchFilter } from '../string-handlers';
 
 test('is search text equal', () => {
   const data = [
@@ -17,6 +17,22 @@ test('is search text equal', () => {
     {
       name: 'Robert',
       lastName: 'Baratheon'
+    },
+    {
+      name: 12,
+      lastName: 32
+    },
+    {
+      name: 122222,
+      lastName: 32312
+    },
+    {
+      name: 12222,
+      lastName: 32312
+    },
+    {
+      name: 12222,
+      lastName: 32312
     }
   ];
   expect(searchFilter('sno', data, ['lastName']))
@@ -47,6 +63,25 @@ test('is search text equal', () => {
       {
         name: 'Robert',
         lastName: 'Baratheon'
+      }]
+    );
+  expect(searchFilter('12', data, ['name', 'lastName']))
+    .toEqual(
+      [{
+        name: 12,
+        lastName: 32
+      },
+      {
+        name: 122222,
+        lastName: 32312
+      },
+      {
+        name: 12222,
+        lastName: 32312
+      },
+      {
+        name: 12222,
+        lastName: 32312
       }]
     );
 });

@@ -87,7 +87,7 @@ const AllRepos = ({
       </Modal>
       <ListRender
         searchText={searchText}
-        isLoading={isLoading}
+        loading={isLoading}
         page={+page}
         deleteRepos={deleteRepos}
         elements={filteredRepos}
