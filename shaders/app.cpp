@@ -427,6 +427,12 @@ namespace
         Env::DocAddText("author_email", commit.author->email);
         Env::DocAddText("committer_name", commit.committer->name);
         Env::DocAddText("committer_email", commit.committer->email);
+        Env::DocArray parent("parents");
+        for (size_t i = 0; i < commit.parent_ids.size; ++i) {
+            Env::DocGroup entry("");
+            git_oid_fmt(oid_buffer, &commit.parent_ids.ptr[0]);
+            Env::DocAddText("oid", oid_buffer);
+        }
     }
 
     void AddTree(const mygit2::git_tree& tree) {
