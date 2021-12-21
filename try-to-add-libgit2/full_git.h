@@ -569,7 +569,7 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
 
     while (git_oid__parse(&parent_id, &buffer, buffer_end, "parent ") == 0) {
         auto *new_id = (mygit2::git_oid *) git_array_alloc(commit->parent_ids);
-        Env::Memcpy(parent_id.id, new_id->id, sizeof(parent_id.id));
+        Env::Memcpy(new_id->id, parent_id.id, sizeof(parent_id.id));
     }
 
     if (!(flags & GIT_COMMIT_PARSE_QUICK)) {
