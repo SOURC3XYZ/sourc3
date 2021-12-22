@@ -1,21 +1,24 @@
-﻿#include "wallet/core/contracts/shaders_manager.h"
-#include "wallet/core/wallet_network.h"
+﻿#include "3rdparty/nlohmann/json.hpp"
 #include "utility/cli/options.h"
 #include "utility/logger.h"
-#include "3rdparty/nlohmann/json.hpp"
+#include "wallet/core/contracts/shaders_manager.h"
+#include "wallet/core/wallet_network.h"
+#include "wallet/ipfs/ipfs.h"
+#include "wallet/ipfs/ipfs_async.h"
 
-#include <iostream>
-#include <string>
-#include <string_view>
 #include <algorithm>
-#include <vector>
 #include <cstdlib>
-#include <sstream>
 #include <fstream>
-#include <thread>
+#include <iostream>
 #include <map>
+#include <sstream>
 #include <stack>
+#include <string_view>
+#include <string>
+#include <thread>
+#include <vector>
 #include <git2.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
@@ -57,7 +60,7 @@ namespace
         // followed by data
     };
 
-    struct ObjectsInfo 
+    struct ObjectsInfo
     {
         uint32_t objects_number;
         //GitObject objects[];
@@ -134,7 +137,18 @@ namespace
             m_NodeNet->m_Cfg.m_vNodes.push_back(m_NodeAddress);
             m_NodeNet->Connect();
             m_Wallet->SetNodeEndpoint(m_NodeNet);
+#ifdef BEAM_IPFS_SUPPORT
+            StartIPFS(m_RepoPath + "/.ipfs", asio_ipfs::config(), io::Reactor::get_Current().shared_from_this());
+#endif // BEAM_IPFS_SUPPORT
+
         }
+
+#ifdef BEAM_IPFS_SUPPORT
+        ~SimpleWalletClient()
+        {
+            StopIPFS();
+        }
+#endif
 
         IWalletDB::Ptr GetWalletDB() const
         {
@@ -225,7 +239,7 @@ namespace
             {
                 InvokeShader(m_AppPath, m_ContractPath, "role=manager,action=view_contracts");
                 json root = json::parse(m_Result);
-                
+
                 assert(root.is_object());
                 auto& contracts = root["contracts"];
                 if (!contracts.empty())
@@ -275,12 +289,60 @@ namespace
             }
         }
 
+#ifdef BEAM_IPFS_SUPPORT
+        struct IPFSHandler : beam::wallet::IPFSService::Handler
+        {
+            explicit IPFSHandler(io::Reactor::Ptr reactor)
+            {
+                m_toServerThread = PostToReactorThread::create(std::move(reactor));
+            }
+
+            void pushToClient(std::function<void()>&& action) override
+            {
+                m_toServerThread->post(std::move(action));
+            }
+
+        private:
+            wallet::PostToReactorThread::Ptr m_toServerThread;
+        };
+
+        bool StartIPFS(const std::string& storagePath, asio_ipfs::config config, io::Reactor::Ptr reactor)
+        {
+            try
+            {
+                m_ipfsHandler = std::make_shared<IPFSHandler>(std::move(reactor));
+                m_ipfs = beam::wallet::IPFSService::create(m_ipfsHandler);
+                m_ipfs->start(storagePath, config);
+                cerr << "IPFS Service successfully started, ID " << m_ipfs->id() << endl;
+                return true;
+            }
+            catch (std::runtime_error& err)
+            {
+                LOG_ERROR() << err.what();
+                return false;
+            }
+        }
+
+        void StopIPFS()
+        {
+            m_ipfs->stop();
+            m_ipfs.reset();
+            m_ipfsHandler.reset();
+        }
+
+    private:
+        beam::wallet::IPFSService::Ptr m_ipfs;
+        std::shared_ptr<IPFSHandler> m_ipfsHandler;
+
+#endif // BEAM_IPFS_SUPPORT
+
+
     private:
         IWalletDB::Ptr  m_WalletDB;
         Wallet::Ptr     m_Wallet;
         io::Address     m_NodeAddress;
         std::shared_ptr<proto::FlyClient::NetworkStd> m_NodeNet;
-        size_t m_TxCount = 0;
+        size_t          m_TxCount = 0;
         std::string     m_AppPath;
         std::string     m_ContractPath;
         std::string     m_RepoName;
@@ -373,7 +435,6 @@ namespace
             git_odb_object_free(object);
         }
 
-
         std::string GetDataString() const
         {
             return beam::to_hex(git_odb_object_data(object), git_odb_object_size(object));
@@ -411,7 +472,7 @@ namespace
         }
 
         git_repository* m_repo;
-        git_odb*        m_odb;
+        git_odb* m_odb;
     };
 
     struct ObjectCollector : GitRepoAccessor
@@ -515,7 +576,7 @@ namespace
         {
             git_odb_object* dbobj = nullptr;
             git_odb_read(&dbobj, m_odb, &oid);
-            
+
             auto objSize = git_odb_object_size(dbobj);
             auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
             git_oid r;
@@ -574,7 +635,7 @@ int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
     auto refs = RequestRefs(wc);
     json head;
     assert(!head.is_object());
-    for(const auto& r : refs)
+    for (const auto& r : refs)
     {
         cout << std::to_string(r.target) << " " << r.name << '\n';
     }
@@ -596,7 +657,7 @@ int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     std::deque<std::string> objectHashes;
-    objectHashes.push_back({ args[1].data(), args[1].size()});
+    objectHashes.push_back({ args[1].data(), args[1].size() });
     std::set<std::string> receivedObjects;
 
     auto enuqueObject = [&](const std::string& oid)
@@ -634,7 +695,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         git_oid_fromstr(&oid, objectHashes.front().data());
         auto data = root["object_data"].get<std::string>();
         auto buf = from_hex(data);
-        
+
         auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) {return o.hash == oid; });
         if (it == objects.end())
         {
@@ -698,7 +759,11 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         r.localRef = arg.substr(0, p);
         r.remoteRef = arg.substr(p + 1);
         git_reference* localRef = nullptr;
-        git_reference_lookup(&localRef, c.m_repo, r.localRef.c_str());
+        if (git_reference_lookup(&localRef, c.m_repo, r.localRef.c_str()) < 0)
+        {
+            cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
+            return -1;
+        }
         auto& lr = localRefs.emplace_back();
         git_oid_cpy(&lr, git_reference_target(localRef));
         git_reference_free(localRef);
@@ -764,7 +829,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
         if (count == 0)
             break;
-        
+
         // serializing
         ByteBuffer buf;
         buf.resize(size + sizeof(ObjectsInfo)); // objects count size
@@ -805,7 +870,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
         wc.InvokeWallet(ss.str());
     }
-    
+
     wc.Listen(true);
 
     cout << endl;
@@ -907,9 +972,9 @@ int main(int argc, char* argv[])
 
         auto it = find_if(begin(g_Commands), end(g_Commands),
             [&](const auto& c)
-        {
-            return command == c.command;
-        });
+            {
+                return command == c.command;
+            });
         if (it == end(g_Commands))
         {
             cerr << "Unknown command: " << command << endl;

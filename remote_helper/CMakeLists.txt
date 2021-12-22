@@ -13,7 +13,15 @@ target_link_libraries(${TARGET_NAME}
 		bvm
 		git2
 		wallet
-		cli)
+		cli
+		wallet_ipfs
+		Boost::date_time
+)
+
+if (WIN32)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ipfs-bindings> $<TARGET_FILE_DIR:${TARGET_NAME}>)
+endif()
 
 #build_target(contract)
 #generate_sid_for_file(contract ${PROJECT_BINARY_DIR}/shaders/shaders ${PROJECT_SOURCE_DIR}/shaders)
