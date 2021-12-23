@@ -4,13 +4,13 @@ import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
 import React, { useState, ChangeEvent } from 'react';
 import { connect } from 'react-redux';
-import { Nav } from '@components/container/nav';
 import {
   Modal, Input, Row, Col
 } from 'antd';
 import { useParams } from 'react-router-dom';
 import { loadingData, searchFilter } from '@libs/utils';
 import styles from './all-repos.module.css';
+import { Nav } from '../nav';
 
 type LocationState = {
   page: string,
@@ -99,7 +99,7 @@ const AllRepos = ({
 
 const mapState = ({
   app: { isConnected },
-  repo: { repos, searchText }
+  repos: { repos, searchText }
 }: RootState) => ({
   isConnected,
   repos,

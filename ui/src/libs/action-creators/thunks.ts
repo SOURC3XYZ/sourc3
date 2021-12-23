@@ -5,7 +5,10 @@ import { AppThunkDispatch, RootState } from '@libs/redux';
 import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
 import * as T from '@types';
 import { RepoListType } from '@types';
+import { batch } from 'react-redux';
 import { AC } from './action-creators';
+import batcher from './batcher';
+import { repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 
 const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
@@ -54,9 +57,7 @@ export const thunks = {
   },
 
   getTxStatus:
-    (
-      txId: string, callback: T.SetPropertiesType<T.TxResponse>
-    ) => async () => {
+    (txId: string, callback: T.SetPropertiesType<T.TxResponse>) => async () => {
       const res = (await beam.callApi(RC.getTxStatus(txId))) as T.BeamApiRes;
       if (res.result) {
         callback({
@@ -76,23 +77,28 @@ export const thunks = {
 
   repoGetRefs: (
     id: T.RepoId, resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.repoGetRefs(id))) as T.BeamApiRes;
-    if (res.result?.output) {
-      const output = JSON.parse(res.result.output) as T.RepoRefsResponse;
-      dispatch(AC.setRepoRefs(output.refs));
-    }
+  ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
+    const { repo: { tree } } = getState();
+    const chain = await repoReq(id, tree, beam);
+    batcher(dispatch, chain);
     if (resolve) resolve();
   },
 
   getCommit: (
     obj_id: T.CommitHash, repo_id: T.RepoId
   ) => async (dispatch: AppThunkDispatch) => {
+    dispatch(AC.setTreeData([]));
     const res = await beam
       .callApi(RC.repoGetCommit(repo_id, obj_id)) as T.BeamApiRes;
     if (res.result?.output) {
       const output = JSON.parse(res.result.output) as T.RepoCommitResponse;
-      dispatch(AC.setCommitData(output.commit));
+      batch(async () => {
+        dispatch(AC.setCommitData(output.commit));
+        dispatch(AC.setCommitHash(obj_id));
+        await dispatch(thunks.getTree({
+          id: repo_id, oid: output.commit.tree_oid
+        }));
+      });
     }
   },
 

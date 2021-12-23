@@ -1,6 +1,13 @@
 import { ACTIONS } from '@libs/constants';
 import {
-  TxItem, RepoType, RepoMeta, RepoRef, RepoCommit, PropertiesType, DataNode
+  TxItem,
+  RepoType,
+  RepoMeta,
+  RepoRef,
+  RepoCommit,
+  PropertiesType,
+  DataNode,
+  CommitHash
 } from '@types';
 
 export const AC = {
@@ -45,6 +52,11 @@ export const AC = {
     payload
   } as const),
 
+  setCommitHash: (payload: CommitHash | null) => ({
+    type: ACTIONS.SET_COMMIT_HASH,
+    payload
+  } as const),
+
   setRepoRefs: (payload: RepoRef[]) => ({
     type: ACTIONS.REPO_REFS,
     payload
@@ -68,8 +80,7 @@ export const AC = {
   setSearch: (inputText: string) => ({
     type: ACTIONS.SET_SEARCH,
     payload: inputText
-  }) as const
-
+  } as const)
 };
 
 export type ActionCreators = ReturnType<PropertiesType<typeof AC>>;

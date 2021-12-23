@@ -1,7 +1,7 @@
 import { Info } from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { loadingData } from '@libs/utils';
+import { logger } from '@libs/utils';
 import {
   CommitHash, RepoId, RepoRef
 } from '@types';
@@ -9,17 +9,15 @@ import { Select } from 'antd';
 import React from 'react';
 import { batch, connect } from 'react-redux';
 
-type GetRefs = (repo_id: RepoId) => (resolve: () => void) => void;
+type GetRefs = (repo_id: RepoId) => void;
 
 type BranchSelectProps = {
   id:RepoId;
   refs: RepoRef[];
   commitHash: CommitHash | null;
-  setHash: React.Dispatch<React.SetStateAction<string | null>>
   killRef: () => void;
   getRefs: GetRefs
-  setCommitToNull: () => void;
-  getCommit: (obj_id: CommitHash, repo_id: RepoId) => void
+  getCommit: (repo_id: RepoId) => (obj_id: CommitHash) => void
 };
 
 const selectOptionMap = (el: RepoRef) => (
@@ -32,41 +30,29 @@ const selectOptionMap = (el: RepoRef) => (
 );
 
 const BranchSelect = ({
-  id, refs, commitHash, setHash, getRefs, killRef, setCommitToNull, getCommit
+  id, refs, commitHash, getCommit, getRefs, killRef
 }:BranchSelectProps) => {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const noRefInfo = refs.length && !commitHash;
-
-  React.useEffect(() => killRef, []);
-
   React.useEffect(() => {
-    if (noRefInfo) setHash(refs[0].commit_hash);
-  }, [refs]);
+    getRefs(id);
+    return killRef;
+  }, []);
 
-  React.useEffect(() => {
-    loadingData<void>(getRefs(id))
-      .then(() => setIsLoading(false));
-    return setCommitToNull;
-  }, [id]);
-
-  React.useEffect(() => {
-    if (commitHash) {
-      setCommitToNull();
-      getCommit(commitHash, id);
-    }
-  }, [commitHash]);
-
+  logger('Branch select', [
+    ['id', id],
+    ['hash', commitHash],
+    ['refs', refs]
+  ]);
   return (
     <>
-      {isLoading
+      {!commitHash
         ? <Info title="loading refs..." message="" />
-        : commitHash ? (
+        : refs.length ? (
           <>
             <Select
               defaultValue={commitHash}
               size="small"
               style={{ width: 200 }}
-              onChange={setHash}
+              onChange={getCommit(id)}
             >
               { refs.map(selectOptionMap) }
             </Select>
@@ -77,29 +63,28 @@ const BranchSelect = ({
 };
 
 const mapState = (
-  { repo: { refs, commitData } }:RootState
+  { repo: { refs, commitHash } }:RootState
 ) => ({
   refs,
-  commitData
+  commitHash
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
-  getRefs: (repo_id: RepoId) => (resolve: () => void) => {
-    dispatch(thunks.repoGetRefs(repo_id, resolve));
+  getRefs: (repo_id: RepoId) => {
+    dispatch(thunks.repoGetRefs(repo_id));
   },
 
-  getCommit: (obj_id: CommitHash, repo_id: RepoId) => {
+  getCommit: (repo_id: RepoId) => (obj_id: CommitHash) => {
     dispatch(thunks.getCommit(obj_id, repo_id));
   },
 
   killRef: () => {
-    dispatch(AC.setRepoRefs([]));
-  },
-
-  setCommitToNull: () => {
+    console.log('kill refs');
     batch(() => {
+      dispatch(AC.setRepoRefs([]));
       dispatch(AC.setCommitData(null));
       dispatch(AC.setTreeData([]));
+      dispatch(AC.setCommitHash(null));
     });
   }
 });

@@ -38,3 +38,7 @@ declare interface Window {
   qt: QWebChannelTransport;
   BeamApi: QObject;
 }
+
+declare interface EventTarget {
+  value: string
+}

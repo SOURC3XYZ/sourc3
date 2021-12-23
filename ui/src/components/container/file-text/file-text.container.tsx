@@ -62,7 +62,8 @@ const FileText = ({
   );
 };
 
-const mapState = ({ repo: { fileText, tree } }:RootState) => ({
+const mapState = ({ repo: { fileText, tree, commitHash } }:RootState) => ({
+  commitHash,
   fileText,
   tree
 });

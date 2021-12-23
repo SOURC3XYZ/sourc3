@@ -43,6 +43,10 @@ export type RepoRefsResponse = {
   refs: RepoRef[]
 };
 
+export type CommitData = {
+  oid: CommitHash
+};
+
 export type RepoCommit = {
   raw_header: string
   raw_message: string
@@ -52,6 +56,7 @@ export type RepoCommit = {
   committer_name:string
   committer_email:string
   object_data: string
+  parents: CommitData[]
 };
 
 export type RepoCommitResponse = {

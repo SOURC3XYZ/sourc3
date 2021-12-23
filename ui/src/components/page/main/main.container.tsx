@@ -1,7 +1,9 @@
 import React from 'react';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import {
+  Navigate, Route, Routes
+} from 'react-router-dom';
 import {
   AllRepos, Notifications
 } from '@components/container';
@@ -20,7 +22,9 @@ const Main = ({
   React.useEffect(() => {
     connectApi();
   }, []);
-
+  const path = window.location.pathname === 'Pit_demo/app/index.html'
+    ? 'Pit_demo/app/index.html'
+    : window.location.pathname.substring(1);
   return (
     <>
       <div className={styles.main}>
@@ -29,7 +33,7 @@ const Main = ({
           && (
             <Routes>
               <Route
-                path="/"
+                path={`/${path}`}
                 element={
                   <Navigate replace to="/repos/all/1" />
                 }

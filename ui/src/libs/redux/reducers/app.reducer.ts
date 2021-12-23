@@ -28,27 +28,30 @@ const reducer = (
   };
   switch (action.type) {
     case ACTIONS.CONNECTION: {
-      newState.isConnected = <boolean>action.payload;
-      break;
+      newState.isConnected = action.payload as IApp['isConnected'];
+      return newState;
     }
     case ACTIONS.SET_TX:
       newState.txs.add({
-        id: <string>action.payload,
+        id: action.payload,
         notified: false
-      });
-      break;
+      } as TxItem);
+      return newState;
+
     case ACTIONS.REMOVE_TX:
-      newState.txs.delete(<TxItem>action.payload);
-      break;
+      newState.txs.delete(action.payload as TxItem);
+      return newState;
 
     case ACTIONS.SET_TX_NOTIFY:
-      newState.txs.delete(<TxItem>action.payload);
+      newState.txs.delete(action.payload as TxItem);
       newState.txs.add({
         id: (<TxItem>action.payload).id,
         notified: true
       });
-      break;
+      return newState;
+
     default:
+      return state;
   }
 
   return newState;

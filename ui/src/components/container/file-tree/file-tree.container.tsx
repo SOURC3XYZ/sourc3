@@ -1,6 +1,6 @@
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { extCheck, onLoadData } from '@libs/utils';
+import { extCheck, logger, onLoadData } from '@libs/utils';
 import {
   DataNode,
   IDataNodeCustom,
@@ -14,10 +14,9 @@ import style from './free-tree.module.css';
 
 type TreeListProps = {
   id: RepoId;
-  oid: TreeOid | undefined;
+  oid: TreeOid | null;
   tree: DataNode[]
   updateTree: (props: UpdateProps) => void;
-  killRef: () => void;
 };
 
 const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
@@ -39,21 +38,19 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
   });
 
 const FileTree = ({
-  id, oid, tree, updateTree, killRef
+  id, oid, tree, updateTree
 }:TreeListProps) => {
-  React.useEffect(() => () => killRef(), []);
-  React.useEffect(() => {
-    if (oid) {
-      updateTree({ id, oid });
-    }
-  }, [oid]);
+  logger('FileTree', [
+    ['id', id],
+    ['oid', oid],
+    ['tree', tree]
+  ]);
 
   return (
     <>
-      {oid && (
+      {tree.length && (
         <div className={style.customTree}>
           <Tree.DirectoryTree
-            defaultExpandAll
             selectable={false}
             loadData={onLoadData(id, updateTree)}
             treeData={treeLinkNodeUpdate(id)(tree)}
@@ -71,7 +68,7 @@ const mapState = (
   id,
   refs,
   tree,
-  oid: commitData?.tree_oid
+  oid: commitData?.tree_oid ?? null
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({

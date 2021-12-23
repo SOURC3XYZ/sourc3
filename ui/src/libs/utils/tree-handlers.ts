@@ -1,7 +1,7 @@
 import {
+  DataNode,
   IDataNodeCustom, RepoId, TreeElement, UpdateProps
 } from '@types';
-import { DataNode } from 'antd/lib/tree';
 
 export const extCheck = (fileName:string):string | undefined => {
   const re = /(?:\.([^.]+))?$/;

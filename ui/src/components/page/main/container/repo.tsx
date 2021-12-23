@@ -1,9 +1,7 @@
 import {
   BranchSelect, FileText, FileTree, RepoMeta
 } from '@components/container';
-import { CommitHash } from '@types';
 import { Button, Col, Row } from 'antd';
-import React from 'react';
 import {
   Route, Routes, useNavigate, useParams
 } from 'react-router-dom';
@@ -13,11 +11,9 @@ type LocationState = {
 };
 
 const UserRepos = () => {
-  const [commitHash, setHash] = React.useState<CommitHash | null>(null);
   const location = useParams<'id' & 'oid'>() as LocationState;
   const { id } = location;
   const navigate = useNavigate();
-
   const [numId, name] = id.split('&');
 
   return (
@@ -25,7 +21,7 @@ const UserRepos = () => {
       <Row>
         <Col span={8}>
           <Button onClick={() => navigate(-1)} type="link">Return</Button>
-          <BranchSelect commitHash={commitHash} setHash={setHash} id={+numId} />
+          <BranchSelect id={+numId} />
         </Col>
         <Col span={16}>
           <RepoMeta name={name} />
@@ -40,7 +36,7 @@ const UserRepos = () => {
 
         <Route
           path=":oid"
-          element={<FileText commitHash={commitHash} />}
+          element={<FileText />}
         />
       </Routes>
     </>
