@@ -1,32 +1,37 @@
 ﻿#include "3rdparty/nlohmann/json.hpp"
 #include "utility/cli/options.h"
-#include "utility/logger.h"
-#include "wallet/core/contracts/shaders_manager.h"
-#include "wallet/core/wallet_network.h"
-#include "wallet/ipfs/ipfs.h"
-#include "wallet/ipfs/ipfs_async.h"
+#include "utility/hex.h"
+
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/version.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include <algorithm>
 #include <cstdlib>
+#include <cstdlib>
 #include <fstream>
+#include <git2.h>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <stack>
 #include <string_view>
 #include <string>
-#include <thread>
 #include <vector>
-#include <git2.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
+namespace beast = boost::beast;     // from <boost/beast.hpp>
+namespace http = beast::http;       // from <boost/beast/http.hpp>
+namespace net = boost::asio;        // from <boost/asio.hpp>
+using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
 using json = nlohmann::json;
 
 using namespace std;
 using namespace beam;
-using namespace beam::wallet;
 
 namespace std
 {
@@ -51,6 +56,10 @@ bool operator==(const git_oid& left, const git_oid& right) noexcept
 
 namespace
 {
+
+    constexpr const char JsonRpcHeader[] = "jsonrpc";
+    constexpr const char JsonRpcVersion[] = "2.0";
+
 #pragma pack(push, 1)
     struct GitObject
     {
@@ -67,164 +76,108 @@ namespace
     };
 #pragma pack(pop)
 
-    struct MyManager
-        :public ManagerStdInWallet
-    {
-        bool m_Done = false;
-        bool m_Err = false;
-        bool m_Async = false;
-
-        using ManagerStdInWallet::ManagerStdInWallet;
-
-        void OnDone(const std::exception* pExc) override
-        {
-            m_Done = true;
-            m_Err = !!pExc;
-
-            if (pExc)
-                std::cerr << "Shader exec error: " << pExc->what() << std::endl;
-            else
-                std::cerr << "Shader output: " << m_Out.str() << std::endl;
-
-            if (m_Async)
-                io::Reactor::get_Current().stop();
-        }
-
-        static void Compile(ByteBuffer& res, const char* sz, Kind kind)
-        {
-            std::FStream fs;
-            fs.Open(sz, true, true);
-
-            res.resize(static_cast<size_t>(fs.get_Remaining()));
-            if (!res.empty())
-                fs.read(&res.front(), res.size());
-
-            bvm2::Processor::Compile(res, res, kind);
-        }
-    };
-
     class SimpleWalletClient
     {
-        static io::Address ResolveAddress(const std::string& uri)
-        {
-            io::Address addr;
-            if (!addr.resolve(uri.c_str()))
-                throw std::runtime_error("Failed to resolve node address");
-            return addr;
-        }
     public:
         struct Options
         {
-            std::string nodeURI;
-            std::string walletPath;
-            std::string password;
+            std::string apiHost;
+            std::string apiPort;
+            std::string apiTarget;
             std::string appPath;
-            std::string contractPath;
             std::string repoName;
             std::string repoPath = ".";
+#ifdef BEAM_IPFS_SUPPORT
+            bool        useIPFS = true;
+#endif // BEAM_IPFS_SUPPORT
+
         };
 
         SimpleWalletClient(const Options& options)
-            : m_WalletDB(WalletDB::open(options.walletPath, options.password))
-            , m_Wallet(std::make_shared<Wallet>(m_WalletDB, [this](const auto& id) {OnTxCompleted(id); }))
-            , m_NodeAddress(ResolveAddress(options.nodeURI))
-            , m_NodeNet(std::make_shared<proto::FlyClient::NetworkStd>(*m_Wallet))
-            , m_AppPath(options.appPath)
-            , m_ContractPath(options.contractPath)
-            , m_RepoName(options.repoName)
-            , m_RepoPath(options.repoPath)
+            : m_Options(options)
         {
-            m_NodeNet->m_Cfg.m_vNodes.push_back(m_NodeAddress);
-            m_NodeNet->Connect();
-            m_Wallet->SetNodeEndpoint(m_NodeNet);
-#ifdef BEAM_IPFS_SUPPORT
-            StartIPFS(m_RepoPath + "/.ipfs", asio_ipfs::config(), io::Reactor::get_Current().shared_from_this());
-#endif // BEAM_IPFS_SUPPORT
 
         }
 
-#ifdef BEAM_IPFS_SUPPORT
-        ~SimpleWalletClient()
+        std::string ExtractResult(const std::string& response)
         {
-            StopIPFS();
-        }
-#endif
-
-        IWalletDB::Ptr GetWalletDB() const
-        {
-            return m_WalletDB;
+            auto r = json::parse(response);
+            return r["result"]["output"].get<std::string>();
         }
 
-        Wallet::Ptr GetWallet() const
+        bool InvokeShader(const std::string& args)
         {
-            return m_Wallet;
-        }
-
-        void IncrementTxCount()
-        {
-            ++m_TxCount;
-        }
-
-        void Listen(bool waitForTxCompletion = false)
-        {
-            if (waitForTxCompletion && m_TxCount == 0)
-                return;
-            io::Reactor::get_Current().run();
-        }
-
-        bool InvokeShader(const std::string& appShader
-            , const std::string& contractShader
-            , std::string args)
-        {
-            //cerr << "Invoking shader: " << args << endl;
-            m_Result = "";
-            MyManager man(GetWalletDB(), GetWallet());
-
-            if (appShader.empty())
-                throw std::runtime_error("shader file not specified");
-
-            MyManager::Compile(man.m_BodyManager, appShader.c_str(), MyManager::Kind::Manager);
-
-            if (!contractShader.empty())
-                MyManager::Compile(man.m_BodyContract, contractShader.c_str(), MyManager::Kind::Contract);
-
-            if (!args.empty())
-                man.AddArgs(&args[0]);
-
-            man.set_Privilege(1);
-
-            man.StartRun(man.m_Args.empty() ? 0 : 1); // scheme if no args
-
-            if (!man.m_Done)
+            // snippet from boost beast sync http client example, there is no need for something complicated atm.
+            try
             {
-                man.m_Async = true;
-                io::Reactor::get_Current().run();
+                // The io_context is required for all I/O
+                net::io_context ioc;
 
-                if (!man.m_Done)
+                // These objects perform our I/O
+                tcp::resolver resolver(ioc);
+                beast::tcp_stream stream(ioc);
+
+                // Look up the domain name
+                auto const results = resolver.resolve(m_Options.apiHost, m_Options.apiPort);
+
+                // Make the connection on the IP address we get from a lookup
+                stream.connect(results);
+
+                auto msg = json
                 {
-                    // abort, propagate it
-                    io::Reactor::get_Current().stop();
-                    m_Result = man.m_Out.str();
-                    return false;
-                }
-            }
+                    {JsonRpcHeader, JsonRpcVersion},
+                    {"id", 1},
+                    {"method", "invoke_contract"},
+                    {"params",
+                        {
+                            {"contract_file", m_Options.appPath},
+                            {"args", args}
+                        }
+                    }
+                };
 
-            if (man.m_Err || man.m_vInvokeData.empty())
+                // Set up an HTTP GET request message
+                http::request<http::string_body> req{ http::verb::get, m_Options.apiTarget, 11 };
+                req.set(http::field::host, m_Options.apiHost);
+                req.set(http::field::user_agent, "PIT/0.0.1");
+                req.body() = msg.dump();
+                req.content_length(req.body().size());
+
+
+                // Send the HTTP request to the remote host
+                http::write(stream, req);
+
+                // This buffer is used for reading and must be persisted
+                beast::flat_buffer buffer;
+
+                // Declare a container to hold the response
+                http::response<http::dynamic_body> res;
+
+                // Receive the HTTP response
+                http::read(stream, buffer, res);
+
+                // Write the message to standard out
+                std::cerr << res << std::endl;
+                m_Result = ExtractResult(beast::buffers_to_string(res.body().data()));
+                std::cerr << m_Result << std::endl;
+
+                // Gracefully close the socket
+                beast::error_code ec;
+                stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+                // not_connected happens sometimes
+                // so don't bother reporting it.
+                //
+                if (ec && ec != beast::errc::not_connected)
+                    throw beast::system_error{ ec };
+
+                // If we get here then the connection is closed gracefully
+            }
+            catch (std::exception const& e)
             {
-                m_Result = man.m_Out.str();
+                std::cerr << "Error: " << e.what() << std::endl;
                 return false;
             }
-
-            const auto comment = bvm2::getFullComment(man.m_vInvokeData);
-
-
-            ByteBuffer msg(comment.begin(), comment.end());
-            GetWallet()->StartTransaction(
-                CreateTransactionParameters(TxType::Contract)
-                .SetParameter(TxParameterID::ContractDataPacked, man.m_vInvokeData)
-                .SetParameter(TxParameterID::Message, msg)
-            );
-            IncrementTxCount();
             return true;
         }
 
@@ -237,7 +190,7 @@ namespace
         {
             if (m_cid.empty())
             {
-                InvokeShader(m_AppPath, m_ContractPath, "role=manager,action=view_contracts");
+                InvokeShader("role=manager,action=view_contracts");
                 json root = json::parse(m_Result);
 
                 assert(root.is_object());
@@ -255,15 +208,18 @@ namespace
             if (m_RepoID.empty())
             {
                 std::string request = "role=user,action=repo_id_by_name,repo_name=";
-                request.append(m_RepoName)
+                request.append(m_Options.repoName)
                     .append(",cid=")
                     .append(GetCID());
-                InvokeShader(m_AppPath, m_ContractPath, request);
+                InvokeShader(request);
                 json root = json::parse(m_Result);
 
                 assert(root.is_object());
-                auto& id = root["repo_id"];
-                m_RepoID = std::to_string(id.get<uint32_t>());
+                if (auto it = root.find("repo_id"); it != root.end())
+                {
+                    auto& id = *it;
+                    m_RepoID = std::to_string(id.get<uint32_t>());
+                }
             }
             return m_RepoID;
         }
@@ -271,81 +227,21 @@ namespace
 
         std::string InvokeWallet(std::string args)
         {
-            args.append(",repo_id=")
-                .append(GetRepoID())
-                .append(",cid=")
-                .append(GetCID());
-            InvokeShader(m_AppPath, m_ContractPath, std::move(args));
+            const auto& repoID = GetRepoID();
+            if (repoID.empty())
+            {
+                args.append(",repo_id=")
+                    .append(GetRepoID())
+                    .append(",cid=")
+                    .append(GetCID());
+                InvokeShader(std::move(args));
+            }
             return m_Result;
         }
 
     private:
 
-        void OnTxCompleted(const TxID& id)
-        {
-            if (--m_TxCount == 0)
-            {
-                io::Reactor::get_Current().stop();
-            }
-        }
-
-#ifdef BEAM_IPFS_SUPPORT
-        struct IPFSHandler : beam::wallet::IPFSService::Handler
-        {
-            explicit IPFSHandler(io::Reactor::Ptr reactor)
-            {
-                m_toServerThread = PostToReactorThread::create(std::move(reactor));
-            }
-
-            void pushToClient(std::function<void()>&& action) override
-            {
-                m_toServerThread->post(std::move(action));
-            }
-
-        private:
-            wallet::PostToReactorThread::Ptr m_toServerThread;
-        };
-
-        bool StartIPFS(const std::string& storagePath, asio_ipfs::config config, io::Reactor::Ptr reactor)
-        {
-            try
-            {
-                m_ipfsHandler = std::make_shared<IPFSHandler>(std::move(reactor));
-                m_ipfs = beam::wallet::IPFSService::create(m_ipfsHandler);
-                m_ipfs->start(storagePath, config);
-                cerr << "IPFS Service successfully started, ID " << m_ipfs->id() << endl;
-                return true;
-            }
-            catch (std::runtime_error& err)
-            {
-                LOG_ERROR() << err.what();
-                return false;
-            }
-        }
-
-        void StopIPFS()
-        {
-            m_ipfs->stop();
-            m_ipfs.reset();
-            m_ipfsHandler.reset();
-        }
-
-    private:
-        beam::wallet::IPFSService::Ptr m_ipfs;
-        std::shared_ptr<IPFSHandler> m_ipfsHandler;
-
-#endif // BEAM_IPFS_SUPPORT
-
-
-    private:
-        IWalletDB::Ptr  m_WalletDB;
-        Wallet::Ptr     m_Wallet;
-        io::Address     m_NodeAddress;
-        std::shared_ptr<proto::FlyClient::NetworkStd> m_NodeNet;
-        size_t          m_TxCount = 0;
-        std::string     m_AppPath;
-        std::string     m_ContractPath;
-        std::string     m_RepoName;
+        const Options& m_Options;
         std::string     m_RepoPath;
         std::string     m_RepoID;
         std::string     m_Result;
@@ -617,19 +513,23 @@ std::vector<Ref> RequestRefs(SimpleWalletClient& wc)
     std::stringstream ss;
     ss << "role=user,action=list_refs";
 
-    auto res = wc.InvokeWallet(ss.str());
-    json root = json::parse(res);
     std::vector<Ref> refs;
-    for (const auto& r : root["refs"])
+    auto res = wc.InvokeWallet(ss.str());
+    if (!res.empty())
     {
-        auto& ref = refs.emplace_back();
-        ref.name = r["name"].get<std::string>();
-        git_oid_fromstr(&ref.target, r["commit_hash"].get<std::string>().c_str());
+        json root = json::parse(res);
+        for (const auto& r : root["refs"])
+        {
+            auto& ref = refs.emplace_back();
+            ref.name = r["name"].get<std::string>();
+            git_oid_fromstr(&ref.target, r["commit_hash"].get<std::string>().c_str());
+        }
     }
     return refs;
 }
 
 int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
+
 int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     auto refs = RequestRefs(wc);
@@ -871,8 +771,6 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         wc.InvokeWallet(ss.str());
     }
 
-    wc.Listen(true);
-
     cout << endl;
     return 0;
 }
@@ -908,12 +806,11 @@ int main(int argc, char* argv[])
     po::options_description desc("PIT config options");
 
     desc.add_options()
-        (cli::NODE_ADDR_FULL, po::value<std::string>(&options.nodeURI), "address of node")
-        (cli::WALLET_STORAGE, po::value<std::string>(&options.walletPath)->default_value("wallet.db"), "path to wallet file")
-        (cli::PASS, po::value<string>(&options.password), "wallet password")
-        (cli::SHADER_BYTECODE_APP, po::value<string>(&options.appPath)->default_value("app.wasm"), "Path to the app shader file")
-        (cli::SHADER_BYTECODE_CONTRACT, po::value<string>(&options.contractPath)->default_value("contract.wasm"), "Path to the shader file for the contract (if the contract is being-created)");
-
+        ("api-host", po::value<std::string>(&options.apiHost)->default_value("localhost"), "Wallet API host")
+        ("api-port", po::value<std::string>(&options.apiPort)->default_value("10000"), "Wallet API port")
+        ("api-target", po::value<std::string>(&options.apiTarget)->default_value("/api/wallet"), "Wallet API target")
+        ("app-shader-file", po::value<string>(&options.appPath)->default_value("app.wasm"), "Path to the app shader file")
+        ;
     po::variables_map vm;
 #ifdef WIN32
     const auto* homeDir = std::getenv("USERPROFILE");
@@ -929,10 +826,6 @@ int main(int argc, char* argv[])
     ReadCfgFromFile(vm, desc, configPath.c_str());
     vm.notify();
 
-    Rules::get().UpdateChecksum();
-    io::Reactor::Ptr reactor = io::Reactor::create();
-    io::Reactor::Scope scope(*reactor);
-    auto logger = beam::Logger::create(LOG_LEVEL_DEBUG, LOG_SINK_DISABLED, LOG_LEVEL_DEBUG, "", "");
     string_view sv(argv[2]);
     const string_view SCHEMA = "pit://";
     options.repoName = sv.substr(SCHEMA.size()).data();
@@ -941,11 +834,11 @@ int main(int argc, char* argv[])
     {
         options.repoPath = gitDir;
     }
-    cerr << "Hello PIT.\nRemote:\t" << argv[1]
-        << "\nURL:\t" << argv[2]
-        << "\nWorking dir:\t" << boost::filesystem::current_path()
-        << "\nRepo folder:\t" << options.repoPath
-        << "\nWallet folder:\t" << options.walletPath
+    cerr << "Hello PIT."
+           "\n     Remote: " << argv[1]
+        << "\n        URL: " << argv[2]
+        << "\nWorking dir: " << boost::filesystem::current_path()
+        << "\nRepo folder: " << options.repoPath
         << endl;
     SimpleWalletClient walletClient(options);
     GitInit init;
