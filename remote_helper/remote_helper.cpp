@@ -105,85 +105,77 @@ namespace
             return r["result"]["output"].get<std::string>();
         }
 
-        bool InvokeShader(const std::string& args)
+        void InvokeShader(const std::string& args)
         {
             // snippet from boost beast sync http client example, there is no need for something complicated atm.
-            try
+
+            // The io_context is required for all I/O
+            net::io_context ioc;
+
+            // These objects perform our I/O
+            tcp::resolver resolver(ioc);
+            beast::tcp_stream stream(ioc);
+
+            // Look up the domain name
+            auto const results = resolver.resolve(m_Options.apiHost, m_Options.apiPort);
+
+            // Make the connection on the IP address we get from a lookup
+            stream.connect(results);
+            cerr << "Args: " << args << endl;
+            auto msg = json
             {
-                // The io_context is required for all I/O
-                net::io_context ioc;
-
-                // These objects perform our I/O
-                tcp::resolver resolver(ioc);
-                beast::tcp_stream stream(ioc);
-
-                // Look up the domain name
-                auto const results = resolver.resolve(m_Options.apiHost, m_Options.apiPort);
-
-                // Make the connection on the IP address we get from a lookup
-                stream.connect(results);
-
-                auto msg = json
-                {
-                    {JsonRpcHeader, JsonRpcVersion},
-                    {"id", 1},
-                    {"method", "invoke_contract"},
-                    {"params",
-                        {
-                            {"contract_file", m_Options.appPath},
-                            {"args", args}
-                        }
+                {JsonRpcHeader, JsonRpcVersion},
+                {"id", 1},
+                {"method", "invoke_contract"},
+                {"params",
+                    {
+                        {"contract_file", m_Options.appPath},
+                        {"args", args}
                     }
-                };
+                }
+            };
 
-                // Set up an HTTP GET request message
-                http::request<http::string_body> req{ http::verb::get, m_Options.apiTarget, 11 };
-                req.set(http::field::host, m_Options.apiHost);
-                req.set(http::field::user_agent, "PIT/0.0.1");
-                req.body() = msg.dump();
-                req.content_length(req.body().size());
+            // Set up an HTTP GET request message
+            http::request<http::string_body> req{ http::verb::get, m_Options.apiTarget, 11 };
+            req.set(http::field::host, m_Options.apiHost);
+            req.set(http::field::user_agent, "PIT/0.0.1");
+            req.body() = msg.dump();
+            req.content_length(req.body().size());
 
 
-                // Send the HTTP request to the remote host
-                http::write(stream, req);
+            // Send the HTTP request to the remote host
+            http::write(stream, req);
 
-                // This buffer is used for reading and must be persisted
-                beast::flat_buffer buffer;
+            // This buffer is used for reading and must be persisted
+            beast::flat_buffer buffer;
 
-                // Declare a container to hold the response
-                http::response<http::dynamic_body> res;
+            // Declare a container to hold the response
+            http::response<http::dynamic_body> res;
 
-                // Receive the HTTP response
-                http::read(stream, buffer, res);
+            // Receive the HTTP response
+            http::read(stream, buffer, res);
 
-                // Write the message to standard out
-                std::cerr << res << std::endl;
-                m_Result = ExtractResult(beast::buffers_to_string(res.body().data()));
-                std::cerr << m_Result << std::endl;
+            // Write the message to standard out
+            //std::cerr << res << std::endl;
+            m_Result = ExtractResult(beast::buffers_to_string(res.body().data()));
+            std::cerr << "Result: " << m_Result << std::endl;
 
-                // Gracefully close the socket
-                beast::error_code ec;
-                stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+            // Gracefully close the socket
+            beast::error_code ec;
+            stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 
-                // not_connected happens sometimes
-                // so don't bother reporting it.
-                //
-                if (ec && ec != beast::errc::not_connected)
-                    throw beast::system_error{ ec };
+            // not_connected happens sometimes
+            // so don't bother reporting it.
+            //
+            if (ec && ec != beast::errc::not_connected)
+                throw beast::system_error{ ec };
 
-                // If we get here then the connection is closed gracefully
-            }
-            catch (std::exception const& e)
-            {
-                std::cerr << "Error: " << e.what() << std::endl;
-                return false;
-            }
-            return true;
+            // If we get here then the connection is closed gracefully
         }
 
         const std::string& GetRepoDir() const
         {
-            return m_RepoPath;
+            return m_Options.repoPath;
         }
 
         const std::string& GetCID()
@@ -227,22 +219,17 @@ namespace
 
         std::string InvokeWallet(std::string args)
         {
-            const auto& repoID = GetRepoID();
-            if (repoID.empty())
-            {
-                args.append(",repo_id=")
-                    .append(GetRepoID())
-                    .append(",cid=")
-                    .append(GetCID());
-                InvokeShader(std::move(args));
-            }
+            args.append(",repo_id=")
+                .append(GetRepoID())
+                .append(",cid=")
+                .append(GetCID());
+            InvokeShader(std::move(args));
             return m_Result;
         }
 
     private:
 
-        const Options& m_Options;
-        std::string     m_RepoPath;
+        const Options&  m_Options;
         std::string     m_RepoID;
         std::string     m_Result;
         std::string     m_cid;
@@ -801,84 +788,91 @@ int main(int argc, char* argv[])
         cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
         return -1;
     }
+    try
+    {
+        SimpleWalletClient::Options options;
+        po::options_description desc("PIT config options");
 
-    SimpleWalletClient::Options options;
-    po::options_description desc("PIT config options");
-
-    desc.add_options()
-        ("api-host", po::value<std::string>(&options.apiHost)->default_value("localhost"), "Wallet API host")
-        ("api-port", po::value<std::string>(&options.apiPort)->default_value("10000"), "Wallet API port")
-        ("api-target", po::value<std::string>(&options.apiTarget)->default_value("/api/wallet"), "Wallet API target")
-        ("app-shader-file", po::value<string>(&options.appPath)->default_value("app.wasm"), "Path to the app shader file")
-        ;
-    po::variables_map vm;
+        desc.add_options()
+            ("api-host", po::value<std::string>(&options.apiHost)->default_value("localhost"), "Wallet API host")
+            ("api-port", po::value<std::string>(&options.apiPort)->default_value("10000"), "Wallet API port")
+            ("api-target", po::value<std::string>(&options.apiTarget)->default_value("/api/wallet"), "Wallet API target")
+            ("app-shader-file", po::value<string>(&options.appPath)->default_value("app.wasm"), "Path to the app shader file")
+            ;
+        po::variables_map vm;
 #ifdef WIN32
-    const auto* homeDir = std::getenv("USERPROFILE");
+        const auto* homeDir = std::getenv("USERPROFILE");
 #else
-    const auto* homeDir = std::getenv("HOME");
+        const auto* homeDir = std::getenv("HOME");
 #endif
-    std::string configPath = "pit-remote.cfg";
-    if (homeDir)
-    {
-        configPath = std::string(homeDir) + "/.pit/" + configPath;
-    }
-    cerr << "Reading config from: " << configPath << "..." << endl;
-    ReadCfgFromFile(vm, desc, configPath.c_str());
-    vm.notify();
-
-    string_view sv(argv[2]);
-    const string_view SCHEMA = "pit://";
-    options.repoName = sv.substr(SCHEMA.size()).data();
-    auto* gitDir = std::getenv("GIT_DIR"); // set during clone
-    if (gitDir)
-    {
-        options.repoPath = gitDir;
-    }
-    cerr << "Hello PIT."
-           "\n     Remote: " << argv[1]
-        << "\n        URL: " << argv[2]
-        << "\nWorking dir: " << boost::filesystem::current_path()
-        << "\nRepo folder: " << options.repoPath
-        << endl;
-    SimpleWalletClient walletClient(options);
-    GitInit init;
-
-    string input;
-    while (getline(cin, input, '\n'))
-    {
-        string_view sv(input.data(), input.size());
-        vector<string_view> args;
-        while (!sv.empty())
+        std::string configPath = "pit-remote.cfg";
+        if (homeDir)
         {
-            auto p = sv.find(' ');
-            auto ss = sv.substr(0, p);
-            sv.remove_prefix(p == string_view::npos ? ss.size() : ss.size() + 1);
-            if (!ss.empty())
+            configPath = std::string(homeDir) + "/.pit/" + configPath;
+        }
+        cerr << "Reading config from: " << configPath << "..." << endl;
+        ReadCfgFromFile(vm, desc, configPath.c_str());
+        vm.notify();
+
+        string_view sv(argv[2]);
+        const string_view SCHEMA = "pit://";
+        options.repoName = sv.substr(SCHEMA.size()).data();
+        auto* gitDir = std::getenv("GIT_DIR"); // set during clone
+        if (gitDir)
+        {
+            options.repoPath = gitDir;
+        }
+        cerr << "Hello PIT."
+            "\n     Remote: " << argv[1]
+            << "\n        URL: " << argv[2]
+            << "\nWorking dir: " << boost::filesystem::current_path()
+            << "\nRepo folder: " << options.repoPath
+            << endl;
+        SimpleWalletClient walletClient(options);
+        GitInit init;
+        ::MessageBox(NULL, "", "", MB_OK);
+        string input;
+        while (getline(cin, input, '\n'))
+        {
+            string_view sv(input.data(), input.size());
+            vector<string_view> args;
+            while (!sv.empty())
             {
-                args.emplace_back(move(ss));
+                auto p = sv.find(' ');
+                auto ss = sv.substr(0, p);
+                sv.remove_prefix(p == string_view::npos ? ss.size() : ss.size() + 1);
+                if (!ss.empty())
+                {
+                    args.emplace_back(move(ss));
+                }
+            }
+            if (args.empty())
+                return 0;
+
+            const auto& command = args[0];
+
+            auto it = find_if(begin(g_Commands), end(g_Commands),
+                [&](const auto& c)
+                {
+                    return command == c.command;
+                });
+            if (it == end(g_Commands))
+            {
+                cerr << "Unknown command: " << command << endl;
+                return -1;
+            }
+            cerr << "Command: " << input << endl;
+
+            if (it->action(walletClient, args) == -1)
+            {
+                return -1;
             }
         }
-        if (args.empty())
-            return 0;
-
-        const auto& command = args[0];
-
-        auto it = find_if(begin(g_Commands), end(g_Commands),
-            [&](const auto& c)
-            {
-                return command == c.command;
-            });
-        if (it == end(g_Commands))
-        {
-            cerr << "Unknown command: " << command << endl;
-            return -1;
-        }
-        cerr << "Command: " << input << endl;
-
-        if (it->action(walletClient, args) == -1)
-        {
-            return -1;
-        }
+    }
+    catch (const exception& ex)
+    {
+        cerr << "Error: " << ex.what() << endl;
+        return -1;
     }
 
     return 0;
