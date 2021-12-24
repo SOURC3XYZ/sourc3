@@ -94,9 +94,56 @@ namespace
         };
 
         SimpleWalletClient(const Options& options)
-            : m_Options(options)
+            : m_Resolver(m_ioc)
+            , m_Stream(m_ioc)
+            , m_Options(options)
         {
 
+        }
+
+        ~SimpleWalletClient()
+        {
+            // Gracefully close the socket
+            if (m_Connected)
+            {
+                beast::error_code ec;
+                m_Stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+                if (ec && ec != beast::errc::not_connected)
+                {
+                    // doesn't throw, simply report
+                    cerr << "Error: " << beast::system_error{ec}.what() << endl;
+                }
+            }
+        }
+
+        std::string InvokeWallet(std::string args)
+        {
+            args.append(",repo_id=")
+                .append(GetRepoID())
+                .append(",cid=")
+                .append(GetCID());
+            InvokeShader(std::move(args));
+            return m_Result;
+        }
+
+        const std::string& GetRepoDir() const
+        {
+            return m_Options.repoPath;
+        }
+
+    private:
+
+        void EnsureConnected()
+        {
+            if (m_Connected)
+                return;
+
+            auto const results = m_Resolver.resolve(m_Options.apiHost, m_Options.apiPort);
+
+            // Make the connection on the IP address we get from a lookup
+            m_Stream.connect(results);
+            m_Connected = true;
         }
 
         std::string ExtractResult(const std::string& response)
@@ -109,18 +156,8 @@ namespace
         {
             // snippet from boost beast sync http client example, there is no need for something complicated atm.
 
-            // The io_context is required for all I/O
-            net::io_context ioc;
+            EnsureConnected();
 
-            // These objects perform our I/O
-            tcp::resolver resolver(ioc);
-            beast::tcp_stream stream(ioc);
-
-            // Look up the domain name
-            auto const results = resolver.resolve(m_Options.apiHost, m_Options.apiPort);
-
-            // Make the connection on the IP address we get from a lookup
-            stream.connect(results);
             cerr << "Args: " << args << endl;
             auto msg = json
             {
@@ -144,7 +181,7 @@ namespace
 
 
             // Send the HTTP request to the remote host
-            http::write(stream, req);
+            http::write(m_Stream, req);
 
             // This buffer is used for reading and must be persisted
             beast::flat_buffer buffer;
@@ -153,29 +190,13 @@ namespace
             http::response<http::dynamic_body> res;
 
             // Receive the HTTP response
-            http::read(stream, buffer, res);
+            http::read(m_Stream, buffer, res);
 
             // Write the message to standard out
             //std::cerr << res << std::endl;
             m_Result = ExtractResult(beast::buffers_to_string(res.body().data()));
             std::cerr << "Result: " << m_Result << std::endl;
 
-            // Gracefully close the socket
-            beast::error_code ec;
-            stream.socket().shutdown(tcp::socket::shutdown_both, ec);
-
-            // not_connected happens sometimes
-            // so don't bother reporting it.
-            //
-            if (ec && ec != beast::errc::not_connected)
-                throw beast::system_error{ ec };
-
-            // If we get here then the connection is closed gracefully
-        }
-
-        const std::string& GetRepoDir() const
-        {
-            return m_Options.repoPath;
         }
 
         const std::string& GetCID()
@@ -217,22 +238,17 @@ namespace
         }
 
 
-        std::string InvokeWallet(std::string args)
-        {
-            args.append(",repo_id=")
-                .append(GetRepoID())
-                .append(",cid=")
-                .append(GetCID());
-            InvokeShader(std::move(args));
-            return m_Result;
-        }
+
 
     private:
-
-        const Options&  m_Options;
-        std::string     m_RepoID;
-        std::string     m_Result;
-        std::string     m_cid;
+        net::io_context     m_ioc;
+        tcp::resolver       m_Resolver;
+        beast::tcp_stream   m_Stream;
+        bool                m_Connected = false;
+        const Options&      m_Options;
+        std::string         m_RepoID;
+        std::string         m_Result;
+        std::string         m_cid;
     };
 
     struct GitInit
@@ -830,7 +846,6 @@ int main(int argc, char* argv[])
             << endl;
         SimpleWalletClient walletClient(options);
         GitInit init;
-        ::MessageBox(NULL, "", "", MB_OK);
         string input;
         while (getline(cin, input, '\n'))
         {
