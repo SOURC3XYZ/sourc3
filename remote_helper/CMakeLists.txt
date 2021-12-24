@@ -14,20 +14,5 @@ target_link_libraries(${TARGET_NAME}
 		git2
 		wallet
 		cli
-		wallet_ipfs
-		Boost::date_time
 )
 
-if (WIN32)
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:ipfs-bindings> $<TARGET_FILE_DIR:${TARGET_NAME}>)
-endif()
-
-#build_target(contract)
-#generate_sid_for_file(contract ${PROJECT_BINARY_DIR}/shaders/shaders ${PROJECT_SOURCE_DIR}/shaders)
-#build_target(app)
-#
-#
-#add_dependencies(${TARGET_NAME} contract_header)
-#add_dependencies(${TARGET_NAME} app_build)
-#add_dependencies(app_build contract_header) 
