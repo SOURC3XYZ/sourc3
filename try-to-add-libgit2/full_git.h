@@ -230,11 +230,6 @@ typedef enum {
 
 typedef git_array_t(char) git_array_generic_t;
 
-static void *stdalloc__reallocarray(void *ptr, size_t nelem, size_t elsize) {
-    size_t newsize = nelem * elsize;
-    return Env::Heap_Alloc(newsize);
-}
-
 int git_array_grow(void *_a, size_t item_size) {
     volatile git_array_generic_t *a = (git_array_generic_t *) _a;
     size_t new_size;
@@ -247,8 +242,9 @@ int git_array_grow(void *_a, size_t item_size) {
         new_size /= 2;
     }
 
-    if ((new_array = (char *) stdalloc__reallocarray(a->ptr, new_size, item_size)) == nullptr) {
-    }
+    size_t newsize = new_size * item_size;
+    new_array = (char*) Env::Heap_Alloc(newsize);
+    Env::Memcpy(new_array, a->ptr, a->size);
 
     a->ptr = new_array;
     a->asize = new_size;
@@ -553,7 +549,7 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
     /* Allocate for one, which will allow not to realloc 90% of the time  */
     commit->parent_ids.size = 0;
     commit->parent_ids.asize = 1;
-    commit->parent_ids.ptr = (mygit2::git_oid *) calloc(1, sizeof(commit->parent_ids.ptr));
+    commit->parent_ids.ptr = (mygit2::git_oid *) calloc(1, sizeof(mygit2::git_oid));
 
     /* The tree is always the first field */
     if (!(flags & GIT_COMMIT_PARSE_QUICK)) {
@@ -569,7 +565,7 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
 
     while (git_oid__parse(&parent_id, &buffer, buffer_end, "parent ") == 0) {
         auto *new_id = (mygit2::git_oid *) git_array_alloc(commit->parent_ids);
-        Env::Memcpy(new_id->id, parent_id.id, sizeof(parent_id.id));
+        Env::Memcpy(new_id, &parent_id, sizeof(parent_id));
     }
 
     if (!(flags & GIT_COMMIT_PARSE_QUICK)) {

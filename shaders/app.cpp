@@ -430,14 +430,13 @@ namespace
         Env::DocArray parent("parents");
         for (size_t i = 0; i < commit.parent_ids.size; ++i) {
             Env::DocGroup entry("");
-            git_oid_fmt(oid_buffer, &commit.parent_ids.ptr[0]);
+            git_oid_fmt(oid_buffer, &commit.parent_ids.ptr[i]);
             Env::DocAddText("oid", oid_buffer);
         }
     }
 
     void AddTree(const mygit2::git_tree& tree) {
         Env::DocGroup tree_obj("tree");
-        Env::DocAddNum("entries_num", static_cast<uint64_t>(tree.entries.size));
         char oid_buffer[GIT_OID_HEXSZ + 1];
         oid_buffer[GIT_OID_HEXSZ] = '\0';
         Env::DocArray entries("entries");
@@ -456,10 +455,8 @@ namespace
         using GitRemoteBeam::git_oid;
         RepoInfo::ID repo_id;
         git_oid hash;
-        uint32_t data_size;
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
-        Env::DocGet("data_size", data_size);
         DataKey key { .m_KeyInContract = {repo_id, hash} };
         key.m_Prefix.m_Cid = cid;
         uint32_t valueLen = 0, keyLen = 0;
@@ -469,7 +466,7 @@ namespace
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_commit commit;
-            commit_parse(&commit, value->data, valueLen, 0); // Fast parse
+            commit_parse(&commit, value->data, valueLen, 0);
             AddCommit(commit);
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
@@ -484,10 +481,8 @@ namespace
         using GitRemoteBeam::git_oid;
         RepoInfo::ID repo_id;
         git_oid hash;
-        uint32_t data_size;
         Env::DocGet("repo_id", repo_id);
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
-        Env::DocGet("data_size", data_size);
         DataKey key { .m_KeyInContract = {repo_id, hash} };
         key.m_Prefix.m_Cid = cid;
         uint32_t valueLen = 0, keyLen = 0;
@@ -645,14 +640,12 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("obj_id", "Object hash");
-                Env::DocAddText("data_size", "Size of data");
             }
             {
                 Env::DocGroup grMethod("repo_get_tree");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("obj_id", "Object hash");
-                Env::DocAddText("data_size", "Size of data");
             }
             {
                 Env::DocGroup grMethod("list_commits");
