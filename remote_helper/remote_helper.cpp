@@ -94,9 +94,9 @@ namespace
         };
 
         SimpleWalletClient(const Options& options)
-            : m_Resolver(m_ioc)
-            , m_Stream(m_ioc)
-            , m_Options(options)
+            : m_resolver(m_ioc)
+            , m_stream(m_ioc)
+            , m_options(options)
         {
 
         }
@@ -104,10 +104,10 @@ namespace
         ~SimpleWalletClient()
         {
             // Gracefully close the socket
-            if (m_Connected)
+            if (m_connected)
             {
                 beast::error_code ec;
-                m_Stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+                m_stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 
                 if (ec && ec != beast::errc::not_connected)
                 {
@@ -123,27 +123,26 @@ namespace
                 .append(GetRepoID())
                 .append(",cid=")
                 .append(GetCID());
-            InvokeShader(std::move(args));
-            return m_Result;
+            return InvokeShader(std::move(args));
         }
 
         const std::string& GetRepoDir() const
         {
-            return m_Options.repoPath;
+            return m_options.repoPath;
         }
 
     private:
 
         void EnsureConnected()
         {
-            if (m_Connected)
+            if (m_connected)
                 return;
 
-            auto const results = m_Resolver.resolve(m_Options.apiHost, m_Options.apiPort);
+            auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
 
             // Make the connection on the IP address we get from a lookup
-            m_Stream.connect(results);
-            m_Connected = true;
+            m_stream.connect(results);
+            m_connected = true;
         }
 
         std::string ExtractResult(const std::string& response)
@@ -152,7 +151,7 @@ namespace
             return r["result"]["output"].get<std::string>();
         }
 
-        void InvokeShader(const std::string& args)
+        std::string InvokeShader(const std::string& args)
         {
             // snippet from boost beast sync http client example, there is no need for something complicated atm.
 
@@ -166,22 +165,22 @@ namespace
                 {"method", "invoke_contract"},
                 {"params",
                     {
-                        {"contract_file", m_Options.appPath},
+                        {"contract_file", m_options.appPath},
                         {"args", args}
                     }
                 }
             };
 
             // Set up an HTTP GET request message
-            http::request<http::string_body> req{ http::verb::get, m_Options.apiTarget, 11 };
-            req.set(http::field::host, m_Options.apiHost);
+            http::request<http::string_body> req{ http::verb::get, m_options.apiTarget, 11 };
+            req.set(http::field::host, m_options.apiHost);
             req.set(http::field::user_agent, "PIT/0.0.1");
             req.body() = msg.dump();
             req.content_length(req.body().size());
 
 
             // Send the HTTP request to the remote host
-            http::write(m_Stream, req);
+            http::write(m_stream, req);
 
             // This buffer is used for reading and must be persisted
             beast::flat_buffer buffer;
@@ -190,21 +189,20 @@ namespace
             http::response<http::dynamic_body> res;
 
             // Receive the HTTP response
-            http::read(m_Stream, buffer, res);
+            http::read(m_stream, buffer, res);
 
             // Write the message to standard out
             //std::cerr << res << std::endl;
-            m_Result = ExtractResult(beast::buffers_to_string(res.body().data()));
-            std::cerr << "Result: " << m_Result << std::endl;
-
+            auto result = ExtractResult(beast::buffers_to_string(res.body().data()));
+            std::cerr << "Result: " << result << std::endl;
+            return result;
         }
 
         const std::string& GetCID()
         {
             if (m_cid.empty())
             {
-                InvokeShader("role=manager,action=view_contracts");
-                json root = json::parse(m_Result);
+                json root = json::parse(InvokeShader("role=manager,action=view_contracts"));
 
                 assert(root.is_object());
                 auto& contracts = root["contracts"];
@@ -218,36 +216,31 @@ namespace
 
         const std::string& GetRepoID()
         {
-            if (m_RepoID.empty())
+            if (m_repoID.empty())
             {
                 std::string request = "role=user,action=repo_id_by_name,repo_name=";
-                request.append(m_Options.repoName)
+                request.append(m_options.repoName)
                     .append(",cid=")
                     .append(GetCID());
-                InvokeShader(request);
-                json root = json::parse(m_Result);
 
+                json root = json::parse(InvokeShader(request));
                 assert(root.is_object());
                 if (auto it = root.find("repo_id"); it != root.end())
                 {
                     auto& id = *it;
-                    m_RepoID = std::to_string(id.get<uint32_t>());
+                    m_repoID = std::to_string(id.get<uint32_t>());
                 }
             }
-            return m_RepoID;
+            return m_repoID;
         }
-
-
-
 
     private:
         net::io_context     m_ioc;
-        tcp::resolver       m_Resolver;
-        beast::tcp_stream   m_Stream;
-        bool                m_Connected = false;
-        const Options&      m_Options;
-        std::string         m_RepoID;
-        std::string         m_Result;
+        tcp::resolver       m_resolver;
+        beast::tcp_stream   m_stream;
+        bool                m_connected = false;
+        const Options&      m_options;
+        std::string         m_repoID;
         std::string         m_cid;
     };
 
@@ -446,13 +439,13 @@ namespace
                     git_tree_lookup(&subTree, m_repo, entry_oid);
                     TraverseTree(subTree);
                     m_path.pop_back();
-                }	break;
+                }   break;
                 case GIT_OBJECT_BLOB:
                 {
                     auto& obj = CollectObject(*entry_oid);
                     obj.name = git_tree_entry_name(entry);
                     obj.fullPath = Join(m_path, obj.name);
-                }	break;
+                }   break;
                 default:
                     break;
                 }
