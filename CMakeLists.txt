@@ -61,7 +61,7 @@ else()
         endif()
     endif()
     #include(AddShader)
-    find_package(Boost REQUIRED COMPONENTS program_options)
+    find_package(Boost REQUIRED COMPONENTS program_options date_time)
     add_subdirectory(3rdparty/libgit2)
     add_subdirectory (remote_helper)
     
