@@ -14,5 +14,6 @@ target_link_libraries(${TARGET_NAME}
 		git2
 		wallet
 		cli
+		Boost::date_time
 )
 
