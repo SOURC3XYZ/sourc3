@@ -75,11 +75,10 @@ export const thunks = {
     }
   },
 
-  repoGetRefs: (
+  getRepo: (
     id: T.RepoId, resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
-    const { repo: { tree } } = getState();
-    const chain = await repoReq(id, tree, beam);
+  ) => async (dispatch: AppThunkDispatch) => {
+    const chain = await repoReq(id, beam);
     batcher(dispatch, chain);
     if (resolve) resolve();
   },
@@ -147,7 +146,7 @@ export const thunks = {
   },
 
   getTextData: (
-    repoId: T.RepoId, oid: T.TreeElementOid, resolve: () => void
+    repoId: T.RepoId, oid: T.TreeElementOid, resolve?: () => void
   ) => async (dispatch: AppThunkDispatch) => {
     const res = await beam
       .callApi(RC.getData(repoId, oid)) as T.BeamApiRes;

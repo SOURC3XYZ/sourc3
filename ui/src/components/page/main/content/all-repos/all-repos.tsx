@@ -1,4 +1,6 @@
-import { BeamButton, ListRender, Search } from '@components/shared';
+import {
+  BeamButton, ListRender, Nav, Search
+} from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
@@ -10,7 +12,6 @@ import {
 import { useParams } from 'react-router-dom';
 import { loadingData, searchFilter } from '@libs/utils';
 import styles from './all-repos.module.css';
-import { Nav } from '../nav';
 
 type LocationState = {
   page: string,
@@ -67,7 +68,6 @@ const AllRepos = ({
           <BeamButton title="New" callback={showModal} />
         </Col>
         <Col span={8} offset={8}>
-
           <Search text={searchText} setInputText={setInputText} />
         </Col>
       </Row>

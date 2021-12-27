@@ -3,11 +3,14 @@ import {
   TxItem,
   RepoType,
   RepoMeta,
-  RepoRef,
-  RepoCommit,
+  Branch,
+  BranchCommit,
   PropertiesType,
   DataNode,
-  CommitHash
+  CommitHash,
+  Commit,
+  BranchName,
+  RepoId
 } from '@types';
 
 export const AC = {
@@ -57,29 +60,49 @@ export const AC = {
     payload
   } as const),
 
-  setRepoRefs: (payload: RepoRef[]) => ({
+  setRepoRefs: (payload: Branch[]) => ({
     type: ACTIONS.REPO_REFS,
     payload
   } as const),
 
-  setCommitData: (payload: RepoCommit | null) => ({
+  setCommitData: (payload: BranchCommit | null) => ({
     type: ACTIONS.COMMIT,
     payload
   } as const),
 
-  setTreeData: (payload: DataNode[]) => ({
+  setTreeData: (payload: DataNode[] | null) => ({
     type: ACTIONS.TREE_DATA,
     payload
   } as const),
 
-  setFileText: (payload: string) => ({
+  setFileText: (payload: string | null) => ({
     type: ACTIONS.SET_FILE_TEXT,
     payload
   } as const),
 
-  setSearch: (inputText: string) => ({
+  setSearch: (payload: string) => ({
     type: ACTIONS.SET_SEARCH,
-    payload: inputText
+    payload
+  } as const),
+
+  setCommitList: (payload: Commit[]) => ({
+    type: ACTIONS.SET_COMMITS_LIST,
+    payload
+  } as const),
+
+  setCommitRefList: (payload: BranchCommit[]) => ({
+    type: ACTIONS.SET_BRANCH_REF_LIST,
+    payload
+  } as const),
+
+  setRepoMap: (payload: Map<BranchName, BranchCommit[]> | null) => ({
+    type: ACTIONS.SET_REPO_MAP,
+    payload
+  } as const),
+
+  setRepoId: (payload: RepoId) => ({
+    type: ACTIONS.SET_REPO_ID,
+    payload
   } as const)
 };
 

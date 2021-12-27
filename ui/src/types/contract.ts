@@ -1,8 +1,8 @@
-import { DataNode } from 'antd/lib/tree';
+import { DataNode } from './antd';
 
 export type RepoName = string;
 export type RepoId = number;
-export type CommitName = string;
+export type BranchName = string;
 export type CommitHash = string;
 export type MetaHash = string;
 export type MetaObjectType = number;
@@ -34,20 +34,20 @@ export type RepoMetaResponse = {
   objects: RepoMeta[]
 };
 
-export type RepoRef = {
-  name: CommitName
-  commit_hash :CommitHash
+export type Branch = {
+  name: BranchName
+  commit_hash: CommitHash
 };
 
 export type RepoRefsResponse = {
-  refs: RepoRef[]
+  refs: Branch[]
 };
 
 export type CommitData = {
   oid: CommitHash
 };
 
-export type RepoCommit = {
+export type BranchCommit = {
   raw_header: string
   raw_message: string
   tree_oid: TreeOid
@@ -60,7 +60,7 @@ export type RepoCommit = {
 };
 
 export type RepoCommitResponse = {
-  commit: RepoCommit;
+  commit: BranchCommit;
 };
 
 export type TreeElement = {
@@ -85,10 +85,21 @@ export interface IDataNodeCustom extends DataNode{
 export type UpdateProps = {
   id: RepoId,
   oid: TreeOid,
+  index?:number,
   key?: React.Key,
   resolve?: () => void
 };
 
 export type ObjectDataResponse = {
   object_data: ObjectData
+};
+
+export type Commit = {
+  object_hash: string
+  object_type:number
+  object_size:number
+};
+
+export type CommitListRes = {
+  objects: Commit[]
 };

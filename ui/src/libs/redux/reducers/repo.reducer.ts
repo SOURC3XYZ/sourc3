@@ -1,54 +1,47 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import {
-  RepoRef, RepoMeta, RepoCommit, DataNode
+  DataNode, BranchCommit, BranchName, RepoId
 } from '@types';
 
 interface IRepo {
-  meta: RepoMeta[],
-  refs: RepoRef[],
-  tree: DataNode[],
-  commitData: RepoCommit | null,
-  commitHash: string | null,
-  fileText: string
+  id: RepoId | null,
+  repoMap: Map<BranchName, BranchCommit[]> | null,
+  tree: DataNode[] | null,
+  fileText: string | null
 }
 
 export const initialState:IRepo = {
-  meta: [],
-  refs: [],
-  tree: [],
-  commitData: null,
-  commitHash: null,
-  fileText: ''
+  id: null,
+  repoMap: null,
+  tree: null,
+  fileText: null
 };
 
 const reducer = (
   state:IRepo = initialState, action: ActionCreators
 ):IRepo => {
-  const newState = { ...state } as IRepo;
+  const newState = {
+    ...state,
+    repoMap: state.repoMap
+      ? new Map(Array.from(state.repoMap))
+      : null
+  } as IRepo;
   switch (action.type) {
-    case ACTIONS.REPO_META: {
-      newState.meta = action.payload as IRepo['meta'];
-      return newState;
-    }
-    case ACTIONS.REPO_REFS: {
-      newState.refs = action.payload as IRepo['refs'];
-      return newState;
-    }
-    case ACTIONS.COMMIT: {
-      newState.commitData = action.payload as IRepo['commitData'];
+    case ACTIONS.SET_REPO_ID: {
+      newState.id = action.payload as IRepo['id'];
       return newState;
     }
     case ACTIONS.TREE_DATA: {
-      newState.tree = [...action.payload as IRepo['tree']];
+      newState.tree = action.payload as IRepo['tree'];
       return newState;
     }
     case ACTIONS.SET_FILE_TEXT: {
       newState.fileText = action.payload as IRepo['fileText'];
       return newState;
     }
-    case ACTIONS.SET_COMMIT_HASH: {
-      newState.commitHash = action.payload as IRepo['commitHash'];
+    case ACTIONS.SET_REPO_MAP: {
+      newState.repoMap = action.payload as IRepo['repoMap'];
       return newState;
     }
     default:

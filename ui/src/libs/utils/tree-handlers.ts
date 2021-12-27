@@ -34,9 +34,10 @@ export const treeDataMaker = (
 };
 
 export const updateTreeData = (
-  list: DataNode[], children: DataNode[], key?: React.Key
-): DataNode[] => {
+  list: DataNode[] | null, children: DataNode[], key?: React.Key
+): DataNode[] | null => {
   if (key === undefined) return children;
+  if (!list) return null;
   const newList = list.map((node) => {
     if (node.key === key) {
       return {
@@ -52,7 +53,7 @@ export const updateTreeData = (
     }
     return node;
   });
-  return newList;
+  return newList as DataNode[];
 };
 
 export const onLoadData = (

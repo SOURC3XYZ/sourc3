@@ -59,7 +59,7 @@ const ListRender = ({
               title={(
                 <Link
                   to={
-                    `/repo/${item.repo_id}&${item.repo_name}/tree`
+                    `/repo/${item.repo_id}&${item.repo_name}/tree/`
                   }
                   state={{ id: item.repo_id }}
                 >

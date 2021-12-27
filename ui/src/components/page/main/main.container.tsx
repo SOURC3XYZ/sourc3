@@ -4,12 +4,10 @@ import { connect } from 'react-redux';
 import {
   Navigate, Route, Routes
 } from 'react-router-dom';
-import {
-  AllRepos, Notifications
-} from '@components/container';
 import { thunks } from '@libs/action-creators';
+import { Preload } from '@components/shared';
 import styles from './main.module.css';
-import { Repo } from './container';
+import { Notifications, Repo, AllRepos } from './content';
 
 type MainProps = {
   connectApi: () => void,
@@ -22,32 +20,32 @@ const Main = ({
   React.useEffect(() => {
     connectApi();
   }, []);
-  const path = window.location.pathname === 'Pit_demo/app/index.html'
-    ? 'Pit_demo/app/index.html'
-    : window.location.pathname.substring(1);
+  // const path = window.location.pathname === 'Pit_demo/app/index.html'
+  //   ? 'Pit_demo/app/index.html'
+  //   : window.location.pathname.substring(1);
   return (
     <>
       <div className={styles.main}>
         {
           isConnected
-          && (
-            <Routes>
-              <Route
-                path={`/${path}`}
-                element={
-                  <Navigate replace to="/repos/all/1" />
-                }
-              />
-              <Route
-                path="/repos/:type/:page"
-                element={<AllRepos />}
-              />
-              <Route
-                path="/repo/:id/*"
-                element={<Repo />}
-              />
-            </Routes>
-          )
+            ? (
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <Navigate replace to="/repos/all/1" />
+                  }
+                />
+                <Route
+                  path="/repos/:type/:page"
+                  element={<AllRepos />}
+                />
+                <Route
+                  path="/repo/:id/*"
+                  element={<Repo />}
+                />
+              </Routes>
+            ) : <Preload />
         }
         <Notifications />
       </div>

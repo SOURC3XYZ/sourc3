@@ -1,22 +1,51 @@
 import { BeamAPI } from '@libs/beam';
 import { treeDataMaker, updateTreeData } from '@libs/utils';
 import {
-  BeamApiRes, RepoCommitResponse, RepoId, RepoRefsResponse, RepoTreeResponse, TreeDataNode, UpdateProps
+  BeamApiRes,
+  Branch,
+  BranchCommit,
+  RepoCommitResponse,
+  RepoId, RepoRefsResponse,
+  RepoTreeResponse, TreeDataNode,
+  UpdateProps, BranchName
 } from '@types';
 import { AC } from './action-creators';
 import { RC, RequestCreators } from './request-creators';
 
-type TypeBeamApi = BeamAPI<RequestCreators['params']>;
+type TypedBeamApi = BeamAPI<RequestCreators['params']>;
+
+type CallType<T> = (req: RequestCreators) => Promise<T>;
 
 export const callApi = (
-  beam: TypeBeamApi
+  beam: TypedBeamApi
 ) => async function<T>(req: RequestCreators):Promise<T> {
   const { result } = await beam.callApi(req) as BeamApiRes;
   if (result?.output) return JSON.parse(result.output) as T;
   throw new Error('something wrong with output');
 };
 
-export const getTree = async (beam: TypeBeamApi,
+const getCommitParent = async (
+  call: CallType<RepoCommitResponse>,
+  id: RepoId, oid: string
+) => {
+  const res = await call(
+    RC.repoGetCommit(id, oid)
+  );
+  return res.commit;
+};
+
+export const buildCommitTree = async (
+  call: CallType<RepoCommitResponse>,
+  id: RepoId, refList: BranchCommit[]
+):Promise<BranchCommit[]> => {
+  const prev = await getCommitParent(call, id, refList[0].parents[0].oid);
+  const newList = [prev, ...refList];
+  if (prev.parents.length) {
+    return buildCommitTree(call, id, newList);
+  } return newList;
+};
+
+export const getTree = async (beam: TypedBeamApi,
   {
     id, oid, key
   }: UpdateProps, tree: TreeDataNode[]) => {
@@ -31,21 +60,33 @@ export const getTree = async (beam: TypeBeamApi,
   throw new Error('something wrong with output');
 };
 
+const buildCommitList = async (
+  call: CallType<RepoCommitResponse>, id: RepoId, branch: Branch
+):Promise<BranchCommit[]> => {
+  const commitRes = await call(RC.repoGetCommit(id, branch.commit_hash));
+  const commitList = await buildCommitTree(call, id, [commitRes.commit]);
+  return commitList;
+};
+
+export async function buildRepoMap(api:TypedBeamApi, id:RepoId) {
+  const call = callApi(api);
+  const branches = await call<RepoRefsResponse>(RC.repoGetRefs(id));
+  const branchMap = new Map<BranchName, BranchCommit[]>();
+  const promises = branches.refs.map((el) => buildCommitList(call, id, el));
+  const commits = await Promise.all(promises);
+  branches.refs.forEach((el, i) => {
+    if (commits[i]) branchMap.set(el.name, commits[i]);
+  });
+  return branchMap;
+}
+
 export async function repoReq(
-  id: RepoId, tree:TreeDataNode[], beam: TypeBeamApi
+  id: RepoId, beam: TypedBeamApi
 ) {
-  const call = callApi(beam);
-  const refOutput = await call<RepoRefsResponse>(RC.repoGetRefs(id));
-  const commitRes = await call<RepoCommitResponse>(
-    RC.repoGetCommit(id, refOutput?.refs[0].commit_hash)
-  );
-  const treeRes = await getTree(
-    beam, { id, oid: commitRes.commit.tree_oid }, tree
-  );
+  const repoMap = await buildRepoMap(beam, id);
   return [
-    AC.setRepoRefs(refOutput.refs),
-    AC.setCommitData(commitRes.commit),
-    AC.setCommitHash(refOutput.refs[0].commit_hash),
-    AC.setTreeData(treeRes)
+    AC.setRepoId(id),
+    AC.setRepoMap(repoMap),
+    AC.setTreeData(null)
   ];
 }

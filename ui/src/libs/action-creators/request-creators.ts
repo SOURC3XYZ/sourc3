@@ -7,7 +7,7 @@ export const RC = {
     callID: 'start_tx',
     method: 'process_invoke_data',
     params: { data }
-  }),
+  } as const),
 
   getTxStatus: (txId: string) => ({
     callID: `tx_status_${txId}`,
@@ -15,7 +15,7 @@ export const RC = {
     params: {
       txId
     }
-  }),
+  } as const),
 
   zeroMethodCall: () => ({
     callID: 'zero_method_call',
@@ -124,6 +124,19 @@ export const RC = {
         action: 'repo_get_data',
         repo_id,
         obj_id
+      },
+      create_tx: false
+    }
+  } as const),
+
+  getCommitList: (repo_id:RepoId) => ({
+    callID: 'repo_get_data',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'list_commits',
+        repo_id
       },
       create_tx: false
     }
