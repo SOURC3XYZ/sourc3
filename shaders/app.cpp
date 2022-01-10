@@ -427,6 +427,12 @@ namespace
         Env::DocAddText("author_email", commit.author->email);
         Env::DocAddText("committer_name", commit.committer->name);
         Env::DocAddText("committer_email", commit.committer->email);
+        Env::DocAddNum32("commit_time_sec", commit.committer->when.offset);
+        Env::DocAddNum32("commit_time_tz_offset_min", commit.committer->when.offset);
+        Env::DocAddNum32("commit_time_positive", commit.committer->when.sign == '+'); // Only two values: '-' and '+'
+        Env::DocAddNum32("create_time_sec", commit.author->when.time);
+        Env::DocAddNum32("create_time_tz_offset_min", commit.author->when.offset);
+        Env::DocAddNum32("create_time_positive", commit.author->when.sign == '+'); // Only two values: '-' and '+'
         Env::DocArray parent("parents");
         for (size_t i = 0; i < commit.parent_ids.size; ++i) {
             Env::DocGroup entry("");

@@ -1,15 +1,9 @@
 #ifndef GITPARSING_FULL_GIT_H
 #define GITPARSING_FULL_GIT_H
 
-#include <string_view>
+#include "integer.h"
 
-//size_t strlen(const char* data) {
-//    return std::string_view(data).size();
-//}
-//
-//const char* memchr (const char* data, char value, size_t length) {
-//    return data + std::string_view(data, length).find(value);
-//}
+#include <string_view>
 
 char *strdup(const char *src) {
     char *dst = (char *) Env::Heap_Alloc(strlen(src) + 1);  // Space for length plus nul
@@ -384,13 +378,11 @@ int git__strntol64(int64_t *result, const char *nptr, size_t nptr_len, const cha
         if (v >= base)
             break;
         v = neg ? -v : v;
-        nn = (int64_t) n * base;
-        n = (int64_t) nn * v;
-//        if (git__multiply_int64_overflow(&nn, n, base) || git__add_int64_overflow(&n, nn, v)) {
-//            ovfl = 1;
-//            /* Keep on iterating until the end of this number */
-//            continue;
-//        }
+        if (git__multiply_int64_overflow(&nn, n, base) || git__add_int64_overflow(&n, nn, v)) {
+            ovfl = 1;
+            /* Keep on iterating until the end of this number */
+            continue;
+        }
     }
 
     Return:
