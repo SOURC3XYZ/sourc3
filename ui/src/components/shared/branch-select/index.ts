@@ -1,1 +1,1 @@
-export { default as BranchSelect } from './branch-select.container';
+export { default as BranchSelect } from './branch-select';

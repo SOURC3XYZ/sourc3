@@ -1,22 +1,17 @@
+import { FileCodes } from '@libs/constants';
 import {
   DataNode,
   IDataNodeCustom, RepoId, TreeElement, UpdateProps
 } from '@types';
 
-export const extCheck = (fileName:string):string | undefined => {
-  const re = /(?:\.([^.]+))?$/;
-  const compare = re.exec(fileName);
-  const condition = compare && compare?.length > 1 && fileName !== '.vscode';
-  if (condition) return compare[1];
-  return undefined;
-};
+export const extCheck = (attr:number):boolean => attr === FileCodes.LEAF;
 
 export const fileSorter = (a:TreeElement, b:TreeElement) => {
   const aLow = a.filename.toLocaleLowerCase();
   const bLow = b.filename.toLocaleLowerCase();
-  const aExt = !!extCheck(a.filename);
-  const bExt = !!extCheck(b.filename);
-  if (+aExt < +bExt || aLow < bLow) { return -1; }
+  const aExt = extCheck(a.attributes);
+  const bExt = extCheck(b.attributes);
+  if (aExt < bExt || aLow < bLow) { return -1; }
   if (aExt > bExt || aLow > bLow) { return 1; }
   return 0;
 };
@@ -27,7 +22,7 @@ export const treeDataMaker = (
   const newTree = tree.sort(fileSorter).map((el, i) => ({
     title: el.filename,
     key: parentKey !== undefined ? `${parentKey}-${i}` : i,
-    isLeaf: !!extCheck(el.filename),
+    isLeaf: extCheck(el.attributes),
     dataRef: el
   }));
   return newTree;
@@ -70,3 +65,36 @@ export const onLoadData = (
     id, key, resolve, oid: dataRef.oid
   });
 });
+
+export const getTree = (
+  treeNode:DataNode[],
+  pathname: string,
+  updateTree: (props: Omit<UpdateProps, 'id'>) => void,
+  index = 0
+): DataNode[] | null => {
+  const pathArray = pathname.split('/').slice(5);
+
+  if (!pathArray.length) {
+    return treeNode;
+  }
+
+  const currentFile = treeNode
+    .find(
+      (el) => el.title === pathArray[index]
+    ) as IDataNodeCustom | undefined;
+
+  if (currentFile) {
+    if (currentFile.children) {
+      if (index === pathArray.length - 1) return currentFile.children;
+      return getTree(
+        currentFile.children,
+        pathname,
+        updateTree,
+        index + 1
+      );
+    } updateTree({
+      oid: currentFile.dataRef.oid,
+      key: currentFile.key
+    });
+  } return null;
+};

@@ -10,3 +10,5 @@ export * from './file-text';
 export * from './file-tree';
 export * from './nav';
 export * from './repo-meta';
+export * from './file-tree-block';
+export * from './breadcrumb';

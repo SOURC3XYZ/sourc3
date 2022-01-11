@@ -1,1 +1,1 @@
-export { default as RepoMeta } from './repo-meta.container';
+export { default as RepoMeta } from './repo-meta';

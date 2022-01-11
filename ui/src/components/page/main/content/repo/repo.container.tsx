@@ -6,10 +6,10 @@ import {
 import React from 'react';
 import { batch, connect } from 'react-redux';
 import {
-  Route, Routes, useParams
+  useParams
 } from 'react-router-dom';
-import { FileText, FileTree, Preload } from '@components/shared';
-import UpperMenu from './upper-menu';
+import { Preload } from '@components/shared';
+import { RepoContent } from './content';
 
 type LocationState = {
   id:string;
@@ -47,43 +47,23 @@ const UserRepos = ({
       getRepoData(+numId);
     }
   }, []);
+
+  const repoContentProps = {
+    id: +numId,
+    repoMap: repoMap as Map<string, BranchCommit[]>,
+    tree,
+    fileText,
+    repoName,
+    updateTree: update,
+    killTree,
+    getFileData
+  };
   return (
     <>
       {
         isLoaded
-          ? (
-            <>
-              <UpperMenu
-                repoMap={repoMap}
-                repoName={repoName}
-                updateTree={update}
-                killTree={killTree}
-              />
-
-              <Routes>
-                <Route
-                  path="tree"
-                  element={(
-                    <FileTree
-                      id={+numId}
-                      tree={tree}
-                      updateTree={update}
-                    />
-                  )}
-                />
-
-                <Route
-                  path=":oid"
-                  element={(
-                    <FileText
-                      fileText={fileText}
-                      getFileData={getFileData}
-                    />
-                  )}
-                />
-              </Routes>
-            </>
-          ) : <Preload />
+          ? <RepoContent {...repoContentProps} />
+          : <Preload />
 
       }
     </>

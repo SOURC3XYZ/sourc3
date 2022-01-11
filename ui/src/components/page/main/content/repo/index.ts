@@ -1,2 +1,2 @@
-export { default as Repo } from './repo';
-export { default as Tree } from './repo';
+export { default as Repo } from './repo.container';
+export { default as Tree } from './repo.container';

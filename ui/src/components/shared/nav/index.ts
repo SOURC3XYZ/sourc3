@@ -1,1 +1,1 @@
-export { default as Nav } from './nav.container';
+export { default as Nav } from './nav';

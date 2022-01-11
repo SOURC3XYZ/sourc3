@@ -1,1 +1,1 @@
-export { default as FileText } from './file-text.container';
+export { default as FileText } from './file-text';

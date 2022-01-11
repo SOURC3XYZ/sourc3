@@ -1,1 +1,1 @@
-export { default as CommitsSelect } from './commits-select.container';
+export { default as CommitsSelect } from './commits-select';

@@ -53,8 +53,6 @@ const reducer = (
     default:
       return state;
   }
-
-  return newState;
 };
 
 export default reducer;
