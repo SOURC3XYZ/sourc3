@@ -1,7 +1,4 @@
-﻿#include "3rdparty/nlohmann/json.hpp"
-#include "utility/cli/options.h"
-#include "utility/hex.h"
-
+﻿
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
@@ -9,6 +6,8 @@
 #include <boost/beast/version.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/json/src.hpp>
+#include <boost/algorithm/hex.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -28,10 +27,10 @@ namespace http = beast::http;       // from <boost/beast/http.hpp>
 namespace net = boost::asio;        // from <boost/asio.hpp>
 using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
-using json = nlohmann::json;
+namespace json = boost::json;
+namespace po = boost::program_options;
 
 using namespace std;
-using namespace beam;
 
 namespace std
 {
@@ -56,9 +55,28 @@ bool operator==(const git_oid& left, const git_oid& right) noexcept
 
 namespace
 {
-
     constexpr const char JsonRpcHeader[] = "jsonrpc";
     constexpr const char JsonRpcVersion[] = "2.0";
+
+    using ByteBuffer = std::vector<uint8_t>;
+
+    std::string ToHex(const void* p, size_t size)
+    {
+        std::string res;
+        res.reserve(size * 2);
+        const uint8_t* pp = static_cast<const uint8_t*>(p);
+        boost::algorithm::hex(pp, pp + size, std::back_inserter(res));
+        return res;
+    }
+
+    template<typename String>
+    ByteBuffer FromHex(const String& s)
+    {
+        ByteBuffer res;
+        res.reserve(s.size() / 2);
+        boost::algorithm::unhex(s.begin(), s.end(), std::back_inserter(res));
+        return res;
+    }
 
 #pragma pack(push, 1)
     struct GitObject
@@ -148,7 +166,7 @@ namespace
         std::string ExtractResult(const std::string& response)
         {
             auto r = json::parse(response);
-            return r["result"]["output"].get<std::string>();
+            return r.as_object()["result"].as_object()["output"].as_string().c_str();
         }
 
         std::string InvokeShader(const std::string& args)
@@ -158,7 +176,7 @@ namespace
             EnsureConnected();
 
             cerr << "Args: " << args << endl;
-            auto msg = json
+            auto msg = json::value
             {
                 {JsonRpcHeader, JsonRpcVersion},
                 {"id", 1},
@@ -175,7 +193,7 @@ namespace
             http::request<http::string_body> req{ http::verb::get, m_options.apiTarget, 11 };
             req.set(http::field::host, m_options.apiHost);
             req.set(http::field::user_agent, "PIT/0.0.1");
-            req.body() = msg.dump();
+            req.body() = json::serialize(msg);
             req.content_length(req.body().size());
 
 
@@ -202,13 +220,13 @@ namespace
         {
             if (m_cid.empty())
             {
-                json root = json::parse(InvokeShader("role=manager,action=view_contracts"));
+                auto root = json::parse(InvokeShader("role=manager,action=view_contracts"));
 
                 assert(root.is_object());
-                auto& contracts = root["contracts"];
-                if (!contracts.empty())
+                auto& contracts = root.as_object()["contracts"];
+                if (contracts.is_array() && !contracts.as_array().empty())
                 {
-                    m_cid = contracts[0]["cid"].get<std::string>();
+                    m_cid = contracts.as_array()[0].as_object()["cid"].as_string().c_str();
                 }
             }
             return m_cid;
@@ -223,12 +241,12 @@ namespace
                     .append(",cid=")
                     .append(GetCID());
 
-                json root = json::parse(InvokeShader(request));
+                auto root = json::parse(InvokeShader(request));
                 assert(root.is_object());
-                if (auto it = root.find("repo_id"); it != root.end())
+                if (auto it = root.as_object().find("repo_id"); it != root.as_object().end())
                 {
                     auto& id = *it;
-                    m_repoID = std::to_string(id.get<uint32_t>());
+                    m_repoID = std::to_string(id.value().to_number<uint32_t>());
                 }
             }
             return m_repoID;
@@ -329,7 +347,7 @@ namespace
 
         std::string GetDataString() const
         {
-            return beam::to_hex(git_odb_object_data(object), git_odb_object_size(object));
+            return ToHex(git_odb_object_data(object), git_odb_object_size(object));
         }
 
         const uint8_t* GetData() const
@@ -513,12 +531,13 @@ std::vector<Ref> RequestRefs(SimpleWalletClient& wc)
     auto res = wc.InvokeWallet(ss.str());
     if (!res.empty())
     {
-        json root = json::parse(res);
-        for (const auto& r : root["refs"])
+        auto root = json::parse(res);
+        for (auto& rv : root.as_object()["refs"].as_array())
         {
             auto& ref = refs.emplace_back();
-            ref.name = r["name"].get<std::string>();
-            git_oid_fromstr(&ref.target, r["commit_hash"].get<std::string>().c_str());
+            auto& r = rv.as_object();
+            ref.name = r["name"].as_string().c_str();
+            git_oid_fromstr(&ref.target, r["commit_hash"].as_string().c_str());
         }
     }
     return refs;
@@ -529,8 +548,7 @@ int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
 int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     auto refs = RequestRefs(wc);
-    json head;
-    assert(!head.is_object());
+
     for (const auto& r : refs)
     {
         cout << std::to_string(r.target) << " " << r.name << '\n';
@@ -567,13 +585,14 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
     {
         // hack Collect objects metainfo
         auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
-        json root = json::parse(res);
-        for (const auto& obj : root["objects"])
+        auto root = json::parse(res);
+        for (auto& objVal : root.as_object()["objects"].as_array())
         {
             auto& o = objects.emplace_back();
-            o.data_size = obj["object_size"];
-            o.type = obj["object_type"];
-            auto s = obj["object_hash"].get<std::string>();
+            auto& obj = objVal.as_object();
+            o.data_size = obj["object_size"].to_number<uint32_t>();
+            o.type = obj["object_type"].to_number<uint8_t>();
+            std::string s = obj["object_hash"].as_string().c_str();
             git_oid_fromstr(&o.hash, s.c_str());
             if (git_odb_exists(accessor.m_odb, &o.hash))
                 receivedObjects.insert(s);
@@ -586,11 +605,11 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         ss << "role=user,action=repo_get_data,obj_id=" << objectHashes.front();
 
         auto res = wc.InvokeWallet(ss.str());
-        json root = json::parse(res);
+        auto root = json::parse(res);
         git_oid oid;
         git_oid_fromstr(&oid, objectHashes.front().data());
-        auto data = root["object_data"].get<std::string>();
-        auto buf = from_hex(data);
+        auto data = root.as_object()["object_data"].as_string();
+        auto buf = FromHex(data);
 
         auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) {return o.hash == oid; });
         if (it == objects.end())
@@ -669,10 +688,10 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
     {
         // hack Collect objects metainfo
         auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
-        json root = json::parse(res);
-        for (const auto& obj : root["objects"])
+        auto root = json::parse(res);
+        for (auto& obj : root.as_object()["objects"].as_array())
         {
-            auto s = obj["object_hash"].get<std::string>();
+            auto s = obj.as_object()["object_hash"].as_string();
             git_oid oid;
             git_oid_fromstr(&oid, s.c_str());
             uploadedObjects.insert(oid);
@@ -755,13 +774,13 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             cerr << endl;
         }
 
-        auto strData = beam::to_hex(buf.data(), buf.size());
+        auto strData = ToHex(buf.data(), buf.size());
         std::stringstream ss;
         ss << "role=user,action=push_objects,data="
             << strData << ',';
         for (const auto& r : c.m_refs)
         {
-            ss << "ref=" << r.name << ",ref_target=" << beam::to_hex(&r.target, sizeof(r.target));
+            ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
         }
 
         wc.InvokeWallet(ss.str());
@@ -820,7 +839,12 @@ int main(int argc, char* argv[])
             configPath = std::string(homeDir) + "/.pit/" + configPath;
         }
         cerr << "Reading config from: " << configPath << "..." << endl;
-        ReadCfgFromFile(vm, desc, configPath.c_str());
+        const auto fullPath = boost::filesystem::system_complete(configPath).string();
+        std::ifstream cfg(fullPath);
+        if (cfg)
+        {
+            po::store(po::parse_config_file(cfg, desc), vm);
+        }
         vm.notify();
 
         string_view sv(argv[2]);

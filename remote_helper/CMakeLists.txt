@@ -9,11 +9,11 @@ target_include_directories(${TARGET_NAME} PUBLIC SYSTEM ${LIBGIT2_SYSTEM_INCLUDE
 
 target_link_libraries(${TARGET_NAME} 
 	PUBLIC
-		beam
-		bvm
 		git2
-		wallet
-		cli
+		Boost::boost
+		Boost::program_options
 		Boost::date_time
+		Boost::filesystem 
+		Boost::container
 )
 
