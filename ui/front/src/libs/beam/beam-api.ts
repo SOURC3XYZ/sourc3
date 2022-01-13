@@ -22,14 +22,17 @@ type Modified<T> = T & {
 export class BeamAPI<T> {
   private readonly cid: string;
 
+  private readonly apiHost: string | null;
+
   private API: null | QObject;
 
   private contract: Array<number> | null;
 
   private readonly callbacks: Map<string, BeamApiReqHandlers>;
 
-  constructor(cid: string) {
+  constructor(cid: string, apiHost?:string) {
     this.cid = cid;
+    this.apiHost = apiHost || null;
     this.API = null;
     this.contract = null;
     this.callbacks = new Map();
@@ -81,12 +84,14 @@ export class BeamAPI<T> {
     [key: string]: string;
   }): Promise<BeamAPI<T>> => {
     const ua = navigator.userAgent;
-    try {
-      this.API = /QtWebEngine/i.test(ua)
-        ? await this.connectToApi()
-        : await this.connectToWebWallet(message);
-    } catch {
-      throw new Error();
+    if (!this.apiHost) {
+      try {
+        this.API = /QtWebEngine/i.test(ua)
+          ? await this.connectToApi()
+          : await this.connectToWebWallet(message);
+      } catch {
+        throw new Error();
+      }
     }
     return this;
   };
@@ -131,8 +136,6 @@ export class BeamAPI<T> {
   ) => (
     resolve:BeamApiReqHandlers['resolve'], reject:BeamApiReqHandlers['reject']
   ) => {
-    this.callbacks.set(id, { resolve, reject });
-
     const request = {
       jsonrpc: '2.0',
       id,
@@ -140,11 +143,36 @@ export class BeamAPI<T> {
       params
     };
     console.log('request', request);
+
+    if (this.apiHost) {
+      return this.fetchApi(resolve, reject, JSON.stringify(request));
+    }
+
+    this.callbacks.set(id, { resolve, reject });
     if (window.BeamApi) {
-      window.BeamApi
-        .callWalletApi(id, method, { ...params, contract: this.contract });
-    } else {
-      (this.API?.callWalletApi as CallApiDesktop)(JSON.stringify(request));
+      return window.BeamApi.callWalletApi(
+        id, method, { ...params, contract: this.contract }
+      );
+    }
+    return (this.API?.callWalletApi as CallApiDesktop)(JSON.stringify(request));
+  };
+
+  private readonly fetchApi = (
+    resolve:BeamApiReqHandlers['resolve'],
+    reject:BeamApiReqHandlers['reject'],
+    json: string
+  ) => {
+    if (this.apiHost) {
+      fetch(this.apiHost, {
+        method: 'POST',
+        body: json,
+        headers: { 'Content-Type': 'application/json' }
+      }).then((response) => response.json())
+        .then((data) => {
+          console.log('response', data);
+          resolve(data);
+        })
+        .catch((err) => reject(err));
     }
   };
 

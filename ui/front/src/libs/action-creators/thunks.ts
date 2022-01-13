@@ -11,7 +11,9 @@ import batcher from './batcher';
 import { repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 
-const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
+const beam = new BeamAPI<RequestCreators['params']>(
+  CONTRACT.CID, CONTRACT.HOST
+);
 
 const messageBeam = {
   type: 'create_beam_api',
