@@ -1,7 +1,7 @@
 import {
   BranchCommit, TreeOid, UpdateProps
 } from '@types';
-import { Select } from 'antd';
+import { Select, Typography } from 'antd';
 import React from 'react';
 
 const selectOptionMap = (el: BranchCommit) => (
@@ -31,17 +31,30 @@ const CommitsSelect = ({
   }, [value, keys]);
 
   return (
-    <>
-      <Select
-        value={value}
-        size="small"
-        style={{ width: 200 }}
-        onChange={onChangeHandler}
+    <div style={
+      {
+        display: 'flex'
+      }
+    }
+    >
+      <Typography.Title
+        style={{ paddingRight: '5px' }}
+        level={5}
       >
-        {keys.map(selectOptionMap)}
-      </Select>
+        commits
 
-    </>
+      </Typography.Title>
+      <div>
+        <Select
+          value={value}
+          size="small"
+          style={{ width: 200 }}
+          onChange={onChangeHandler}
+        >
+          {keys.map(selectOptionMap)}
+        </Select>
+      </div>
+    </div> // TODO: make shared <select> component
   );
 };
 

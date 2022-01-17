@@ -1,11 +1,10 @@
 import { Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
-import React from 'react';
 
-// type BreadCrumbMenuProps = {
-//   urlElements: string []
-// };
+type BreadCrumbMenuProps = {
+  prevReposHref: string | null;
+};
 
 type ArrayPath = {
   name: string;
@@ -34,21 +33,26 @@ const hrefCreator = (
   return hrefCreator(newPath, [...elements, element]);
 };
 
-const BreadCrumbMenu = () => {
+const BreadCrumbMenu = ({ prevReposHref }:BreadCrumbMenuProps) => {
   const { pathname } = useLocation();
-  const pathArray = pathname.split('/').splice(4);
+  const root = pathname.split('/').slice(4, 6);
+  const pathArray = pathname.split('/').splice(6);
   const pathElements = hrefCreator(pathArray);
   const baseUrl = pathname.split('/')
     .splice(0, 4)
     .map((el, i) => (i === 3 && el === 'blob' ? 'tree' : el))
+    .concat(root)
     .join('/');
 
   return (
     <Breadcrumb>
       <Breadcrumb.Item>
-        <Link to="/repos/all/1">
+        <Link to={prevReposHref || '/repos/all/1'}>
           <HomeOutlined />
         </Link>
+      </Breadcrumb.Item>
+      <Breadcrumb.Item>
+        <Link to={baseUrl}>root</Link>
       </Breadcrumb.Item>
       {elementsCreator(baseUrl, pathElements)}
     </Breadcrumb>

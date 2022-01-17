@@ -41,7 +41,7 @@ const Main = ({
                   element={<AllRepos />}
                 />
                 <Route
-                  path="/repo/:id/*"
+                  path="/repo/:repoParams/*"
                   element={<Repo />}
                 />
               </Routes>

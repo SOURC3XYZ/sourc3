@@ -103,6 +103,11 @@ export const AC = {
   setRepoId: (payload: RepoId) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
+  } as const),
+
+  setPreviousReposPage: (payload: string) => ({
+    type: ACTIONS.SET_PREV_REPO_HREF,
+    payload
   } as const)
 };
 

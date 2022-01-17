@@ -2,7 +2,7 @@ import { logger } from '@libs/utils';
 import {
   BranchName
 } from '@types';
-import { Select } from 'antd';
+import { Select, Typography } from 'antd';
 
 type BranchSelectProps = {
   keys: BranchName[],
@@ -11,12 +11,14 @@ type BranchSelectProps = {
 };
 
 const selectOptionMap = (el: BranchName, i:number) => (
-  <Select.Option
-    value={el}
-    key={i}
-  >
-    {el}
-  </Select.Option>
+  <>
+    <Select.Option
+      value={el}
+      key={i}
+    >
+      {el.split('refs/heads/')}
+    </Select.Option>
+  </>
 );
 
 const BranchSelect = ({
@@ -25,19 +27,35 @@ const BranchSelect = ({
   logger('Branch select', [
     ['map', keys]
   ]);
-  return (
-    <>
 
-      <Select
-        defaultValue={keys[keys.length - 1]}
-        size="small"
-        value={value}
-        style={{ width: 200 }}
-        onChange={selectHandler}
+  return (
+    <div style={
+      {
+        display: 'flex'
+      }
+    }
+    >
+      <Typography.Title
+        style={
+          { paddingRight: '5px' }
+        }
+        level={5}
       >
-        { keys.map(selectOptionMap) }
-      </Select>
-    </>
+        branch
+
+      </Typography.Title>
+      <div>
+        <Select
+          defaultValue={keys[keys.length - 1]}
+          size="small"
+          value={value}
+          style={{ width: 200 }}
+          onChange={selectHandler}
+        >
+          { keys.map(selectOptionMap) }
+        </Select>
+      </div>
+    </div>
   );
 };
 

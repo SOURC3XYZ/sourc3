@@ -24,11 +24,18 @@ type AllReposProps = {
   getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void,
-  setInputText: (inputText: string) => void
+  setInputText: (inputText: string) => void,
+  setPrevHref: (href: string) => void
 };
 
 const AllRepos = ({
-  repos, searchText, getAllRepos, createRepos, deleteRepos, setInputText
+  repos,
+  searchText,
+  getAllRepos,
+  createRepos,
+  deleteRepos,
+  setInputText,
+  setPrevHref
 }:AllReposProps) => {
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [isLoading, setIsLoadin] = useState(true);
@@ -43,6 +50,10 @@ const AllRepos = ({
     loadingData(getAllRepos(type))
       .then(() => setIsLoadin(false));
   }, [type]);
+
+  React.useEffect(() => {
+    setPrevHref(window.location.pathname);
+  }, [page]);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -119,6 +130,9 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   setInputText: (inputText: string) => {
     dispatch(AC.setSearch(inputText));
+  },
+  setPrevHref: (href: string) => {
+    dispatch(AC.setPreviousReposPage(href));
   }
 });
 

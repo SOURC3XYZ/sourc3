@@ -38,11 +38,15 @@ export const buildCommitTree = async (
   call: CallType<RepoCommitResponse>,
   id: RepoId, refList: BranchCommit[]
 ):Promise<BranchCommit[]> => {
-  const prev = await getCommitParent(call, id, refList[0].parents[0].oid);
-  const newList = [prev, ...refList];
-  if (prev.parents.length) {
-    return buildCommitTree(call, id, newList);
-  } return newList;
+  const newList = [...refList];
+  if (refList[0]?.parents[0]) {
+    const prev = await getCommitParent(call, id, refList[0].parents[0]?.oid);
+    newList.unshift(prev);
+    if (prev?.parents.length) {
+      return buildCommitTree(call, id, newList);
+    }
+  }
+  return newList;
 };
 
 export const getTree = async (beam: TypedBeamApi,
@@ -77,7 +81,7 @@ export async function buildRepoMap(api:TypedBeamApi, id:RepoId) {
   branches.refs.forEach((el, i) => {
     if (commits[i]) branchMap.set(el.name, commits[i]);
   });
-  return branchMap;
+  return branchMap.size ? branchMap : null;
 }
 
 export async function repoReq(

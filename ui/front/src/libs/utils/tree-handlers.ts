@@ -72,7 +72,8 @@ export const getTree = (
   updateTree: (props: Omit<UpdateProps, 'id'>) => void,
   index = 0
 ): DataNode[] | null => {
-  const pathArray = pathname.split('/').slice(5);
+  const pathArray = pathname.split('/')
+    .slice(6);
 
   if (!pathArray.length) {
     return treeNode;

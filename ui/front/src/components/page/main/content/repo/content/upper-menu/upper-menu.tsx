@@ -10,12 +10,20 @@ type UpperMenuProps = {
   branch: string,
   commitData: BranchCommit,
   commits: BranchCommit[],
+  prevReposHref: string | null,
   setBranch:React.Dispatch<string>,
   updateTree: (props: Omit<UpdateProps, 'id'>) => void
 };
 
 const UpperMenu = ({
-  keys, branch, commitData, commits, setBranch, repoName, updateTree
+  keys,
+  branch,
+  commitData,
+  commits,
+  repoName,
+  prevReposHref,
+  setBranch,
+  updateTree
 }:UpperMenuProps) => {
   const { tree_oid } = commitData;
   return (
@@ -40,7 +48,7 @@ const UpperMenu = ({
         </Col>
       </Row>
       <Row>
-        <BreadCrumbMenu />
+        <BreadCrumbMenu prevReposHref={prevReposHref} />
       </Row>
     </>
   );

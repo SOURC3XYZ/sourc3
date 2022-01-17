@@ -2,6 +2,7 @@ export { default as ListRender } from './list-item';
 export { default as NotificationElement } from './notification-element';
 export { default as Info } from './info';
 export { default as Search } from './search';
+export { default as FailPage } from './fail-page';
 export * from './preload';
 export * from './beam-button';
 export * from './branch-select';

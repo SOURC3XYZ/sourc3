@@ -12,6 +12,7 @@ export type UpperMenuProps = {
   fileText: string | null;
   tree: DataNode[] | null;
   repoMap: Map<BranchName, BranchCommit[]>;
+  prevReposHref: string | null;
   updateTree: (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
   getFileData: (repoId: RepoId, oid: string) => void;
@@ -26,19 +27,29 @@ const commitDataSetter = (
 };
 
 const RepoContent = ({
-  id, repoMap, repoName, fileText, tree, updateTree, killTree, getFileData
+  id,
+  repoMap,
+  repoName,
+  fileText,
+  tree,
+  prevReposHref,
+  updateTree,
+  killTree,
+  getFileData
 }: UpperMenuProps) => {
   const navigate = useNavigate();
   const keys:BranchName[] = React.useMemo(() => Array.from(repoMap.keys()), []);
   const [branch, setBranch] = React.useState(keys[repoMap.size - 1]);
-  const commits = repoMap.get(branch) as BranchCommit[];
+
+  const commits = repoMap.get(branch) || [] as BranchCommit[];
+
   const [commitData, setCommitData] = React.useState(
     commits[commits.length - 1]
   );
 
   React.useEffect(() => {
     const splitted = branch.split('/');
-    navigate(`tree/${splitted[splitted.length - 1]}`);
+    navigate(`tree/${splitted[splitted.length - 1]}/${commitData.tree_oid}`);
   }, [branch]);
 
   const decoratedUpdateTree = (props: Omit<UpdateProps, 'id'>) => {
@@ -48,6 +59,20 @@ const RepoContent = ({
     setCommitData(commitDataSetter(commits, index !== -1 ? index : undefined));
     killTree();
     updateTree(props);
+  };
+
+  const checkBranch = (branchFromUrl:string, commitFromUrl: string) => {
+    const findedBranch = repoMap.get(branchFromUrl);
+    if (findedBranch) {
+      const findedCommit = findedBranch
+        .find((el) => el.tree_oid === commitFromUrl);
+      if (branch !== commitFromUrl) {
+        setBranch(branchFromUrl);
+      }
+      if (findedCommit) {
+        setCommitData(findedCommit);
+      }
+    }
   };
 
   return (
@@ -60,17 +85,23 @@ const RepoContent = ({
         commitData={commitData}
         commits={commits}
         setBranch={setBranch}
+        prevReposHref={prevReposHref}
       />
       <Routes>
         <Route
-          path="tree/:branch/*"
+          path="tree/:branch/:commit/*"
           element={(
-            <FileTreeBlock id={id} tree={tree} updateTree={updateTree} />
+            <FileTreeBlock
+              id={id}
+              tree={tree}
+              updateTree={updateTree}
+              checkBranch={checkBranch}
+            />
           )}
         />
 
         <Route
-          path="blob/:branch/*"
+          path="blob/:branch/:commit/*"
           element={(
             <FileText
               id={id}
