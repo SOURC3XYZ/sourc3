@@ -13,6 +13,7 @@ namespace Env {
 #include <string_view>
 #include <memory>
 #include <charconv>
+#include <limits>
 
 #include "../try-to-add-libgit2/full_git.h"
 
@@ -121,7 +122,7 @@ namespace
                             nullptr, 0, &sig, 1, "create repo", 10000000);
     }
 
-    void On_action_my_repos(const ContractID& cid) 
+    void On_action_my_repos(const ContractID& cid)
     {
         using namespace GitRemoteBeam;
         using RepoKey = Env::Key_T<RepoInfo::Key>;
@@ -129,7 +130,7 @@ namespace
         _POD_(start.m_Prefix.m_Cid) = cid;
         _POD_(end) = start;
         end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
-        
+
         RepoKey key;
         PubKey my_key;
         Env::DerivePk(my_key, &cid, sizeof(cid));
@@ -415,10 +416,11 @@ namespace
         }
     }
 
-    void AddCommit(const mygit2::git_commit& commit) {
+    void AddCommit(const mygit2::git_commit& commit, const GitRemoteBeam::git_oid& hash) {
         Env::DocGroup commit_obj("commit");
         char oid_buffer[GIT_OID_HEXSZ + 1];
         oid_buffer[GIT_OID_HEXSZ] = '\0';
+        Env::DocAddBlob("commit_oid", &hash, sizeof(hash));
         Env::DocAddText("raw_header", commit.raw_header);
         Env::DocAddText("raw_message", commit.raw_message);
         git_oid_fmt(oid_buffer, &commit.tree_id);
@@ -473,7 +475,7 @@ namespace
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_commit commit;
             commit_parse(&commit, value->data, valueLen, 0);
-            AddCommit(commit);
+            AddCommit(commit, hash);
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             Env::DocAddBlob("object_data", nullptr, 0);
@@ -634,7 +636,6 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("obj_id", "Object hash");
-                Env::DocAddText("data_size", "Size of data");
             }
             {
                 Env::DocGroup grMethod("repo_get_meta");

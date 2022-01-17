@@ -4,11 +4,12 @@
 #include "integer.h"
 
 #include <string_view>
+#include <cstring>
 
 char *strdup(const char *src) {
-    char *dst = (char *) Env::Heap_Alloc(strlen(src) + 1);  // Space for length plus nul
+    char *dst = (char *) Env::Heap_Alloc(Env::Strlen(src) + 1);  // Space for length plus nul
     if (dst == NULL) return NULL;          // No memory
-    Env::Memcpy(dst, src, strlen(src) + 1);                      // Copy the characters
+    Env::Memcpy(dst, src, Env::Strlen(src) + 1);                      // Copy the characters
     return dst;                            // Return the new string
 }
 
@@ -195,7 +196,7 @@ int git_oid__parse(
         mygit2::git_oid *oid, const char **buffer_out,
         const char *buffer_end, const char *header) {
     const size_t sha_len = GIT_OID_HEXSZ;
-    const size_t header_len = strlen(header);
+    const size_t header_len = Env::Strlen(header);
 
     const char *buffer = *buffer_out;
 
@@ -438,7 +439,7 @@ int git_signature__parse(mygit2::git_signature *sig, const char **buffer_out,
         return -1;
 
     if (header) {
-        const size_t header_len = strlen(header);
+        const size_t header_len = Env::Strlen(header);
 
         if (buffer + header_len >= buffer_end || Env::Memcmp(buffer, header, header_len) != 0)
             return -1;
@@ -547,7 +548,7 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
     if (!(flags & GIT_COMMIT_PARSE_QUICK)) {
         git_oid__parse(&commit->tree_id, &buffer, buffer_end, "tree ");
     } else {
-        size_t tree_len = strlen("tree ") + GIT_OID_HEXSZ + 1;
+        size_t tree_len = Env::Strlen("tree ") + GIT_OID_HEXSZ + 1;
         buffer += tree_len;
     }
 
@@ -594,7 +595,7 @@ static int commit_parse(mygit2::git_commit *commit, const char *data, size_t siz
             ++eoln;
 
         if (prefixcmp(buffer, buffer_end - buffer, "encoding ", false) == 0) {
-            buffer += strlen("encoding ");
+            buffer += Env::Strlen("encoding ");
 
             commit->message_encoding = stdalloc__substrdup(buffer, eoln - buffer);
         }
