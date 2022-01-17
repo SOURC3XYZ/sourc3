@@ -1,3 +1,4 @@
+import { BeamAmmount } from '@libs/constants';
 import { ObjectData, BeamReqAction } from '@types';
 
 export const argsStringify = (args: BeamReqAction): string => Object
@@ -39,3 +40,13 @@ export function searchFilter<T>(
   }
   return elements;
 }
+
+export const parseToGroth = (beams: number):number => {
+  const numb = Math.ceil(beams * BeamAmmount.GROTHS_IN_BEAM);
+  return Number(numb);
+};
+
+export const parseToBeam = (groth: number):string => {
+  const numb = groth / BeamAmmount.GROTHS_IN_BEAM;
+  return String(numb);
+};

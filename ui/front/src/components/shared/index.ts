@@ -12,3 +12,4 @@ export * from './nav';
 export * from './repo-meta';
 export * from './file-tree-block';
 export * from './breadcrumb';
+export * from './menu';

@@ -9,13 +9,17 @@ interface IApp {
     code: number,
     status: string,
     message: string
-  } | null
+  } | null,
+  balance: number,
+  addrList: string
 }
 
 const initialState:IApp = {
   isConnected: false,
   txs: new Set(),
-  error: null
+  error: null,
+  balance: 0,
+  addrList: ''
 };
 
 const reducer = (
@@ -48,6 +52,14 @@ const reducer = (
         id: (<TxItem>action.payload).id,
         notified: true
       });
+      return newState;
+
+    case ACTIONS.SET_WALLET_STATUS:
+      newState.balance = action.payload as number;
+      return newState;
+
+    case ACTIONS.SET_WALLET_ADDRESS_LIST:
+      newState.addrList = action.payload as string;
       return newState;
 
     default:

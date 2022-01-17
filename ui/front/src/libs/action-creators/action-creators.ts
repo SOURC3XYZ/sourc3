@@ -103,7 +103,18 @@ export const AC = {
   setRepoId: (payload: RepoId) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
+  } as const),
+
+  setWalletStatus: (payload: any) => ({
+    type: ACTIONS.SET_WALLET_STATUS,
+    payload
+  } as const),
+
+  setWalletAddressList: (payload: any) => ({
+    type: ACTIONS.SET_WALLET_ADDRESS_LIST,
+    payload
   } as const)
+
 };
 
 export type ActionCreators = ReturnType<PropertiesType<typeof AC>>;

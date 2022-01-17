@@ -140,6 +140,40 @@ export const RC = {
       },
       create_tx: false
     }
+  } as const),
+
+  getWalletStatus: () => ({
+    callID: 'get_wallet_status',
+    method: 'wallet_status'
+  } as const),
+
+  getWalletAddressList: () => ({
+    callID: 'get_wallet_addressList',
+    method: 'addr_list',
+    params:
+    {
+      own: true
+    }
+  } as const),
+
+  setWalletSendBeam: (
+    value: number,
+    from: string,
+    address:string,
+    comment:string
+  ) => ({
+    callID: 'set_wallet_send_Beam',
+    method: 'tx_send',
+    params:
+    {
+      value,
+      fee: 100000,
+      from,
+      address,
+      comment,
+      asset_id: 0,
+      offline: false
+    }
   } as const)
 
 };

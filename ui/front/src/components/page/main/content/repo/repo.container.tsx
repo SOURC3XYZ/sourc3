@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom';
 import { Preload } from '@components/shared';
 import { RepoContent } from './content';
+import styles from './repo.module.css';
 
 type LocationState = {
   id:string;
@@ -62,7 +63,13 @@ const UserRepos = ({
     <>
       {
         isLoaded
-          ? <RepoContent {...repoContentProps} />
+          ? (
+            <div
+              className={styles.wrapper}
+            >
+              <RepoContent {...repoContentProps} />
+            </div>
+          )
           : <Preload />
 
       }

@@ -61,7 +61,7 @@ const AllRepos = ({
   };
 
   return (
-    <>
+    <div className={styles.content}>
       <Nav type={type} />
       <Row className={styles.repoHeader}>
         <Col span={8}>
@@ -93,7 +93,7 @@ const AllRepos = ({
         elements={filteredRepos}
         type={type}
       />
-    </>
+    </div>
   );
 };
 

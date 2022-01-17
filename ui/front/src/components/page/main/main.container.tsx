@@ -5,9 +5,11 @@ import {
   Navigate, Route, Routes
 } from 'react-router-dom';
 import { thunks } from '@libs/action-creators';
-import { Preload } from '@components/shared';
+import { Menu, Preload } from '@components/shared';
+import {
+  Notifications, Repo, AllRepos, Manager
+} from './content';
 import styles from './main.module.css';
-import { Notifications, Repo, AllRepos } from './content';
 
 type MainProps = {
   connectApi: () => void,
@@ -26,6 +28,7 @@ const Main = ({
   return (
     <>
       <div className={styles.main}>
+        <Menu />
         {
           isConnected
             ? (
@@ -43,6 +46,10 @@ const Main = ({
                 <Route
                   path="/repo/:id/*"
                   element={<Repo />}
+                />
+                <Route
+                  path="/manager"
+                  element={<Manager />}
                 />
               </Routes>
             ) : <Preload />

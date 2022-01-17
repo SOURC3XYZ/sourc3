@@ -19,6 +19,8 @@ export interface BeamApiRes {
     status_string: string;
     failure_reason: string;
     metadata_pairs: IAssetMeta;
+    available: number;
+    address:string
   };
   error?: {
     code:number;

@@ -6,7 +6,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "*/tsconfig.json"
   },
   "env": {
     "browser": true
@@ -51,7 +51,16 @@
 	"@typescript-eslint/comma-dangle": "off",
 	"@typescript-eslint/indent": ["warn", 2, {
 		"SwitchCase": 1
-	}]
-  }
-
+	}],
+  "jsx-a11y/label-has-associated-control": [ "error", {
+    "required": {
+      "some": [ "nesting", "id"  ]
+    }
+  }],
+  "jsx-a11y/label-has-for": [ "error", {
+    "required": {
+      "some": [ "nesting", "id"  ]
+    }
+  }]
+}
 }

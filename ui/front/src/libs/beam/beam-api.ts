@@ -122,7 +122,7 @@ export class BeamAPI<T> {
       if (this.contract) {
         modifiedParams.contract = this.contract;
       }
-      if ('args' in params) {
+      if (params && 'args' in params) {
         modifiedParams.args = this.argsStringify(
           { ...(modifiedParams.args || {}) as ArgsObjectType, cid: this.cid }
         );

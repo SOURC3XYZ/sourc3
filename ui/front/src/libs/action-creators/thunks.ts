@@ -10,6 +10,7 @@ import { AC } from './action-creators';
 import batcher from './batcher';
 import { repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
+import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
   CONTRACT.CID, CONTRACT.HOST
@@ -157,5 +158,31 @@ export const thunks = {
       dispatch(AC.setFileText(hexParser(output.object_data)));
     }
     if (resolve) resolve();
+  },
+
+  getWalletStatus: () => async (dispatch: AppThunkDispatch) => {
+    const res = (await beam.callApi(RC.getWalletStatus())) as T.BeamApiRes;
+    if (res && !res.error) {
+      dispatch(AC.setWalletStatus(parseToBeam(res.result.available)));
+    }
+  },
+
+  getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
+    const res = (await beam.callApi(RC.getWalletAddressList())) as T.BeamApiRes;
+    if (res && !res.error) {
+      dispatch(AC.setWalletAddressList(res.result[0].address));
+      console.log(res.result[0].address);
+    }
+  },
+
+  setWalletSendBeam: (value: number, from: string,
+    address:string,
+    comment:string) => async (dispatch: AppThunkDispatch) => {
+    const res = (await beam.callApi(RC.setWalletSendBeam(parseToGroth(value), from,
+      address,
+      comment))) as T.BeamApiRes;
+    if (res.result?.txId && !res.error) {
+      dispatch(AC.setTx(res.result.txId));
+    }
   }
 };
