@@ -40,6 +40,7 @@ const FileText = ({
         (el) => el.title === fileName
       ) as IDataNodeCustom | undefined;
       if (file) getFileData(id, file.dataRef.oid);
+      else throw new Error('no file');
     }
     if (fileName) {
       setExt(fileName.slice(fileName.lastIndexOf('.') + 1));

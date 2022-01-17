@@ -97,5 +97,9 @@ export const getTree = (
       oid: currentFile.dataRef.oid,
       key: currentFile.key
     });
-  } return null;
+  } else {
+    throw Error('no folder');
+  }
+
+  return null;
 };

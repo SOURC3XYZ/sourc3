@@ -1,13 +1,20 @@
 import { Button, Result } from 'antd';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type FailPageProps = {
-  title?: string;
   subTitle: string;
+  callback?: () => void
+  title?: string;
+  isBtn?: boolean;
 };
 
-const FailPage = ({ title, subTitle }:FailPageProps) => {
+const FailPage = ({
+  title, subTitle, isBtn, callback
+}:FailPageProps) => {
   const navigate = useNavigate();
+
+  React.useEffect(() => callback);
 
   const back = () => navigate(-1);
   return (
@@ -15,7 +22,9 @@ const FailPage = ({ title, subTitle }:FailPageProps) => {
       status="404"
       title={title}
       subTitle={subTitle}
-      extra={<Button onClick={back} type="primary">Back Home</Button>}
+      extra={
+        !!isBtn && <Button onClick={back} type="primary">Back Home</Button>
+      }
     />
   );
 };

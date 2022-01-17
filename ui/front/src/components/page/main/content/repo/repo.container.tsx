@@ -22,7 +22,7 @@ type RepoProps = {
   tree: DataNode[] | null;
   fileText: string | null;
   prevReposHref: string | null
-  getRepoData: (id: RepoId) =>(resolve: () => void) => void;
+  getRepoData: (id: RepoId) => (resolve: () => void) => void;
   updateTree: (id: RepoId) => (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
   getFileData: (repoId: RepoId, oid: string) => void;
@@ -70,7 +70,7 @@ const UserRepos = ({
           ? <Preload />
           : repoMap
             ? <RepoContent {...repoContentProps} />
-            : <FailPage subTitle="no data" />
+            : <FailPage isBtn subTitle="no data" />
       }
     </>
   );

@@ -51,7 +51,7 @@ const FileTreeBlock = ({
     updateTree({ ...props, id });
   };
 
-  React.useEffect(() => checkBranch(branch, commit));
+  React.useEffect(() => checkBranch(branch, commit), []);
 
   const treeList = tree && getTree(
     tree, pathname, updateTreeDecor
