@@ -105,6 +105,11 @@ export const AC = {
     payload
   } as const),
 
+  setPreviousReposPage: (payload: string) => ({
+    type: ACTIONS.SET_PREV_REPO_HREF,
+    payload
+  } as const),
+
   setWalletStatus: (payload: any) => ({
     type: ACTIONS.SET_WALLET_STATUS,
     payload

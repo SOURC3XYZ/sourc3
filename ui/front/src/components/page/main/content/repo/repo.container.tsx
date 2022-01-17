@@ -8,12 +8,13 @@ import { batch, connect } from 'react-redux';
 import {
   useParams
 } from 'react-router-dom';
-import { Preload } from '@components/shared';
+import { FailPage, Preload } from '@components/shared';
+import { loadingData } from '@libs/utils';
 import { RepoContent } from './content';
 import styles from './repo.module.css';
 
 type LocationState = {
-  id:string;
+  repoParams:string;
 };
 
 type RepoProps = {
@@ -21,7 +22,8 @@ type RepoProps = {
   repoMap: Map<string, BranchCommit[]> | null;
   tree: DataNode[] | null;
   fileText: string | null;
-  getRepoData: (id: RepoId) => void;
+  prevReposHref: string | null
+  getRepoData: (id: RepoId) =>(resolve: () => void) => void;
   updateTree: (id: RepoId) => (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
   getFileData: (repoId: RepoId, oid: string) => void;
@@ -32,29 +34,32 @@ const UserRepos = ({
   repoMap,
   tree,
   fileText,
+  prevReposHref,
   getRepoData,
   updateTree,
   killTree,
   getFileData
 }:RepoProps) => {
-  const location = useParams<'id' & 'oid'>() as LocationState;
-  const { id } = location;
-  const [numId, repoName] = id.split('&');
-  const update = React.useCallback(updateTree(+numId), []);
-  const isLoaded = repoMap && currentId === +numId;
+  const location = useParams<'repoParams'>() as LocationState;
+  const { repoParams } = location;
+  const [id, repoName] = repoParams.split('&');
+  const update = React.useCallback(updateTree(+id), []);
+  const [isLoading, setIsLoading] = React.useState(currentId !== +id);
 
   React.useEffect(() => {
-    if (currentId !== +numId) {
-      getRepoData(+numId);
+    if (isLoading) {
+      loadingData(getRepoData(+id))
+        .then(() => setIsLoading(false));
     }
   }, []);
 
   const repoContentProps = {
-    id: +numId,
+    id: +id,
     repoMap: repoMap as Map<string, BranchCommit[]>,
     tree,
     fileText,
     repoName,
+    prevReposHref,
     updateTree: update,
     killTree,
     getFileData
@@ -62,16 +67,17 @@ const UserRepos = ({
   return (
     <>
       {
-        isLoaded
-          ? (
-            <div
-              className={styles.wrapper}
-            >
-              <RepoContent {...repoContentProps} />
-            </div>
-          )
-          : <Preload />
-
+        isLoading
+          ? <Preload />
+          : repoMap
+            ? (
+              <div
+                className={styles.wrapper}
+              >
+                <RepoContent {...repoContentProps} />
+              </div>
+            )
+            : <FailPage subTitle="no data" />
       }
     </>
   );
@@ -79,18 +85,19 @@ const UserRepos = ({
 
 const mapState = ({
   repo: {
-    id, repoMap, tree, fileText
+    id, repoMap, tree, fileText, prevReposHref
   }
 }:RootState) => ({
   currentId: id,
   repoMap,
   tree,
-  fileText
+  fileText,
+  prevReposHref
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getRepoData: (id:RepoId) => {
-    dispatch(thunks.getRepo(id));
+  getRepoData: (id:RepoId) => (resolve: () => void) => {
+    dispatch(thunks.getRepo(id, resolve));
   },
   killTree: () => {
     batch(() => {

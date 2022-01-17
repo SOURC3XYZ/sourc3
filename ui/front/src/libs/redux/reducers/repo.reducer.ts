@@ -8,14 +8,16 @@ interface IRepo {
   id: RepoId | null,
   repoMap: Map<BranchName, BranchCommit[]> | null,
   tree: DataNode[] | null,
-  fileText: string | null
+  fileText: string | null,
+  prevReposHref: string | null
 }
 
 export const initialState:IRepo = {
   id: null,
   repoMap: null,
   tree: null,
-  fileText: null
+  fileText: null,
+  prevReposHref: null
 };
 
 const reducer = (
@@ -42,6 +44,10 @@ const reducer = (
     }
     case ACTIONS.SET_REPO_MAP: {
       newState.repoMap = action.payload as IRepo['repoMap'];
+      return newState;
+    }
+    case ACTIONS.SET_PREV_REPO_HREF: {
+      newState.prevReposHref = action.payload as IRepo['prevReposHref'];
       return newState;
     }
     default:

@@ -20,11 +20,15 @@ const ListRender = ({
   page = 1, elements, searchText, deleteRepos, loading, type = 'repos'
 }:ListItemProps) => {
   const navigate = useNavigate();
+  const textCash = React.useRef(searchText);
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
 
   React.useEffect(() => {
-    navigate(`/repos/${type}/${1}`);
-  }, [elements]);
+    if (textCash.current !== searchText) {
+      textCash.current = searchText;
+      navigate(`/repos/${type}/${1}`);
+    }
+  }, [searchText]);
 
   return (
     <List

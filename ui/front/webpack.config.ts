@@ -31,7 +31,7 @@ const build:IConfig = {
     publicPath: '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
+  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
   optimization: {
     nodeEnv: 'production',
     minimize: true,
