@@ -48,6 +48,7 @@ export type CommitData = {
 };
 
 export type BranchCommit = {
+  commit_oid: CommitHash
   raw_header: string
   raw_message: string
   tree_oid: TreeOid

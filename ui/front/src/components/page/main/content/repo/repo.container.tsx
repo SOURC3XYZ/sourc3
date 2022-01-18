@@ -23,7 +23,7 @@ type RepoProps = {
   tree: DataNode[] | null;
   fileText: string | null;
   prevReposHref: string | null
-  getRepoData: (id: RepoId) =>(resolve: () => void) => void;
+  getRepoData: (id: RepoId) => (resolve: () => void) => void;
   updateTree: (id: RepoId) => (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
   getFileData: (repoId: RepoId, oid: string) => void;
@@ -65,21 +65,15 @@ const UserRepos = ({
     getFileData
   };
   return (
-    <>
-      {
-        isLoading
-          ? <Preload />
-          : repoMap
-            ? (
-              <div
-                className={styles.wrapper}
-              >
-                <RepoContent {...repoContentProps} />
-              </div>
-            )
-            : <FailPage subTitle="no data" />
-      }
-    </>
+    <div
+      className={styles.wrapper}
+    >
+      {isLoading
+        ? <Preload />
+        : repoMap
+          ? <RepoContent {...repoContentProps} />
+          : <FailPage isBtn subTitle="no data" />}
+    </div>
   );
 };
 

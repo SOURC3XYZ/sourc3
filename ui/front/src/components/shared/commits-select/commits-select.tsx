@@ -3,6 +3,7 @@ import {
 } from '@types';
 import { Select, Typography } from 'antd';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const selectOptionMap = (el: BranchCommit) => (
   <Select.Option
@@ -22,8 +23,26 @@ type CommitSelectProps = {
 const CommitsSelect = ({
   keys, value, updateTree
 }:CommitSelectProps) => {
-  const onChangeHandler = (oid: TreeOid) => {
-    updateTree({ oid });
+  const navigate = useNavigate();
+
+  const baseUrl = window.location.pathname
+    .split('/')
+    .slice(0, 5)
+    .join('/');
+
+  const treeUrl = window.location.pathname
+    .split('/')
+    .slice(6)
+    .join('/');
+
+  const onChangeHandler = (treeOid: TreeOid) => {
+    updateTree({ oid: treeOid });
+    const tree = keys.find((el) => el.tree_oid === treeOid);
+    if (tree) {
+      navigate(
+        `${baseUrl}/${tree.commit_oid}${treeUrl && `/${treeUrl}`}`
+      );
+    }
   };
 
   React.useEffect(() => {

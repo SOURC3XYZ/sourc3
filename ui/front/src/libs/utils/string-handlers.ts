@@ -50,3 +50,30 @@ export const parseToBeam = (groth: number):string => {
   const numb = groth / BeamAmmount.GROTHS_IN_BEAM;
   return String(numb);
 };
+
+export const handleString = (next:string):boolean => {
+  let result = true;
+  const regex = new RegExp(/^-?\d+(\.\d*)?$/g);
+  const floatValue = parseFloat(next);
+  const afterDot = next.indexOf('.') > 0
+    ? next.substring(next.indexOf('.') + 1)
+    : '0';
+  if (
+    (next && !String(next).match(regex))
+    || next === ''
+    || (String(next).length > 1
+    && String(next)[0] === '0'
+    && next.indexOf('.') < 0)
+    || (parseInt(afterDot, 10) === 0 && afterDot.length > 7)
+    || afterDot.length > 8
+    || (floatValue === 0 && next.length > 1 && next[1] !== '.')
+    || (floatValue < 1 && next.length > 10)
+    || floatValue === 0
+    || (floatValue > 0 && (
+      floatValue < BeamAmmount.MIN_AMOUNT || floatValue > BeamAmmount.MAX_AMOUNT
+    ))
+  ) {
+    result = false;
+  }
+  return result;
+};

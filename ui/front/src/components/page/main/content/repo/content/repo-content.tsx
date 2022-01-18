@@ -1,3 +1,4 @@
+import { ErrorBoundary } from '@components/hoc';
 import { FileText, FileTreeBlock } from '@components/shared';
 import {
   BranchCommit, BranchName, DataNode, RepoId, UpdateProps
@@ -48,9 +49,15 @@ const RepoContent = ({
   );
 
   React.useEffect(() => {
-    const splitted = branch.split('/');
-    navigate(`tree/${splitted[splitted.length - 1]}/${commitData.tree_oid}`);
-  }, [branch]);
+    const splitted = branch.replace('refs/heads/', '');
+    const repoParams = window.location.pathname
+      .split('/')
+      .slice(4)
+      .filter((el) => el);
+    if (!repoParams.length) {
+      navigate(`tree/${splitted}/${commitData.commit_oid}`);
+    }
+  }, []);
 
   const decoratedUpdateTree = (props: Omit<UpdateProps, 'id'>) => {
     const index = commits.findIndex(
@@ -62,18 +69,19 @@ const RepoContent = ({
   };
 
   const checkBranch = (branchFromUrl:string, commitFromUrl: string) => {
-    const findedBranch = repoMap.get(branchFromUrl);
+    const branchFullName = `refs/heads/${branchFromUrl}`;
+    const findedBranch = repoMap.get(branchFullName);
     if (findedBranch) {
       const findedCommit = findedBranch
-        .find((el) => el.tree_oid === commitFromUrl);
-      if (branch !== commitFromUrl) {
-        setBranch(branchFromUrl);
+        .find((el) => el.commit_oid === commitFromUrl);
+      if (branch !== branchFullName) {
+        setBranch(branchFullName);
       }
       if (findedCommit) {
         setCommitData(findedCommit);
       }
     }
-  };
+  }; // TODO: DANIK: redo the binding to the state binding to the routing
 
   return (
     <>
@@ -91,25 +99,29 @@ const RepoContent = ({
         <Route
           path="tree/:branch/:commit/*"
           element={(
-            <FileTreeBlock
-              id={id}
-              tree={tree}
-              updateTree={updateTree}
-              checkBranch={checkBranch}
-            />
+            <ErrorBoundary>
+              <FileTreeBlock
+                id={id}
+                tree={tree}
+                updateTree={updateTree}
+                checkBranch={checkBranch}
+              />
+            </ErrorBoundary>
           )}
         />
 
         <Route
           path="blob/:branch/:commit/*"
           element={(
-            <FileText
-              id={id}
-              fileText={fileText}
-              tree={tree}
-              getFileData={getFileData}
-              updateTree={updateTree}
-            />
+            <ErrorBoundary>
+              <FileText
+                id={id}
+                fileText={fileText}
+                tree={tree}
+                getFileData={getFileData}
+                updateTree={updateTree}
+              />
+            </ErrorBoundary>
           )}
         />
       </Routes>

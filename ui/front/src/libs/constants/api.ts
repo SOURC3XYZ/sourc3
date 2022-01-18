@@ -9,9 +9,20 @@ export enum STATUS {
   IN_PROGRESS = 'in progress',
   FAILED = 'failed',
   COMPLETED = 'completed',
-  PENDING = 'pending'
+  PENDING = 'pending',
+  WAITING_FOR_RECEIVER = 'waiting for receiver',
+  WAITING_FOR_SENDING = 'waiting for sender',
+  SELF_SENDING = 'self sending',
+  CANCELED = 'cancelled',
+  RECEIVED = 'received',
+  ASSET_ISSUED = 'asset issued',
+  RECEIVING = 'receiving',
+  SENT = 'sent',
+  SENDING = 'sending'
 }
 
 export enum BeamAmmount {
+  MIN_AMOUNT = 0,
+  MAX_AMOUNT = 10,
   GROTHS_IN_BEAM = 100000000
 }

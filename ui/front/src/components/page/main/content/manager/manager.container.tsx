@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Button, Modal, Input, Tooltip, Row, Col, Statistic, message
+  Button, Modal, Input, Tooltip, Row, Col, Statistic, message, Card
 } from 'antd';
 import {
   InfoCircleOutlined,
@@ -38,7 +38,6 @@ const Manager = ({
   const [addressValue, setAddressValue] = useState('');
   const [amountValue, setAmountValue] = useState(0);
   const [commentValue, setCommentValue] = useState('');
-  const [fromValue] = useState(addrList);
 
   useEffect(() => {
     getWalletStatus();
@@ -65,7 +64,7 @@ const Manager = ({
       message.error('Field amount not be full');
       return;
     }
-    setWalletSendBeam(amountValue, fromValue, addressValue, commentValue);
+    setWalletSendBeam(amountValue, addrList, addressValue, commentValue);
     setVisible(false);
   };
 
@@ -76,31 +75,36 @@ const Manager = ({
     setAddressValue(event?.target.value);
   };
   const handleAmountValue = (event:any) => {
-    setAmountValue(Number(event?.target.value));
+    const target = event?.target.value;
+    const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);
+    const value = target.match(regExp);
+    setAmountValue(Number(value));
   };
+
   const handleCommentValue = (event:any) => {
     setCommentValue(event?.target.value);
   };
-
+  console.log(amountValue);
   return (
     <>
       <div className={styles.info}>
-        <Row gutter={16}>
-          {/* <Col span={12}>
+        <Card title="Finance" style={{ width: 300, height: 200, marginLeft: 10 }}>
+          <Row gutter={16}>
+            {/* <Col span={12}>
           <Statistic title="Active Users" value={112893} />
         </Col> */}
-          <Col span={25}>
-            <Statistic title="Account Balance:" value={`${balance} BEAM`} />
-            <div className={styles.balanceBtn}>
-              <Button
-                type="primary"
-                shape="round"
-                size="small"
-                onClick={showModal}
-              >
-                SEND
-              </Button>
-              {/* <Button
+            <Col span={25}>
+              <Statistic title="Account Balance:" value={`${balance} BEAM`} />
+              <div className={styles.balanceBtn}>
+                <Button
+                  type="primary"
+                  shape="round"
+                  size="small"
+                  onClick={showModal}
+                >
+                  SEND
+                </Button>
+                {/* <Button
               type="primary"
               shape="round"
               size="small"
@@ -108,9 +112,10 @@ const Manager = ({
             >
               RECIEVE
             </Button> */}
-            </div>
-          </Col>
-        </Row>
+              </div>
+            </Col>
+          </Row>
+        </Card>
       </div>
       <Modal
         title="SEND BEAM"
@@ -147,9 +152,9 @@ const Manager = ({
         <label htmlFor="amount">
           AMOUNT:
           <Input
-            type="number"
             id="amount"
             value={amountValue}
+            // min={0}
             placeholder="0"
             suffix={(
               <>
@@ -199,6 +204,7 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
     amountValue: number, fromValue:string, addressValue:string,
     commentValue:string
   ) => {
+    console.log(fromValue);
     dispatch(thunks.setWalletSendBeam(amountValue, fromValue, addressValue,
       commentValue));
   }

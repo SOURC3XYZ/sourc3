@@ -34,7 +34,8 @@ const NotificationElement = ({
 
   const checkTxCall = ({ status_string }: TxResponse) => {
     if (status_string !== STATUS.FAILED
-      && status_string !== STATUS.COMPLETED) {
+      && status_string !== STATUS.COMPLETED
+      && status_string !== STATUS.SENT) {
       checkTx(2000);
     }
   };
@@ -49,6 +50,11 @@ const NotificationElement = ({
       switch (properties.status_string) {
         case STATUS.IN_PROGRESS:
         case STATUS.PENDING:
+        case STATUS.WAITING_FOR_RECEIVER:
+        case STATUS.WAITING_FOR_SENDING:
+        case STATUS.SELF_SENDING:
+        case STATUS.RECEIVING:
+        case STATUS.SENDING:
           if (!txItem.notified) {
             notification.open(notificationProps);
             setNotifiedTrue(txItem);
@@ -56,10 +62,13 @@ const NotificationElement = ({
           checkTxCall(properties);
           break;
         case STATUS.FAILED:
+        case STATUS.CANCELED:
           notification.error(notificationProps);
           removeTx(txItem);
           break;
         case STATUS.COMPLETED:
+        case STATUS.SENT:
+        case STATUS.RECEIVED:
           notification.success(notificationProps);
           removeTx(txItem);
           break;

@@ -1,21 +1,21 @@
-.balanceBtn>button{
+/* .balanceBtn>button{
     margin-right: 10px;
-}
+} */
 .beam{
     margin-right: 5px;
 }
 .info{
     display: flex;
-    justify-content: center;
+    /* justify-content: center; */
     padding-bottom: 1rem;
     width: 100vh;
 }
-.repoHeader {
+/* .repoHeader {
     padding-bottom: 1rem;
-  }
-  .content{
+  } */
+  /* .content{
     padding-bottom: 1rem;
     display: flex;
     flex-direction: column;
     width: 100vh;
-  }
+  } */

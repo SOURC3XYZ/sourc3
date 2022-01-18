@@ -37,7 +37,7 @@ const BranchSelect = ({
     >
       <Typography.Title
         style={
-          { paddingRight: '5px' }
+          { paddingRight: '5px' } // TODO: Put in css file
         }
         level={5}
       >
