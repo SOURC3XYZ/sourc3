@@ -14,6 +14,16 @@ import {
 } from '@types';
 
 export const AC = {
+  setWalletConnection: (payload: boolean) => ({
+    type: ACTIONS.SET_WALLET_CONNECTION,
+    payload
+  }),
+
+  setGeneratedSeed: (payload: string | null) => ({
+    type: ACTIONS.SET_GENERATED_SEED,
+    payload
+  }),
+
   setTx: (payload: string) => ({
     type: ACTIONS.SET_TX,
     payload

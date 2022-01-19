@@ -37,6 +37,7 @@ declare module 'qwebchannel' {
 declare interface Window {
   qt: QWebChannelTransport;
   BeamApi: QObject;
+  BeamModule: any;
 }
 
 declare interface EventTarget {
