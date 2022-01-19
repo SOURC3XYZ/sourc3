@@ -15,6 +15,7 @@ target_sources(helper_lib
 
 target_include_directories(helper_lib PUBLIC ${LIBGIT2_INCLUDES})
 target_include_directories(helper_lib PUBLIC SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
+target_include_directories(helper_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(helper_lib 
 	PUBLIC
@@ -31,6 +32,6 @@ target_link_libraries(${TARGET_NAME}
 		Boost::filesystem 
 )
 
-if (PIT_ENABLE_TESTS)
+if (PIT_TESTS_ENABLED)
 	add_subdirectory(unittests)
 endif()

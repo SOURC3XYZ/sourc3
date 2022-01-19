@@ -1,5 +1,4 @@
-﻿
-#include "object_collector.h"
+﻿#include "object_collector.h"
 #include "utils.h"
 #include "wallet_client.h"
 
@@ -19,17 +18,12 @@
 #include <string>
 #include <vector>
 
-
 namespace po = boost::program_options;
-
 using namespace std;
-
 using namespace pit;
 
 namespace
 {
-
-
     template<typename String>
     ByteBuffer FromHex(const String& s)
     {

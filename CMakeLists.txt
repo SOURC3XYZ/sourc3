@@ -67,7 +67,7 @@ else()
     endif()
     find_package(Boost REQUIRED COMPONENTS program_options date_time filesystem container)
     if (PIT_TESTS_ENABLED)
-    enable_testing()
+        enable_testing()
 
         function(add_test_snippet EXE_NAME LIB_NAME)
             add_executable(${EXE_NAME} ${EXE_NAME}.cpp)
