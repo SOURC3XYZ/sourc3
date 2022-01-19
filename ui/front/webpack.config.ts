@@ -10,6 +10,8 @@ import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as webpack from 'webpack';
 import { Configuration } from 'webpack';
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 interface IConfig extends Configuration {
   devServer: { [key:string]: any }
 }
@@ -67,6 +69,10 @@ const build:IConfig = {
     maxAssetSize: 512000
   },
   devServer: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
+    },
     historyApiFallback: true,
     watchFiles: path.join(__dirname, 'src'),
     port: 5000,
@@ -124,6 +130,16 @@ const build:IConfig = {
   },
   plugins: [
     // new BundleAnalyzerPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.join(__dirname, './node_modules/beam-wasm-client-masternet/'),
+          globOptions: {
+            ignore: ['package.json']
+          }
+        }
+      ]
+    }),
     new CleanWebpackPlugin(),
     new webpack.ProvidePlugin({
       React: 'react'

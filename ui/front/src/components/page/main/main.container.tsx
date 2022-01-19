@@ -13,14 +13,17 @@ import styles from './main.module.css';
 
 type MainProps = {
   connectApi: () => void,
-  isConnected: boolean
+  mountWallet: () => void,
+  isConnected: boolean,
+  isWalletConnected: boolean
 };
 
 const Main = ({
-  isConnected, connectApi
+  isConnected, isWalletConnected, connectApi, mountWallet
 }:MainProps) => {
   React.useEffect(() => {
     connectApi();
+    mountWallet();
   }, []);
   // const path = window.location.pathname === 'Pit_demo/app/index.html'
   //   ? 'Pit_demo/app/index.html'
@@ -30,7 +33,7 @@ const Main = ({
       <div className={styles.main}>
         <Menu />
         {
-          isConnected
+          isConnected && isWalletConnected
             ? (
               <Routes>
                 <Route
@@ -60,13 +63,20 @@ const Main = ({
   );
 };
 
-const mapState = ({ app: { isConnected } }: RootState) => ({
-  isConnected
+const mapState = ({
+  app: { isConnected },
+  wallet: { isWalletConnected }
+}: RootState) => ({
+  isConnected,
+  isWalletConnected
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   connectApi: () => {
     dispatch(thunks.connectBeamApi());
+  },
+  mountWallet: () => {
+    dispatch(thunks.mountWallet());
   }
 });
 

@@ -144,7 +144,8 @@ export const RC = {
 
   getWalletStatus: () => ({
     callID: 'get_wallet_status',
-    method: 'wallet_status'
+    method: 'wallet_status',
+    params: {}
   } as const),
 
   getWalletAddressList: () => ({

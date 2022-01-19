@@ -1,5 +1,5 @@
 import wasm from '@assets/app.wasm';
-import { BeamAPI } from '@libs/beam';
+import { BeamAPI, WasmWallet } from '@libs/beam';
 import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
@@ -16,6 +16,8 @@ const beam = new BeamAPI<RequestCreators['params']>(
   CONTRACT.CID, CONTRACT.HOST
 );
 
+const wallet = new WasmWallet();
+
 const messageBeam = {
   type: 'create_beam_api',
   apiver: 'current',
@@ -24,6 +26,15 @@ const messageBeam = {
 };
 
 export const thunks = {
+  mountWallet: () => async (dispatch: AppThunkDispatch) => {
+    await wallet.mount(window.BeamModule);
+    dispatch(AC.setWalletConnection(true));
+  },
+
+  generateSeed: () => async (dispatch: AppThunkDispatch) => {
+    dispatch(AC.setGeneratedSeed(wallet.generateSeed()));
+  },
+
   connectBeamApi:
     (message = messageBeam) => async (dispatch: AppThunkDispatch) => {
       await beam.loadAPI(message);
@@ -168,11 +179,11 @@ export const thunks = {
   },
 
   getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getWalletAddressList())) as T.BeamApiRes;
-    if (res && !res.error) {
+    const res = (await beam.callApi(RC.getWalletAddressList())) as { error: any, result: any[] };
+    if (res && !res.error && res.result) {
       dispatch(AC.setWalletAddressList(res.result[0].address));
       console.log(res.result[0].address);
-    }
+    } // TODO: Jenk typing the answer from the api
   },
 
   setWalletSendBeam: (value: number, from: string,
