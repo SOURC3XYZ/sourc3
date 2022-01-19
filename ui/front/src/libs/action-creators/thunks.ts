@@ -178,7 +178,7 @@ export const thunks = {
   setWalletSendBeam: (value: number, from: string,
     address:string,
     comment:string) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.setWalletSendBeam(parseToGroth(value), from,
+    const res = (await beam.callApi(RC.setWalletSendBeam(parseToGroth(Number(value)), from,
       address,
       comment))) as T.BeamApiRes;
     if (res.result?.txId && !res.error) {

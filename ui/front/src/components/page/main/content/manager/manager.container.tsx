@@ -78,7 +78,7 @@ const Manager = ({
     const target = event?.target.value;
     const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);
     const value = target.match(regExp);
-    setAmountValue(Number(value));
+    setAmountValue(value);
   };
 
   const handleCommentValue = (event:any) => {

@@ -14,3 +14,4 @@ export * from './repo-meta';
 export * from './file-tree-block';
 export * from './breadcrumb';
 export * from './menu';
+export * from './header';
