@@ -170,6 +170,7 @@ namespace
             Env::DocGroup repo_object("");
             Env::DocAddNum("repo_id", value->repo_id);
             Env::DocAddText("repo_name", value->name);
+            Env::DocAddBlob_T("repo_owner", value->owner);
             valueLen = 0;
         }
     }
@@ -347,7 +348,7 @@ namespace
         }
         --nameLen; // remove 0-term
         PubKey my_key;
-        Env::DerivePk(my_key, &cid, sizeof(cid));
+        Env::DocGet("repo_owner", my_key);
         GitRemoteBeam::Hash256 name_hash = get_name_hash(repoName, nameLen);
         RepoKey key(my_key, name_hash);
         Env::Key_T<RepoKey> reader_key = { .m_KeyInContract = key };
@@ -522,27 +523,6 @@ namespace
                 Env::DocAddBlob_T("object_hash", value.hash);
                 Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
                 Env::DocAddNum("object_size", value.data_size);
-                // Leave here, if we need to return already objects
-//                DataKey data_key { .m_KeyInContract = { Utils::FromBE(key.m_KeyInContract.repo_id), value.hash } };
-//                data_key.m_Prefix.m_Cid = cid;
-//                uint32_t valueLen = 0, keyLen = 0;
-//                Env::VarReader data_reader(data_key, data_key);
-//                if (data_reader.MoveNext(nullptr, keyLen, nullptr, valueLen, 0)) {
-//                    auto buf = std::make_unique<uint8_t[]>(valueLen);
-//                    data_reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
-//                    auto *data_value = reinterpret_cast<GitObject::Data *>(buf.get());
-//                    Env::DocAddBlob("object_data", data_value->data, valueLen);
-//
-//                    if (type == GitObject::Meta::GIT_OBJECT_COMMIT) {
-//                        mygit2::git_commit commit;
-//                        commit_parse(&commit, data_value->data, valueLen, 0); // Fast parse
-//                        AddCommit(commit);
-//                    } else if (type == GitObject::Meta::GIT_OBJECT_TREE) {
-//                        mygit2::git_tree tree;
-//                        tree_parse(&tree, data_value->data, valueLen);
-//                        AddTree(tree);
-//                    }
-//                }
             }
         }
     }
@@ -630,6 +610,7 @@ BEAM_EXPORT void Method_0() {
                 Env::DocGroup grMethod("repo_id_by_name");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("repo_owner", "Owner key of repo");
             }
             {
                 Env::DocGroup grMethod("repo_get_data");

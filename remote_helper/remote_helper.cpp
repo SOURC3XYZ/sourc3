@@ -108,7 +108,7 @@ int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
     std::deque<std::string> objectHashes;
-    objectHashes.push_back({ args[1].data(), args[1].size() });
+    objectHashes.emplace_back( args[1].data(), args[1].size() );
     std::set<std::string> receivedObjects;
 
     auto enuqueObject = [&](const std::string& oid)
@@ -128,7 +128,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             auto& o = objects.emplace_back();
             auto& obj = objVal.as_object();
             o.data_size = obj["object_size"].to_number<uint32_t>();
-            o.type = obj["object_type"].to_number<uint8_t>();
+            o.type = obj["object_type"].to_number<int8_t>();
             std::string s = obj["object_hash"].as_string().c_str();
             git_oid_fromstr(&o.hash, s.c_str());
             if (git_odb_exists(accessor.m_odb, &o.hash))
@@ -148,7 +148,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         auto data = root.as_object()["object_data"].as_string();
         auto buf = FromHex(data);
 
-        auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) {return o.hash == oid; });
+        auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) { return o.hash == oid; });
         if (it == objects.end())
         {
             cout << "failed\n";
@@ -300,7 +300,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
 
         {
-            const GitObject* cur = reinterpret_cast<const GitObject*>(p + 1);
+            const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
             for (uint32_t i = 0; i < p->objects_number; ++i)
             {
                 size_t s = cur->data_size;
@@ -386,7 +386,10 @@ int main(int argc, char* argv[])
 
         string_view sv(argv[2]);
         const string_view SCHEMA = "pit://";
-        options.repoName = sv.substr(SCHEMA.size()).data();
+        sv = sv.substr(SCHEMA.size());
+        auto delimiterOwnerNamePos = sv.find('/');
+        options.repoOwner = sv.substr(0, delimiterOwnerNamePos);
+        options.repoName = sv.substr(delimiterOwnerNamePos + 1);
         auto* gitDir = std::getenv("GIT_DIR"); // set during clone
         if (gitDir)
         {
@@ -403,16 +406,16 @@ int main(int argc, char* argv[])
         string input;
         while (getline(cin, input, '\n'))
         {
-            string_view sv(input.data(), input.size());
+            string_view args_sv(input.data(), input.size());
             vector<string_view> args;
-            while (!sv.empty())
+            while (!args_sv.empty())
             {
-                auto p = sv.find(' ');
-                auto ss = sv.substr(0, p);
-                sv.remove_prefix(p == string_view::npos ? ss.size() : ss.size() + 1);
+                auto p = args_sv.find(' ');
+                auto ss = args_sv.substr(0, p);
+                args_sv.remove_prefix(p == string_view::npos ? ss.size() : ss.size() + 1);
                 if (!ss.empty())
                 {
-                    args.emplace_back(move(ss));
+                    args.emplace_back(ss);
                 }
             }
             if (args.empty())

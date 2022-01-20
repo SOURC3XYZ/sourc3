@@ -29,6 +29,7 @@ namespace pit
             std::string apiPort;
             std::string apiTarget;
             std::string appPath;
+            std::string repoOwner;
             std::string repoName;
             std::string repoPath = ".";
 #ifdef BEAM_IPFS_SUPPORT
@@ -164,6 +165,8 @@ namespace pit
             {
                 std::string request = "role=user,action=repo_id_by_name,repo_name=";
                 request.append(m_options.repoName)
+                    .append(",repo_owner=")
+                    .append(m_options.repoOwner)
                     .append(",cid=")
                     .append(GetCID());
 

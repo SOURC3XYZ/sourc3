@@ -1,6 +1,7 @@
 #include "object_collector.h"
 #include "utils.h"
 #include <stdexcept>
+#include <utility>
 
 namespace pit
 {
@@ -50,7 +51,7 @@ namespace pit
         return *this;
     }
 
-    Object::~Object()
+    Object::~Object() noexcept
     {
         git_odb_object_free(object);
     }
