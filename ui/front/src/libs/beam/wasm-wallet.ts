@@ -33,7 +33,7 @@ export class WasmWallet {
   isAllowedSeed = (seed: string[]) => seed.map((el) => this.isAllowedWord(el));
 
   generateSeed = ():string | null => {
-    if (this.WalletClient) this.WalletClient.GeneratePhrase();
+    if (this.WalletClient) return this.WalletClient.GeneratePhrase();
     return null;
   };
 }

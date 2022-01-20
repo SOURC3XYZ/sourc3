@@ -1,0 +1,11 @@
+.wrapper{
+    margin: 13.1rem auto;
+
+  }
+
+  .btnNav{
+    margin-top: 3.75rem;
+    max-width: 315px;
+    display: flex;
+    justify-content: space-between;
+  }

@@ -1,8 +1,9 @@
-import { Main } from '@components/page';
+import { Main, Logged } from '@components/page'
 
 const App = () => (
   <>
-    <Main />
+    <Logged />
+    {/* <Main /> */}
   </>
 );
 
