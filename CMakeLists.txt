@@ -38,6 +38,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_SYSTEM_NAME MATCHES "WASI")
     include(ShaderTools)
     include(ShaderLib)
+
+    add_custom_target(sid_generator ALL
+        COMMAND echo "dummy")
+
     include(GenerateSID)
     set(CMAKE_EXECUTABLE_SUFFIX .wasm)
 
