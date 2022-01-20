@@ -51,3 +51,8 @@ bool operator==(const git_oid& left, const git_oid& right) noexcept
 {
     return git_oid_cmp(&left, &right) == 0;
 }
+
+bool operator!=(const git_oid& left, const git_oid& right) noexcept
+{
+    return git_oid_cmp(&left, &right) != 0;
+}

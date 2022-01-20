@@ -28,3 +28,4 @@ namespace pit
 
 bool operator<(const git_oid& left, const git_oid& right) noexcept;
 bool operator==(const git_oid& left, const git_oid& right) noexcept;
+bool operator!=(const git_oid& left, const git_oid& right) noexcept;
