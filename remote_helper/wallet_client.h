@@ -32,10 +32,6 @@ namespace pit
             std::string repoOwner;
             std::string repoName;
             std::string repoPath = ".";
-#ifdef BEAM_IPFS_SUPPORT
-            bool        useIPFS = true;
-#endif // BEAM_IPFS_SUPPORT
-
         };
 
         SimpleWalletClient(const Options& options)

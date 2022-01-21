@@ -154,7 +154,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             cout << "failed\n";
             break;
         }
-        cerr << "Received data for:  " << objectHashes.front() << '\n';
+        cerr << "Received data fo   r:  " << objectHashes.front() << '\n';
         receivedObjects.insert(to_string(oid));
         git_oid res_oid;
         git_object_t type = git_object_t(it->type);
