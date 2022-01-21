@@ -6,7 +6,7 @@ import { BEAM_NODE_PORT, rootPath, WALLET_API_PORT } from '../../common';
 let currentProcess:ReturnType<typeof spawn> | undefined;
 
 const binPath = path.join(rootPath, 'beam-res');
-const cliPath = path.join(binPath, 'cli/beam-wallet');
+const cliPath = path.join(binPath, 'cli/beam-wallet-masternet');
 const walletApiPath = path.join(binPath, 'api/wallet-api-masternet');
 
 export const deleteFile = (filePath:string) => {
@@ -56,6 +56,10 @@ export const restoreExistedWallet = (
 
   childProcess.stdout.on('data', (data:string) => {
     console.log(`stdout: ${data}`);
+  });
+
+  childProcess.stderr.on('data', (data:string) => {
+    console.log(`error: ${data}`);
   });
 
   childProcess.on('close', (code:number) => {

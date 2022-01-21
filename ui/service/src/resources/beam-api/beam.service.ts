@@ -1,11 +1,11 @@
 import request from 'request';
-import { WALLET } from '../../common';
+import { WALLET_API_PORT } from '../../common';
 
 export const resToBeamApi = async (
   obj: { [key: string]: number | string }
 ) => new Promise((resolve, reject) => {
   request(
-    WALLET as string,
+    `http://127.0.0.1:${WALLET_API_PORT}/api/wallet`,
     {
       json: obj
     },
