@@ -47,37 +47,42 @@ export const restoreExistedWallet = (
   seed:string,
   password:string
 ):Promise<boolean> => new Promise((resolve) => {
-  const childProcess = spawn(cliPath, [
+  const args = [
     'restore',
     '--wallet_path', binPath,
     '--pass', password,
     '--seed_phrase', seed
-  ]);
+  ];
+  const childProcess = spawn(cliPath, args);
 
-  childProcess.stdout.on('data', (data:string) => {
-    console.log(`stdout: ${data}`);
+  childProcess.stdout.on('data', (data:Buffer) => {
+    const success = /generated:/i;
+    const bufferString = data.toString('utf-8');
+    console.log('stdout:', bufferString);
+    if (bufferString.match(success)) {
+      childProcess.kill('SIGKILL');
+      resolve(true);
+    }
   });
 
-  childProcess.stderr.on('data', (data:string) => {
-    console.log(`error: ${data}`);
-  });
-
-  childProcess.on('close', (code:number) => {
+  childProcess.on('close', (code:number | null) => {
     console.log(`child process exited with code ${code}`);
-    resolve(code === 0);
   });
 });
 
 export const runWalletApi = (
   password: string
 ) => new Promise<boolean>((resolve) => {
+  if (currentProcess) currentProcess.kill('SIGKILL');
+
   const walletPath = path.join(binPath, 'wallet.db');
-  const childProcess = spawn(walletApiPath, [
+  const args = [
     '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
     '-p', `${WALLET_API_PORT}`,
     `--pass=${password}`,
     '--use_http=1',
-    `--wallet_path=${walletPath}`]);
+    `--wallet_path=${walletPath}`];
+  const childProcess = spawn(walletApiPath, args);
 
   childProcess.stdout.on('data', (data:string) => {
     console.log(`stdout: ${data}`);
@@ -98,7 +103,7 @@ export const killApiServer = async ():Promise<string> => new Promise(
         console.log(`child process exited with code ${code}`);
         resolve(`child process exited with code ${code}`);
       });
-      currentProcess.kill();
+      currentProcess.kill('SIGKILL');
     } else resolve('child process not active');
   }
 );

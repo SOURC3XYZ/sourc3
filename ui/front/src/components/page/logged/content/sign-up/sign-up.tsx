@@ -4,7 +4,7 @@ import { thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
 import { Button } from 'antd';
 import Text from 'antd/lib/typography/Text';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './sign-up.module.css';
 // import icon from '../../../../../assets/img/TurtuleZorro.png';
@@ -20,12 +20,15 @@ const SignUp = ({
   generateSeed,
   seedPhrase
 }: SignUpProps) => {
+  const [isAllowed, setIsAllowed] = useState(false);
+
   useEffect(() => {
     mountWallet();
   }, []);
 
   const getSeed = () => {
     generateSeed();
+    setIsAllowed(true);
   };
 
   return (
@@ -38,22 +41,41 @@ const SignUp = ({
           phrase that is secret and should not be revealed to anyone.
           Make at least 2 copies of the phrase in case of emergency
         </Text>
+        {isAllowed ? (
+          <ol className={styles.list}>
+            {seedPhrase && seedPhrase.split(' ').map((value, index) => (
+              // eslint-disable-next-line
+            <li key={index++}>{index}.{value}</li>
+            ))}
+          </ol>
+        ) : ''}
         <div className={styles.btnNav}>
-          <Button style={{ borderRadius: 7 }}>
-            <Link to="/">Back</Link>
-          </Button>
-          <Button
-            style={{
-              width: 150,
-              borderRadius: 7
-            }}
-            onClick={getSeed}
-          >
-            Generate
+          {isAllowed ? (
+            <Button
+              style={{
+                width: 150,
+                borderRadius: 7
+              }}
+              onClick={() => (console.log(1))}
+            >
+              Complete verification
 
+            </Button>
+          ) : (
+            <Button
+              style={{
+                width: 150,
+                borderRadius: 7
+              }}
+              onClick={getSeed}
+            >
+              Generate
+            </Button>
+          )}
+          <Button style={{ borderRadius: 7 }}>
+            <Link to="/" onClick={() => { setIsAllowed(false); }}>Back</Link>
           </Button>
         </div>
-        <p>{seedPhrase}</p>
       </div>
 
     </>

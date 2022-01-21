@@ -25,7 +25,7 @@ const reducer = (
     }
     case ACTIONS.SET_GENERATED_SEED: {
       newState.seedPhrase = action.payload as IWallet['seedPhrase'];
-      console.log(newState);
+      console.log(newState.seedPhrase);
       return newState;
     }
     default:
