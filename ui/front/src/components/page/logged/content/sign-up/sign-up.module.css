@@ -6,22 +6,28 @@
   }
 
   .btnNav{
-    margin-top: 30px;
+    /* margin-top: 30px; */
     max-width: 315px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+  }
+  .btnNav>button{
+    margin-top: 10px;
   }
   .forgot{
       color: rgb(2, 123, 236);
   }
-ol{
+.list{
+    margin-top: 10px;
+    margin-bottom: 0;
     counter-reset: counter;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: center;
     padding: 0 10px;
 }
-   ol > li {
+   .list>li {
       counter-increment: counter;
       display: inline-block;
       width: 140px;
@@ -32,9 +38,9 @@ ol{
       border-radius: 16px;
       text-align: left;
    }
-      ol > li:before {
+      .list>li::after {
         display: inline-block;
-        content: counter(counter);
+        counter-increment: counter;
         width: 20px;
         height: 20px;
         line-height: 20px;

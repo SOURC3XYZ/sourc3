@@ -1,4 +1,9 @@
+node
+api
+cli
 error.log
 info.log
 crash-data.log
 .env
+logs
+beam-res
