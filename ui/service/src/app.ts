@@ -5,6 +5,7 @@ import {
   handleError, logerRequests, uncaughtException, unhandledRejection
 } from './middlewares';
 import { beamRouter } from './resources/beam-api';
+import { walletRouter } from './resources/wallet';
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use('/', (req, res, next) => {
   }
   next();
 });
+
+app.use('/wallet', walletRouter);
 
 app.use('/beam', beamRouter);
 
