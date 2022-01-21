@@ -17,7 +17,7 @@ router.route('/start').post(
   }
 );
 
-router.route('/').post(
+router.route('/restore').post(
   async (req: Request, res: Response, next): Promise<Response | void> => {
     const { seed, password } = req.body;
     if (seed && password) {

@@ -23,8 +23,9 @@ const reducer = (
         .payload as IWallet['isWalletConnected'];
       return newState;
     }
-    case ACTIONS.CONNECTION: {
+    case ACTIONS.SET_GENERATED_SEED: {
       newState.seedPhrase = action.payload as IWallet['seedPhrase'];
+      console.log(newState);
       return newState;
     }
     default:
