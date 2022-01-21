@@ -53,7 +53,14 @@ const SignUp = ({
 
           </Button>
         </div>
-        <p>{seedPhrase}</p>
+        <div>
+          <ol>
+            {seedPhrase && seedPhrase.split(' ').map((value, index) => (
+            // eslint-disable-next-line
+            <li key={index++}>{index}. {value}</li>
+            ))}
+          </ol>
+        </div>
       </div>
 
     </>

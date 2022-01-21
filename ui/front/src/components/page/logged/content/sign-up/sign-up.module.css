@@ -14,7 +14,37 @@
   .forgot{
       color: rgb(2, 123, 236);
   }
-
+ol{
+    counter-reset: counter;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+   ol > li {
+      counter-increment: counter;
+      display: inline-block;
+      width: 140px;
+      height: 32px;
+      line-height: 30px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      text-align: left;
+   }
+      ol > li:before {
+        display: inline-block;
+        content: counter(counter);
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        margin: 5px 10px 5px 9px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        text-align: center;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+    }
   /* img{
       position: relative;
       right: 150px;
