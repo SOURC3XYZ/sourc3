@@ -1,0 +1,59 @@
+.list{
+	display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 0.6rem;
+	background-color:#035b8f;
+  max-width: 37.5rem;
+  margin: 0 auto;
+  height: 25rem;
+}
+
+.list li {
+position: relative;
+display: inline-block;
+width: 140px;
+height: 32px;
+margin-bottom: 10px;
+padding-left: 30px;
+}
+.list li:before {
+	position: absolute;
+	top: 12px;
+	left: 0;
+	content: attr(data-index);
+	width: 20px;
+	height: 20px;
+	line-height: 18px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 50%;
+	text-align: center;
+	font-size: 10px;
+	color: rgba(255, 255, 255, 0.2);
+	box-sizing: border-box;
+}
+.list li input {
+	width: 110px;
+	height: 32px;
+	line-height: 16px;
+	padding-top: 16px;
+	background-color: transparent;
+	border: none;
+	outline: none;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	color: white;
+}
+
+li.errorName:before{
+    line-height: 20px;
+    border: none;
+    background-color: #f25f5b;;
+    color: #035b8f;;
+}
+
+li.validName:before {
+	line-height: 20px;
+	border: none;
+	background-color: #00f6d2;
+	color: #035b8f;;
+}

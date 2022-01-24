@@ -88,7 +88,10 @@ const Manager = ({
   return (
     <>
       <div className={styles.info}>
-        <Card title="Finance" style={{ width: 300, height: 200, marginLeft: 10 }}>
+        <Card
+          title="Finance"
+          style={{ width: 300, height: 200, marginLeft: 10 }}
+        >
           <Row gutter={16}>
             {/* <Col span={12}>
           <Statistic title="Active Users" value={112893} />

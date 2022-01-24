@@ -1,10 +1,26 @@
-import { Main, Logged } from '@components/page'
+import { Logged, Main } from '@components/page';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 const App = () => (
-  <>
-    <Logged />
-    {/* <Main /> */}
-  </>
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <Navigate replace to="auth/" />
+      }
+    />
+    <Route
+      path="auth/*"
+      element={<Logged />}
+    />
+    <Route
+      path="main/*"
+      element={
+        <Main />
+      }
+    />
+
+  </Routes>
 );
 
 export default App;

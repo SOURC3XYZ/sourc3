@@ -15,10 +15,10 @@ const Start = () => (
     />
     <div className={styles.btnNav}>
       <Button style={{ borderRadius: 7 }}>
-        <Link to="/login">Sign in</Link>
+        <Link to="/auth/login">Sign in</Link>
       </Button>
       <Button style={{ borderRadius: 7 }}>
-        <Link to="/sign-up">Get Started</Link>
+        <Link to="/auth/sign-up">Get Started</Link>
       </Button>
     </div>
   </div>

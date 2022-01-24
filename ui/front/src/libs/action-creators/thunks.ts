@@ -35,6 +35,37 @@ export const thunks = {
     dispatch(AC.setGeneratedSeed(wallet.generateSeed()));
   },
 
+  sendParams2Service: (
+    seed: string[], pass:string, callback?: (str:'ok' | 'fail') => void
+  ) => async () => {
+    const body = {
+      seed: `${seed.join(';')};`,
+      password: pass
+    };
+    const url = `${CONTRACT.HOST}/wallet/restore`;
+    const data = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (data.status === 201) {
+      const resp = await data.json();
+      console.log(resp);
+      if (callback) callback('ok');
+    }
+  },
+
+  validateSeedWord: (word: string, i: number) => async (
+    dispatch: AppThunkDispatch, getState: () => RootState
+  ) => {
+    const { wallet: { seed2Validation: { seed, errors } } } = getState();
+    const seedCopy = [...seed];
+    const errorsCopy = [...errors];
+    errorsCopy[i] = wallet.isAllowedWord(word);
+    seedCopy.splice(i, 1, word);
+    dispatch(AC.setSeed2Validation({ seed: seedCopy, errors: errorsCopy }));
+  },
+
   connectBeamApi:
     (message = messageBeam) => async (dispatch: AppThunkDispatch) => {
       await beam.loadAPI(message);
