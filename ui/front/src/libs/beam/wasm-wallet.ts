@@ -1,5 +1,5 @@
 interface WalletClient {
-  IsAllowedWord: (word: string) => string;
+  IsAllowedWord: (word: string) => boolean;
   MountFS: (resolve: (value: boolean | PromiseLike<boolean>) => void) => void;
   GeneratePhrase: () => string;
 }
@@ -24,8 +24,8 @@ export class WasmWallet {
     word: string, callback?: () => void
   ): boolean => {
     if (this.WalletClient) {
-      this.WalletClient.IsAllowedWord(word);
       if (callback) callback();
+      return this.WalletClient.IsAllowedWord(word);
     }
     return false;
   };

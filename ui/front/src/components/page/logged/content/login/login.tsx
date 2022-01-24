@@ -13,15 +13,15 @@ const Login = () => (
       <label htmlFor="password">
         <Input type="password" />
       </label>
-      <Link to="">
+      <Link to="/auth/restore">
         I forgot my password
       </Link>
       <div className={styles.btnNav}>
         <Button style={{ borderRadius: 7 }}>
-          <Link to="/">Back</Link>
+          <Link to="/auth">Back</Link>
         </Button>
         <Button style={{ borderRadius: 7 }}>
-          <Link to="/login">Sign in</Link>
+          <Link to="/auth/login">Sign in</Link>
         </Button>
       </div>
     </div>

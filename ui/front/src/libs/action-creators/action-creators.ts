@@ -10,7 +10,8 @@ import {
   CommitHash,
   Commit,
   BranchName,
-  RepoId
+  RepoId,
+  Seed2ValidationType
 } from '@types';
 
 export const AC = {
@@ -21,6 +22,11 @@ export const AC = {
 
   setGeneratedSeed: (payload: string | null) => ({
     type: ACTIONS.SET_GENERATED_SEED,
+    payload
+  }),
+
+  setSeed2Validation: (payload: Partial<Seed2ValidationType>) => ({
+    type: ACTIONS.SET_SEED_TO_VALIDATION,
     payload
   }),
 

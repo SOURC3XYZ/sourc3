@@ -36,12 +36,11 @@ const SignUp = ({
           Make at least 2 copies of the phrase in case of emergency
         </Text>
         {isAllowed ? (
-          <ol className={styles.list}>
+          <ul className={styles.restore}>
             {seedPhrase && seedPhrase.split(' ').map((value, index) => (
-              // eslint-disable-next-line
-            <li key={index++}>{index}.{value}</li>
+              <li key={index}>{value}</li>
             ))}
-          </ol>
+          </ul>
         ) : ''}
         <div className={styles.btnNav}>
           {isAllowed ? (
@@ -67,7 +66,13 @@ const SignUp = ({
             </Button>
           )}
           <Button style={{ borderRadius: 7 }}>
-            <Link to="/" onClick={() => { setIsAllowed(false); }}>Back</Link>
+            <Link
+              to="/auth"
+              onClick={() => { setIsAllowed(false); }}
+            >
+              Back
+
+            </Link>
           </Button>
         </div>
       </div>

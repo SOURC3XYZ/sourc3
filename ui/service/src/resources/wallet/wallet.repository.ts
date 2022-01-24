@@ -7,6 +7,7 @@ let currentProcess:ReturnType<typeof spawn> | undefined;
 
 const binPath = path.join(rootPath, 'beam-res');
 const cliPath = path.join(binPath, 'cli/beam-wallet-masternet');
+const walletPath = path.join(binPath, 'wallet.db');
 const walletApiPath = path.join(binPath, 'api/wallet-api-masternet');
 
 export const deleteFile = (filePath:string) => {
@@ -36,10 +37,9 @@ export const readDirFile = async (
 );
 
 export const removeWallet = async () => {
-  const walletPath = [binPath, 'wallet.db'] as const;
-  const isWalletExist = await readDirFile(...walletPath);
+  const isWalletExist = await readDirFile(binPath, 'wallet.db');
   if (isWalletExist) {
-    return deleteFile(path.join(...walletPath));
+    return deleteFile(walletPath);
   } return true;
 };
 
@@ -53,20 +53,22 @@ export const restoreExistedWallet = (
     '--pass', password,
     '--seed_phrase', seed
   ];
-  const childProcess = spawn(cliPath, args);
+  const childProcess = spawn(cliPath, args, { detached: true });
 
   childProcess.stdout.on('data', (data:Buffer) => {
-    const success = /generated:/i;
     const bufferString = data.toString('utf-8');
     console.log('stdout:', bufferString);
-    if (bufferString.match(success)) {
-      childProcess.kill('SIGKILL');
-      resolve(true);
-    }
+  });
+
+  childProcess.stderr.on('data', (data:Buffer) => {
+    const bufferString = data.toString('utf-8');
+    console.log('stdout:', bufferString);
+    resolve(false);
   });
 
   childProcess.on('close', (code:number | null) => {
     console.log(`child process exited with code ${code}`);
+    resolve(!code);
   });
 });
 
@@ -74,8 +76,6 @@ export const runWalletApi = (
   password: string
 ) => new Promise<boolean>((resolve) => {
   if (currentProcess) currentProcess.kill('SIGKILL');
-
-  const walletPath = path.join(binPath, 'wallet.db');
   const args = [
     '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
     '-p', `${WALLET_API_PORT}`,

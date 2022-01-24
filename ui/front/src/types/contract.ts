@@ -104,3 +104,8 @@ export type Commit = {
 export type CommitListRes = {
   objects: Commit[]
 };
+
+export type Seed2ValidationType = {
+  seed: (string | null)[];
+  errors: boolean[]
+};
