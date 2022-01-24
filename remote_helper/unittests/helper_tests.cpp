@@ -51,7 +51,6 @@ namespace
     using Commit = Holder<git_commit, git_commit_free>;
     using Signature = Holder<git_signature, git_signature_free>;
 
-
     void GenerateTestRepo()
     {
         pit::GitInit init;
@@ -79,12 +78,12 @@ namespace
             BOOST_TEST_CHECK(git_tree_lookup(tree.Addr(), *repo, &treeID) >= 0);
 
             git_oid commitID;
-            BOOST_TEST_CHECK(git_commit_create_v(&commitID, *repo, "HEAD", *sig, *sig, nullptr, comment, *tree, commit ? 1 : 0, commit.Addr()) >= 0);
+            BOOST_TEST_CHECK(git_commit_create_v(&commitID, *repo, "HEAD", *sig, *sig, nullptr, comment, *tree, commit ? 1 : 0, *commit) >= 0);
             BOOST_TEST_CHECK(git_commit_lookup(commit.Addr(), *repo, &commitID) >= 0);
         };
         f("*.cpp", "Initial");
-        //f("*.h", "Second");
-        //f("*.*", "The third");
+        f("*.h", "Second");
+        f("*.*", "The third");
     }
 }
 
