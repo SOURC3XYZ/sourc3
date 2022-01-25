@@ -1,32 +1,29 @@
-import { WALLET } from '@libs/constants';
+import { shuffle } from '@libs/utils';
+import React from 'react';
 import styles from './seed-list.module.css';
 
 interface SeedListProps {
-  data: string [];
+  data: (string | null) [];
   errors: boolean[];
+  isShuffle?: boolean;
   onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  validatePasted: (str: string[]) => void;
+  validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
 }
 
 const SeedList = ({
-  data, errors, onInput, validatePasted
+  data, errors, isShuffle, onInput, validatePasted
 }:SeedListProps) => {
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const seedArr = e.target.value.split(';');
-    if (seedArr.length === WALLET.SEED_PHRASE_COUNT) {
-      validatePasted(seedArr);
-    }
-  };
+  const shuffleIndexes = React.useMemo(() => shuffle(data), []);
 
-  const validatedSeedWord = (el: string, i:number) => {
+  const validatedSeedWord = (el: string | null, i:number) => {
+    if (el === null) return el;
     const className = !el ? '' : errors[i]
       ? styles.validName : styles.errorName;
     return (
       <li className={className} key={i} data-index={i + 1}>
         <input
           required
-          value={el}
-          autoFocus={i === 0}
+          value={el ?? ''}
           data-index={i}
           type="text"
           onInput={onInput}
@@ -35,9 +32,21 @@ const SeedList = ({
     );
   };
 
+  const visualisation = (datalist: (string | null) []) => {
+    const list = datalist
+      .map(validatedSeedWord)
+      .filter((el) => el);
+    if (isShuffle) {
+      const shuffled = shuffleIndexes
+        .map((el) => list[el]);
+      return shuffled;
+    }
+    return list;
+  };
+
   return (
-    <div className={styles.list} onPaste={handlePaste}>
-      {data.map(validatedSeedWord)}
+    <div className={styles.list} onPaste={validatePasted}>
+      {visualisation(data)}
     </div>
   );
 };
