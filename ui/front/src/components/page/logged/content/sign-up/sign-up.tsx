@@ -4,7 +4,7 @@ import { thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
 import { Button } from 'antd';
 import Text from 'antd/lib/typography/Text';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './sign-up.module.css';
 // import icon from '../../../../../assets/img/TurtuleZorro.png';
@@ -12,19 +12,13 @@ import styles from './sign-up.module.css';
 type SignUpProps = {
   seedPhrase: string | null,
   generateSeed: () => void,
-  mountWallet: () => void,
 };
 
 const SignUp = ({
-  mountWallet,
   generateSeed,
   seedPhrase
 }: SignUpProps) => {
   const [isAllowed, setIsAllowed] = useState(false);
-
-  useEffect(() => {
-    mountWallet();
-  }, []);
 
   const getSeed = () => {
     generateSeed();
