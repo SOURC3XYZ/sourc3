@@ -43,3 +43,5 @@ declare interface Window {
 declare interface EventTarget {
   value: string
 }
+
+declare type PromiseArg<T> = (reason?: T) => void;

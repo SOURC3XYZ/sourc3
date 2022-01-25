@@ -44,3 +44,8 @@ export enum FileCodes {
   FOLDER = 16384,
   LEAF = 33188
 }
+
+export enum Routes {
+  AUTH = 'auth',
+  MAIN = 'main'
+}

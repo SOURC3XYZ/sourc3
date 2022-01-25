@@ -36,19 +36,19 @@ const Main = ({
                 <Route
                   path="/"
                   element={
-                    <Navigate replace to="/repos/all/1" />
+                    <Navigate replace to="repos/all/1" />
                   }
                 />
                 <Route
-                  path="/repos/:type/:page"
+                  path="repos/:type/:page"
                   element={<AllRepos />}
                 />
                 <Route
-                  path="/repo/:repoParams/*"
+                  path="repo/:repoParams/*"
                   element={<Repo />}
                 />
                 <Route
-                  path="/manager"
+                  path="manager"
                   element={<Manager />}
                 />
               </Routes>

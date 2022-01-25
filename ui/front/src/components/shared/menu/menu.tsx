@@ -22,10 +22,10 @@ const NavMenu = () => {
         mode="inline"
       >
         <Menu.Item key="all" icon={<ContainerOutlined />}>
-          <Link to="/repos/all/1">Repositories</Link>
+          <Link to="/main/repos/all/1">Repositories</Link>
         </Menu.Item>
         <Menu.Item key="manager" icon={<UserOutlined />}>
-          <Link to="/manager">Manager</Link>
+          <Link to="/main/manager">Manager</Link>
         </Menu.Item>
       </Menu>
     </div>

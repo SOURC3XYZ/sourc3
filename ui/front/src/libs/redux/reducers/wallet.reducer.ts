@@ -12,7 +12,7 @@ const initialState:IWallet = {
   isWalletConnected: false,
   seedPhrase: null,
   seed2Validation: {
-    seed: new Array(WALLET.SEED_PHRASE_COUNT).fill(null),
+    seed: new Array(WALLET.SEED_PHRASE_COUNT).fill(''),
     errors: new Array(WALLET.SEED_PHRASE_COUNT).fill(false)
   }
 };

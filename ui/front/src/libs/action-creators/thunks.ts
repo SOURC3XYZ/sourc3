@@ -13,7 +13,7 @@ import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
-  CONTRACT.CID, CONTRACT.HOST
+  CONTRACT.CID, `${CONTRACT.HOST}/beam`
 );
 
 const wallet = new WasmWallet();
@@ -36,7 +36,7 @@ export const thunks = {
   },
 
   sendParams2Service: (
-    seed: string[], pass:string, callback?: (str:'ok' | 'fail') => void
+    seed: string[], pass:string, callback: (str:'ok' | 'fail') => void
   ) => async () => {
     const body = {
       seed: `${seed.join(';')};`,
@@ -49,21 +49,34 @@ export const thunks = {
       headers: { 'Content-Type': 'application/json' }
     });
     if (data.status === 201) {
-      const resp = await data.json();
-      console.log(resp);
-      if (callback) callback('ok');
-    }
+      callback('ok');
+    } else callback('fail');
   },
 
-  validateSeedWord: (word: string, i: number) => async (
-    dispatch: AppThunkDispatch, getState: () => RootState
+  startWalletApi: (
+    password: string,
+    resolve: PromiseArg<string>,
+    reject: PromiseArg<string>
+  ) => async () => {
+    const body = {
+      password
+    };
+    const url = `${CONTRACT.HOST}/wallet/start`;
+    const data = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (data.status === 201) {
+      resolve(data.statusText);
+    } else reject(data.statusText);
+  },
+
+  validateSeed: (seed: string[]) => async (
+    dispatch: AppThunkDispatch
   ) => {
-    const { wallet: { seed2Validation: { seed, errors } } } = getState();
-    const seedCopy = [...seed];
-    const errorsCopy = [...errors];
-    errorsCopy[i] = wallet.isAllowedWord(word);
-    seedCopy.splice(i, 1, word);
-    dispatch(AC.setSeed2Validation({ seed: seedCopy, errors: errorsCopy }));
+    const errors = wallet.isAllowedSeed(seed);
+    dispatch(AC.setSeed2Validation({ seed, errors }));
   },
 
   connectBeamApi:
@@ -210,7 +223,9 @@ export const thunks = {
   },
 
   getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getWalletAddressList())) as { error: any, result: any[] };
+    const res = (await beam.callApi(
+      RC.getWalletAddressList()
+    )) as { error: any, result: any[] };
     if (res && !res.error && res.result) {
       dispatch(AC.setWalletAddressList(res.result[0].address));
       console.log(res.result[0].address);
@@ -220,9 +235,11 @@ export const thunks = {
   setWalletSendBeam: (value: number, from: string,
     address:string,
     comment:string) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.setWalletSendBeam(parseToGroth(Number(value)), from,
-      address,
-      comment))) as T.BeamApiRes;
+    const res = (await beam.callApi(
+      RC.setWalletSendBeam(parseToGroth(Number(value)), from,
+        address,
+        comment)
+    )) as T.BeamApiRes;
     if (res.result?.txId && !res.error) {
       dispatch(AC.setTx(res.result.txId));
     }

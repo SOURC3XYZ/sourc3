@@ -1,4 +1,4 @@
-import { OkPage } from '@components/shared';
+import { FailPage, OkPage, Preload } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { Seed2ValidationType } from '@types';
@@ -12,7 +12,8 @@ import styles from './restore.module.css';
 
 type RestorePropsType = {
   seed2Validation: Seed2ValidationType
-  validate: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  validate: (seed: string[]) => void;
+  validatePasted: (seedArr: string[]) => void;
   restoreWallet: (
     seed: string[],
     pass: string,
@@ -22,16 +23,18 @@ type RestorePropsType = {
 const Restore = ({
   seed2Validation,
   validate,
-  restoreWallet
+  restoreWallet,
+  validatePasted
 }:RestorePropsType) => {
   const [mode, toggleMode] = React.useState<
-  'seed' | 'pass' | 'fail' | 'ok'>('seed');
+  'seed' | 'pass' | 'fail' | 'ok' | 'loading'>('seed');
   const { seed, errors } = seed2Validation;
 
   const endOfVerification = (base: string, repeat: string) => {
-    if (base === repeat && !errors.includes(false) && !seed.includes(null)) {
+    if (base === repeat && !errors.includes(false)) {
       const setOk = (status: 'ok' | 'fail') => toggleMode(status);
       restoreWallet(seed as string[], base, setOk);
+      toggleMode('loading');
     }
   };
 
@@ -47,6 +50,7 @@ const Restore = ({
             seed={seed}
             errors={errors}
             validate={validate}
+            validatePasted={validatePasted}
             next={setNextMode}
           />
         );
@@ -55,6 +59,10 @@ const Restore = ({
       case 'ok':
         return <OkPage subTitle="wallet restored" />;
         // TODO: DANIK: make a generalized component
+      case 'fail':
+        return <FailPage subTitle="bad params" />;
+      case 'loading':
+        return <Preload />;
       default:
         break;
     }
@@ -80,15 +88,17 @@ const mapState = ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  validate: (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { index } = e.target.dataset as DOMStringMap;
-    dispatch(thunks.validateSeedWord(e.target.value, Number(index)));
+  validate: (seed: string[]) => {
+    dispatch(thunks.validateSeed(seed));
   },
   restoreWallet: (
     seed: string[], pass: string, callback: (status: 'ok' | 'fail') => void
   ) => {
     console.log('validate', seed, pass);
     dispatch(thunks.sendParams2Service(seed, pass, callback));
+  },
+  validatePasted: (seedArr: string[]) => {
+    dispatch(thunks.validateSeed(seedArr));
   }
 });
 

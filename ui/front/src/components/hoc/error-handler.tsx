@@ -1,7 +1,7 @@
-import { FailPage } from '@components/shared';
 import React, { ReactElement } from 'react';
 
 type ErrorBoundaryProps = {
+  fallback: JSX.Element;
   children: ReactElement<any, any>
 };
 
@@ -10,7 +10,7 @@ type ErrorBoundaryState = {
   message: string;
 };
 
-class ErrorBoundary extends React.Component {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(props:ErrorBoundaryProps) {
     super(props);
@@ -34,10 +34,10 @@ class ErrorBoundary extends React.Component {
   };
 
   render() {
-    const { children } = this.props;
-    const { hasError, message } = this.state;
+    const { children, fallback } = this.props;
+    const { hasError } = this.state;
     if (hasError) {
-      return <FailPage callback={this.resetState} subTitle={message} />;
+      return fallback;
     }
     return children;
   }

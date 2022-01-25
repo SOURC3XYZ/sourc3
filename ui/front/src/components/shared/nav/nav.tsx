@@ -15,10 +15,10 @@ const Nav = ({ type }:NavProps) => (
         mode="horizontal"
       >
         <Menu.Item key="all">
-          <Link to="/repos/all/1">All Repository</Link>
+          <Link to="/main/repos/all/1">All Repository</Link>
         </Menu.Item>
         <Menu.Item key="my">
-          <Link to="/repos/my/1">My repository</Link>
+          <Link to="/main/repos/my/1">My repository</Link>
         </Menu.Item>
       </Menu>
     </div>

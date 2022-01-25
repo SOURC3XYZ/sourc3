@@ -73,28 +73,47 @@ export const restoreExistedWallet = (
 });
 
 export const runWalletApi = (
-  password: string
-) => new Promise<boolean>((resolve) => {
-  if (currentProcess) currentProcess.kill('SIGKILL');
-  const args = [
-    '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
-    '-p', `${WALLET_API_PORT}`,
-    `--pass=${password}`,
-    '--use_http=1',
-    `--wallet_path=${walletPath}`];
-  const childProcess = spawn(walletApiPath, args);
+  password: string,
+  resolve: (isOk: boolean) => void
+) => {
+  if (currentProcess && !currentProcess.killed) {
+    currentProcess.kill('SIGKILL');
+    currentProcess.on('close', (code: number) => {
+      console.log(`child process exited with code ${code}`);
+      runWalletApi(password, resolve);
+    });
+  } else {
+    const success = /Start server on/i;
+    const error = /Applying PRAGMA cipher_migrate.../i;
 
-  childProcess.stdout.on('data', (data:string) => {
-    console.log(`stdout: ${data}`);
+    const args = [
+      '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
+      '-p', `${WALLET_API_PORT}`,
+      `--pass=${password}`,
+      '--use_http=1',
+      `--wallet_path=${walletPath}`];
+    const childProcess = spawn(walletApiPath, args);
     currentProcess = childProcess;
-    resolve(true);
-  });
 
-  childProcess.stderr.on('error', (err:string) => {
-    console.log(`stderr: ${err}`);
-    resolve(false);
-  });
-});
+    childProcess.stdout.on('data', (data:Buffer) => {
+      const bufferString = data.toString('utf-8');
+      console.log(`stdout: ${bufferString}`);
+      if (bufferString.match(success)) resolve(true);
+      if (bufferString.match(error)) {
+        childProcess.kill('SIGKILL');
+        childProcess.on('close', (code: number) => {
+          console.log(`child process exited with code ${code}`);
+          resolve(false);
+        });
+      }
+    });
+
+    childProcess.stderr.on('error', (err:string) => {
+      console.log(`stderr: ${err}`);
+      resolve(false);
+    });
+  }
+};
 
 export const killApiServer = async ():Promise<string> => new Promise(
   (resolve) => {

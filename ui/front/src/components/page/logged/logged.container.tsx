@@ -1,4 +1,5 @@
-import { Preload } from '@components/shared';
+import { ErrorBoundary } from '@components/hoc';
+import { FailPage, Preload } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import React from 'react';
@@ -11,9 +12,18 @@ import styles from './logged.module.css';
 type LoggedProps = {
   isWalletConnected: boolean;
   mountWallet: () => void;
+  startWalletApi: (
+    password: string
+  ) => (
+    resolve: PromiseArg<string>,
+    reject: PromiseArg<string>
+  ) => void
 };
 
-function Logged({ isWalletConnected, mountWallet }:LoggedProps) {
+function Logged({
+  isWalletConnected,
+  mountWallet, startWalletApi
+}:LoggedProps) {
   React.useEffect(() => {
     if (!isWalletConnected) mountWallet();
   }, []);
@@ -29,7 +39,17 @@ function Logged({ isWalletConnected, mountWallet }:LoggedProps) {
               />
               <Route
                 path="login"
-                element={<Login />}
+                element={(
+                  <ErrorBoundary
+                    fallback={(
+                      <div style={{ margin: '0 auto' }}>
+                        <FailPage subTitle="invalid pass" isBtn />
+                      </div>
+                    )}
+                  >
+                    <Login startWalletApi={startWalletApi} />
+                  </ErrorBoundary>
+                )}
               />
               <Route
                 path="sign-up"
@@ -54,6 +74,14 @@ const mapState = ({ wallet: { isWalletConnected } }: RootState) => ({
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   mountWallet: () => {
     dispatch(thunks.mountWallet());
+  },
+  startWalletApi: (
+    password: string
+  ) => (
+    resolve: PromiseArg<string>,
+    reject: PromiseArg<string>
+  ) => {
+    dispatch(thunks.startWalletApi(password, resolve, reject));
   }
 });
 

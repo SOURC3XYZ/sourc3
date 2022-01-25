@@ -106,6 +106,6 @@ export type CommitListRes = {
 };
 
 export type Seed2ValidationType = {
-  seed: (string | null)[];
+  seed: string[];
   errors: boolean[]
 };

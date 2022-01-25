@@ -20,7 +20,7 @@ const PasswordRestore = ({ onClick }: PasswordRestoreType) => {
 
   const setVisibleIcon = (visible:boolean) => (
     visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
-  console.log('password');
+
   return (
     <Space direction="vertical">
       <p>Create password to access your account</p>
