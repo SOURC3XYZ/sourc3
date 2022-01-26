@@ -2,7 +2,7 @@ import { FailPage, OkPage, Preload } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { Seed2ValidationType } from '@types';
-import { Button } from 'antd';
+import { Button, message } from 'antd';
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -35,6 +35,8 @@ const Restore = ({
       const setOk = (status: 'ok' | 'fail') => toggleMode(status);
       restoreWallet(seed as string[], base, setOk);
       toggleMode('loading');
+    } else {
+      message.error("Passwords don't match");
     }
   };
 
@@ -55,7 +57,11 @@ const Restore = ({
           />
         );
       case 'pass':
-        return <PasswordRestore onClick={endOfVerification} />;
+        return (
+          <PasswordRestore
+            onClick={endOfVerification}
+          />
+        );
       case 'ok':
         return <OkPage subTitle="wallet restored" />;
         // TODO: DANIK: make a generalized component

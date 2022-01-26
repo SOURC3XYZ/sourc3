@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { Login, Start, SignUp } from './content';
 import { Restore } from './content/restore';
-import styles from './logged.module.css';
+import styles from './auth.module.css';
 
 type LoggedProps = {
   isWalletConnected: boolean;
@@ -20,7 +20,7 @@ type LoggedProps = {
   ) => void
 };
 
-function Logged({
+function Auth({
   isWalletConnected,
   mountWallet, startWalletApi
 }:LoggedProps) {
@@ -85,4 +85,4 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   }
 });
 
-export default connect(mapState, mapDispatch)(Logged);
+export default connect(mapState, mapDispatch)(Auth);
