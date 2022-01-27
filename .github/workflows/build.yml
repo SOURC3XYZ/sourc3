@@ -210,6 +210,35 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: echo "PLATFORM_NAME=win" >> $GITHUB_ENV
 
+    - name: Download beam artifacts
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.INSTALLER_TOKEN}}
+        workflow: build.yml
+        workflow_conclusion: success
+        branch: master
+        path: downloads
+        repo: BeamMW/beam
+          
+    - name: Download pit artifacts
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.INSTALLER_TOKEN}}
+        workflow: build.yml
+        workflow_conclusion: success
+        branch: develop
+        path: downloads
+        repo: PitDotDev/pit
+
+    - name: Prepare installer artifacts
+      run: |
+          mkdir -p artifacts/installer/${{matrix.os}}/pit
+          mkdir -p artifacts/installer/${{matrix.os}}/wallet-api
+          mkdir -p artifacts/installer/${{matrix.os}}/beam-node
+          tar xvf downloads/${{matrix.os}}-pit-masternet-*/pit.tar -C artifacts/installer/pit
+          tar xvf downloads/${{matrix.os}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/wallet-api
+          tar xvf downloads/${{matrix.os}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/beam-node
+
 ###############################################################################
 # Upload
 ###############################################################################
@@ -217,6 +246,12 @@ jobs:
       with:
         name: ${{env.PLATFORM_NAME}}-pit${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
         path: artifacts/*
+        if-no-files-found: error
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{matrix.os}}-installer
+        path: artifacts/installer/${{matrix.os}}/*
         if-no-files-found: error
 
 ###############################################################################
