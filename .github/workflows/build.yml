@@ -244,6 +244,14 @@ jobs:
           tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
           tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
 
+    - name: Unpack installer artifacts [windows]
+      if: matrix.os == 'windows-2019'
+      shell: bash
+      run: |
+          cp downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/pit
+          cp downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
+          cp downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
+
 ###############################################################################
 # Upload
 ###############################################################################
