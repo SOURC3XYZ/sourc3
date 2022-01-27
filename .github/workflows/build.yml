@@ -235,9 +235,9 @@ jobs:
           mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/pit
           mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
           mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
-          tar xvf downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/pit.tar -C artifacts/installer/pit
-          tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/wallet-api
-          tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/beam-node
+          tar xvf downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/pit.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/pit
+          tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
+          tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
 
 ###############################################################################
 # Upload
@@ -250,8 +250,8 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.os}}-installer
-        path: artifacts/installer/${{matrix.os}}/*
+        name: ${{env.PLATFORM_NAME}}-installer
+        path: artifacts/installer/${{env.PLATFORM_NAME}}/*
         if-no-files-found: error
 
 ###############################################################################
