@@ -13,7 +13,7 @@ import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
-  CONTRACT.CID, CONTRACT.HOST
+  CONTRACT.CID, `${CONTRACT.HOST}/beam`
 );
 
 const wallet = new WasmWallet();
@@ -33,6 +33,50 @@ export const thunks = {
 
   generateSeed: () => async (dispatch: AppThunkDispatch) => {
     dispatch(AC.setGeneratedSeed(wallet.generateSeed()));
+  },
+
+  sendParams2Service: (
+    seed: string[], pass:string, callback: (str:'ok' | 'fail') => void
+  ) => async () => {
+    const body = {
+      seed: `${seed.join(';')};`,
+      password: pass
+    };
+    const url = `${CONTRACT.HOST}/wallet/restore`;
+    const data = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (data.status === 201) {
+      callback('ok');
+    } else callback('fail');
+  },
+
+  startWalletApi: (
+    password: string,
+    resolve: PromiseArg<string>,
+    reject: PromiseArg<string>
+  ) => async () => {
+    const body = {
+      password
+    };
+    const url = `${CONTRACT.HOST}/wallet/start`;
+    const data = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (data.status === 201) {
+      resolve(data.statusText);
+    } else reject(data.statusText);
+  },
+
+  validateSeed: (seed: string[]) => async (
+    dispatch: AppThunkDispatch
+  ) => {
+    const errors = wallet.isAllowedSeed(seed);
+    dispatch(AC.setSeed2Validation({ seed, errors }));
   },
 
   connectBeamApi:
@@ -179,7 +223,9 @@ export const thunks = {
   },
 
   getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getWalletAddressList())) as { error: any, result: any[] };
+    const res = (await beam.callApi(
+      RC.getWalletAddressList()
+    )) as { error: any, result: any[] };
     if (res && !res.error && res.result) {
       dispatch(AC.setWalletAddressList(res.result[0].address));
       console.log(res.result[0].address);
@@ -189,9 +235,11 @@ export const thunks = {
   setWalletSendBeam: (value: number, from: string,
     address:string,
     comment:string) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.setWalletSendBeam(parseToGroth(Number(value)), from,
-      address,
-      comment))) as T.BeamApiRes;
+    const res = (await beam.callApi(
+      RC.setWalletSendBeam(parseToGroth(Number(value)), from,
+        address,
+        comment)
+    )) as T.BeamApiRes;
     if (res.result?.txId && !res.error) {
       dispatch(AC.setTx(res.result.txId));
     }

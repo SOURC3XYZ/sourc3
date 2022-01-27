@@ -22,7 +22,8 @@ export enum ACTIONS {
   SET_WALLET_STATUS = 'SET_WALLET_STATUS',
   SET_WALLET_ADDRESS_LIST = 'SET_WALLET_ADDRESS_LIST',
   SET_GENERATED_SEED = 'SET_GENERATED_SEED',
-  SET_WALLET_CONNECTION = 'SET_WALLET_CONNECTION'
+  SET_WALLET_CONNECTION = 'SET_WALLET_CONNECTION',
+  SET_SEED_TO_VALIDATION = 'SET_SEED_TO_VALIDATION'
 }
 
 export enum ActionColor {
@@ -42,4 +43,9 @@ export enum ActionColor {
 export enum FileCodes {
   FOLDER = 16384,
   LEAF = 33188
+}
+
+export enum Routes {
+  AUTH = 'auth',
+  MAIN = 'main'
 }

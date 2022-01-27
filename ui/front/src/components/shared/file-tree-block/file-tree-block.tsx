@@ -24,7 +24,7 @@ const leafCreator = (url:string, node: DataNode, path: string[]) => {
     return (
       <div>
         <FileTextTwoTone twoToneColor="#0044ff" />
-        <Link to={`/repo/${path
+        <Link to={`/main/repo/${path
           .slice(0, 1).join('/')}/blob/${path
           .slice(2).join('/')}/${node.title}`}
           // TODO: DANIK: make more readable

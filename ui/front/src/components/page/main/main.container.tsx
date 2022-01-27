@@ -13,17 +13,14 @@ import styles from './main.module.css';
 
 type MainProps = {
   connectApi: () => void,
-  mountWallet: () => void,
-  isConnected: boolean,
-  isWalletConnected: boolean
+  isConnected: boolean
 };
 
 const Main = ({
-  isConnected, isWalletConnected, connectApi, mountWallet
+  isConnected, connectApi
 }:MainProps) => {
   React.useEffect(() => {
     connectApi();
-    mountWallet();
   }, []);
   // const path = window.location.pathname === 'Pit_demo/app/index.html'
   //   ? 'Pit_demo/app/index.html'
@@ -33,25 +30,25 @@ const Main = ({
       <div className={styles.main}>
         <Menu />
         {
-          isConnected && isWalletConnected
+          isConnected
             ? (
               <Routes>
                 <Route
                   path="/"
                   element={
-                    <Navigate replace to="/repos/all/1" />
+                    <Navigate replace to="repos/all/1" />
                   }
                 />
                 <Route
-                  path="/repos/:type/:page"
+                  path="repos/:type/:page"
                   element={<AllRepos />}
                 />
                 <Route
-                  path="/repo/:repoParams/*"
+                  path="repo/:repoParams/*"
                   element={<Repo />}
                 />
                 <Route
-                  path="/manager"
+                  path="manager"
                   element={<Manager />}
                 />
               </Routes>
@@ -64,19 +61,14 @@ const Main = ({
 };
 
 const mapState = ({
-  app: { isConnected },
-  wallet: { isWalletConnected }
+  app: { isConnected }
 }: RootState) => ({
-  isConnected,
-  isWalletConnected
+  isConnected
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   connectApi: () => {
     dispatch(thunks.connectBeamApi());
-  },
-  mountWallet: () => {
-    dispatch(thunks.mountWallet());
   }
 });
 

@@ -26,7 +26,7 @@ const ListRender = ({
   React.useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      navigate(`/repos/${type}/${1}`);
+      navigate(`/main/repos/${type}/${1}`);
     }
   }, [searchText]);
 
@@ -40,7 +40,7 @@ const ListRender = ({
         hideOnSinglePage: true,
         pageSize: 8,
         current: page,
-        onChange: (next) => navigate(`/repos/${type}/${next}`)
+        onChange: (next) => navigate(`/main/repos/${type}/${next}`)
       }}
       dataSource={elements}
       renderItem={(item) => {
@@ -63,7 +63,7 @@ const ListRender = ({
               title={(
                 <Link
                   to={
-                    `/repo/${item.repo_id}&${item.repo_name}/tree/`
+                    `/main/repo/${item.repo_id}&${item.repo_name}/tree/`
                   }
                   state={{ id: item.repo_id }}
                 >

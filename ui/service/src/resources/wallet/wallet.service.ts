@@ -15,7 +15,9 @@ export const restoreWallet = async (seed:string, password: string) => {
 };
 
 export const enterUser = async (password:string) => {
-  const isRun = await runWalletApi(password);
+  const isRun = await new Promise(
+    (resolve) => { runWalletApi(password, resolve); }
+  );
   return isRun;
 };
 

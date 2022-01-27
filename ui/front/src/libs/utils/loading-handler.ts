@@ -1,5 +1,5 @@
 export function loadingData<T>(
-  callback: (resolve: (value?: T) => void) => void
+  callback: (resolve: PromiseArg<T>, reject?: PromiseArg<T>) => void
 ) {
-  return new Promise((resolve) => callback(resolve));
+  return new Promise((resolve, reject) => callback(resolve, reject));
 }

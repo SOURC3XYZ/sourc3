@@ -1,5 +1,5 @@
 import { ErrorBoundary } from '@components/hoc';
-import { FileText, FileTreeBlock } from '@components/shared';
+import { FailPage, FileText, FileTreeBlock } from '@components/shared';
 import {
   BranchCommit, BranchName, DataNode, RepoId, UpdateProps
 } from '@types';
@@ -99,7 +99,7 @@ const RepoContent = ({
         <Route
           path="tree/:branch/:commit/*"
           element={(
-            <ErrorBoundary>
+            <ErrorBoundary fallback={<FailPage subTitle="no data" />}>
               <FileTreeBlock
                 id={id}
                 tree={tree}
@@ -113,7 +113,7 @@ const RepoContent = ({
         <Route
           path="blob/:branch/:commit/*"
           element={(
-            <ErrorBoundary>
+            <ErrorBoundary fallback={<FailPage subTitle="no data" />}>
               <FileText
                 id={id}
                 fileText={fileText}
