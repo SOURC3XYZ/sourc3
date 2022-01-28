@@ -221,16 +221,6 @@ jobs:
         path: downloads
         repo: BeamMW/beam
           
-    #- name: Download pit artifacts
-      #uses: dawidd6/action-download-artifact@v2
-      #with:
-      #github_token: ${{secrets.INSTALLER_TOKEN}}
-      #workflow: build.yml
-      #workflow_conclusion: success
-      #branch: develop
-      #path: downloads
-      #repo: PitDotDev/pit
-
     - name: Build electron [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       shell: bash
@@ -248,28 +238,6 @@ jobs:
         mkdir -p artifacts/installer
         cp ui/electron/out/make/deb/x64/*.deb artifacts/installer
         cp ui/electron/out/make/rpm/x64/*.rpm artifacts/installer
-
-        #- name: Prepare installer artifacts
-        #run: |
-        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/pit
-        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
-
-        #- name: Unpack installer artifacts [ubuntu && macos]
-        #if: matrix.os != 'windows-2019'
-        #shell: bash
-        #run: |
-        #tar xvf downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/pit.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/pit
-        #tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-        #tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
-
-        #- name: Unpack installer artifacts [windows]
-        #if: matrix.os == 'windows-2019'
-        #shell: bash
-        #run: |
-        #cp downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/pit
-        #cp downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-        #cp downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
 
 ###############################################################################
 # Upload
