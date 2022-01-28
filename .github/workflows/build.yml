@@ -42,6 +42,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libssl-dev curl libxi-dev libcups2-dev -y
+        sudo apt-get install npm fakeroot rpm -y
       
     - name: Create Build Environment [ubuntu-18.04]
       shell: bash
@@ -220,37 +221,55 @@ jobs:
         path: downloads
         repo: BeamMW/beam
           
-    - name: Download pit artifacts
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.INSTALLER_TOKEN}}
-        workflow: build.yml
-        workflow_conclusion: success
-        branch: develop
-        path: downloads
-        repo: PitDotDev/pit
+    #- name: Download pit artifacts
+      #uses: dawidd6/action-download-artifact@v2
+      #with:
+      #github_token: ${{secrets.INSTALLER_TOKEN}}
+      #workflow: build.yml
+      #workflow_conclusion: success
+      #branch: develop
+      #path: downloads
+      #repo: PitDotDev/pit
 
-    - name: Prepare installer artifacts
-      run: |
-          mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/pit
-          mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-          mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
-
-    - name: Unpack installer artifacts [ubuntu && macos]
-      if: matrix.os != 'windows-2019'
+    - name: Build electron [ubuntu all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       shell: bash
       run: |
-          tar xvf downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/pit.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/pit
-          tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-          tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
+        mkdir -p ui/electron/beam-res/{api,cli}
+        tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C ui/electron/beam-res/api
+        tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C ui/electron/beam-res/cli
+        cp downloads/beam-wasm-masternet-*/* ui/electron/front
+        cp shaders/app.wasm ui/electron/front/assets
+        cd ui/electron
+        npm i
+        npx electron-forge import
+        npm run make
+        cd ../..
+        mkdir -p artifacts/installer
+        cp ui/electron/out/make/deb/x64/*.deb artifacts/installer
+        cp ui/electron/out/make/rpm/x64/*.rpm artifacts/installer
 
-    - name: Unpack installer artifacts [windows]
-      if: matrix.os == 'windows-2019'
-      shell: bash
-      run: |
-          cp downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/pit
-          cp downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
-          cp downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
+        #- name: Prepare installer artifacts
+        #run: |
+        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/pit
+        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
+        #mkdir -p artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
+
+        #- name: Unpack installer artifacts [ubuntu && macos]
+        #if: matrix.os != 'windows-2019'
+        #shell: bash
+        #run: |
+        #tar xvf downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/pit.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/pit
+        #tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/wallet-api-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
+        #tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/beam-node-masternet.tar -C artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
+
+        #- name: Unpack installer artifacts [windows]
+        #if: matrix.os == 'windows-2019'
+        #shell: bash
+        #run: |
+        #cp downloads/${{env.PLATFORM_NAME}}-pit-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/pit
+        #cp downloads/${{env.PLATFORM_NAME}}-wallet-api-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/wallet-api
+        #cp downloads/${{env.PLATFORM_NAME}}-beam-node-masternet-*/* artifacts/installer/${{env.PLATFORM_NAME}}/beam-node
 
 ###############################################################################
 # Upload
@@ -262,9 +281,17 @@ jobs:
         if-no-files-found: error
 
     - uses: actions/upload-artifact@v2
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       with:
-        name: ${{env.PLATFORM_NAME}}-installer
-        path: artifacts/installer/${{env.PLATFORM_NAME}}/*
+        name: pit-client-masternet_1.0.0_amd64.deb
+        path: artifacts/installer/*.deb
+        if-no-files-found: error
+
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      with:
+        name: pit-client-masternet-1.0.0-1.x86_64.rpm
+        path: artifacts/installer/*.rpm
         if-no-files-found: error
 
 ###############################################################################
