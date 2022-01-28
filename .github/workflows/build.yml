@@ -220,17 +220,16 @@ jobs:
         branch: master
         path: downloads
         repo: BeamMW/beam
-
+          
     - name: Electron root
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       shell: bash
       run: echo "ELECTRON_ROOT=${{runner.workspace}}/pit/ui/electron" >> $GITHUB_ENV
-          
+
     - name: Build electron [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       shell: bash
       run: |
-        pwd
         mkdir -p ${{env.ELECTRON_ROOT}}/beam-res/{api,cli}
         tar xvf downloads/${{env.PLATFORM_NAME}}-wallet-api${{env.BEAM_TARGET_SUFFIX}}-*/wallet-api${{env.BEAM_TARGET_SUFFIX}}.tar -C ${{env.ELECTRON_ROOT}}/beam-res/api
         tar xvf downloads/${{env.PLATFORM_NAME}}-beam-node${{env.BEAM_TARGET_SUFFIX}}-*/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ${{env.ELECTRON_ROOT}}/beam-res/cli
@@ -240,7 +239,12 @@ jobs:
         npm i
         npx electron-forge import
         npm run make
-        cd ${GITHUB_WORKSPACE}
+
+    - name: Prepare artifacts [ubuntu all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      shell: bash
+      run: |
+        echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
         mkdir -p artifacts/installer
         cp ${{env.ELECTRON_ROOT}}/out/make/deb/x64/*.deb artifacts/installer
         cp ${{env.ELECTRON_ROOT}}/out/make/rpm/x64/*.rpm artifacts/installer
@@ -254,18 +258,17 @@ jobs:
         path: artifacts/*
         if-no-files-found: error
 
-    # TODO: replace hardcoded version of the .rpm and .deb packages
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       with:
-        name: pit-client${{env.BEAM_TARGET_SUFFIX}}_1.0.0_amd64.deb
+        name: pit-client${{env.BEAM_TARGET_SUFFIX}}_${{env.PACKAGE_VERSION}}_amd64.deb
         path: artifacts/installer/*.deb
         if-no-files-found: error
 
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       with:
-        name: pit-client${{env.BEAM_TARGET_SUFFIX}}-1.0.0-1.x86_64.rpm
+        name: pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.x86_64.rpm
         path: artifacts/installer/*.rpm
         if-no-files-found: error
 
