@@ -1,0 +1,7 @@
+.main {
+  padding: 1rem;
+  max-width: 74rem;
+  margin: 0 auto;
+  display: flex;
+  /* justify-content: center; */
+}
