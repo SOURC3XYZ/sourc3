@@ -4,9 +4,10 @@ import React from 'react';
 
 type PasswordRestoreType = {
   onClick: (base: string, repeat:string) => void
+  isCreate?: boolean
 };
 
-const PasswordRestore = ({ onClick }: PasswordRestoreType) => {
+const PasswordRestore = ({ onClick, isCreate }: PasswordRestoreType) => {
   const [base, setBase] = React.useState('');
   const [repeat, setRepeat] = React.useState('');
 
@@ -40,7 +41,7 @@ const PasswordRestore = ({ onClick }: PasswordRestoreType) => {
         onClick={onClickDecor}
         style={{ borderRadius: 7, margin: '0 auto' }}
       >
-        Restore
+        {isCreate ? 'Create' : 'Restore'}
       </Button>
     </Space>
   );

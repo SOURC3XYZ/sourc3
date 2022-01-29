@@ -6,7 +6,7 @@ interface SeedListProps {
   data: (string | null) [];
   errors: boolean[];
   isShuffle?: boolean;
-  onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
 }
 

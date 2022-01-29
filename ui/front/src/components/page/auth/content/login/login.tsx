@@ -47,7 +47,7 @@ const Login = ({ startWalletApi }: LoginProps) => {
             </Text>
             <Text>Password</Text>
             <label htmlFor="password">
-              <Input
+              <Input.Password
                 onChange={onPassInputChange}
                 value={pass}
                 type="password"

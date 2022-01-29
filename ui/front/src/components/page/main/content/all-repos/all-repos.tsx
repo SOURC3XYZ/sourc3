@@ -4,13 +4,14 @@ import {
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
-import React, { useState, ChangeEvent } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import {
   Modal, Input, Row, Col
 } from 'antd';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { loadingData, searchFilter } from '@libs/utils';
+import { useObjectState } from '@libs/hooks';
 import styles from './all-repos.module.css';
 
 type LocationState = {
@@ -28,6 +29,12 @@ type AllReposProps = {
   setPrevHref: (href: string) => void
 };
 
+const initialState = {
+  isLoading: true,
+  isModalVisible: false,
+  inputRepoName: ''
+};
+
 const AllRepos = ({
   repos,
   searchText,
@@ -37,10 +44,11 @@ const AllRepos = ({
   setInputText,
   setPrevHref
 }:AllReposProps) => {
+  const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
-  const [isLoading, setIsLoadin] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [inputRepoName, setInputRepoName] = useState('');
+  const [state, setState] = useObjectState<typeof initialState>(initialState);
+
+  const { isLoading, isModalVisible, inputRepoName } = state;
 
   const filteredRepos = React.useMemo(() => searchFilter(
     searchText, repos, ['repo_id', 'repo_name']
@@ -48,27 +56,28 @@ const AllRepos = ({
 
   React.useEffect(() => {
     loadingData(getAllRepos(type))
-      .then(() => setIsLoadin(false));
+      .then(() => setState({ isLoading: false }));
   }, [type]);
 
   React.useEffect(() => {
-    setPrevHref(window.location.pathname);
+    setPrevHref(pathname);
   }, [page]);
 
   const showModal = () => {
-    setIsModalVisible(true);
+    setState({ isModalVisible: true });
   };
 
   const handleOk = () => {
-    setIsModalVisible(false);
+    setState({ isModalVisible: false });
     createRepos(inputRepoName);
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setState({ isModalVisible: false });
   };
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputRepoName(e.target.value);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setState({ inputRepoName: e.target.value });
   };
 
   return (

@@ -23,7 +23,7 @@ const elementsCreator = (
     <Breadcrumb.Item>
       {
         i !== arr.length - 1
-          ? <Link to={`${baseUrl}/${el.path}`}>{el.name}</Link>
+          ? <Link to={`${baseUrl}${el.path}`}>{el.name}</Link>
           : el.name
       }
     </Breadcrumb.Item>
@@ -37,7 +37,7 @@ const hrefCreator = (
   const name = newPath.shift() as typeof path[number];
   const element = {
     name,
-    path: `${elements.length ? elements[elements.length - 1].path : ''}${name}`
+    path: `${elements.length ? elements[elements.length - 1].path : ''}/${name}`
   };
   return hrefCreator(newPath, [...elements, element]);
 };
