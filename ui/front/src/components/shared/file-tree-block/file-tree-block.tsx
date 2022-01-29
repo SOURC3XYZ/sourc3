@@ -4,31 +4,23 @@ import {
   DataNode, RepoId, UpdateProps
 } from '@types';
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Preload } from '../preload';
-
-type ParamsProps = {
-  branch: string;
-  commit: string;
-};
 
 type FileTreeBlockProps = {
   id: RepoId;
   tree: DataNode[] | null;
+  pathname:string;
   updateTree: (props: UpdateProps) => void;
-  checkBranch: (branch: string, commit: string) => void;
 };
 
-const leafCreator = (url:string, node: DataNode, path: string[]) => {
+const leafCreator = (url:string, node: DataNode) => {
   if (node.isLeaf) {
+    const blobUrl = url.replace('tree', 'blob');
     return (
       <div>
         <FileTextTwoTone twoToneColor="#0044ff" />
-        <Link to={`/main/repo/${path
-          .slice(0, 1).join('/')}/blob/${path
-          .slice(2).join('/')}/${node.title}`}
-          // TODO: DANIK: make more readable
-        >
+        <Link to={`${blobUrl}/${node.title}`}>
           {node.title}
 
         </Link>
@@ -43,19 +35,15 @@ const leafCreator = (url:string, node: DataNode, path: string[]) => {
 };
 
 const FileTreeBlock = ({
-  id, tree, updateTree, checkBranch
+  id, tree, pathname, updateTree
 }:FileTreeBlockProps) => {
-  const { pathname } = useLocation();
-  const { branch, commit } = useParams<'branch'>() as ParamsProps;
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
     updateTree({ ...props, id });
   };
 
-  React.useEffect(() => checkBranch(branch, commit), []);
-
   const treeList = tree && getTree(
     tree, pathname, updateTreeDecor
-  )?.map((el) => leafCreator(pathname, el, pathname.split('/').slice(2)));
+  )?.map((el) => leafCreator(pathname, el));
 
   return (
     <>
@@ -64,4 +52,4 @@ const FileTreeBlock = ({
   );
 };
 
-export default FileTreeBlock;
+export default React.memo(FileTreeBlock);

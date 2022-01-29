@@ -1,1 +1,1 @@
-export { default as ErrorBoundary } from './error-handler';
+export { default as ErrorBoundary } from './error-boundary';

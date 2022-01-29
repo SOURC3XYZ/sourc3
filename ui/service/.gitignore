@@ -7,3 +7,4 @@ crash-data.log
 .env
 logs
 beam-res
+dist

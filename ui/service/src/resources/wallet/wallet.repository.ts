@@ -45,8 +45,9 @@ export const removeWallet = async () => {
 
 export const restoreExistedWallet = (
   seed:string,
-  password:string
-):Promise<boolean> => new Promise((resolve) => {
+  password:string,
+  resolve: (isOk: boolean) => void
+) => {
   const args = [
     'restore',
     '--wallet_path', binPath,
@@ -70,7 +71,7 @@ export const restoreExistedWallet = (
     console.log(`child process exited with code ${code}`);
     resolve(!code);
   });
-});
+};
 
 export const runWalletApi = (
   password: string,

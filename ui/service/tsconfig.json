@@ -22,10 +22,12 @@
     "sourceMap": true,
     "strictPropertyInitialization":false
   },
+	"parserOptions": {
+    "project": "./webpack.config.js"
+  },
   "exclude": [
     "node_modules/"
   ],
-  "include": [
-    "./src/**/*.ts"
-, "src/middlewares/logger.requeststs"  ]
+  "include":
+    ["src"]
 }

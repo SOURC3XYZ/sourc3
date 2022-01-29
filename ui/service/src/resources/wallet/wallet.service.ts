@@ -10,7 +10,9 @@ export const removeExistedWallet = async () => {
 
 export const restoreWallet = async (seed:string, password: string) => {
   await removeWallet();
-  const restored = await restoreExistedWallet(seed, password);
+  const restored = await new Promise(
+    (resolve) => { restoreExistedWallet(seed, password, resolve); }
+  );
   return restored;
 };
 

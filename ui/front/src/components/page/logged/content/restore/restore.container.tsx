@@ -20,19 +20,20 @@ type RestorePropsType = {
     cb: (status: 'ok' | 'fail') => void) => void
 };
 
+type RestoreState = 'seed' | 'pass' | 'fail' | 'ok' | 'loading';
+
 const Restore = ({
   seed2Validation,
   validate,
   restoreWallet,
   validatePasted
 }:RestorePropsType) => {
-  const [mode, toggleMode] = React.useState<
-  'seed' | 'pass' | 'fail' | 'ok' | 'loading'>('seed');
+  const [mode, toggleMode] = React.useState<RestoreState>('seed');
   const { seed, errors } = seed2Validation;
 
   const endOfVerification = (base: string, repeat: string) => {
     if (base === repeat && !errors.includes(false)) {
-      const setOk = (status: 'ok' | 'fail') => toggleMode(status);
+      const setOk = (status: Partial<RestoreState>) => toggleMode(status);
       restoreWallet(seed as string[], base, setOk);
       toggleMode('loading');
     }

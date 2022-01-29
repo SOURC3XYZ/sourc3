@@ -23,7 +23,12 @@ router.route('/restore').post(
     if (seed && password) {
       const data = await restoreWallet(seed, password);
       if (data) return res.status(201).json('wallet restored');
-      return next(new ErrorHandler(404, 'invalid seed phrase'));
+      return next(
+        new ErrorHandler(
+          404,
+          'invalid seed phrase or wallet api is running now'
+        )
+      );
     } return next(new ErrorHandler(404, 'bad params'));
   }
 );
