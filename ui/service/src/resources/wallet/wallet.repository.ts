@@ -1,14 +1,14 @@
 import { spawn } from 'child_process';
-import path from 'path';
 import fs from 'fs';
-import { BEAM_NODE_PORT, rootPath, WALLET_API_PORT } from '../../common';
+import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
+import {
+  binPath,
+  cliPath,
+  walletApiPath,
+  walletPath
+} from '../../utils';
 
 let currentProcess:ReturnType<typeof spawn> | undefined;
-
-const binPath = path.join(rootPath, 'beam-res');
-const cliPath = path.join(binPath, 'cli/beam-wallet-masternet');
-const walletPath = path.join(binPath, 'wallet.db');
-const walletApiPath = path.join(binPath, 'api/wallet-api-masternet');
 
 export const deleteFile = (filePath:string) => {
   try {
@@ -43,6 +43,33 @@ export const removeWallet = async () => {
   } return true;
 };
 
+export const exportOwnerKey = async (
+  password:string,
+  resolve: (key: string | null) => void
+) => {
+  const childProcess = spawn(cliPath, [
+    'export_owner_key',
+    '--pass', password,
+    '--wallet_path', walletPath
+  ]);
+
+  const ownerKeyBuffer = /Owner Viewer key/i;
+
+  childProcess.stdout.on('data', async (data:Buffer) => {
+    const bufferString = data.toString('utf-8');
+    console.log(`stdout: ${bufferString}`);
+    if (bufferString.match(ownerKeyBuffer)) {
+      const key = bufferString.replace('Owner Viewer key:', '').trim();
+      return resolve(key);
+    } return undefined;
+  });
+  childProcess.on('close', (code:number | null) => {
+    console.log(`child process exited with code ${code}`);
+    if (code) { return resolve(null); }
+    return undefined;
+  });
+};
+
 export const restoreExistedWallet = (
   seed:string,
   password:string,
@@ -67,13 +94,13 @@ export const restoreExistedWallet = (
     resolve(false);
   });
 
-  childProcess.on('close', (code:number | null) => {
+  childProcess.on('close', async (code:number | null) => {
     console.log(`child process exited with code ${code}`);
     resolve(!code);
   });
 };
 
-export const runWalletApi = (
+export const runWalletApi = async (
   password: string,
   resolve: (isOk: boolean) => void
 ) => {
@@ -86,20 +113,26 @@ export const runWalletApi = (
   } else {
     const success = /Start server on/i;
     const error = /Applying PRAGMA cipher_migrate.../i;
-
     const args = [
       '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
       '-p', `${WALLET_API_PORT}`,
       `--pass=${password}`,
       '--use_http=1',
-      `--wallet_path=${walletPath}`];
+      `--wallet_path=${walletPath}`
+    ];
     const childProcess = spawn(walletApiPath, args);
     currentProcess = childProcess;
 
     childProcess.stdout.on('data', (data:Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log(`stdout: ${bufferString}`);
-      if (bufferString.match(success)) resolve(true);
+
+      if (bufferString.match(success)) {
+        resolve(true);
+        childProcess.on('close', (code: number) => {
+          console.log(`child process exited with code ${code}`);
+        });
+      }
       if (bufferString.match(error)) {
         childProcess.kill('SIGKILL');
         childProcess.on('close', (code: number) => {

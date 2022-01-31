@@ -1,4 +1,5 @@
 import {
+  exportOwnerKey,
   killApiServer,
   removeWallet, restoreExistedWallet, runWalletApi
 } from './wallet.repository';
@@ -10,17 +11,22 @@ export const removeExistedWallet = async () => {
 
 export const restoreWallet = async (seed:string, password: string) => {
   await removeWallet();
-  const restored = await new Promise(
+  const isRestored = await new Promise(
     (resolve) => { restoreExistedWallet(seed, password, resolve); }
   );
-  return restored;
+  return isRestored;
 };
 
 export const enterUser = async (password:string) => {
-  const isRun = await new Promise(
-    (resolve) => { runWalletApi(password, resolve); }
+  const getOwnerKey:string | null = await new Promise(
+    (resolve) => { exportOwnerKey(password, resolve); }
   );
-  return isRun;
+  if (getOwnerKey) {
+    const runWallet = await new Promise(
+      (resolve) => { runWalletApi(password, resolve); }
+    );
+    return runWallet;
+  } return null;
 };
 
 export const killApi = async () => killApiServer();
