@@ -4,6 +4,7 @@
 #include<git2.h>
 
 #include "git_utils.h"
+#include "object_collector.h"
 
 namespace
 {
@@ -51,12 +52,12 @@ namespace
     using Commit = Holder<git_commit, git_commit_free>;
     using Signature = Holder<git_signature, git_signature_free>;
 
-    void GenerateTestRepo()
+    void GenerateTestRepo(std::string_view root)
     {
         pit::GitInit init;
         Repository repo;
         Commit commit;
-        BOOST_TEST_CHECK(git_repository_init(repo.Addr(), "./testrepo", false) >= 0);
+        BOOST_TEST_CHECK(git_repository_init(repo.Addr(), root.data(), false) >= 0);
         Signature sig;
         BOOST_TEST_CHECK(git_signature_default(sig.Addr(), *repo) >= 0);
         Index index;
@@ -89,5 +90,9 @@ namespace
 
 BOOST_AUTO_TEST_CASE(TestObjectCollector)
 {
-    GenerateTestRepo();
+    std::string_view root = "./testrepo";
+    GenerateTestRepo(root);
+    pit::ObjectCollector collector(root);
+
+    collector.Traverse({ {"refs/heads/master", "refs/heads/master"} }, {});
 }

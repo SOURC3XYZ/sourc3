@@ -10,11 +10,11 @@ namespace pit
 {
     struct Object
     {
-        git_oid			oid;
-        git_object_t	type;
+        git_oid         oid;
+        git_object_t    type;
         git_odb_object* object;
 
-        std::string		name;
+        std::string     name;
         std::string     fullPath;
         bool            selected = false;
 
@@ -42,16 +42,17 @@ namespace pit
         git_oid     target;
     };
 
-    struct ObjectCollector : GitRepoAccessor
+    class ObjectCollector : public GitRepoAccessor
     {
+    public:
         using GitRepoAccessor::GitRepoAccessor;
         void Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden);
-
+    private:
         void TraverseTree(const git_tree* tree);
         std::string Join(const std::vector<std::string>& path, const std::string& name);
         Object& CollectObject(const git_oid& oid);
         void ThrowIfError(int res, std::string_view sv);
-
+    public:
         std::set<git_oid>           m_set;
         std::vector<Object>         m_objects;
         std::vector<Ref>            m_refs;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <git2.h>
-#include <string>
+#include <string_view>
 
 //struct git_repository;
 //struct git_odb;
@@ -16,7 +16,7 @@ namespace pit
 
     struct GitRepoAccessor
     {
-        GitRepoAccessor(const std::string& dir);
+        GitRepoAccessor(std::string_view dir);
         ~GitRepoAccessor();
 
         git_repository* m_repo;

@@ -154,10 +154,10 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             cout << "failed\n";
             break;
         }
-        cerr << "Received data fo   r:  " << objectHashes.front() << '\n';
+        cerr << "Received data for:  " << objectHashes.front() << '\n';
         receivedObjects.insert(to_string(oid));
         git_oid res_oid;
-        git_object_t type = git_object_t(it->type);
+        auto type = git_object_t(it->type);
         git_oid r;
         git_odb_hash(&r, buf.data(), buf.size(), type);
         git_odb_write(&res_oid, accessor.m_odb, buf.data(), buf.size(), type);
@@ -200,7 +200,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 
 int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 {
-    ObjectCollector c(wc.GetRepoDir());
+    ObjectCollector collector(wc.GetRepoDir());
     std::vector<Refs> refs;
     std::vector<git_oid> localRefs;
     for (size_t i = 1; i < args.size(); ++i)
@@ -211,7 +211,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         r.localRef = arg.substr(0, p);
         r.remoteRef = arg.substr(p + 1);
         git_reference* localRef = nullptr;
-        if (git_reference_lookup(&localRef, c.m_repo, r.localRef.c_str()) < 0)
+        if (git_reference_lookup(&localRef, collector.m_repo, r.localRef.c_str()) < 0)
         {
             cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
             return -1;
@@ -242,13 +242,13 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         for (const auto& localRef : localRefs)
         {
             auto& base = mergeBases.emplace_back();
-            git_merge_base(&base, c.m_repo, &remoteRef.target, &localRef);
+            git_merge_base(&base, collector.m_repo, &remoteRef.target, &localRef);
         }
     }
 
-    c.Traverse(refs, mergeBases);
+    collector.Traverse(refs, mergeBases);
 
-    for (auto& obj : c.m_objects)
+    for (auto& obj : collector.m_objects)
     {
         if (uploadedObjects.find(obj.oid) != uploadedObjects.end())
         {
@@ -262,9 +262,9 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         uint32_t count = 0;
         size_t size = 0;
         std::vector<size_t> indecies;
-        for (size_t i = 0; i < c.m_objects.size(); ++i)
+        for (size_t i = 0; i < collector.m_objects.size(); ++i)
         {
-            auto& obj = c.m_objects[i];
+            auto& obj = collector.m_objects[i];
             if (obj.selected)
                 continue;
 
@@ -290,7 +290,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         auto* serObj = reinterpret_cast<GitObject*>(p + 1);
         for (size_t i = 0; i < count; ++i)
         {
-            const auto& obj = c.m_objects[indecies[i]];
+            const auto& obj = collector.m_objects[indecies[i]];
             serObj->data_size = static_cast<uint32_t>(obj.GetSize());
             serObj->type = static_cast<int8_t>(obj.type);
             git_oid_cpy(&serObj->hash, &obj.oid);
@@ -315,7 +315,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         std::stringstream ss;
         ss << "role=user,action=push_objects,data="
            << strData << ',';
-        for (const auto& r : c.m_refs)
+        for (const auto& r : collector.m_refs)
         {
             ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
         }

@@ -15,9 +15,9 @@ namespace pit
     }
 
     /////////////////////////////////////////////////////
-    GitRepoAccessor::GitRepoAccessor(const std::string& dir)
+    GitRepoAccessor::GitRepoAccessor(std::string_view dir)
     {
-        if (git_repository_open(&m_repo, dir.c_str()) < 0)
+        if (git_repository_open(&m_repo, dir.data()) < 0)
         {
             throw std::runtime_error("Failed to open repository!");
         }
