@@ -11,9 +11,9 @@ router.route('/start').post(
     const { password } = req.body;
     if (password) {
       const data = await enterUser(password);
-      if (data) return res.status(201).json('wallet api started');
-      return next(new ErrorHandler(404, 'invalid password'));
-    } return next(new ErrorHandler(404, 'bad params'));
+      if (data.isOk) return res.status(201).json(data.message);
+      return next(new ErrorHandler(404, data.message));
+    } return next(new ErrorHandler(404, 'you did not send the password'));
   }
 );
 
@@ -22,14 +22,16 @@ router.route('/restore').post(
     const { seed, password } = req.body;
     if (seed && password) {
       const data = await restoreWallet(seed, password);
-      if (data) return res.status(201).json('wallet restored');
+      if (data.isOk) return res.status(201).json(data.message);
       return next(
         new ErrorHandler(
           404,
-          'invalid seed phrase or wallet api is running now'
+          data.message
         )
       );
-    } return next(new ErrorHandler(404, 'bad params'));
+    } return next(
+      new ErrorHandler(404, 'you did not send the password or/and seed-phrase')
+    );
   }
 );
 

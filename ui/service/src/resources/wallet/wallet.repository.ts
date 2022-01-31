@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
@@ -7,10 +7,15 @@ import {
   walletApiPath,
   walletPath
 } from '../../utils';
+import { runSpawnProcess } from '../../utils/process-handlers';
 
 let currentProcess:ReturnType<typeof spawn> | undefined;
 
-export const deleteFile = (filePath:string) => {
+const success = /Start server on/i;
+const error = /Please check your password/i;
+const ownerKeyReg = /Owner Viewer key/i;
+
+export function deleteFile(filePath:string) {
   try {
     fs.unlinkSync(filePath);
     return true;
@@ -18,101 +23,133 @@ export const deleteFile = (filePath:string) => {
     console.error(err);
     return false;
   }
-};
+}
 
-export const readDirFile = async (
+export function readDirFile(
   directoryPath: string,
   fileName:string
-) => new Promise(
-  (resolve) => {
-    fs.readdir(directoryPath, (err, files) => {
-      if (err) {
-        console.log(`Unable to scan directory: ${err}`);
-        resolve(false);
-      }
-      const findedName = files.find((el) => el === fileName);
-      return resolve(!!findedName);
-    });
-  }
-);
+) {
+  return new Promise(
+    (resolve) => {
+      fs.readdir(directoryPath, (err, files) => {
+        if (err) {
+          console.log(`Unable to scan directory: ${err}`);
+          resolve(false);
+        }
+        const findedName = files.find((el) => el === fileName);
+        return resolve(!!findedName);
+      });
+    }
+  );
+}
 
-export const removeWallet = async () => {
-  const isWalletExist = await readDirFile(binPath, 'wallet.db');
-  if (isWalletExist) {
-    return deleteFile(walletPath);
-  } return true;
-};
+export function killApiServer():Promise<string> {
+  return new Promise(
+    (resolve) => {
+      if (currentProcess && !currentProcess.killed) {
+        currentProcess.on('close', (code:number) => {
+          console.log(`child process exited with code ${code}`);
+          resolve(`child process exited with code ${code}`);
+        });
+        currentProcess.kill('SIGKILL');
+      } else resolve('child process not active');
+    }
+  );
+}
 
-export const exportOwnerKey = async (
-  password:string,
-  resolve: (key: string | null) => void
-) => {
-  const childProcess = spawn(cliPath, [
-    'export_owner_key',
-    '--pass', password,
-    '--wallet_path', walletPath
-  ]);
-
-  const ownerKeyBuffer = /Owner Viewer key/i;
-
-  childProcess.stdout.on('data', async (data:Buffer) => {
-    const bufferString = data.toString('utf-8');
-    console.log(`stdout: ${bufferString}`);
-    if (bufferString.match(ownerKeyBuffer)) {
-      const key = bufferString.replace('Owner Viewer key:', '').trim();
-      return resolve(key);
-    } return undefined;
-  });
-  childProcess.on('close', (code:number | null) => {
-    console.log(`child process exited with code ${code}`);
-    if (code) { return resolve(null); }
-    return undefined;
-  });
-};
-
-export const restoreExistedWallet = (
-  seed:string,
-  password:string,
-  resolve: (isOk: boolean) => void
-) => {
-  const args = [
-    'restore',
-    '--wallet_path', binPath,
-    '--pass', password,
-    '--seed_phrase', seed
-  ];
-  const childProcess = spawn(cliPath, args, { detached: true });
-
-  childProcess.stdout.on('data', (data:Buffer) => {
-    const bufferString = data.toString('utf-8');
-    console.log('stdout:', bufferString);
-  });
-
-  childProcess.stderr.on('data', (data:Buffer) => {
-    const bufferString = data.toString('utf-8');
-    console.log('stdout:', bufferString);
-    resolve(false);
-  });
-
-  childProcess.on('close', async (code:number | null) => {
-    console.log(`child process exited with code ${code}`);
-    resolve(!code);
-  });
-};
-
-export const runWalletApi = async (
-  password: string,
-  resolve: (isOk: boolean) => void
-) => {
+export function setCurrentProcess(process: ChildProcess) {
   if (currentProcess && !currentProcess.killed) {
     currentProcess.kill('SIGKILL');
     currentProcess.on('close', (code: number) => {
       console.log(`child process exited with code ${code}`);
-      runWalletApi(password, resolve);
+      setCurrentProcess(process);
     });
-  } else {
-    const success = /Start server on/i;
-    const error = /Applying PRAGMA cipher_migrate.../i;
+  } else currentProcess = process;
+}
+
+export async function removeWallet() {
+  const isWalletExist = await readDirFile(binPath, 'wallet.db');
+  if (isWalletExist) {
+    return deleteFile(walletPath);
+  } return true;
+}
+
+export function exportOwnerKey(
+  password:string
+):Promise<string> {
+  return new Promise((resolve, reject) => {
+    const args = [
+      'export_owner_key',
+      '--pass', password,
+      '--wallet_path', walletPath
+    ];
+
+    const onData = (data:Buffer) => {
+      const bufferString = data.toString('utf-8');
+      console.log(`stdout: ${bufferString}`);
+
+      if (bufferString.match(ownerKeyReg)) {
+        const key = bufferString
+          .replace('Owner Viewer key:', '')
+          .trim();
+        resolve(key);
+      }
+      if (bufferString.match(error)) {
+        reject(new Error('bad pass'));
+      }
+    };
+
+    const onClose = (code:number | null) => {
+      console.log(`child process exited with code ${code}`);
+    };
+
+    runSpawnProcess({
+      path: cliPath, args, onData, onClose
+    });
+  });
+}
+
+export function restoreExistedWallet(
+  seed:string,
+  password:string
+):Promise<string> {
+  return new Promise((resolve, reject) => {
+    const args = [
+      'restore',
+      '--wallet_path', binPath,
+      '--pass', password,
+      '--seed_phrase', seed
+    ];
+
+    const onData = (data:Buffer) => {
+      const bufferString = data.toString('utf-8');
+      console.log('stdout:', bufferString);
+    };
+
+    const onClose = (code:number | null) => {
+      console.log(`child process exited with code ${code}`);
+      if (Number(code) > 0) {
+        return reject(new Error(
+          'wrong seed-phrase or wallet api is running now'
+        ));
+      }
+      return resolve('wallet successfully restored');
+    };
+
+    runSpawnProcess({
+      path: cliPath,
+      detached: true,
+      args,
+      onData,
+      onClose
+    });
+  });
+}
+
+export function runWalletApi(
+  password: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
     const args = [
       '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
       '-p', `${WALLET_API_PORT}`,
@@ -120,43 +157,24 @@ export const runWalletApi = async (
       '--use_http=1',
       `--wallet_path=${walletPath}`
     ];
-    const childProcess = spawn(walletApiPath, args);
-    currentProcess = childProcess;
 
-    childProcess.stdout.on('data', (data:Buffer) => {
+    const onData = (data:Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log(`stdout: ${bufferString}`);
-
       if (bufferString.match(success)) {
-        resolve(true);
-        childProcess.on('close', (code: number) => {
-          console.log(`child process exited with code ${code}`);
-        });
+        resolve('wallet api started successfully');
       }
       if (bufferString.match(error)) {
-        childProcess.kill('SIGKILL');
-        childProcess.on('close', (code: number) => {
-          console.log(`child process exited with code ${code}`);
-          resolve(false);
-        });
+        killApiServer()
+          .then(() => reject(new Error('something went wrong')));
       }
-    });
+    };
 
-    childProcess.stderr.on('error', (err:string) => {
-      console.log(`stderr: ${err}`);
-      resolve(false);
+    runSpawnProcess({
+      path: walletApiPath,
+      args,
+      onData,
+      setCurrentProcess
     });
-  }
-};
-
-export const killApiServer = async ():Promise<string> => new Promise(
-  (resolve) => {
-    if (currentProcess && !currentProcess.killed) {
-      currentProcess.on('close', (code:number) => {
-        console.log(`child process exited with code ${code}`);
-        resolve(`child process exited with code ${code}`);
-      });
-      currentProcess.kill('SIGKILL');
-    } else resolve('child process not active');
-  }
-);
+  });
+}
