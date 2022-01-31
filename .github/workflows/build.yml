@@ -255,6 +255,7 @@ jobs:
       run: |
         echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
         mkdir -p artifacts/installer
+        ls ${{env.ELECTRON_ROOT}}/out/make/
         cp ${{env.ELECTRON_ROOT}}/out/make/*.dmg artifacts/installer
 
 ###############################################################################
