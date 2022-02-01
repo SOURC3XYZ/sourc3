@@ -1,13 +1,15 @@
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { thunks } from '@libs/action-creators';
+import { AC, thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
-import { Button, message } from 'antd';
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { FailPage, OkPage, Preload } from '@components/shared';
-import { SeedGenerate } from './seed-generate';
+import NavButton from '@components/shared/nav-button/nav-button';
+import { message } from 'antd';
+import { WALLET } from '@libs/constants';
+import { SeedGenerate } from './container/seed-generate';
 import { PasswordRestore } from '../restore/container';
 import styles from './sign-up.module.css';
+import { SeedConfirm } from './container';
 
 type SignUpProps = {
   seedPhrase: string | null,
@@ -15,22 +17,28 @@ type SignUpProps = {
   restoreWallet: (
     seed: string[],
     pass: string,
-    cb: (status: 'ok' | 'fail') => void) => void
+    cb: (status: 'ok' | 'fail') => void) => void,
+  clearSeed2Validation: (
+    seed: string[], errors: boolean[]
+  ) => void
 };
 
 const SignUp = ({
   generateSeed,
   seedPhrase,
-  restoreWallet
+  restoreWallet,
+  clearSeed2Validation
 }: SignUpProps) => {
   const seed:string[] = seedPhrase ? seedPhrase?.split(' ') : [];
-
+  const clearSeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
+  const clearErrors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
   useEffect(() => {
     generateSeed();
+    clearSeed2Validation(clearSeed, clearErrors);
   }, []);
 
   const [mode, toggleMode] = React.useState<
-  'seed' | 'pass' | 'fail' | 'ok' | 'loading'>('seed');
+  'seed' | 'confirm' | 'pass' | 'fail' | 'ok' | 'loading'>('seed');
 
   const endOfVerification = (base: string, repeat: string) => {
     if (base === repeat) {
@@ -43,7 +51,9 @@ const SignUp = ({
   };
 
   const setNextMode = () => {
-    toggleMode('pass');
+    if (mode === 'seed') { toggleMode('confirm'); } else {
+      toggleMode('pass');
+    }
   };
 
   const currentMode = () => {
@@ -52,6 +62,13 @@ const SignUp = ({
         return (
           <SeedGenerate
             seed={seed}
+            next={setNextMode}
+          />
+        );
+      case 'confirm':
+        return (
+          <SeedConfirm
+            seedGenerated={seed}
             next={setNextMode}
           />
         );
@@ -80,14 +97,10 @@ const SignUp = ({
       <div className={styles.wrapper}>
         {currentMode()}
         <div className={styles.btnNav}>
-          <Button style={{ borderRadius: 7 }}>
-            <Link
-              to="/auth"
-            >
-              Back
-
-            </Link>
-          </Button>
+          <NavButton
+            name="Back"
+            link="/auth"
+          />
         </div>
       </div>
 
@@ -111,6 +124,11 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   ) => {
     console.log('validate', seed, pass);
     dispatch(thunks.sendParams2Service(seed, pass, callback));
+  },
+  clearSeed2Validation: (
+    seed: string[], errors: boolean[]
+  ) => {
+    dispatch(AC.setSeed2Validation({ seed, errors }));
   }
 });
 export default connect(mapState, mapDispatch)(SignUp);

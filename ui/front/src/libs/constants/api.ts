@@ -7,7 +7,8 @@ export enum CONTRACT {
 // 126c94dad2a409d1af5beb1667972ebcbd165d940159049f4a0ad6b5f4b8e976
 
 export enum WALLET {
-  SEED_PHRASE_COUNT = 12
+  SEED_PHRASE_COUNT = 12,
+  SEED_CONFIRM_PHRASE_COUNT = 6
 }
 
 export enum STATUS {

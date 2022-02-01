@@ -1,12 +1,10 @@
-// import { Button } from 'antd';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
-import { Button } from 'antd';
 import Text from 'antd/lib/typography/Text';
-import { SeedList } from '@components/shared';
+import { NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
-import styles from '../sign-up.module.css';
+import styles from '../../sign-up.module.css';
 
 type SignUpProps = {
   seed: string[],
@@ -33,15 +31,10 @@ const SignUp = ({
           errors={errors}
         />
         <div className={styles.btnNav}>
-          <Button
-            style={{
-              width: 150,
-              borderRadius: 7
-            }}
+          <NavButton
             onClick={next}
-          >
-            Complete verification
-          </Button>
+            name="Complete verification"
+          />
         </div>
       </div>
 

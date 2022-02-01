@@ -6,12 +6,13 @@ interface SeedListProps {
   data: (string | null) [];
   errors: boolean[];
   isShuffle?: boolean;
+  isSlice?: boolean;
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
 }
 
 const SeedList = ({
-  data, errors, isShuffle, onInput, validatePasted
+  data, errors, isShuffle, isSlice, onInput, validatePasted
 }:SeedListProps) => {
   const shuffleIndexes = React.useMemo(() => shuffle(data), []);
 
@@ -39,6 +40,9 @@ const SeedList = ({
     if (isShuffle) {
       const shuffled = shuffleIndexes
         .map((el) => list[el]);
+      if (isSlice) {
+        return shuffled.slice(6);
+      }
       return shuffled;
     }
     return list;
