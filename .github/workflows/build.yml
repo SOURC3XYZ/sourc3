@@ -270,7 +270,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'macos-10.15'
       with:
-        name: pit-client{{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{env.PLATFORM_NAME}}
+        name: pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{env.PLATFORM_NAME}}
         path: installer/*
         if-no-files-found: error
 
@@ -294,6 +294,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:
-        name: pdb${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        name: pit${{env.BEAM_TARGET_SUFFIX}}-pdb-${{env.PACKAGE_VERSION}}
         path: pdb
         if-no-files-found: error
