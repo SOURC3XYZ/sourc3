@@ -1,9 +1,10 @@
-import { spawn, ChildProcess } from 'child_process';
+import {spawn, ChildProcess, execFile} from 'child_process';
 import fs from 'fs';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
   binPath,
   cliPath,
+  nodePath,
   walletApiPath,
   walletPath
 } from '../../utils';
@@ -104,9 +105,50 @@ export function exportOwnerKey(
     };
 
     runSpawnProcess({
-      path: cliPath, args, onData, onClose
+      path: cliPath, args, detached:true, onData, onClose
     });
   });
+}
+
+function isFileExecutable(filename:string) {
+  let result:boolean = true
+  try {
+    console.log(filename);
+    fs.accessSync(filename, fs.constants.X_OK);
+    console.log(filename);
+  } catch (err) {
+    result = false
+  }
+  return result
+}
+
+export function startBeamNode(
+    ownerKey:string,
+    password:string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let beamNodePath: string | null = null
+    for (const x of fs.readdirSync(nodePath)) {
+      if (isFileExecutable(nodePath + x)) {
+        beamNodePath = nodePath + x
+        break
+      }
+    }
+    if (beamNodePath != null) {
+      console.log('Beam node is: ', beamNodePath);
+      const node = execFile(beamNodePath, ['--port=10005',
+        '--peer=eu-node01.masternet.beam.mw:8100,eu-node02.masternet.beam.mw:8100,eu-node03.masternet.beam.mw:8100,eu-node04.masternet.beam.mw:8100',
+        '--owner_key', ownerKey,
+        '--pass', password,
+        '--fast_sync=on']);
+      process.on('exit', () => {
+        node.kill("SIGTERM")
+      });
+      return resolve('Beam node started successfully')
+    } else {
+      return reject(new Error('No node executable'))
+    }
+  })
 }
 
 export function restoreExistedWallet(

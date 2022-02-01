@@ -2,7 +2,10 @@
 import {
   exportOwnerKey,
   killApiServer,
-  removeWallet, restoreExistedWallet, runWalletApi
+  removeWallet,
+  restoreExistedWallet,
+  runWalletApi,
+  startBeamNode
 } from './wallet.repository';
 
 type ProcessStatus = {
@@ -33,6 +36,7 @@ export const enterUser = async (password:string):Promise<ProcessStatus> => {
   try {
     const ownerKey = await exportOwnerKey(password);
     console.log('owner key: ', ownerKey);
+    await startBeamNode(ownerKey, password);
     const runWallet = await runWalletApi(password);
     return { isOk: true, message: runWallet };
   } catch (error) {
