@@ -1,4 +1,3 @@
-import { logger } from '@libs/utils';
 import {
   BranchName
 } from '@types';
@@ -7,7 +6,8 @@ import { Select, Typography } from 'antd';
 type BranchSelectProps = {
   keys: BranchName[],
   value: string,
-  selectHandler: React.Dispatch<BranchName>
+  commit: string,
+  onChange: (selectedCommit: string, selectedBranch?: string) => void
 };
 
 const selectOptionMap = (el: BranchName, i:number) => (
@@ -16,17 +16,15 @@ const selectOptionMap = (el: BranchName, i:number) => (
       value={el}
       key={i}
     >
-      {el.split('refs/heads/')}
+      {el}
     </Select.Option>
   </>
 );
 
 const BranchSelect = ({
-  keys, value, selectHandler
+  keys, value, commit, onChange
 }:BranchSelectProps) => {
-  logger('Branch select', [
-    ['map', keys]
-  ]);
+  const onChangeDecor = (branch: string) => onChange(commit, branch);
 
   return (
     <div style={
@@ -50,7 +48,7 @@ const BranchSelect = ({
           size="small"
           value={value}
           style={{ width: 200 }}
-          onChange={selectHandler}
+          onChange={onChangeDecor}
         >
           { keys.map(selectOptionMap) }
         </Select>

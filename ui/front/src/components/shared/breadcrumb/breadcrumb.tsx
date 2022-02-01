@@ -1,9 +1,14 @@
 import { Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { clipString } from '@libs/utils';
 
 type BreadCrumbMenuProps = {
   prevReposHref: string | null;
+  pathname:string;
+  baseUrl: string;
+  branch:string;
+  commit:string;
 };
 
 type ArrayPath = {
@@ -14,9 +19,13 @@ type ArrayPath = {
 const elementsCreator = (
   baseUrl: string, urlElements: ArrayPath[]
 ) => urlElements
-  .map((el) => (
+  .map((el, i, arr) => (
     <Breadcrumb.Item>
-      <Link to={`${baseUrl}${el.path}`}>{el.name}</Link>
+      {
+        i !== arr.length - 1
+          ? <Link to={`${baseUrl}${el.path}`}>{el.name}</Link>
+          : el.name
+      }
     </Breadcrumb.Item>
   ));
 
@@ -33,28 +42,30 @@ const hrefCreator = (
   return hrefCreator(newPath, [...elements, element]);
 };
 
-const BreadCrumbMenu = ({ prevReposHref }:BreadCrumbMenuProps) => {
-  const { pathname } = useLocation();
-  const root = pathname.split('/').slice(4, 6);
-  const pathArray = pathname.split('/').splice(6);
-  const pathElements = hrefCreator(pathArray);
-  const baseUrl = pathname.split('/')
-    .splice(0, 4)
-    .map((el, i) => (i === 3 && el === 'blob' ? 'tree' : el))
-    .concat(root)
-    .join('/');
+const BreadCrumbMenu = ({
+  prevReposHref, pathname, baseUrl, branch, commit
+}:BreadCrumbMenuProps) => {
+  const root = `${baseUrl}/${branch}/${commit}`;
+
+  let treePath = clipString(pathname, `${root}/`);
+  treePath = pathname !== treePath ? treePath : '';
+
+  const pathElements = hrefCreator(treePath.split('/'));
+
+  const replacedRoot = root.replace('blob', 'tree');
+  // TODO: DANIK refactor all calculations into one function
 
   return (
     <Breadcrumb>
       <Breadcrumb.Item>
-        <Link to={prevReposHref || '/repos/all/1'}>
+        <Link to={prevReposHref || '/main/repos/all/1'}>
           <HomeOutlined />
         </Link>
       </Breadcrumb.Item>
       <Breadcrumb.Item>
-        <Link to={baseUrl}>root</Link>
+        <Link to={replacedRoot}>root</Link>
       </Breadcrumb.Item>
-      {elementsCreator(baseUrl, pathElements)}
+      {elementsCreator(replacedRoot, pathElements)}
     </Breadcrumb>
   );
 };

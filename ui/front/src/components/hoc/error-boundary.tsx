@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 
 type ErrorBoundaryProps = {
-  fallback: JSX.Element;
+  fallback: (props:any) => JSX.Element;
   children: ReactElement<any, any>
 };
 
@@ -11,24 +11,19 @@ type ErrorBoundaryState = {
 };
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor(props:ErrorBoundaryProps) {
-    super(props);
-  }
-
   state:ErrorBoundaryState = { hasError: false, message: '' };
 
   static getDerivedStateFromError(err: Error) {
     return { hasError: true, message: err.message };
   }
 
-  shouldComponentUpdate() {
-    const { hasError } = this.state;
+  shouldComponentUpdate(_:typeof this.props, nextState: typeof this.state) {
+    const { hasError } = nextState;
     if (hasError) return false;
     return true;
   }
 
-  resetState = () => {
+  private resetErrState = () => {
     const { hasError } = this.state;
     if (hasError) this.setState({ hasError: false });
   };
@@ -36,8 +31,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   render() {
     const { children, fallback } = this.props;
     const { hasError } = this.state;
+    const { resetErrState } = this;
     if (hasError) {
-      return fallback;
+      return fallback({ resetErrState });
     }
     return children;
   }

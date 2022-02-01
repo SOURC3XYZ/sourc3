@@ -7,6 +7,8 @@ import app from './app';
 //   method: 'get_version'
 // };
 
-app.listen(PORT || 5001, () => console.log(
-  `App is running on http://localhost:${PORT}`
+const port = PORT || 5002;
+
+app.listen(port, () => console.log(
+  `App is running on http://localhost:${port}`
 ));

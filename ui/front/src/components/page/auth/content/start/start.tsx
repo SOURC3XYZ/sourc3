@@ -3,18 +3,18 @@ import { connect } from 'react-redux';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { NavButton } from '@components/shared';
-import icon from '../../../../../assets/img/TurtuleZorro.png';
+import icon from '@assets/img/TurtuleZorro.png';
 import styles from './start.module.css';
 
 type StartProps = {
-  mountWallet: () => void
+  killWalletApi: () => void
 };
 
 const Start = ({
-  mountWallet
+  killWalletApi
 }: StartProps) => {
   useEffect(() => {
-    mountWallet();
+    killWalletApi();
   }, []);
 
   return (
@@ -40,8 +40,8 @@ const mapState = ({ wallet: { seedPhrase } }: RootState) => ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  mountWallet: () => {
-    dispatch(thunks.mountWallet());
+  killWalletApi: () => {
+    dispatch(thunks.killBeamApi());
   }
 });
 

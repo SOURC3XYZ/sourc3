@@ -79,6 +79,15 @@ export const thunks = {
     dispatch(AC.setSeed2Validation({ seed, errors }));
   },
 
+  killBeamApi: (resolve?: PromiseArg<string>) => async () => {
+    const url = `${CONTRACT.HOST}/wallet/kill`;
+    const data = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (data.ok && resolve) resolve();
+  },
+
   connectBeamApi:
     (message = messageBeam) => async (dispatch: AppThunkDispatch) => {
       await beam.loadAPI(message);

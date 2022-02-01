@@ -1,5 +1,5 @@
 import { BeamAPI } from '@libs/beam';
-import { treeDataMaker, updateTreeData } from '@libs/utils';
+import { clipString, treeDataMaker, updateTreeData } from '@libs/utils';
 import {
   BeamApiRes,
   Branch,
@@ -79,7 +79,7 @@ export async function buildRepoMap(api:TypedBeamApi, id:RepoId) {
   const promises = branches.refs.map((el) => buildCommitList(call, id, el));
   const commits = await Promise.all(promises);
   branches.refs.forEach((el, i) => {
-    if (commits[i]) branchMap.set(el.name, commits[i]);
+    if (commits[i]) branchMap.set(clipString(el.name), commits[i]);
   });
   return branchMap.size ? branchMap : null;
 }

@@ -1,54 +1,86 @@
 import {
   BranchSelect, BreadCrumbMenu, CommitsSelect, RepoMeta
 } from '@components/shared';
-import { BranchCommit, UpdateProps } from '@types';
+import { clipString, setBranchAndCommit } from '@libs/utils';
+import { BranchCommit } from '@types';
 import { Row, Col } from 'antd';
+import { NavigateFunction } from 'react-router-dom';
 
 type UpperMenuProps = {
   repoName: string,
-  keys: string[],
   branch: string,
-  commitData: BranchCommit,
-  commits: BranchCommit[],
+  baseUrl: string,
+  repoMap: Map<string, BranchCommit[]>,
+  pathname:string,
+  commit: BranchCommit,
   prevReposHref: string | null,
-  setBranch:React.Dispatch<string>,
-  updateTree: (props: Omit<UpdateProps, 'id'>) => void
+  navigate:NavigateFunction
 };
 
 const UpperMenu = ({
-  keys,
   branch,
-  commitData,
-  commits,
+  commit,
+  repoMap,
   repoName,
+  pathname,
   prevReposHref,
-  setBranch,
-  updateTree
+  baseUrl,
+  navigate
 }:UpperMenuProps) => {
-  const { tree_oid } = commitData;
+  const { commit_oid } = commit;
+  const keys = Array.from(repoMap.keys());
+  const commits = repoMap.get(branch) as BranchCommit[];
+
+  const root = `${baseUrl}/${branch}/${commit.commit_oid}`;
+
+  let treePath = clipString(pathname, root);
+  treePath = pathname !== treePath ? treePath : '';
+
+  const onChange = (
+    selectedCommit:string, selectedBranch = branch
+  ) => {
+    const {
+      branch: recBranch, commit: recCommit
+    } = setBranchAndCommit(
+      repoMap, selectedBranch, selectedCommit
+    );
+    navigate(`${baseUrl}/${recBranch}/${recCommit.commit_oid}${treePath}`);
+  };
+
   return (
     <>
       <Row align="middle">
         <Col span={8}>
-          <BranchSelect keys={keys} value={branch} selectHandler={setBranch} />
+          <BranchSelect
+            keys={keys}
+            value={branch}
+            onChange={onChange}
+            commit={commit_oid}
+          />
         </Col>
 
         <Col span={8}>
           <CommitsSelect
-            value={tree_oid}
+            value={commit_oid}
             keys={commits}
-            updateTree={updateTree}
+            onChange={onChange}
           />
         </Col>
       </Row>
 
       <Row>
         <Col span={24}>
-          <RepoMeta name={repoName} commit={commitData} />
+          <RepoMeta name={repoName} commit={commit} />
         </Col>
       </Row>
       <Row>
-        <BreadCrumbMenu prevReposHref={prevReposHref} />
+        <BreadCrumbMenu
+          pathname={pathname}
+          branch={branch}
+          commit={commit_oid}
+          baseUrl={baseUrl}
+          prevReposHref={prevReposHref}
+        />
       </Row>
     </>
   );
