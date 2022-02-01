@@ -1,5 +1,6 @@
 import { EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
-import { Button, Input, Space } from 'antd';
+import { NavButton } from '@components/shared/nav-button';
+import { Input, Space } from 'antd';
 import React from 'react';
 
 type PasswordRestoreType = {
@@ -37,12 +38,10 @@ const PasswordRestore = ({ onClick, isCreate }: PasswordRestoreType) => {
         placeholder="repeat password"
         iconRender={setVisibleIcon}
       />
-      <Button
+      <NavButton
+        name={isCreate ? 'Create' : 'Restore'}
         onClick={onClickDecor}
-        style={{ borderRadius: 7, margin: '0 auto' }}
-      >
-        {isCreate ? 'Create' : 'Restore'}
-      </Button>
+      />
     </Space>
   );
 };

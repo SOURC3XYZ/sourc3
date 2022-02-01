@@ -1,11 +1,12 @@
 import { FailPage, OkPage, Preload } from '@components/shared';
+import { NavButton } from '@components/shared/nav-button';
 import { thunks } from '@libs/action-creators';
+import { WALLET } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { Seed2ValidationType } from '@types';
-import { Button, message } from 'antd';
-import React from 'react';
+import { message } from 'antd';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { PasswordRestore } from './container';
 import { SeedRestore } from './container/seed-restore';
 import styles from './restore.module.css';
@@ -29,7 +30,6 @@ const Restore = ({
   const [mode, toggleMode] = React.useState<
   'seed' | 'pass' | 'fail' | 'ok' | 'loading'>('seed');
   const { seed, errors } = seed2Validation;
-
   const endOfVerification = (base: string, repeat: string) => {
     if (base === repeat && !errors.includes(false)) {
       const setOk = (status: 'ok' | 'fail') => toggleMode(status);
@@ -39,6 +39,14 @@ const Restore = ({
       message.error("Passwords don't match");
     }
   };
+  const onClearSeed = () => {
+    const emptySeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
+    // const errors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
+    validate(emptySeed);
+  };
+  useEffect(() => {
+    onClearSeed();
+  }, []);
 
   const setNextMode = () => {
     if (!errors.includes(false)) toggleMode('pass');
@@ -79,9 +87,10 @@ const Restore = ({
     <div className={styles.wrapper}>
       {currentMode()}
       <div className={styles.btnNav}>
-        <Button style={{ borderRadius: 7, margin: '0 auto' }}>
-          <Link to="/auth/login">back</Link>
-        </Button>
+        <NavButton
+          name="Back"
+          link="/auth/login"
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-import { SeedList } from '@components/shared';
+import { NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
-import { Button } from 'antd';
+import { useEffect, useState } from 'react';
 import styles from './seed-restore.module.css';
 
 type SeedRestoreProps = {
@@ -14,6 +14,12 @@ type SeedRestoreProps = {
 const SeedRestore = ({
   seed, errors, validate, validatePasted, next
 }:SeedRestoreProps) => {
+  const [isDisabled, setIsDisabled] = useState(true);
+
+  useEffect(() => {
+    setIsDisabled(errors.some((el:boolean) => el === false));
+  }, [errors]);
+
   const validateDecor = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -31,7 +37,6 @@ const SeedRestore = ({
       validatePasted(seedArr);
     }
   };
-
   return (
     <div className={styles.wrapper}>
       <p className={styles.description}>
@@ -47,9 +52,11 @@ const SeedRestore = ({
         validatePasted={handlePaste}
       />
       <div className={styles.btnNav}>
-        <Button onClick={next} style={{ borderRadius: 7, margin: '0 auto' }}>
-          Complete verification
-        </Button>
+        <NavButton
+          isDisabled={isDisabled}
+          onClick={next}
+          name="Complete verification"
+        />
       </div>
     </div>
   );

@@ -1,11 +1,10 @@
-import { Button } from 'antd';
-import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import styles from './start.module.css';
+import { NavButton } from '@components/shared';
 import icon from '../../../../../assets/img/TurtuleZorro.png';
+import styles from './start.module.css';
 
 type StartProps = {
   mountWallet: () => void
@@ -29,12 +28,8 @@ const Start = ({
         alt="Incognito"
       />
       <div className={styles.btnNav}>
-        <Button style={{ borderRadius: 7 }}>
-          <Link to="/auth/login">Sign in</Link>
-        </Button>
-        <Button style={{ borderRadius: 7 }}>
-          <Link to="/auth/sign-up">Get Started</Link>
-        </Button>
+        <NavButton name="Sign in" link="/auth/login" />
+        <NavButton name="Get Started" link="/auth/sign-up" />
       </div>
     </div>
   );

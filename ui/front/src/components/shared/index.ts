@@ -17,3 +17,4 @@ export * from './breadcrumb';
 export * from './menu';
 export * from './header';
 export * from './seed-list';
+export * from './nav-button';
