@@ -1,22 +1,26 @@
-import {spawn, ChildProcess, execFile} from 'child_process';
+/* eslint-disable consistent-return */
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable no-restricted-syntax */
+import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
   binPath,
   cliPath,
+  getExecutableFile,
   nodePath,
   walletApiPath,
   walletPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
 
-let currentProcess:ReturnType<typeof spawn> | undefined;
+let currentProcess: ReturnType<typeof spawn> | undefined;
 
 const success = /Start server on/i;
 const error = /Please check your password/i;
 const ownerKeyReg = /Owner Viewer key/i;
 
-export function deleteFile(filePath:string) {
+export function deleteFile(filePath: string) {
   try {
     fs.unlinkSync(filePath);
     return true;
@@ -28,7 +32,7 @@ export function deleteFile(filePath:string) {
 
 export function readDirFile(
   directoryPath: string,
-  fileName:string
+  fileName: string
 ) {
   return new Promise(
     (resolve) => {
@@ -44,11 +48,11 @@ export function readDirFile(
   );
 }
 
-export function killApiServer():Promise<string> {
+export function killApiServer(): Promise<string> {
   return new Promise(
     (resolve) => {
       if (currentProcess && !currentProcess.killed) {
-        currentProcess.on('close', (code:number) => {
+        currentProcess.on('close', (code: number) => {
           console.log(`child process exited with code ${code}`);
           resolve(`child process exited with code ${code}`);
         });
@@ -76,16 +80,18 @@ export async function removeWallet() {
 }
 
 export function exportOwnerKey(
-  password:string
-):Promise<string> {
+  password: string
+): Promise<string> {
   return new Promise((resolve, reject) => {
+    const cliWalletPath = getExecutableFile(cliPath);
+    if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
     const args = [
       'export_owner_key',
       '--pass', password,
       '--wallet_path', walletPath
     ];
 
-    const onData = (data:Buffer) => {
+    const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log(`stdout: ${bufferString}`);
 
@@ -100,62 +106,45 @@ export function exportOwnerKey(
       }
     };
 
-    const onClose = (code:number | null) => {
+    const onClose = (code: number | null) => {
       console.log(`child process exited with code ${code}`);
     };
 
     runSpawnProcess({
-      path: cliPath, args, detached:true, onData, onClose
+      path: cliWalletPath, args, detached: true, onData, onClose
     });
   });
 }
 
-function isFileExecutable(filename:string) {
-  let result:boolean = true
-  try {
-    console.log(filename);
-    fs.accessSync(filename, fs.constants.X_OK);
-    console.log(filename);
-  } catch (err) {
-    result = false
-  }
-  return result
-}
-
 export function startBeamNode(
-    ownerKey:string,
-    password:string
+  ownerKey: string,
+  password: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    let beamNodePath: string | null = null
-    for (const x of fs.readdirSync(nodePath)) {
-      if (isFileExecutable(nodePath + x)) {
-        beamNodePath = nodePath + x
-        break
-      }
-    }
-    if (beamNodePath != null) {
+    const beamNodePath = getExecutableFile(nodePath);
+    if (beamNodePath) {
       console.log('Beam node is: ', beamNodePath);
-      const node = execFile(beamNodePath, ['--port=10005',
-        '--peer=eu-node01.masternet.beam.mw:8100,eu-node02.masternet.beam.mw:8100,eu-node03.masternet.beam.mw:8100,eu-node04.masternet.beam.mw:8100',
+      const node = spawn(beamNodePath, [`--port=${BEAM_NODE_PORT}`,
+        '--peer=eu-node04.masternet.beam.mw:8100',
         '--owner_key', ownerKey,
-        '--pass', password,
-        '--fast_sync=on']);
+        '--pass', password]);
+
       process.on('exit', () => {
-        node.kill("SIGTERM")
+        node.kill('SIGTERM');
       });
-      return resolve('Beam node started successfully')
-    } else {
-      return reject(new Error('No node executable'))
+      return resolve('Beam node started successfully');
     }
-  })
+    return reject(new Error('No node executable'));
+  });
 }
 
 export function restoreExistedWallet(
-  seed:string,
-  password:string
-):Promise<string> {
-  return new Promise((resolve, reject) => {
+  seed: string,
+  password: string
+): Promise<string> {
+  return new Promise((resolve, reject): void => {
+    const cliWalletPath = getExecutableFile(cliPath);
+    if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
     const args = [
       'restore',
       '--wallet_path', binPath,
@@ -163,12 +152,12 @@ export function restoreExistedWallet(
       '--seed_phrase', seed
     ];
 
-    const onData = (data:Buffer) => {
+    const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log('stdout:', bufferString);
     };
 
-    const onClose = (code:number | null) => {
+    const onClose = (code: number | null) => {
       console.log(`child process exited with code ${code}`);
       if (Number(code) > 0) {
         return reject(new Error(
@@ -179,7 +168,7 @@ export function restoreExistedWallet(
     };
 
     runSpawnProcess({
-      path: cliPath,
+      path: cliWalletPath,
       detached: true,
       args,
       onData,
@@ -192,6 +181,8 @@ export function runWalletApi(
   password: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    const walletApiExe = getExecutableFile(walletApiPath);
+    if (!walletApiExe) return reject(new Error('Wallet api not found'));
     const args = [
       '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
       '-p', `${WALLET_API_PORT}`,
@@ -200,7 +191,7 @@ export function runWalletApi(
       `--wallet_path=${walletPath}`
     ];
 
-    const onData = (data:Buffer) => {
+    const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log(`stdout: ${bufferString}`);
       if (bufferString.match(success)) {
@@ -213,7 +204,7 @@ export function runWalletApi(
     };
 
     runSpawnProcess({
-      path: walletApiPath,
+      path: walletApiExe,
       args,
       onData,
       setCurrentProcess

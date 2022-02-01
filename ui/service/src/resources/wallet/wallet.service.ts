@@ -19,9 +19,9 @@ export const removeExistedWallet = async () => {
 };
 
 export const restoreWallet = async (
-  seed:string,
+  seed: string,
   password: string
-):Promise<ProcessStatus> => {
+): Promise<ProcessStatus> => {
   try {
     await removeWallet();
     const isRestored = await restoreExistedWallet(seed, password);
@@ -32,7 +32,7 @@ export const restoreWallet = async (
   }
 };
 
-export const enterUser = async (password:string):Promise<ProcessStatus> => {
+export const enterUser = async (password: string): Promise<ProcessStatus> => {
   try {
     const ownerKey = await exportOwnerKey(password);
     console.log('owner key: ', ownerKey);

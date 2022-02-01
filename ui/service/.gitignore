@@ -8,3 +8,6 @@ crash-data.log
 logs
 beam-res
 dist
+node-utxo-image.bin
+node.db-journal
+node.db
