@@ -1,11 +1,12 @@
 import { loadingData } from '@libs/utils';
-import { Button, Input } from 'antd';
+import { Input } from 'antd';
 import Text from 'antd/lib/typography/Text';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // import icon from '../../../../../assets/img/TurtuleZorro.png';
 import { Preload } from '@components/shared';
 import { useAsyncError } from '@libs/hooks';
+import { NavButton } from '@components/shared/nav-button';
 import styles from './login.module.css';
 
 type LoginProps = {
@@ -57,12 +58,15 @@ const Login = ({ startWalletApi }: LoginProps) => {
               I forgot my password
             </Link>
             <div className={styles.btnNav}>
-              <Button style={{ borderRadius: 7 }}>
-                <Link to="/auth">Back</Link>
-              </Button>
-              <Button onClick={onSubmit} style={{ borderRadius: 7 }}>
-                <Link to="/auth/login">Sign in</Link>
-              </Button>
+              <NavButton
+                name="Back"
+                link="/auth"
+              />
+              <NavButton
+                name="Sign in"
+                link="/auth/login"
+                onClick={onSubmit}
+              />
             </div>
           </>
         )}

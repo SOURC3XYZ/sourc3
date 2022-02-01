@@ -1,20 +1,22 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-restricted-syntax */
-import { spawn, ChildProcess } from 'child_process';
+import { execFile, ChildProcess } from 'child_process';
 import fs from 'fs';
+import path from 'path';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
   binPath,
   cliPath,
   getExecutableFile,
+  limitStr,
   nodePath,
   walletApiPath,
   walletPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
 
-let currentProcess: ReturnType<typeof spawn> | undefined;
+let currentProcess: ChildProcess | undefined;
 
 const success = /Start server on/i;
 const error = /Please check your password/i;
@@ -119,20 +121,21 @@ export function exportOwnerKey(
 export function startBeamNode(
   ownerKey: string,
   password: string
-): Promise<string> {
+): Promise<ChildProcess> {
   return new Promise((resolve, reject) => {
     const beamNodePath = getExecutableFile(nodePath);
     if (beamNodePath) {
       console.log('Beam node is: ', beamNodePath);
-      const node = spawn(beamNodePath, [`--port=${BEAM_NODE_PORT}`,
-        '--peer=eu-node04.masternet.beam.mw:8100',
+      const node = execFile(beamNodePath, [`--port=${BEAM_NODE_PORT}`,
+        '--peer=eu-node01.masternet.beam.mw:8100,eu-node02.masternet.beam.mw:8100,eu-node03.masternet.beam.mw:8100,eu-node04.masternet.beam.mw:8100',
         '--owner_key', ownerKey,
+        '--storage', path.join(nodePath, 'node.db'),
         '--pass', password]);
 
-      process.on('exit', () => {
-        node.kill('SIGTERM');
-      });
-      return resolve('Beam node started successfully');
+      // process.on('exit', () => {
+      //   node.kill('SIGTERM');
+      // });
+      return resolve(node);
     }
     return reject(new Error('No node executable'));
   });
@@ -178,7 +181,8 @@ export function restoreExistedWallet(
 }
 
 export function runWalletApi(
-  password: string
+  password: string,
+  nodeProcess: ChildProcess
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const walletApiExe = getExecutableFile(walletApiPath);
@@ -192,7 +196,7 @@ export function runWalletApi(
     ];
 
     const onData = (data: Buffer) => {
-      const bufferString = data.toString('utf-8');
+      const bufferString = limitStr(data.toString('utf-8'), 300);
       console.log(`stdout: ${bufferString}`);
       if (bufferString.match(success)) {
         resolve('wallet api started successfully');
@@ -203,10 +207,15 @@ export function runWalletApi(
       }
     };
 
+    const onClose = () => {
+      nodeProcess.kill('SIGKILL');
+    };
+
     runSpawnProcess({
       path: walletApiExe,
       args,
       onData,
+      onClose,
       setCurrentProcess
     });
   });

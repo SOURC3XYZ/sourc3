@@ -1,6 +1,7 @@
 import { createLogger, format, transports } from 'winston';
 import { Request, Response, NextFunction } from 'express';
 import { finished } from 'stream';
+import { limitStr } from '../../utils';
 
 const logger = createLogger({
   level: 'silly',
@@ -36,7 +37,7 @@ export const logerRequests = (
     const { statusCode } = res;
     logger.info(
       // eslint-disable-next-line max-len
-      `\n METHOD: ${method}\n URL: ${url} \n STATUS: ${statusCode} \n QUERY: ${query} \n BODY: ${body} \n TIME: ${ms}`
+      `\n METHOD: ${method}\n URL: ${url} \n STATUS: ${statusCode} \n QUERY: ${query} \n BODY: ${limitStr(body, 300)} \n TIME: ${ms}`
     );
   });
 };
