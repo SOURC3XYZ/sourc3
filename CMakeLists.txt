@@ -2,6 +2,53 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 3.17)
+
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 0 )
+set(VERSION_REVISION 0)
+set(GIT_COMMIT_HASH "unknown")
+
+find_package(Git)
+if(Git_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} status
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        ERROR_VARIABLE RESULT_STRING
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    string(LENGTH "${RESULT_STRING}" LENGTH_RESULT_STRING)
+
+    if(${LENGTH_RESULT_STRING} EQUAL 0)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} log -1 --format=%H
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_HASH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            OUTPUT_VARIABLE VERSION_REVISION
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        if(NOT DEFINED BRANCH_NAME)
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE BRANCH_NAME
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+        endif()
+
+    endif()
+else()
+    set(BRANCH_NAME "")
+endif()
+
+message("BRANCH_NAME: ${BRANCH_NAME}")
+
 if(CMAKE_SYSTEM_NAME MATCHES "WASI")
     if (NOT BEAM_SHADER_SDK)
         set(BEAM_SHADER_SDK $ENV{BEAM_SHADER_SDK})
@@ -30,7 +77,7 @@ if(NOT CMAKE_SYSTEM_NAME MATCHES "WASI")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/libgit2/include)
 endif()
 
-project ("pit")
+project ("pit" VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include sub-projects.
@@ -64,9 +111,12 @@ else()
             add_definitions( -DBOOST_ALL_DYN_LINK )
         endif()
     endif()
+    configure_file("${PROJECT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/version.h")
+    file(WRITE version.gen ${PROJECT_VERSION})
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
     find_package(Boost REQUIRED COMPONENTS program_options date_time filesystem container)
     add_subdirectory(3rdparty/libgit2)
     add_subdirectory (remote_helper)
-    
+
 endif()
 

@@ -21,6 +21,7 @@
 #include <string_view>
 #include <string>
 #include <vector>
+#include "version.h"
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
 namespace http = beast::http;       // from <boost/beast/http.hpp>
@@ -811,6 +812,7 @@ int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args)
 
 int main(int argc, char* argv[])
 {
+    cerr << "PIT v." << PROJECT_VERSION.data() << endl;
     if (argc != 3)
     {
         cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
