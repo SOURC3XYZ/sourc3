@@ -259,7 +259,7 @@ jobs:
 ###############################################################################
     - uses: actions/upload-artifact@v2
       with:
-        name: pit${{env.BEAM_TARGET_SUFFIX}}-${{matrix.PLATFORM_NAME}}-${{env.PACKAGE_VERSION}}
+        name: pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
         path: artifacts/*
         if-no-files-found: error
 
@@ -290,6 +290,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:
-        name: pit${{env.BEAM_TARGET_SUFFIX}}-pdb-${{env.PACKAGE_VERSION}}
+        name: pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-pdb
         path: pdb
         if-no-files-found: error
