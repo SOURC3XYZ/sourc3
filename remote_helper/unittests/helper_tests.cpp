@@ -66,7 +66,7 @@ namespace
         {
             git_strarray paths =
             {
-                &wildcard,
+                &(char*)wildcard,
                 1
             };
 
