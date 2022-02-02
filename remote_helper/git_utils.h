@@ -2,6 +2,7 @@
 
 #include <git2.h>
 #include <string_view>
+#include <string>
 
 //struct git_repository;
 //struct git_odb;
