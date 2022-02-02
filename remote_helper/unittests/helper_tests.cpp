@@ -64,9 +64,10 @@ namespace
 
         auto f = [&](char wildcard[], const char* comment)
         {
+            char* p = (char*)wildcard;
             git_strarray paths =
             {
-                &(char*)wildcard,
+                &p,
                 1
             };
 
