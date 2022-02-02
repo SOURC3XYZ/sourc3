@@ -90,7 +90,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(TestObjectCollector)
 {
-    std::string_view root = "./testrepo";
+    std::string_view root = "./temp/testrepo";
     pit::GitInit init;
     GenerateTestRepo(root);
     pit::ObjectCollector collector(root);
