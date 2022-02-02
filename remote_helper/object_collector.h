@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <vector>
 #include <set>
+#include <algorithm>
 
 //struct git_odb_object;
 
