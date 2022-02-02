@@ -241,6 +241,20 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
     collector.Serialize([&](const auto& buf)
         {
+            // log
+            {
+                const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
+                const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
+                for (uint32_t i = 0; i < p->objects_number; ++i)
+                {
+                    size_t s = cur->data_size;
+                    std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
+                    ++cur;
+                    cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+                }
+                std::cerr << std::endl;
+            }
+
             auto strData = ToHex(buf.data(), buf.size());
             std::stringstream ss;
             ss << "role=user,action=push_objects,data="

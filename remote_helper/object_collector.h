@@ -112,19 +112,6 @@ namespace pit
                     serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
                 }
 
-                // log
-                {
-                    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
-                    for (uint32_t i = 0; i < p->objects_number; ++i)
-                    {
-                        size_t s = cur->data_size;
-                        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
-                        ++cur;
-                        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
-                    }
-                    std::cerr << std::endl;
-                }
-
                 func(buf);
             }
         }
