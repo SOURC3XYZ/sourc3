@@ -11,7 +11,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": " -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF",
+      "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": ""
     },
