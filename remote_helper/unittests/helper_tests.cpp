@@ -51,12 +51,19 @@ namespace
     using Tree = Holder<git_tree, git_tree_free>;
     using Commit = Holder<git_commit, git_commit_free>;
     using Signature = Holder<git_signature, git_signature_free>;
+    using Config = Holder<git_config, git_config_free>;
 
     void GenerateTestRepo(std::string_view root)
     {
         Repository repo;
         Commit commit;
         BOOST_TEST_CHECK(git_repository_init(repo.Addr(), root.data(), false) >= 0);
+        Config config;
+        BOOST_TEST_CHECK(git_repository_config(config.Addr(), *repo) >= 0);
+
+        BOOST_TEST_CHECK(git_config_set_string(*config, "user.name", "test user") >= 0);
+        BOOST_TEST_CHECK(git_config_set_string(*config, "user.email", "test@pit.io") >= 0);
+
         Signature sig;
         BOOST_TEST_CHECK(git_signature_default(sig.Addr(), *repo) >= 0);
         Index index;
