@@ -1,6 +1,7 @@
 #pragma once
 
 #include "git_utils.h"
+#include "utils.h"
 #include <vector>
 #include <set>
 
@@ -8,6 +9,23 @@
 
 namespace pit
 {
+    // structs for serialization
+#pragma pack(push, 1)
+    struct GitObject
+    {
+        int8_t type;
+        git_oid hash;
+        uint32_t data_size;
+        // followed by data
+    };
+
+    struct ObjectsInfo
+    {
+        uint32_t objects_number;
+        // followed by data
+    };
+#pragma pack(pop)
+
     struct Object
     {
         git_oid         oid;
@@ -47,6 +65,69 @@ namespace pit
     public:
         using GitRepoAccessor::GitRepoAccessor;
         void Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden);
+        template<typename Func>
+        void Serialize(Func func) 
+        {
+            // TODO: replace code below with calling serializer
+            constexpr size_t SIZE_THRESHOLD = 500000;
+            while (true)
+            {
+                uint32_t count = 0;
+                size_t size = 0;
+                std::vector<size_t> indecies;
+                for (size_t i = 0; i < m_objects.size(); ++i)
+                {
+                    auto& obj = m_objects[i];
+                    if (obj.selected)
+                        continue;
+
+                    auto s = sizeof(GitObject) + obj.GetSize();
+                    if (size + s <= SIZE_THRESHOLD)
+                    {
+                        size += s;
+                        ++count;
+                        indecies.emplace_back(i);
+                        obj.selected = true;
+                    }
+                    if (size == SIZE_THRESHOLD)
+                        break;
+                }
+                if (count == 0)
+                    break;
+
+                // serializing
+                ByteBuffer buf;
+                buf.resize(size + sizeof(ObjectsInfo)); // objects count size
+                auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
+                p->objects_number = count;
+                auto* serObj = reinterpret_cast<GitObject*>(p + 1);
+                for (size_t i = 0; i < count; ++i)
+                {
+                    const auto& obj = m_objects[indecies[i]];
+                    serObj->data_size = static_cast<uint32_t>(obj.GetSize());
+                    serObj->type = static_cast<int8_t>(obj.type);
+                    git_oid_cpy(&serObj->hash, &obj.oid);
+                    auto* data = reinterpret_cast<uint8_t*>(serObj + 1);
+                    std::copy_n(obj.GetData(), obj.GetSize(), data);
+                    serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
+                }
+
+                // log
+                {
+                    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
+                    for (uint32_t i = 0; i < p->objects_number; ++i)
+                    {
+                        size_t s = cur->data_size;
+                        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
+                        ++cur;
+                        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+                    }
+                    std::cerr << std::endl;
+                }
+
+                func(buf);
+            }
+        }
     private:
         void TraverseTree(const git_tree* tree);
         std::string Join(const std::vector<std::string>& path, const std::string& name);

@@ -54,7 +54,6 @@ namespace
 
     void GenerateTestRepo(std::string_view root)
     {
-        pit::GitInit init;
         Repository repo;
         Commit commit;
         BOOST_TEST_CHECK(git_repository_init(repo.Addr(), root.data(), false) >= 0);
@@ -91,8 +90,25 @@ namespace
 BOOST_AUTO_TEST_CASE(TestObjectCollector)
 {
     std::string_view root = "./testrepo";
+    pit::GitInit init;
     GenerateTestRepo(root);
     pit::ObjectCollector collector(root);
 
     collector.Traverse({ {"refs/heads/master", "refs/heads/master"} }, {});
+
+    BOOST_TEST_CHECK(collector.m_objects.size() == 27);
+
+    collector.Serialize([&](const auto& buf)
+        {
+            size_t size = sizeof(pit::ObjectsInfo);
+            const auto* p = reinterpret_cast<const pit::ObjectsInfo*>(buf.data());
+            BOOST_TEST_CHECK(p->objects_number == 27);
+            const auto* o = reinterpret_cast<const pit::GitObject*>(p + 1);
+            for (uint32_t i = 0; i < p->objects_number; ++i)
+            {
+                size += sizeof(pit::GitObject) + o->data_size;
+                o = reinterpret_cast<const pit::GitObject*>(reinterpret_cast<const uint8_t*>(o + 1) + o->data_size);
+            }
+            BOOST_TEST_CHECK(size == buf.size());
+        });
 }

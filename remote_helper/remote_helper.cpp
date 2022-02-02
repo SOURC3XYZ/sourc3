@@ -32,23 +32,6 @@ namespace
         boost::algorithm::unhex(s.begin(), s.end(), std::back_inserter(res));
         return res;
     }
-
-#pragma pack(push, 1)
-    struct GitObject
-    {
-        int8_t type;
-        git_oid hash;
-        uint32_t data_size;
-        // followed by data
-    };
-
-    struct ObjectsInfo
-    {
-        uint32_t objects_number;
-        //GitObject objects[];
-    };
-#pragma pack(pop)
-
 }
 
 typedef int (*Action)(SimpleWalletClient& wc, const vector<string_view>& args);
@@ -256,72 +239,19 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
     }
 
-    constexpr size_t SIZE_THRESHOLD = 500000;
-    while (true)
-    {
-        uint32_t count = 0;
-        size_t size = 0;
-        std::vector<size_t> indecies;
-        for (size_t i = 0; i < collector.m_objects.size(); ++i)
+    collector.Serialize([&](const auto& buf)
         {
-            auto& obj = collector.m_objects[i];
-            if (obj.selected)
-                continue;
-
-            auto s = sizeof(GitObject) + obj.GetSize();
-            if (size + s <= SIZE_THRESHOLD)
+            auto strData = ToHex(buf.data(), buf.size());
+            std::stringstream ss;
+            ss << "role=user,action=push_objects,data="
+                << strData << ',';
+            for (const auto& r : collector.m_refs)
             {
-                size += s;
-                ++count;
-                indecies.push_back(i);
-                obj.selected = true;
+                ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
             }
-            if (size == SIZE_THRESHOLD)
-                break;
-        }
-        if (count == 0)
-            break;
 
-        // serializing
-        ByteBuffer buf;
-        buf.resize(size + sizeof(ObjectsInfo)); // objects count size
-        auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
-        p->objects_number = count;
-        auto* serObj = reinterpret_cast<GitObject*>(p + 1);
-        for (size_t i = 0; i < count; ++i)
-        {
-            const auto& obj = collector.m_objects[indecies[i]];
-            serObj->data_size = static_cast<uint32_t>(obj.GetSize());
-            serObj->type = static_cast<int8_t>(obj.type);
-            git_oid_cpy(&serObj->hash, &obj.oid);
-            auto* data = reinterpret_cast<uint8_t*>(serObj + 1);
-            std::copy_n(obj.GetData(), obj.GetSize(), data);
-            serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
-        }
-
-        {
-            const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
-            for (uint32_t i = 0; i < p->objects_number; ++i)
-            {
-                size_t s = cur->data_size;
-                cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
-                ++cur;
-                cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
-            }
-            cerr << endl;
-        }
-
-        auto strData = ToHex(buf.data(), buf.size());
-        std::stringstream ss;
-        ss << "role=user,action=push_objects,data="
-           << strData << ',';
-        for (const auto& r : collector.m_refs)
-        {
-            ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
-        }
-
-        wc.InvokeWallet(ss.str());
-    }
+            wc.InvokeWallet(ss.str());
+        });
 
     cout << endl;
     return 0;
