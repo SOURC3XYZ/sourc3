@@ -11,8 +11,8 @@ function createWindow () {
   })
 
   if (service === null) {
-    console.log(`Service is null, start from ${__dirname}/service/bundle/bundle.js`);
-    service = spawn('ts-node', [`${__dirname}/service/bundle/bundle.js`]);
+    console.log(`Service is null, start from ${__dirname}/../service/bundle/bundle.js`);
+    service = spawn('node', [`${__dirname}/../service/bundle/bundle.js`]);
     service.stdout.on('data', (data) => {
       console.log(`Service: ${data}`);
     })

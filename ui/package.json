@@ -2,14 +2,13 @@
   "name": "pit-client-masternet",
   "version": "1.0.0",
   "description": "PIT client for 'masternet'",
-  "files": [
-    "wasm-client*"
-  ],
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "app:dist": "electron-builder",
+    "app:dir": "electron-builder --dir"
   },
   "keywords": [
     "BEAM",
@@ -19,16 +18,6 @@
   ],
   "author": "Beam Privacy",
   "license": "Apache-2.0",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^14.2.0",
-    "electron-squirrel-startup": "^1.0.0",
-    "express": "^4.17.2",
-    "request": "^2.88.2",
-    "rpmbuild": "^0.0.23",
-    "ts-node": "^10.4.0",
-    "winston": "^3.4.0"
-  },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.63",
     "@electron-forge/maker-deb": "^6.0.0-beta.63",
@@ -41,40 +30,20 @@
     "@types/express": "^4.17.13",
     "@types/request": "^2.48.8",
     "@types/winston": "^2.4.4",
-    "electron": "16.0.7"
+    "electron": "16.0.7",
+    "electron-builder": "^22.14.5"
   },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "ignore": [
-          "logs",
-          "out",
-          "service/node_modules",
-          "service/logs"
-        ]
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "pit_client_masternet"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+  "build": {
+    "files": [
+      "front/dist/**",
+      "main.js",
+      "!**/node_modules/**/*",
+      "!**/*.json"
+    ],
+    "extraResources": [
+      "service/bundle/**",
+      "beam-res/**",
+      ".env"
+    ]
   }
 }
