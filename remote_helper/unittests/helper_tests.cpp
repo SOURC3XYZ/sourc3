@@ -62,7 +62,7 @@ namespace
         Index index;
         BOOST_TEST_CHECK(git_repository_index(index.Addr(), *repo) >= 0);
 
-        auto f = [&](char wildcard[], const char* comment)
+        auto f = [&](const char* wildcard, const char* comment)
         {
             char* p = (char*)wildcard;
             git_strarray paths =
