@@ -62,7 +62,7 @@ namespace
         Index index;
         BOOST_TEST_CHECK(git_repository_index(index.Addr(), *repo) >= 0);
 
-        auto f = [&](char* wildcard, const char* comment)
+        auto f = [&](char wildcard[], const char* comment)
         {
             git_strarray paths =
             {
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector)
         {
             size_t size = sizeof(pit::ObjectsInfo);
             const auto* p = reinterpret_cast<const pit::ObjectsInfo*>(buf.data());
-            BOOST_TEST_CHECK(p->objects_number == 27);
+            BOOST_TEST_CHECK(p->objects_number == uint32_t(27));
             const auto* o = reinterpret_cast<const pit::GitObject*>(p + 1);
             for (uint32_t i = 0; i < p->objects_number; ++i)
             {

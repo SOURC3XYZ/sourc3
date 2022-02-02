@@ -1,4 +1,6 @@
-﻿#include "object_collector.h"
+﻿
+#define _CRT_SECURE_NO_WARNINGS // getenv
+#include "object_collector.h"
 #include "utils.h"
 #include "wallet_client.h"
 
@@ -65,7 +67,7 @@ std::vector<Ref> RequestRefs(SimpleWalletClient& wc)
 
 int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
 
-int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
+int DoList(SimpleWalletClient& wc, [[maybe_unused]] const vector<string_view>& args)
 {
     auto refs = RequestRefs(wc);
 
@@ -81,7 +83,8 @@ int DoList(SimpleWalletClient& wc, const vector<string_view>& args)
     return 0;
 }
 
-int DoOption(SimpleWalletClient& wc, const vector<string_view>& args)
+int DoOption([[maybe_unused]] SimpleWalletClient& wc
+           , [[maybe_unused]] const vector<string_view>& args)
 {
     cerr << "Option: " << args[1] << "=" << args[2] << endl;
     cout << "ok" << endl;
@@ -280,7 +283,8 @@ Command g_Commands[] =
     {"push",			DoPush}
 };
 
-int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args)
+int DoCapabilities([[maybe_unused]] SimpleWalletClient& wc
+                 , [[maybe_unused]] const vector<string_view>& args)
 {
     for (auto ib = begin(g_Commands) + 1, ie = end(g_Commands); ib != ie; ++ib)
     {

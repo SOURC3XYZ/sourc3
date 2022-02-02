@@ -159,7 +159,7 @@ namespace pit
     std::string ObjectCollector::Join(const std::vector<std::string>& path, const std::string& name)
     {
         std::string res;
-        for (const auto& p : m_path)
+        for (const auto& p : path)
         {
             res.append(p);
             res.append("/");
