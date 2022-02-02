@@ -19,7 +19,8 @@ const SeedConfirm = ({
   const [errors, setErrors] = useState(emptyErrors);
 
   const checkTrue = (errs:boolean[]) => {
-    if (errs.filter((el) => el === true)
+    const checked = errs;
+    if (checked.filter((el) => el === true)
       .length === WALLET.SEED_CONFIRM_PHRASE_COUNT) {
       setIsDisabled(false);
     } else {
@@ -29,7 +30,7 @@ const SeedConfirm = ({
 
   useEffect(() => {
     checkTrue(errors);
-  }, [errors]);
+  }, [seed]);
 
   const validateSeed = (
     seedOrig:string[],
@@ -49,6 +50,7 @@ const SeedConfirm = ({
       return errorsCheck;
     });
     setErrors(errorsCheck);
+    return errorsCheck;
   };
   const addSeed = (seedUpdate:string[]) => {
     setSeed(seedUpdate);

@@ -36,8 +36,8 @@ export const enterUser = async (password: string): Promise<ProcessStatus> => {
   try {
     const ownerKey = await exportOwnerKey(password);
     console.log('owner key: ', ownerKey);
-    await startBeamNode(ownerKey, password);
-    const runWallet = await runWalletApi(password);
+    const nodeProcess = await startBeamNode(ownerKey, password);
+    const runWallet = await runWalletApi(password, nodeProcess);
     return { isOk: true, message: runWallet };
   } catch (error) {
     const { message } = error as Error;
