@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "jest",
-    "build": "SET NODE_ENV=production&&webpack",
+    "build": "webpack",
     "start": "webpack serve --mode development",
     "electron": "electron ."
   },
