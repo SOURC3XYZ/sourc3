@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "webpack",
+    "prebuild": "export NODE_ENV=production; webpack",
     "start": "webpack serve --mode development",
     "electron": "electron ."
   },
@@ -83,6 +84,7 @@
     "@ant-design/icons": "^4.7.0",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "antd": "^4.17.3",
+    "axios": "^0.25.0",
     "beam-wasm-client-masternet": "^6.3.12456",
     "qwebchannel": "^5.9.0",
     "react": "^17.0.2",

@@ -1,6 +1,7 @@
 export type QWebChannelTransport = {
   webChannelTransport: WebSocket
 };
+
 export type ApiResultWeb = ((callback: (arg: string) => void) => void);
 
 export type ApiResult = {

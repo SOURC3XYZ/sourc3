@@ -4,13 +4,15 @@ import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
 import * as T from '@types';
-import { RepoListType } from '@types';
+import { ContractResponse, RepoListType } from '@types';
 import { batch } from 'react-redux';
+import axios from 'axios';
 import { AC } from './action-creators';
 import batcher from './batcher';
 import { repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
+import { errorHandler, outputParser } from './error-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
   CONTRACT.CID, `${CONTRACT.HOST}/beam`
@@ -24,6 +26,8 @@ const messageBeam = {
   apivermin: '',
   appname: 'BEAM NFT-GALLERY'
 };
+
+const headers = { 'Content-Type': 'application/json' };
 
 export const thunks = {
   mountWallet: () => async (dispatch: AppThunkDispatch) => {
@@ -43,14 +47,12 @@ export const thunks = {
       password: pass
     };
     const url = `${CONTRACT.HOST}/wallet/restore`;
-    const data = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (data.status === 201) {
+    try {
+      await axios.post(url, body, { headers });
       callback('ok');
-    } else callback('fail');
+    } catch (error) {
+      callback('fail');
+    }
   },
 
   startWalletApi: (
@@ -58,18 +60,14 @@ export const thunks = {
     resolve: PromiseArg<string>,
     reject: PromiseArg<string>
   ) => async () => {
-    const body = {
-      password
-    };
     const url = `${CONTRACT.HOST}/wallet/start`;
-    const data = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (data.status === 201) {
+    try {
+      const data = await axios.post(url, { password }, { headers });
       resolve(data.statusText);
-    } else reject(data.statusText);
+    } catch (error) {
+      const { message } = error as Error;
+      reject(message);
+    }
   },
 
   validateSeed: (seed: string[]) => async (
@@ -79,34 +77,47 @@ export const thunks = {
     dispatch(AC.setSeed2Validation({ seed, errors }));
   },
 
-  killBeamApi: (resolve?: PromiseArg<string>) => async () => {
+  killBeamApi: (resolve?: PromiseArg<string>) => async (
+    dispatch:AppThunkDispatch
+  ) => {
     const url = `${CONTRACT.HOST}/wallet/kill`;
-    const data = await fetch(url, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    if (data.ok && resolve) resolve();
+    try {
+      await axios.delete(url);
+      if (resolve) resolve();
+      dispatch(AC.setIsConnected(false));
+    } catch (error) {
+      const { message } = error as Error;
+      errorHandler({ message }, dispatch);
+    }
   },
 
   connectBeamApi:
-    (message = messageBeam) => async (dispatch: AppThunkDispatch) => {
-      await beam.loadAPI(message);
-      await beam.initContract(wasm);
-      const res = (await beam.callApi(RC.zeroMethodCall())) as T.BeamApiRes;
-      if (res && !res.error) {
-        dispatch(AC.setIsConnected(true));
+    (someMessage = messageBeam) => async (dispatch: AppThunkDispatch) => {
+      try {
+        await beam.loadAPI(someMessage);
+        await beam.initContract(wasm);
+        const res = await beam.callApi(RC.zeroMethodCall());
+        const output = outputParser<
+        ContractResponse>(<T.BeamApiRes>res, dispatch);
+        if (output) dispatch(AC.setIsConnected(true));
+      } catch (error) {
+        const { message } = error as Error;
+        errorHandler({ message }, dispatch);
       }
     },
 
   getAllRepos: (
     type:RepoListType, resolve?: () => void
   ) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.getAllRepos(type))) as T.BeamApiRes;
-    if (res.result?.output) {
-      const output = JSON.parse(res.result.output) as T.ReposResponse;
-      dispatch(AC.setRepos(output.repos));
+    try {
+      const res = await beam.callApi(RC.getAllRepos(type));
+      const output = outputParser<T.ReposResponse>(<T.BeamApiRes>res, dispatch);
+      if (output) dispatch(AC.setRepos(output.repos));
+      if (resolve) resolve();
+    } catch (error) {
+      const { message } = error as Error;
+      errorHandler({ message }, dispatch);
     }
-    if (resolve) resolve();
   },
 
   checkTxStatus:
@@ -125,7 +136,7 @@ export const thunks = {
 
   getTxStatus:
     (txId: string, callback: T.SetPropertiesType<T.TxResponse>) => async () => {
-      const res = (await beam.callApi(RC.getTxStatus(txId))) as T.BeamApiRes;
+      const res = await beam.callApi(RC.getTxStatus(txId)) as T.BeamApiRes;
       if (res.result) {
         callback({
           message: res.result.comment,
@@ -135,10 +146,14 @@ export const thunks = {
     },
 
   repoGetMeta: (id: number) => async (dispatch: AppThunkDispatch) => {
-    const res = (await beam.callApi(RC.repoGetMeta(id))) as T.BeamApiRes;
-    if (res.result?.output) {
-      const output = JSON.parse(res.result.output) as T.RepoMetaResponse;
-      dispatch(AC.setRepoMeta(output.objects));
+    try {
+      const res = await beam.callApi(RC.repoGetMeta(id)) as T.BeamApiRes;
+      const output = outputParser<
+      T.RepoMetaResponse>(<T.BeamApiRes>res, dispatch);
+      if (output) dispatch(AC.setRepoMeta(output.objects));
+    } catch (error) {
+      const { message } = error as Error;
+      errorHandler({ message }, dispatch);
     }
   },
 

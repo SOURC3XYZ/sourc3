@@ -38,6 +38,12 @@ export type TxItem = {
   notified: boolean
 };
 
+export type ErrorObj = {
+  code?: number,
+  status?: string,
+  message: string
+};
+
 export type SetPropertiesType<T> = React.Dispatch<
 React.SetStateAction<T>
 >;
