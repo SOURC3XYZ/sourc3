@@ -97,7 +97,7 @@ namespace pit
             // commits
             git_object* obj = nullptr;
             git_object_lookup(&obj, m_repo, &oid, GIT_OBJECT_ANY);
-            std::clog << "Obj: " << to_string(oid) << std::endl;
+            std::clog << "Commit: " << to_string(oid) << std::endl;
             auto p = m_set.emplace(oid);
             if (!p.second)
             {
@@ -129,7 +129,7 @@ namespace pit
         {
             auto* entry = git_tree_entry_byindex(tree, i);
             auto* entry_oid = git_tree_entry_id(entry);
-            std::clog << "Obj: " << to_string(*entry_oid) << std::endl;
+            //std::clog << "Obj: " << to_string(*entry_oid) << std::endl;
             auto p = m_set.emplace(*entry_oid);
             if (!p.second)
                 continue; // already visited
@@ -143,6 +143,7 @@ namespace pit
                 obj.name = git_tree_entry_name(entry);
                 obj.fullPath = Join(m_path, obj.name);
                 m_path.push_back(obj.name);
+                std::clog << "Tree: " << to_string(obj.oid) << '\n' << obj.fullPath << '\n' << std::endl;
                 git_tree* subTree = nullptr;
                 git_tree_lookup(&subTree, m_repo, entry_oid);
                 TraverseTree(subTree);
@@ -153,6 +154,7 @@ namespace pit
                 auto& obj = CollectObject(*entry_oid);
                 obj.name = git_tree_entry_name(entry);
                 obj.fullPath = Join(m_path, obj.name);
+                std::clog << "Object: " << to_string(obj.oid) << '\n' << obj.fullPath << '\n' << std::endl;
             }   break;
             default:
                 break;
@@ -181,7 +183,7 @@ namespace pit
         auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
         git_oid r;
         git_odb_hash(&r, git_odb_object_data(dbobj), objSize, git_odb_object_type(dbobj));
-
+        
         m_maxSize = std::max(m_maxSize, objSize);
         m_totalSize += objSize;
 
