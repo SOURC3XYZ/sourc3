@@ -2,37 +2,33 @@
 
 #include <stdexcept>
 
-namespace pit
+namespace pit::git
 {
-    GitInit::GitInit() noexcept
+    Init::Init() noexcept
     {
         git_libgit2_init();
     }
-    
-    GitInit::~GitInit() noexcept
+
+    Init::~Init() noexcept
     {
         git_libgit2_shutdown();
     }
 
     /////////////////////////////////////////////////////
-    GitRepoAccessor::GitRepoAccessor(std::string_view dir)
+    RepoAccessor::RepoAccessor(std::string_view dir)
     {
-        if (git_repository_open(&m_repo, dir.data()) < 0)
+        if (git_repository_open(m_repo.Addr(), dir.data()) < 0)
         {
             throw std::runtime_error("Failed to open repository!");
         }
-        if (git_repository_odb(&m_odb, m_repo) < 0)
+        if (git_repository_odb(m_odb.Addr(), *m_repo) < 0)
         {
             throw std::runtime_error("Failed to open repository database!");
         }
     }
-
-    GitRepoAccessor::~GitRepoAccessor()
-    {
-        git_odb_free(m_odb);
-        git_repository_free(m_repo);
-    }
-
+}
+namespace pit
+{
     std::string to_string(const git_oid& oid)
     {
         std::string r;

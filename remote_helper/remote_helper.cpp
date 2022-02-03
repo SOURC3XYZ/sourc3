@@ -103,7 +103,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             objectHashes.push_back(oid);
     };
 
-    GitRepoAccessor accessor(wc.GetRepoDir());
+    git::RepoAccessor accessor(wc.GetRepoDir());
     std::vector<GitObject> objects;
     {
         // hack Collect objects metainfo
@@ -117,7 +117,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             o.type = obj["object_type"].to_number<int8_t>();
             std::string s = obj["object_hash"].as_string().c_str();
             git_oid_fromstr(&o.hash, s.c_str());
-            if (git_odb_exists(accessor.m_odb, &o.hash))
+            if (git_odb_exists(*accessor.m_odb, &o.hash))
                 receivedObjects.insert(s);
         }
     }
@@ -146,36 +146,32 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         auto type = git_object_t(it->type);
         git_oid r;
         git_odb_hash(&r, buf.data(), buf.size(), type);
-        git_odb_write(&res_oid, accessor.m_odb, buf.data(), buf.size(), type);
+        git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type);
         if (type == GIT_OBJECT_TREE)
         {
-            git_tree* tree = nullptr;
-            git_tree_lookup(&tree, accessor.m_repo, &oid);
+            git::Tree tree;
+            git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
 
-            auto count = git_tree_entrycount(tree);
+            auto count = git_tree_entrycount(*tree);
             for (size_t i = 0; i < count; ++i)
             {
-                auto* entry = git_tree_entry_byindex(tree, i);
+                auto* entry = git_tree_entry_byindex(*tree, i);
                 auto s = to_string(*git_tree_entry_id(entry));
                 enuqueObject(s);
             }
-
-            git_tree_free(tree);
         }
         else if (type == GIT_OBJECT_COMMIT)
         {
-            git_commit* commit = nullptr;
-            git_commit_lookup(&commit, accessor.m_repo, &oid);
-            auto count = git_commit_parentcount(commit);
+            git::Commit commit;
+            git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+            auto count = git_commit_parentcount(*commit);
             for (unsigned i = 0; i < count; ++i)
             {
-                auto* id = git_commit_parent_id(commit, i);
+                auto* id = git_commit_parent_id(*commit, i);
                 auto s = to_string(*id);
                 enuqueObject(s);
             }
-            enuqueObject(to_string(*git_commit_tree_id(commit)));
-
-            git_commit_free(commit);
+            enuqueObject(to_string(*git_commit_tree_id(*commit)));
         }
 
         objectHashes.pop_front();
@@ -196,15 +192,14 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         auto& r = refs.emplace_back();
         r.localRef = arg.substr(0, p);
         r.remoteRef = arg.substr(p + 1);
-        git_reference* localRef = nullptr;
-        if (git_reference_lookup(&localRef, collector.m_repo, r.localRef.c_str()) < 0)
+        git::Reference localRef;
+        if (git_reference_lookup(localRef.Addr(), *collector.m_repo, r.localRef.c_str()) < 0)
         {
             cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
             return -1;
         }
         auto& lr = localRefs.emplace_back();
-        git_oid_cpy(&lr, git_reference_target(localRef));
-        git_reference_free(localRef);
+        git_oid_cpy(&lr, git_reference_target(*localRef));
     }
 
     std::set<git_oid> uploadedObjects;
@@ -228,7 +223,7 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         for (const auto& localRef : localRefs)
         {
             auto& base = mergeBases.emplace_back();
-            git_merge_base(&base, collector.m_repo, &remoteRef.target, &localRef);
+            git_merge_base(&base, *collector.m_repo, &remoteRef.target, &localRef);
         }
     }
 
@@ -350,7 +345,7 @@ int main(int argc, char* argv[])
             << "\nRepo folder: " << options.repoPath
             << endl;
         SimpleWalletClient walletClient(options);
-        GitInit init;
+        git::Init init;
         string input;
         while (getline(cin, input, '\n'))
         {

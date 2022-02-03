@@ -27,7 +27,7 @@ namespace pit
     };
 #pragma pack(pop)
 
-    struct Object
+    struct ObjectInfo
     {
         git_oid         oid;
         git_object_t    type;
@@ -37,12 +37,12 @@ namespace pit
         std::string     fullPath;
         bool            selected = false;
 
-        Object(const git_oid& o, git_object_t t, git_odb_object* obj);
-        Object(const Object& other);
-        Object& operator=(const Object& other);
-        Object(Object&& other) noexcept;
-        Object& operator=(Object&& other) noexcept;
-        ~Object() noexcept;
+        ObjectInfo(const git_oid& o, git_object_t t, git_odb_object* obj);
+        ObjectInfo(const ObjectInfo& other);
+        ObjectInfo& operator=(const ObjectInfo& other);
+        ObjectInfo(ObjectInfo&& other) noexcept;
+        ObjectInfo& operator=(ObjectInfo&& other) noexcept;
+        ~ObjectInfo() noexcept;
 
         std::string GetDataString() const;
         const uint8_t* GetData() const;
@@ -61,10 +61,10 @@ namespace pit
         git_oid     target;
     };
 
-    class ObjectCollector : public GitRepoAccessor
+    class ObjectCollector : public git::RepoAccessor
     {
     public:
-        using GitRepoAccessor::GitRepoAccessor;
+        using git::RepoAccessor::RepoAccessor;
         void Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden);
         template<typename Func>
         void Serialize(Func func) 
@@ -119,11 +119,11 @@ namespace pit
     private:
         void TraverseTree(const git_tree* tree);
         std::string Join(const std::vector<std::string>& path, const std::string& name);
-        Object& CollectObject(const git_oid& oid);
+        ObjectInfo& CollectObject(const git_oid& oid);
         void ThrowIfError(int res, std::string_view sv);
     public:
         std::set<git_oid>           m_set;
-        std::vector<Object>         m_objects;
+        std::vector<ObjectInfo>     m_objects;
         std::vector<Ref>            m_refs;
         size_t                      m_maxSize = 0;
         size_t                      m_totalSize = 0;

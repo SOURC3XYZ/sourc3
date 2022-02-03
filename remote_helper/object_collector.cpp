@@ -7,7 +7,7 @@ namespace pit
 {
     /////////////////////////////////////////////////////
 
-    Object::Object(const git_oid& o, git_object_t t, git_odb_object* obj)
+    ObjectInfo::ObjectInfo(const git_oid& o, git_object_t t, git_odb_object* obj)
         : oid(o)
         , type(t)
         , object(obj)
@@ -15,14 +15,14 @@ namespace pit
 
     }
 
-    Object::Object(const Object& other)
+    ObjectInfo::ObjectInfo(const ObjectInfo& other)
         : oid(other.oid)
         , type(other.type)
     {
         git_odb_object_dup(&object, other.object);
     }
 
-    Object& Object::operator=(const Object& other)
+    ObjectInfo& ObjectInfo::operator=(const ObjectInfo& other)
     {
         if (this != &other)
         {
@@ -33,14 +33,14 @@ namespace pit
         return *this;
     }
 
-    Object::Object(Object&& other) noexcept
+    ObjectInfo::ObjectInfo(ObjectInfo&& other) noexcept
         : oid(other.oid)
         , type(other.type)
         , object(std::exchange(other.object, nullptr))
     {
     }
 
-    Object& Object::operator=(Object&& other) noexcept
+    ObjectInfo& ObjectInfo::operator=(ObjectInfo&& other) noexcept
     {
         if (this != &other)
         {
@@ -51,22 +51,22 @@ namespace pit
         return *this;
     }
 
-    Object::~Object() noexcept
+    ObjectInfo::~ObjectInfo() noexcept
     {
         git_odb_object_free(object);
     }
 
-    std::string Object::GetDataString() const
+    std::string ObjectInfo::GetDataString() const
     {
         return ToHex(git_odb_object_data(object), git_odb_object_size(object));
     }
 
-    const uint8_t* Object::GetData() const
+    const uint8_t* ObjectInfo::GetData() const
     {
         return static_cast<const uint8_t*>(git_odb_object_data(object));
     }
 
-    size_t Object::GetSize() const
+    size_t ObjectInfo::GetSize() const
     {
         return git_odb_object_size(object);
     }
@@ -76,26 +76,27 @@ namespace pit
 
     void ObjectCollector::Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden)
     {
-        git_revwalk* walk = nullptr;
-        git_revwalk_new(&walk, m_repo);
-        git_revwalk_sorting(walk, GIT_SORT_TIME);
+        using namespace git;
+        RevWalk walk;
+        git_revwalk_new(walk.Addr(), *m_repo);
+        git_revwalk_sorting(*walk, GIT_SORT_TIME);
         for (const auto& h : hidden)
         {
-            git_revwalk_hide(walk, &h);
+            git_revwalk_hide(*walk, &h);
         }
         for (const auto& ref : refs)
         {
-            git_revwalk_push_ref(walk, ref.localRef.c_str());
+            git_revwalk_push_ref(*walk, ref.localRef.c_str());
             auto& r = m_refs.emplace_back();
-            git_reference_name_to_id(&r.target, m_repo, ref.localRef.c_str());
+            git_reference_name_to_id(&r.target, *m_repo, ref.localRef.c_str());
             r.name = ref.remoteRef;
         }
         git_oid oid;
-        while (!git_revwalk_next(&oid, walk))
+        while (!git_revwalk_next(&oid, *walk))
         {
             // commits
-            git_object* obj = nullptr;
-            git_object_lookup(&obj, m_repo, &oid, GIT_OBJECT_ANY);
+            Object obj;
+            git_object_lookup(obj.Addr(), *m_repo, &oid, GIT_OBJECT_ANY);
             auto p = m_set.emplace(oid);
             if (!p.second)
             {
@@ -103,22 +104,18 @@ namespace pit
             }
             
             git_odb_object* dbobj = nullptr;
-            git_odb_read(&dbobj, m_odb, &oid);
-            m_objects.emplace_back(oid, git_object_type(obj), dbobj);
+            git_odb_read(&dbobj, *m_odb, &oid);
+            m_objects.emplace_back(oid, git_object_type(*obj), dbobj);
 
-            git_tree* tree = nullptr;
-            git_commit* commit = nullptr;
-            git_commit_lookup(&commit, m_repo, &oid);
-            git_commit_tree(&tree, commit);
+            Tree tree;
+            Commit commit;
+            git_commit_lookup(commit.Addr(), *m_repo, &oid);
+            git_commit_tree(tree.Addr(), *commit);
 
-            m_set.emplace(*git_tree_id(tree));
-            CollectObject(*git_tree_id(tree));
-            TraverseTree(tree);
-            git_commit_free(commit);
-            git_tree_free(tree);
+            m_set.emplace(*git_tree_id(*tree));
+            CollectObject(*git_tree_id(*tree));
+            TraverseTree(*tree);
         }
-
-        git_revwalk_free(walk);
     }
 
     void ObjectCollector::TraverseTree(const git_tree* tree)
@@ -140,9 +137,9 @@ namespace pit
                 obj.name = git_tree_entry_name(entry);
                 obj.fullPath = Join(m_path, obj.name);
                 m_path.push_back(obj.name);
-                git_tree* subTree = nullptr;
-                git_tree_lookup(&subTree, m_repo, entry_oid);
-                TraverseTree(subTree);
+                git::Tree subTree;
+                git_tree_lookup(subTree.Addr(), *m_repo, entry_oid);
+                TraverseTree(*subTree);
                 m_path.pop_back();
             }   break;
             case GIT_OBJECT_BLOB:
@@ -169,10 +166,10 @@ namespace pit
         return res;
     }
 
-    Object& ObjectCollector::CollectObject(const git_oid& oid)
+    ObjectInfo& ObjectCollector::CollectObject(const git_oid& oid)
     {
         git_odb_object* dbobj = nullptr;
-        git_odb_read(&dbobj, m_odb, &oid);
+        git_odb_read(&dbobj, *m_odb, &oid);
 
         auto objSize = git_odb_object_size(dbobj);
         auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);

@@ -5,55 +5,13 @@
 #include "git_utils.h"
 #include "object_collector.h"
 
+using namespace pit;
+
 namespace
 {
-    template<typename T, void (D)(T*)>
-    class Holder
-    {
-    public:
-
-        Holder() = default;
-
-        Holder(T* ptr)
-            : m_obj(ptr)
-        {
-            assert(ptr != nullptr);
-        }
-
-        Holder(const T&) = delete;
-
-        ~Holder()
-        {
-            D(m_obj);
-        }
-
-        T** Addr() noexcept
-        {
-            return &m_obj;
-        }
-
-        explicit operator bool() const noexcept
-        {
-            return !!m_obj;
-        }
-
-        T* operator*() const noexcept
-        {
-            return m_obj;
-        }
-    private:
-        T* m_obj = nullptr;
-    };
-
-    using Index = Holder<git_index, git_index_free>;
-    using Repository = Holder<git_repository, git_repository_free>;
-    using Tree = Holder<git_tree, git_tree_free>;
-    using Commit = Holder<git_commit, git_commit_free>;
-    using Signature = Holder<git_signature, git_signature_free>;
-    using Config = Holder<git_config, git_config_free>;
-
     void GenerateTestRepo(std::string_view root)
     {
+        using namespace git;
         Repository repo;
         Commit commit;
         BOOST_TEST_CHECK(git_repository_init(repo.Addr(), root.data(), false) >= 0);
@@ -97,7 +55,7 @@ namespace
 BOOST_AUTO_TEST_CASE(TestObjectCollector)
 {
     std::string_view root = "./temp/testrepo";
-    pit::GitInit init;
+    git::Init init;
     GenerateTestRepo(root);
     pit::ObjectCollector collector(root);
 
