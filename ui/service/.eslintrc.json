@@ -6,27 +6,16 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "env": {
-    "browser": true
+    "project": ["./tsconfig.json"]
   },
   "rules": {
   "func-names":"off",
 		"no-bitwise": ["off"],
 		"import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/test/*.test.ts", "**/test/*.spec.ts", "webpack.config.ts"]}],
 		"import/prefer-default-export": "off",
-		"react/react-in-jsx-scope": "off",
   "no-nested-ternary": "off",
     "no-use-before-define": "off",
     "@typescript-eslint/naming-convention": "off",
-    "jsx-a11y/anchor-is-valid": "off",
-    "jsx-a11y/no-autofocus": "off",
-    "react/prop-types": "off",
-    "react/require-default-props": "off",
-    "react/no-array-index-key": "off",
-    "react/jsx-props-no-spreading": "off",
-    "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
 		"no-plusplus": "off",
 		"no-console": "warn",
 		"max-len": ["warn", { "code": 80 }],
@@ -36,9 +25,7 @@
       "ignorePackages",
       {
         "js": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never"
+        "ts": "never"
       }
     ],
 		"comma-dangle": ["error", {

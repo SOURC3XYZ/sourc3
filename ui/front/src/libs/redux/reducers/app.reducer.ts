@@ -3,11 +3,11 @@ import { ACTIONS } from '@libs/constants';
 import { TxItem } from '@types';
 
 interface IApp {
-  isConnected: boolean;
+  isApiConnected: boolean;
   txs: Set<TxItem>
   error: {
-    code: number,
-    status: string,
+    code?: number,
+    status?: string,
     message: string
   } | null,
   balance: number,
@@ -15,7 +15,7 @@ interface IApp {
 }
 
 const initialState:IApp = {
-  isConnected: false,
+  isApiConnected: false,
   txs: new Set(),
   error: null,
   balance: 0,
@@ -31,8 +31,12 @@ const reducer = (
     error: state.error ? { ...state.error } : null
   };
   switch (action.type) {
+    case ACTIONS.ERROR: {
+      newState.error = action.payload as IApp['error'];
+      return newState;
+    }
     case ACTIONS.CONNECTION: {
-      newState.isConnected = action.payload as IApp['isConnected'];
+      newState.isApiConnected = action.payload as IApp['isApiConnected'];
       return newState;
     }
     case ACTIONS.SET_TX:

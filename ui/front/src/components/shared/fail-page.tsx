@@ -4,17 +4,17 @@ import { useNavigate } from 'react-router-dom';
 
 type FailPageProps = {
   subTitle: string;
-  callback?: () => void
+  resetErrState?: () => void
   title?: string;
   isBtn?: boolean;
 };
 
 const FailPage = ({
-  title, subTitle, isBtn, callback
+  title, subTitle, isBtn, resetErrState
 }:FailPageProps) => {
   const navigate = useNavigate();
 
-  React.useEffect(() => callback);
+  React.useEffect(() => resetErrState);
 
   const back = () => navigate(-1);
   return (

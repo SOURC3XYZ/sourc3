@@ -44,9 +44,10 @@ export class BeamAPI<T> {
     const { id } = parsed;
     const cb = this.callbacks.get(id);
     if (cb) {
-      cb.resolve(parsed);
+      if (parsed.error) cb.reject(new Error(parsed.error.message));
+      else cb.resolve(parsed);
       this.callbacks.delete(id);
-    }
+    } return undefined;
   };
 
   private readonly connectToWebWallet = (
@@ -172,7 +173,7 @@ export class BeamAPI<T> {
           console.log('response', data);
           resolve(data);
         })
-        .catch((err) => reject(err));
+        .catch((err) => reject(new Error(err)));
     }
   };
 

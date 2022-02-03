@@ -30,30 +30,30 @@ const build:IConfig = {
     filename: '[name].bundle.js',
     chunkFilename: '[name].js',
     assetModuleFilename: 'assets/[name][ext]',
-    publicPath: '/'
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
   optimization: {
-    nodeEnv: 'production',
-    minimize: true,
+    nodeEnv: 'production'
+    // minimize: true,
 
-    splitChunks: {
-      chunks: 'all',
-      minSize: 30000,
-      maxAsyncRequests: 5,
-      maxInitialRequests: 3,
-      automaticNameDelimiter: '~',
+    // splitChunks: {
+    //   chunks: 'all',
+    //   minSize: 30000,
+    //   maxAsyncRequests: 5,
+    //   maxInitialRequests: 3,
+    //   automaticNameDelimiter: '~',
 
-      cacheGroups: {
-        vendors: {
-          chunks: 'all',
-          test: /(antd|prism)/,
-          priority: 100,
-          name: 'vendors'
-        }
-      }
-    }
+    //   cacheGroups: {
+    //     vendors: {
+    //       chunks: 'all',
+    //       test: /(antd|prism)/,
+    //       priority: 100,
+    //       name: 'vendors'
+    //     }
+    //   }
+    // }
   },
   resolve: {
     extensions: ['.ts', '.js', '.tsx'],
@@ -133,7 +133,9 @@ const build:IConfig = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.join(__dirname, './node_modules/beam-wasm-client-masternet/'),
+          from: path.join(
+            __dirname, './node_modules/beam-wasm-client-masternet/'
+          ),
           globOptions: {
             ignore: ['package.json']
           }

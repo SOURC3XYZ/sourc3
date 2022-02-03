@@ -1,5 +1,5 @@
 import { Preload } from '@components/shared';
-import { extCheck, logger, onLoadData } from '@libs/utils';
+import { extCheck, onLoadData } from '@libs/utils';
 import {
   DataNode,
   IDataNodeCustom,
@@ -33,14 +33,9 @@ const treeLinkNodeUpdate = (id: RepoId) => (branch:DataNode[]) => branch
     return { ...newEl, dataRef };
   });
 
-const FileTree = ({
+function FileTree({
   id, tree, updateTree
-}:TreeListProps) => {
-  logger('FileTree', [
-    ['id', id],
-    ['tree', tree]
-  ]);
-
+}:TreeListProps) {
   return (
     <>
       {tree
@@ -56,6 +51,6 @@ const FileTree = ({
         : <Preload />}
     </>
   );
-};
+}
 
 export default FileTree;

@@ -1,13 +1,10 @@
-import { Button, Menu } from 'antd';
+import { Menu } from 'antd';
 import { ContainerOutlined, UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import styles from './menu.module.css';
+import { NavButton } from '..';
 
 const NavMenu = () => {
-  const handleClick = (e: any) => {
-    console.log('click ', e);
-  };
-
   const style = {
     width: '256px',
     height: '696px'
@@ -15,15 +12,12 @@ const NavMenu = () => {
   return (
     <div className={styles.menu}>
       <Menu
-        onClick={handleClick}
         style={style}
         defaultSelectedKeys={['1']}
         defaultOpenKeys={['sub1']}
         mode="inline"
       >
-        <Button>
-          <Link to="/auth">Back</Link>
-        </Button>
+        <NavButton link="/auth" name="Back" />
         <Menu.Divider />
         <Menu.Item key="all" icon={<ContainerOutlined />}>
           <Link to="/main/repos/all/1">Repositories</Link>

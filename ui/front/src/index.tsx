@@ -1,15 +1,15 @@
 import store from '@libs/redux/store';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
-import App from './app';
+import { HashRouter } from 'react-router-dom';
 import 'index.css';
+import { App } from '@components/pages';
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
+    <HashRouter>
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </Provider>,
   document.querySelector('#root')
 );

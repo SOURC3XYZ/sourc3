@@ -1,0 +1,49 @@
+{
+  "name": "pit-client-masternet",
+  "version": "1.0.0",
+  "description": "PIT client for 'masternet'",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "app:dist": "electron-builder",
+    "app:dir": "electron-builder --dir"
+  },
+  "keywords": [
+    "BEAM",
+    "wallet",
+    "cryptocurrency",
+    "mimblewimble"
+  ],
+  "author": "Beam Privacy",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.63",
+    "@electron-forge/maker-deb": "^6.0.0-beta.63",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.63",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
+    "@electron-forge/maker-wix": "^6.0.0-beta.63",
+    "@electron-forge/maker-zip": "^6.0.0-beta.63",
+    "@types/cors": "^2.8.12",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.13",
+    "@types/request": "^2.48.8",
+    "@types/winston": "^2.4.4",
+    "electron": "16.0.7",
+    "electron-builder": "^22.14.5"
+  },
+  "build": {
+    "files": [
+      "front/dist/**",
+      "main.js",
+      "!**/node_modules/**/*",
+      "!**/*.json"
+    ],
+    "extraResources": [
+      "service/bundle/**",
+      "beam-res/**",
+      ".env"
+    ]
+  }
+}

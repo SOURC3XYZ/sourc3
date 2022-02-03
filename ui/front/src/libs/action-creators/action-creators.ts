@@ -57,8 +57,8 @@ export const AC = {
 
   setError: (
     payload: {
-      code: number;
-      status: string;
+      code?: number;
+      status?: string;
       message: string;
     } | null
   ) => ({

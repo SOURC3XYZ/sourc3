@@ -1,5 +1,7 @@
 import { FileCodes } from '@libs/constants';
 import {
+  BranchCommit,
+  BranchName,
   DataNode,
   IDataNodeCustom, RepoId, TreeElement, UpdateProps
 } from '@types';
@@ -73,7 +75,7 @@ export const getTree = (
   index = 0
 ): DataNode[] | null => {
   const pathArray = pathname.split('/')
-    .slice(6);
+    .slice(7);
 
   if (!pathArray.length) {
     return treeNode;
@@ -102,4 +104,17 @@ export const getTree = (
   }
 
   return null;
+};
+
+export const setBranchAndCommit = (
+  repoMap:Map<BranchName, BranchCommit[]>, branch:string, commit:string
+) => {
+  const findedBranch = repoMap.get(branch);
+  if (!findedBranch) throw Error(`branch ${branch} doesn't exist in this repo`);
+  const findedCommit = findedBranch
+    .find((el) => el.commit_oid === commit);
+  return {
+    branch,
+    commit: findedCommit || findedBranch[findedBranch.length - 1]
+  };
 };

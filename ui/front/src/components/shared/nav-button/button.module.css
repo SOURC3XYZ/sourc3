@@ -1,0 +1,14 @@
+
+
+.button{
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.button [class~=ant-btn] {
+    border-radius: 7;
+}
+.disabled{
+    opacity: 0.5;
+    pointer-events: none;
+}

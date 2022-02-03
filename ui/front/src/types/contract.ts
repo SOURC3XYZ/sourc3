@@ -1,5 +1,9 @@
 import { DataNode } from './antd';
 
+export interface ContractResponse {
+  error?: string
+}
+
 export type RepoName = string;
 export type RepoId = number;
 export type BranchName = string;
@@ -20,9 +24,9 @@ export type RepoType = {
   repo_id: RepoId;
 };
 
-export type ReposResponse = {
+export interface ReposResponse extends ContractResponse {
   repos: RepoType[]
-};
+}
 
 export type RepoMeta = {
   object_hash: MetaHash
@@ -30,18 +34,18 @@ export type RepoMeta = {
   object_size: MetaObjectSize
 };
 
-export type RepoMetaResponse = {
+export interface RepoMetaResponse extends ContractResponse {
   objects: RepoMeta[]
-};
+}
 
 export type Branch = {
   name: BranchName
   commit_hash: CommitHash
 };
 
-export type RepoRefsResponse = {
+export interface RepoRefsResponse extends ContractResponse {
   refs: Branch[]
-};
+}
 
 export type CommitData = {
   oid: CommitHash
@@ -60,9 +64,9 @@ export type BranchCommit = {
   parents: CommitData[]
 };
 
-export type RepoCommitResponse = {
+export interface RepoCommitResponse extends ContractResponse {
   commit: BranchCommit;
-};
+}
 
 export type TreeElement = {
   filename: TreeElementFilename;
@@ -70,14 +74,13 @@ export type TreeElement = {
   oid: TreeElementOid
 };
 
-export type RepoTreeResponse = {
+export interface RepoTreeResponse extends ContractResponse {
   tree: {
     entries_num: 6;
     object_data: string;
     entries: TreeElement[]
-  },
-  error?: string;
-};
+  }
+}
 
 export interface IDataNodeCustom extends DataNode{
   dataRef: TreeElement
@@ -91,9 +94,9 @@ export type UpdateProps = {
   resolve?: () => void
 };
 
-export type ObjectDataResponse = {
+export interface ObjectDataResponse extends ContractResponse {
   object_data: ObjectData
-};
+}
 
 export type Commit = {
   object_hash: string
