@@ -2,7 +2,6 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include<git2.h>
-#include <typeinfo>
 #include "git_utils.h"
 #include "object_collector.h"
 
@@ -23,7 +22,10 @@ namespace
 
         Holder(const T&) = delete;
 
-        ~Holder();
+        ~Holder()
+        {
+            D(m_obj);
+        }
 
         T** Addr() noexcept
         {
@@ -49,13 +51,6 @@ namespace
     using Commit = Holder<git_commit, git_commit_free>;
     using Signature = Holder<git_signature, git_signature_free>;
     using Config = Holder<git_config, git_config_free>;
-
-    template<typename T, void (D)(T*)>
-    Holder<T, D>::~Holder()
-    {
-        std::clog << "~Holder " << typeid(*this).name() << std::endl;
-        D(m_obj);
-    }
 
     void GenerateTestRepo(std::string_view root)
     {

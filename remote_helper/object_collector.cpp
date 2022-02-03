@@ -2,7 +2,7 @@
 #include "utils.h"
 #include <stdexcept>
 #include <utility>
-
+#include <iostream>
 namespace pit
 {
     /////////////////////////////////////////////////////
@@ -89,6 +89,7 @@ namespace pit
             auto& r = m_refs.emplace_back();
             git_reference_name_to_id(&r.target, m_repo, ref.localRef.c_str());
             r.name = ref.remoteRef;
+            std::clog << "Ref: " << to_string(r.target) << std::endl;
         }
         git_oid oid;
         while (!git_revwalk_next(&oid, walk))
@@ -96,11 +97,13 @@ namespace pit
             // commits
             git_object* obj = nullptr;
             git_object_lookup(&obj, m_repo, &oid, GIT_OBJECT_ANY);
+            std::clog << "Obj: " << to_string(oid) << std::endl;
             auto p = m_set.emplace(oid);
             if (!p.second)
             {
                 continue;
             }
+            
             git_odb_object* dbobj = nullptr;
             git_odb_read(&dbobj, m_odb, &oid);
             m_objects.emplace_back(oid, git_object_type(obj), dbobj);
@@ -126,6 +129,7 @@ namespace pit
         {
             auto* entry = git_tree_entry_byindex(tree, i);
             auto* entry_oid = git_tree_entry_id(entry);
+            std::clog << "Obj: " << to_string(*entry_oid) << std::endl;
             auto p = m_set.emplace(*entry_oid);
             if (!p.second)
                 continue; // already visited
