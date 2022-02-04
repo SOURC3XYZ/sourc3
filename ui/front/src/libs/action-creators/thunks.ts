@@ -214,10 +214,11 @@ export const thunks = {
       if (res.result?.raw_data) {
         const tx = await callApi(RC.startTx(res.result.raw_data));
         if (tx.result?.txid) {
-          dispatch(AC.setTx(tx.result.txid));
+          return dispatch(AC.setTx(tx.result.txid));
         }
       }
-    } catch (error) { thunkCatch(error, dispatch); }
+      throw new Error('repo delete failed');
+    } catch (error) { return thunkCatch(error, dispatch); }
   },
 
   getTextData: (
@@ -235,9 +236,9 @@ export const thunks = {
     try {
       const res = await callApi(RC.getWalletStatus());
       if (res && !res.error) {
-        dispatch(AC.setWalletStatus(parseToBeam(res.result.available)));
-      }
-    } catch (error) { thunkCatch(error, dispatch); }
+        return dispatch(AC.setWalletStatus(parseToBeam(res.result.available)));
+      } throw new Error('unable to get wallet status');
+    } catch (error) { return thunkCatch(error, dispatch); }
   },
 
   getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
@@ -246,10 +247,10 @@ export const thunks = {
         RC.getWalletAddressList()
       ) as unknown as { error: any, result: any[] };
       if (res && !res.error && res.result) {
-        dispatch(AC.setWalletAddressList(res.result[0].address));
-        console.log(res.result[0].address);
+        return dispatch(AC.setWalletAddressList(res.result[0].address));
       } // TODO: Jenk typing the answer from the api
-    } catch (error) { thunkCatch(error, dispatch); }
+      throw new Error('unable to get wallet adress list');
+    } catch (error) { return thunkCatch(error, dispatch); }
   },
 
   setWalletSendBeam: (value: number, from: string,
@@ -262,8 +263,8 @@ export const thunks = {
           comment)
       );
       if (res.result?.txId && !res.error) {
-        dispatch(AC.setTx(res.result.txId));
-      }
-    } catch (error) { thunkCatch(error, dispatch); }
+        return dispatch(AC.setTx(res.result.txId));
+      } throw new Error('failed to send beam');
+    } catch (error) { return thunkCatch(error, dispatch); }
   }
 };

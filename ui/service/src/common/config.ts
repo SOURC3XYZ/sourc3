@@ -12,10 +12,12 @@ const buildConfig = () => {
   return user_data_loc;
 };
 
-export const rootPath = buildConfig();
+export const rootPath = path.join(__dirname, '../../');
+
+export const configPath = buildConfig();
 
 dotenv.config({
-  path: path.join(path.join(__dirname, '../../'), '.env')
+  path: path.join(configPath, '.env')
 });
 
 export const {
