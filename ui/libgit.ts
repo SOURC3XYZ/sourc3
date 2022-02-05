@@ -40,11 +40,11 @@ export class GitHandler {
     let head_branch_commit = await this.repo.getBranchCommit(branch)
     let working_queue: Array<Oid> = [head_branch_commit.id()];
 
-    let commit_oids = new Set<Oid>();
+    let commit_oids = new Set<string>();
     let commits: Array<Commit> = []
     while (working_queue.length > 0) {
       let working_commit = await Commit.lookup(this.repo, working_queue.pop());
-      let working_oid = working_commit.id();
+      let working_oid = working_commit.id().tostrS();
       if (commit_oids.has(working_oid)) {
         continue;
       }
