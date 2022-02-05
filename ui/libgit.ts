@@ -1,12 +1,6 @@
-const { Repository, Clone, Commit, Blob, Tree, TreeEntry, FetchOptions } = require('nodegit');
-const fs = require('fs')
+import {Blob, Clone, Commit, FetchOptions, Oid, Reference, Repository, Tree, TreeEntry} from 'nodegit';
 
-type CommitType = typeof Commit;
-type BlobType = typeof Blob;
-type RepoType = typeof Repository;
-type TreeType = typeof Tree;
-type TreeEntryType = typeof TreeEntry;
-type FetchOptionsType = typeof FetchOptions;
+const fs = require('fs')
 
 export enum Action {
   Cloned,
@@ -18,10 +12,10 @@ export class GitHandler {
 
   private readonly local_path: string;
 
-  private repo: RepoType;
+  private repo: Repository;
 
   public constructor(url: string, local_path: string,
-                     opened_or_created_callback: (repo: RepoType, action: Action) => void) {
+                     opened_or_created_callback: (repo: Repository, action: Action) => void) {
     this.url = url;
     this.local_path = local_path;
 
@@ -38,43 +32,43 @@ export class GitHandler {
     }
   }
 
-  public getBranches(): Promise<Array<string>> {
-    return this.repo.getReferences();
+  public async getBranches(): Promise<Array<Reference>> {
+    return await this.repo.getReferences();
   }
 
-  public getCommits(branch: string): Promise<Array<CommitType>> {
-    let repo = this.repo;
-    return new Promise<Array<CommitType>>(function(resolve, reject) {
-      repo.getBranchCommit(branch).then(function(commit: CommitType) {
-        let commit_list: Array<CommitType> = []
-        let working_deque: Array<CommitType> = [commit]
-        while (working_deque.length > 0) {
-          let working_commit = working_deque.pop();
-          commit_list.push(working_commit);
-          for (let parent in working_commit.parents()) {
-            working_deque.push(parent);
-          }
-        }
-        resolve(commit_list);
-      });
-    });
+  public async getCommits(branch: string): Promise<Array<Commit>> {
+    let head_branch_commit = await this.repo.getBranchCommit(branch)
+    let working_queue: Array<Oid> = [head_branch_commit.id()];
+
+    let commit_oids = new Set<Oid>();
+    let commits: Array<Commit> = []
+    while (working_queue.length > 0) {
+      let working_commit = await Commit.lookup(this.repo, working_queue.pop());
+      let working_oid = working_commit.id();
+      if (commit_oids.has(working_oid)) {
+        continue;
+      }
+
+      commit_oids.add(working_oid);
+      commits.push(working_commit);
+      for (let parent in working_commit.parents()) {
+        working_queue.push(Oid.fromString(parent))
+      }
+    }
+
+    return commits;
   }
 
-  public getTreeEntries(treeOid: string): Promise<Array<TreeEntryType>> {
-    let repo = this.repo;
-    return new Promise<Array<TreeEntryType>>(function(resolve, reject) {
-      Tree.lookup(repo, treeOid, () => {
-      }).then(function (tree: TreeType) {
-        resolve(tree.entries())
-      });
-    });
+  public async getTreeEntries(treeOid: string | Oid): Promise<Array<TreeEntry>> {
+    let tree = await Tree.lookup(this.repo, treeOid);
+    return tree.entries();
   }
 
-  public getBlobByOid(oid: string): Promise<BlobType> {
-    return Blob.lookup(this.repo, oid);
+  public async getBlobByOid(oid: string | Oid): Promise<Blob> {
+    return await Blob.lookup(this.repo, oid);
   }
 
-  public fetch(remote: string, fetchOptions: FetchOptionsType): Promise<void> {
-    return this.repo.fetch(remote, fetchOptions);
+  public async fetch(remote: string, fetchOptions: FetchOptions): Promise<void> {
+    return await this.repo.fetch(remote, fetchOptions);
   }
 }
