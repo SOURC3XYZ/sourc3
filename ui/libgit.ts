@@ -32,11 +32,11 @@ export class GitHandler {
     }
   }
 
-  public async getBranches(): Promise<Array<Reference>> {
-    return await this.repo.getReferences();
+  public getBranches = async (): Promise<Array<Reference>> => {
+    return this.repo.getReferences();
   }
 
-  public async getCommits(branch: string): Promise<Array<Commit>> {
+  public getCommits = async (branch: string): Promise<Array<Commit>> => {
     let head_branch_commit = await this.repo.getBranchCommit(branch)
     let working_queue: Array<Oid> = [head_branch_commit.id()];
 
@@ -59,16 +59,16 @@ export class GitHandler {
     return commits;
   }
 
-  public async getTreeEntries(treeOid: string | Oid): Promise<Array<TreeEntry>> {
+  public getTreeEntries = async (treeOid: string | Oid): Promise<Array<TreeEntry>> => {
     let tree = await Tree.lookup(this.repo, treeOid);
     return tree.entries();
   }
 
-  public async getBlobByOid(oid: string | Oid): Promise<Blob> {
-    return await Blob.lookup(this.repo, oid);
+  public getBlobByOid = async (oid: string | Oid): Promise<Blob> => {
+    return Blob.lookup(this.repo, oid);
   }
 
-  public async fetch(remote: string, fetchOptions: FetchOptions): Promise<void> {
-    return await this.repo.fetch(remote, fetchOptions);
+  public fetch = async (remote: string, fetchOptions: FetchOptions): Promise<void> => {
+    return this.repo.fetch(remote, fetchOptions);
   }
 }
