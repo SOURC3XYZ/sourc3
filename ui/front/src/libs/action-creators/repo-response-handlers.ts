@@ -34,19 +34,22 @@ const getCommitParent = async (
   return res.commit;
 };
 
-export const buildCommitTree = async (
+export const buildCommitList = async (
   call: CallType<RepoCommitResp>,
-  id: RepoId, refList: BranchCommit[]
+  id: RepoId,
+  workingStack: BranchCommit[], commitList:BranchCommit[] = []
 ):Promise<BranchCommit[]> => {
-  const newList = [...refList];
-  if (refList[0]?.parents[0]) {
-    const prev = await getCommitParent(call, id, refList[0].parents[0]?.oid);
-    newList.unshift(prev);
-    if (prev?.parents.length) {
-      return buildCommitTree(call, id, newList);
-    }
+  if (workingStack.length) {
+    const commit = workingStack.pop() as BranchCommit;
+    commitList.push(commit);
+    const parentCommits = await Promise.all(
+      commit.parents
+        .map((el) => getCommitParent(call, id, el.oid))
+    );
+    workingStack.push(...parentCommits);
+    return buildCommitList(call, id, workingStack, commitList);
   }
-  return newList;
+  return commitList.reverse();
 };
 
 export const getTree = async (beam: TypedBeamApi,
@@ -64,11 +67,11 @@ export const getTree = async (beam: TypedBeamApi,
   throw new Error('something wrong with output');
 };
 
-const buildCommitList = async (
+const getCommit = async (
   call: CallType<RepoCommitResp>, id: RepoId, branch: Branch
 ):Promise<BranchCommit[]> => {
   const commitRes = await call(RC.repoGetCommit(id, branch.commit_hash));
-  const commitList = await buildCommitTree(call, id, [commitRes.commit]);
+  const commitList = await buildCommitList(call, id, [commitRes.commit]);
   return commitList;
 };
 
@@ -76,7 +79,7 @@ export async function buildRepoMap(api:TypedBeamApi, id:RepoId) {
   const call = callApi(api);
   const branches = await call<RepoRefsResp>(RC.repoGetRefs(id));
   const branchMap = new Map<BranchName, BranchCommit[]>();
-  const promises = branches.refs.map((el) => buildCommitList(call, id, el));
+  const promises = branches.refs.map((el) => getCommit(call, id, el));
   const commits = await Promise.all(promises);
   branches.refs.forEach((el, i) => {
     if (commits[i]) branchMap.set(clipString(el.name), commits[i]);

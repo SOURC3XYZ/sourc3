@@ -7,7 +7,7 @@ import app from './app';
 //   method: 'get_version'
 // };
 
-const port = PORT || 5002;
+const port = PORT || 666;
 
 app.listen(port, () => console.log(
   `App is running on http://localhost:${port}`

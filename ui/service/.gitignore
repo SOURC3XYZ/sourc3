@@ -11,3 +11,4 @@ dist
 node-utxo-image.bin
 node.db-journal
 node.db
+wallet.db
