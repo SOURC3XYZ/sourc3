@@ -1,11 +1,11 @@
-import { Config, Repository } from 'nodegit';
+import { Repository } from 'nodegit';
 import { Action, GitHandler } from '../../utils/libgit';
 
 let repo: GitHandler;
 
 type MountAnswer = {
   opened: Action
-  config: Config
+  config: string[]
 };
 
 export const mountRepo = (remote:string, local:string) => new Promise(
@@ -16,7 +16,7 @@ export const mountRepo = (remote:string, local:string) => new Promise(
       async (incomingRepo: Repository, action: Action) => {
         const answer = {
           opened: action,
-          config: await incomingRepo.config()
+          config: await incomingRepo.getRemoteNames()
         };
         resolve(answer);
       }

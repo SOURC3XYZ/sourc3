@@ -5,7 +5,6 @@ import { execFile, ChildProcess } from 'child_process';
 import fs from 'fs';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
-  binPath,
   cliPath,
   getExecutableFile,
   limitStr,
@@ -21,6 +20,12 @@ let currentProcess: ChildProcess | undefined;
 const success = /Start server on/i;
 const error = /Please check your password/i;
 const ownerKeyReg = /Owner Viewer key/i;
+const walletRestoreSuccess = /generated:/i;
+const walletRestoreError = /provide a valid seed phrase for the wallet./i;
+
+export function checkRunningApi() {
+  return !!(currentProcess && !currentProcess.killed);
+}
 
 export function deleteFile(filePath: string) {
   try {
@@ -64,21 +69,14 @@ export function killApiServer(): Promise<string> {
   );
 }
 
-export function setCurrentProcess(process: ChildProcess) {
+export function setCurrentProcess(process?: ChildProcess) {
   if (currentProcess && !currentProcess.killed) {
     currentProcess.kill('SIGKILL');
     currentProcess.on('close', (code: number) => {
       console.log(`child process exited with code ${code}`);
-      setCurrentProcess(process);
+      if (process)setCurrentProcess(process);
     });
   } else currentProcess = process;
-}
-
-export async function removeWallet() {
-  const isWalletExist = await readDirFile(binPath, 'wallet.db');
-  if (isWalletExist) {
-    return deleteFile(walletDBPath);
-  } return true;
 }
 
 export function exportOwnerKey(
@@ -148,6 +146,9 @@ export function restoreExistedWallet(
   return new Promise((resolve, reject): void => {
     const cliWalletPath = getExecutableFile(cliPath);
     if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
+    if (currentProcess && !currentProcess.killed) setCurrentProcess();
+    if (fs.existsSync(walletDBPath)) deleteFile(walletDBPath);
+
     const args = [
       'restore',
       '--wallet_path', walletDBPath,
@@ -158,24 +159,21 @@ export function restoreExistedWallet(
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log('stdout:', bufferString);
-    };
-
-    const onClose = (code: number | null) => {
-      console.log(`child process exited with code ${code}`);
-      if (Number(code) > 0) {
+      if (bufferString.match(walletRestoreSuccess)) {
+        return resolve('wallet successfully restored');
+      }
+      if (bufferString.match(walletRestoreError)) {
         return reject(new Error(
           'wrong seed-phrase or wallet api is running now'
         ));
       }
-      return resolve('wallet successfully restored');
     };
 
     runSpawnProcess({
       path: cliWalletPath,
       detached: true,
       args,
-      onData,
-      onClose
+      onData
     });
   });
 }

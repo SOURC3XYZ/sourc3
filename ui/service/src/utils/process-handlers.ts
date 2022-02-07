@@ -11,7 +11,7 @@ type SpawnProcessParams = {
   onData?: BufferHandler;
   onError?: BufferHandler;
   onClose?: OnCloseHandler;
-  setCurrentProcess?: (childProcess: ChildProcess) => void;
+  setCurrentProcess?: (childProcess?: ChildProcess) => void;
 };
 
 export const runSpawnProcess = (
@@ -26,7 +26,7 @@ export const runSpawnProcess = (
 
   if (onError) childProcess.stderr.on('error', onError);
 
-  if (onClose) childProcess.on('close', onClose);
+  if (onClose) childProcess.stdout.on('close', onClose);
 
   if (setCurrentProcess) setCurrentProcess(childProcess);
 };

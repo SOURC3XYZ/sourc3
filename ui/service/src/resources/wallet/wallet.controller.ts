@@ -1,10 +1,17 @@
 import express, { Request, Response } from 'express';
 import { ErrorHandler } from '../../middlewares';
 import {
-  restoreWallet, enterUser, removeExistedWallet, killApi
+  restoreWallet, enterUser, killApi, checkApi
 } from './wallet.service';
 
 const router = express.Router();
+
+router.route('/').get(
+  async (_: Request, res: Response): Promise<Response | void> => {
+    const isRun = checkApi();
+    return res.status(201).json({ isRun });
+  }
+);
 
 router.route('/start').post(
   async (req: Request, res: Response, next): Promise<Response | void> => {
@@ -32,14 +39,6 @@ router.route('/restore').post(
     } return next(
       new ErrorHandler(404, 'you did not send the password or/and seed-phrase')
     );
-  }
-);
-
-router.route('/').delete(
-  async (_req: Request, res: Response, next): Promise<Response | void> => {
-    const removed = await removeExistedWallet();
-    if (removed) return res.status(201).json('wallet removed');
-    return next(new ErrorHandler(500, 'wallet may be in use now'));
   }
 );
 
