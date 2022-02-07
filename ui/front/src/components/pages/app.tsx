@@ -3,6 +3,7 @@ import { RootState } from '@libs/redux';
 import { Alert } from 'antd';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { Desk } from './desk';
 
 type AppProps = {
   error: {
@@ -38,6 +39,12 @@ function App({ error }: AppProps) {
           path="main/*"
           element={
             <Main />
+          }
+        />
+        <Route
+          path="mainDesk/*"
+          element={
+            <Desk />
           }
         />
 
