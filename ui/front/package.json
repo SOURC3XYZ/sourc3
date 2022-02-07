@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "webpack",
-    "prebuild": "export NODE_ENV=production; webpack",
+    "testbuild": "export NODE_ENV=production; webpack",
     "start": "webpack serve --mode development",
     "electron": "electron ."
   },

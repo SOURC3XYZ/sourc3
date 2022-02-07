@@ -3,9 +3,8 @@ import { AC } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { Alert, Button } from 'antd';
 import { connect } from 'react-redux';
-import {
-  Navigate, Route, Routes, useNavigate
-} from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate} from 'react-router-dom';
+import { Desk } from './desk';
 
 type AppProps = {
   error: {
@@ -52,6 +51,12 @@ function App({ error, resetErr }: AppProps) {
           path="main/*"
           element={
             <Main />
+          }
+        />
+        <Route
+          path="mainDesk/*"
+          element={
+            <Desk />
           }
         />
 

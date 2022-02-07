@@ -1,0 +1,16 @@
+.wrapper{
+    
+    max-width: 74rem;
+    margin: 0 auto;
+    background-color: #fff;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 10px;
+
+}
+.toggle{
+    position: sticky;
+    top:25%;
+    right: 59.5%
+}

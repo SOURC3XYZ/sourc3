@@ -11,6 +11,7 @@ import {
   Notifications, Repo, AllRepos, Manager
 } from './content';
 import styles from './main.module.css';
+import { Header } from '../desk/content';
 
 type MainProps = {
   connectApi: () => void,
@@ -43,6 +44,7 @@ const Main = ({
   //TODO: local git handler
   return (
     <>
+      <Header />
       <div className={styles.main}>
         <Menu />
         {/* <div>

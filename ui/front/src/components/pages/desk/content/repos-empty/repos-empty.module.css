@@ -1,0 +1,9 @@
+.wrapper{
+    /* margin: 25% 50%; */
+    width: 100%;
+    min-height: 696px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
