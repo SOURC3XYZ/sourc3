@@ -3,16 +3,16 @@
 /* eslint-disable no-restricted-syntax */
 import { execFile, ChildProcess } from 'child_process';
 import fs from 'fs';
-import path from 'path';
 import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
 import {
   binPath,
   cliPath,
   getExecutableFile,
   limitStr,
+  nodeDBPath,
   nodePath,
   walletApiPath,
-  walletPath
+  walletDBPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
 
@@ -77,7 +77,7 @@ export function setCurrentProcess(process: ChildProcess) {
 export async function removeWallet() {
   const isWalletExist = await readDirFile(binPath, 'wallet.db');
   if (isWalletExist) {
-    return deleteFile(walletPath);
+    return deleteFile(walletDBPath);
   } return true;
 }
 
@@ -90,7 +90,7 @@ export function exportOwnerKey(
     const args = [
       'export_owner_key',
       '--pass', password,
-      '--wallet_path', walletPath
+      '--wallet_path', walletDBPath
     ];
 
     const onData = (data: Buffer) => {
@@ -129,7 +129,7 @@ export function startBeamNode(
       const node = execFile(beamNodePath, [`--port=${BEAM_NODE_PORT}`,
         '--peer=eu-node01.masternet.beam.mw:8100,eu-node02.masternet.beam.mw:8100,eu-node03.masternet.beam.mw:8100,eu-node04.masternet.beam.mw:8100',
         '--owner_key', ownerKey,
-        '--storage', path.join(nodePath, 'node.db'),
+        '--storage', nodeDBPath,
         '--pass', password]);
 
       // process.on('exit', () => {
@@ -150,7 +150,7 @@ export function restoreExistedWallet(
     if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
     const args = [
       'restore',
-      '--wallet_path', binPath,
+      '--wallet_path', walletDBPath,
       '--pass', password,
       '--seed_phrase', seed
     ];
@@ -192,7 +192,7 @@ export function runWalletApi(
       '-p', `${WALLET_API_PORT}`,
       `--pass=${password}`,
       '--use_http=1',
-      `--wallet_path=${walletPath}`
+      `--wallet_path=${walletDBPath}`
     ];
 
     const onData = (data: Buffer) => {

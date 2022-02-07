@@ -1,8 +1,9 @@
-const { app, BrowserWindow, session } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, session } = require('electron');
+const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 
-var service = null
+let service = null
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -11,8 +12,14 @@ function createWindow () {
   })
 
   if (service === null) {
-    console.log(`Service is null, start from ${__dirname}/../service/bundle/bundle.js`);
-    service = spawn('node', [`${__dirname}/../service/bundle/bundle.js`]);
+    console.log(`Service is null, start from ${__dirname}/../service/bundle/bundle.js on ${app.getPath('userData')}`);
+
+    if (!fs.existsSync(`${path.join(app.getPath('userData'), '.env')}`)) {
+      fs.copyFileSync(path.join(__dirname, '..', '.env'), `${path.join(app.getPath('userData'), '.env')}`)
+    }
+
+    service = spawn('node', [`${path.join(__dirname, '..', 'service', 'bundle', 'bundle.js')}`, '-l',
+      `${app.getPath('userData')}`]);
     service.stdout.on('data', (data) => {
       console.log(`Service: ${data}`);
     })
@@ -31,8 +38,8 @@ function createWindow () {
 
 app.whenReady().then(() => {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    details.responseHeaders['Cross-Origin-Embedder-Policy'] = 'require-corp';
-    details.responseHeaders['Cross-Origin-Opener-Policy'] = 'same-origin';
+    details.responseHeaders['Cross-Origin-Embedder-Policy'] = ['require-corp'];
+    details.responseHeaders['Cross-Origin-Opener-Policy'] = ['same-origin'];
     callback({ responseHeaders: details.responseHeaders })
   })
 
