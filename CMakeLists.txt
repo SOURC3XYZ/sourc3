@@ -65,7 +65,7 @@ else()
             add_definitions( -DBOOST_ALL_DYN_LINK )
         endif()
     endif()
-    find_package(Boost REQUIRED COMPONENTS program_options date_time filesystem container)
+    find_package(Boost REQUIRED COMPONENTS program_options date_time filesystem container json)
     if (PIT_TESTS_ENABLED)
         enable_testing()
 

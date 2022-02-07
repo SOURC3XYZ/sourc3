@@ -6,7 +6,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/json/src.hpp>
+#include <boost/json.hpp>
 #include <boost/algorithm/hex.hpp>
 
 #include <algorithm>
@@ -21,6 +21,7 @@
 #include <vector>
 
 namespace po = boost::program_options;
+namespace json = boost::json;
 using namespace std;
 using namespace pit;
 
@@ -114,7 +115,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             auto& o = objects.emplace_back();
             auto& obj = objVal.as_object();
             o.data_size = obj["object_size"].to_number<uint32_t>();
-            o.type = obj["object_type"].to_number<int8_t>();
+            o.type = static_cast<int8_t>(obj["object_type"].to_number<uint32_t>());
             std::string s = obj["object_hash"].as_string().c_str();
             git_oid_fromstr(&o.hash, s.c_str());
             if (git_odb_exists(*accessor.m_odb, &o.hash))
@@ -131,10 +132,8 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         auto root = json::parse(res);
         git_oid oid;
         git_oid_fromstr(&oid, objectHashes.front().data());
-        auto data = root.as_object()["object_data"].as_string();
-        auto buf = FromHex(data);
 
-        auto it = std::find_if(objects.begin(), objects.end(), [&](const auto& o) { return o.hash == oid; });
+        auto it = std::find_if(objects.begin(), objects.end(), [&](auto&& o) { return o.hash == oid; });
         if (it == objects.end())
         {
             cout << "failed\n";
@@ -142,10 +141,36 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         }
         cerr << "Received data for:  " << objectHashes.front() << '\n';
         receivedObjects.insert(to_string(oid));
+
+        auto data = root.as_object()["object_data"].as_string();
+
+        ByteBuffer buf;
+        if (it->IsIPFSObject())
+        {
+            auto hash = FromHex(data);
+            auto responce = wc.LoadObjectFromIPFS(std::string(hash.cbegin(), hash.cend()));
+            auto r = json::parse(responce);
+            auto d = r.as_object()["result"].as_object()["data"].as_array();
+            buf.reserve(d.size());
+            for (auto&& v : d)
+            {
+                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+            }
+        }
+        else
+        {
+            buf = FromHex(data);
+        }
+
         git_oid res_oid;
-        auto type = git_object_t(it->type);
+        auto type = it->GetObjectType();
         git_oid r;
         git_odb_hash(&r, buf.data(), buf.size(), type);
+        if (r != oid)
+        {
+            // invalid hash
+            return -1;
+        }
         git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type);
         if (type == GIT_OBJECT_TREE)
         {
@@ -237,6 +262,20 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
     }
 
+    for (auto& obj : collector.m_objects)
+    {
+        if (obj.selected)
+            continue;
+
+        if (obj.type == GIT_OBJECT_BLOB && obj.GetSize() > 46)
+        {
+            auto res = wc.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
+            auto r = json::parse(res);
+            auto hashStr = r.as_object()["result"].as_object()["hash"].as_string();
+            obj.ipfsHash = ByteBuffer(hashStr.cbegin(), hashStr.cend());
+        }
+    }
+
     collector.Serialize([&](const auto& buf)
         {
             // log
@@ -306,6 +345,7 @@ int main(int argc, char* argv[])
             ("api-port", po::value<std::string>(&options.apiPort)->default_value("10000"), "Wallet API port")
             ("api-target", po::value<std::string>(&options.apiTarget)->default_value("/api/wallet"), "Wallet API target")
             ("app-shader-file", po::value<string>(&options.appPath)->default_value("app.wasm"), "Path to the app shader file")
+            ("use-ipfs", po::value<bool>(&options.useIPFS)->default_value(true), "Use IPFS to store large blobs")
             ;
         po::variables_map vm;
 #ifdef WIN32
@@ -377,7 +417,6 @@ int main(int argc, char* argv[])
                 return -1;
             }
             cerr << "Command: " << input << endl;
-
             if (it->action(walletClient, args) == -1)
             {
                 return -1;

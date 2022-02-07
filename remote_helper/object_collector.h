@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <stdexcept>
 
 //struct git_odb_object;
 
@@ -18,6 +19,25 @@ namespace pit
         git_oid hash;
         uint32_t data_size;
         // followed by data
+
+        bool IsValidObjectType() const
+        {
+            auto t = type & 0x7f; // clear first bit
+            return t >= GIT_OBJECT_COMMIT && t <= GIT_OBJECT_TAG;
+        }
+
+        git_object_t GetObjectType() const
+        {
+            if (IsValidObjectType())
+                return static_cast<git_object_t>(type & 0x7f);
+
+            throw std::runtime_error("Invalid object type");
+        }
+
+        bool IsIPFSObject() const
+        {
+            return (type & 0x80) != 0 && IsValidObjectType();
+        }
     };
 
     struct ObjectsInfo
@@ -36,6 +56,7 @@ namespace pit
         std::string     name;
         std::string     fullPath;
         bool            selected = false;
+        ByteBuffer      ipfsHash;
 
         ObjectInfo(const git_oid& o, git_object_t t, git_odb_object* obj);
         ObjectInfo(const ObjectInfo& other);
@@ -44,9 +65,11 @@ namespace pit
         ObjectInfo& operator=(ObjectInfo&& other) noexcept;
         ~ObjectInfo() noexcept;
 
+        int8_t GetSerializeType() const;
         std::string GetDataString() const;
         const uint8_t* GetData() const;
         size_t GetSize() const;
+        bool IsIPFSObject() const;
     };
 
     struct Refs
@@ -106,7 +129,7 @@ namespace pit
                 {
                     const auto& obj = m_objects[indecies[i]];
                     serObj->data_size = static_cast<uint32_t>(obj.GetSize());
-                    serObj->type = static_cast<int8_t>(obj.type);
+                    serObj->type = obj.GetSerializeType();
                     git_oid_cpy(&serObj->hash, &obj.oid);
                     auto* data = reinterpret_cast<uint8_t*>(serObj + 1);
                     std::copy_n(obj.GetData(), obj.GetSize(), data);

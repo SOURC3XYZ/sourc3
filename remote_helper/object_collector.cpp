@@ -58,19 +58,37 @@ namespace pit
 
     std::string ObjectInfo::GetDataString() const
     {
-        return ToHex(git_odb_object_data(object), git_odb_object_size(object));
+        return ToHex(GetData(), GetSize());
+    }
+
+    int8_t ObjectInfo::GetSerializeType() const
+    {
+        if (IsIPFSObject())
+            return static_cast<int8_t>(type) | 0x80;
+
+        return static_cast<int8_t>(type);
     }
 
     const uint8_t* ObjectInfo::GetData() const
     {
+        if (IsIPFSObject())
+            return ipfsHash.data();
+
         return static_cast<const uint8_t*>(git_odb_object_data(object));
     }
 
     size_t ObjectInfo::GetSize() const
     {
+        if (IsIPFSObject())
+            return ipfsHash.size();
+
         return git_odb_object_size(object);
     }
 
+    bool ObjectInfo::IsIPFSObject() const
+    {
+        return !ipfsHash.empty();
+    }
 
     /////////////////////////////////////////////////////
 

@@ -23,6 +23,7 @@ target_link_libraries(helper_lib
 		Boost::boost
 		Boost::date_time
 		Boost::container
+		Boost::json
 )
 
 target_link_libraries(${TARGET_NAME} 
