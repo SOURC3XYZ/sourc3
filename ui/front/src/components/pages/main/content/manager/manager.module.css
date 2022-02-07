@@ -1,0 +1,21 @@
+/* .balanceBtn>button{
+    margin-right: 10px;
+} */
+.beam{
+    margin-right: 5px;
+}
+.info{
+    display: flex;
+    /* justify-content: center; */
+    padding-bottom: 1rem;
+    width: 100vh;
+}
+/* .repoHeader {
+    padding-bottom: 1rem;
+  } */
+  /* .content{
+    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    width: 100vh;
+  } */

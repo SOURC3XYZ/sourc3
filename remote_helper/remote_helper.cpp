@@ -19,6 +19,7 @@
 #include <string_view>
 #include <string>
 #include <vector>
+#include "version.h"
 
 namespace po = boost::program_options;
 namespace json = boost::json;
@@ -330,6 +331,7 @@ int DoCapabilities([[maybe_unused]] SimpleWalletClient& wc
 
 int main(int argc, char* argv[])
 {
+    cerr << "PIT v." << PROJECT_VERSION.data() << endl;
     if (argc != 3)
     {
         cerr << "USAGE: git-remote-pit <remote> <url>" << endl;

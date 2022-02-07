@@ -1,2 +1,5 @@
 /out
 /.vs
+dist
+node_modules
+.idea

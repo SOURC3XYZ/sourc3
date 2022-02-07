@@ -1,0 +1,44 @@
+{
+	"overrides": [{
+		"files": ["*.ts", "*.js"]
+	}],
+  "extends": ["airbnb", "airbnb-typescript"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": ["./tsconfig.json"]
+  },
+  "rules": {
+  "func-names":"off",
+		"no-bitwise": ["off"],
+		"import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/test/*.test.ts", "**/test/*.spec.ts", "webpack.config.ts"]}],
+		"import/prefer-default-export": "off",
+  "no-nested-ternary": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/naming-convention": "off",
+		"no-plusplus": "off",
+		"no-console": "warn",
+		"max-len": ["warn", { "code": 80 }],
+		
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never"
+      }
+    ],
+		"comma-dangle": ["error", {
+			"arrays": "never",
+			"objects": "never",
+			"imports": "never",
+			"exports": "never",
+			"functions": "never"
+	}],
+	"@typescript-eslint/comma-dangle": "off",
+	"@typescript-eslint/indent": ["warn", 2, {
+		"SwitchCase": 1
+	}]
+  }
+
+}
