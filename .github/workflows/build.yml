@@ -220,7 +220,7 @@ jobs:
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
       shell: bash
       run: |
-        apt-get install libkrb5-dev
+        sudo apt-get install libkrb5-dev libssl-dev
         cd ui/service
         npm i --save-dev
         npm run build
