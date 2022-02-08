@@ -17,6 +17,7 @@
   "author": "Danique",
   "license": "ISC",
   "dependencies": {
+    "commander": "^9.0.0",
     "cors": "^2.8.5",
     "dotenv": "^11.0.0",
     "express": "^4.17.2",
@@ -24,6 +25,7 @@
     "winston": "^3.4.0"
   },
   "devDependencies": {
+    "@types/commander": "^2.12.2",
     "@types/cors": "^2.8.12",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.13",

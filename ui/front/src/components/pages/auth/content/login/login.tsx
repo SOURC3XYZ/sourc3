@@ -25,7 +25,7 @@ const Login = ({ startWalletApi }: LoginProps) => {
     loadingData(startWalletApi(pass) as (
       resolve: PromiseArg<string>, reject?: PromiseArg<string>
     ) => void)
-      .then(() => navigate('/main/repos/all/1'))
+      .then(() => navigate('/mainDesk'))
       .catch((data: string) => throwError(new Error(data)));
     setLoading(true);
   };

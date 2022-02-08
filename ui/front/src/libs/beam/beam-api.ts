@@ -12,7 +12,7 @@ type CallApiProps<T> = {
 };
 
 type BeamApiReqHandlers = {
-  resolve: (value: unknown) => void,
+  resolve: (value: BeamApiRes) => void,
   reject: (reason?: any) => void
 };
 
@@ -116,7 +116,7 @@ export class BeamAPI<T> {
 
   readonly callApi = (
     { callID, method, params }: CallApiProps<T>
-  ): Promise<unknown> => {
+  ): Promise<BeamApiRes> => {
     const id = `${callID}(${new Date().getTime()})`;
     const modifiedParams = { ...params } as Modified<T>;
     if (this.isNoContractMethod(method)) {
@@ -129,7 +129,9 @@ export class BeamAPI<T> {
         );
       }
     }
-    return new Promise(this.callApiHandler(id, method, modifiedParams));
+    return new Promise<BeamApiRes>(
+      this.callApiHandler(id, method, modifiedParams)
+    );
   };
 
   private readonly callApiHandler = (

@@ -22,6 +22,8 @@ const themeVariables = lessToJs(
   fs.readFileSync(path.join(__dirname, './ant-theme-vars.less'), 'utf8')
 );
 
+console.log('env', process.env.NODE_ENV);
+
 const build:IConfig = {
   entry: './src/index.tsx',
   bail: true,
@@ -33,7 +35,7 @@ const build:IConfig = {
     publicPath: process.env.NODE_ENV === 'production' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
+  devtool: 'source-map',
   optimization: {
     nodeEnv: 'production'
     // minimize: true,

@@ -1,14 +1,32 @@
 /* eslint-disable no-param-reassign */
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, ipcMain, dialog } = require('electron');
+const path = require('path');
+
+
 
 const service = null;
 
 function createWindow() {
+  console.log(path.join(__dirname, 'preload.js'));
   const win = new BrowserWindow({
     width: 800,
-    height: 600
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      enableRemoteModule: false,
+      contextIsolation: true
+    }
   });
+
+  ipcMain.on('select-dirs', async (event, arg) => {
+    const result = await dialog.showOpenDialog(win, {
+      properties: ['openDirectory']
+    })
+    console.log('directories selected', result.filePaths)
+    win.webContents.send('ping', result.filePaths)
+  })
 
   win.loadFile('dist/index.html');
 }

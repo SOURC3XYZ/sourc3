@@ -1,11 +1,11 @@
 import { FileTextTwoTone, FolderTwoTone } from '@ant-design/icons';
+import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
   DataNode, RepoId, UpdateProps
 } from '@types';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Preload } from '../../../../../../../../shared/preload';
 
 type FileTreeBlockProps = {
   id: RepoId;

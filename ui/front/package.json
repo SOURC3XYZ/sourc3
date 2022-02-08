@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "webpack",
-    "prebuild": "export NODE_ENV=production; webpack",
+    "testbuild": "export NODE_ENV=production; webpack",
     "start": "webpack serve --mode development",
     "electron": "electron ."
   },
@@ -50,7 +50,7 @@
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.2.0",
     "duplicate-package-checker-webpack-plugin": "^3.0.0",
-    "electron": "^16.0.7",
+    "electron": "^17.0.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-typescript": "^15.0.0",

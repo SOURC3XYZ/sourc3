@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  checkRunningApi,
   exportOwnerKey,
   killApiServer,
-  removeWallet,
   restoreExistedWallet,
   runWalletApi,
   startBeamNode
@@ -13,17 +13,13 @@ type ProcessStatus = {
   message: string
 };
 
-export const removeExistedWallet = async () => {
-  const isWalletRemoved = await removeWallet();
-  return isWalletRemoved;
-};
+export const checkApi = () => checkRunningApi();
 
 export const restoreWallet = async (
   seed: string,
   password: string
 ): Promise<ProcessStatus> => {
   try {
-    await removeWallet();
     const isRestored = await restoreExistedWallet(seed, password);
     return { isOk: true, message: isRestored };
   } catch (error) {
