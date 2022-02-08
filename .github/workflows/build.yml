@@ -43,6 +43,7 @@ jobs:
       run: |
         echo $GITHUB_WORKSPACE
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
+        brew install boost
 
     - name: Create Build Environment [ubuntu all]
       shell: bash
