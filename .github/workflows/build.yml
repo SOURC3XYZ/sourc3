@@ -239,6 +239,35 @@ jobs:
         sudo npm install --global yarn
         yarn add electron-builder --dev
         yarn app:dist
+        
+    - name: Build electron [windows]
+      if: matrix.os == 'windows-2019'
+      shell: bash
+      run: |
+        cd ui\service
+        npm i --save-dev
+        npm run build
+        npm run bundle:server
+        cd ..\front
+        npm i --save-dev
+        set NODE_ENV=production
+        npm run build
+        cd ..
+        mkdir -p .\beam-res\api .\beam-res\cli .\beam-res\node
+        pushd ..\downloads\${{matrix.PLATFORM_NAME}}-wallet-api${{env.BEAM_TARGET_SUFFIX}}-*
+        xcopy /s * ..\..\beam-res\api
+	popd
+	pushd ..\downloads\${{matrix.PLATFORM_NAME}}-beam-wallet-cli${{env.BEAM_TARGET_SUFFIX}}-*
+        xcopy /s * ..\..\beam-res\cli
+	popd
+	pushd ..\downloads\${{matrix.PLATFORM_NAME}}-beam-node${{env.BEAM_TARGET_SUFFIX}}-*
+        xcopy /s * ..\..\beam-res\node
+	popd
+        copy ..\downloads\beam-wasm${{env.BEAM_TARGET_SUFFIX}}-* .\front\dist\
+        copy ..\shaders\app.wasm .\front\dist\assets\
+        npm install --global yarn
+        yarn add electron-builder --dev
+        yarn app:dist
 
     - name: Prepare artifacts [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
@@ -246,6 +275,20 @@ jobs:
       run: |
         mkdir -p installer/${{matrix.PLATFORM_NAME}}
         cp ui/dist/*.AppImage installer/${{matrix.PLATFORM_NAME}}
+
+    - name: Prepare artifacts [macos]
+      if: matrix.os == 'macos-10.15'
+      shell: bash
+      run: |
+        mkdir -p installer/${{matrix.PLATFORM_NAME}}
+        cp ui/dist/*.dmg installer/${{matrix.PLATFORM_NAME}}
+
+    - name: Prepare artifacts [windows]
+      if: matrix.os == 'windows-2019'
+      shell: bash
+      run: |
+        mkdir -p installer\${{matrix.PLATFORM_NAME}}
+        cp ui\dist\*.exe installer\${{matrix.PLATFORM_NAME}}
 
         #TODO
         #- name: Prepare artifacts [macos]
@@ -278,6 +321,20 @@ jobs:
       with:
         name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.AppImage
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
+        if-no-files-found: error
+    
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'macos-10.15'
+      with:
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.dmg
+        path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
+        if-no-files-found: error
+        
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'windows-2019'
+      with:
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.dmg
+        path: installer/${{matrix.PLATFORM_NAME}}/*.exe
         if-no-files-found: error
 
 ###############################################################################
