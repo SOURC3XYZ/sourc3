@@ -280,7 +280,6 @@ jobs:
         sudo npm install --global yarn
         yarn add electron-builder --dev
         yarn app:dist
-        find .. -name '*.dmg' -or -name '*AppImage'
         
 #    - name: Build electron [windows]
 #      shell: bash
@@ -307,7 +306,7 @@ jobs:
     - name: Sign the electron dmg [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg###
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg
 
     - name: Notarize [macos-10.15]
       shell: bash
