@@ -119,6 +119,9 @@ jobs:
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
         echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
+        
+        sed 's/"version": "1.0.0"/"version": "'${{ env.PACKAGE_VERSION }}'"/g' ui/package.json > ui/package_tmp.json
+        mv ui/package_tmp.json ui/package.json
 
 ###############################################################################
 # Build
@@ -302,7 +305,7 @@ jobs:
 ###############################################################################
     - uses: actions/upload-artifact@v2
       with:
-        name: pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
+        name: ${{matrix.PLATFORM_NAME}}-pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: artifacts/*
         if-no-files-found: error
 
@@ -317,21 +320,21 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.AppImage
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
         if-no-files-found: error
     
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'macos-10.15'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.dmg
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
         if-no-files-found: error
         
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}.dmg
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.exe
         if-no-files-found: error
 
