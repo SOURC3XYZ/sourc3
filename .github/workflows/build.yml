@@ -268,7 +268,8 @@ jobs:
         cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
-        cp ./shaders/app.wasm ./ui/front/dist/assets/    
+        cp ./shaders/app.wasm ./ui/front/dist/assets/  
+        npm install --global yarn
         
     - name: Prepare for electron build [macos-10.15 && ubuntu all]
       shell: bash
@@ -280,6 +281,7 @@ jobs:
         tar xvf ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/node
         cp ./downloads/wasm-client* ./ui/front/dist
         cp ./shaders/app.wasm ./ui/front/dist/assets
+        sudo npm install --global yarn
           
     - name: Build electron
       shell: bash
@@ -292,7 +294,6 @@ jobs:
         npm i --save-dev
         NODE_ENV=production npm run build
         cd ..
-        sudo npm install --global yarn
         yarn add electron-builder --dev
         yarn app:dist
 
