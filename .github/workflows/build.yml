@@ -268,10 +268,25 @@ jobs:
         yarn add electron-builder --dev
         yarn app:dist
 
-    # - name: Sign the electron dmg [macos-10.15]
-    #   if: matrix.os == 'macos-10.15'
-    #   run: |
-    #     codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg
+    - name: Sign the electron dmg [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg
+
+    - name: Notarize [macos-10.15]
+      shell: bash
+      if: matrix.os == 'macos-10.15'
+      env:
+        MACOS_NOTARIZE_USER: ${{ secrets.MACOS_NOTARIZE_USER }}
+        MACOS_NOTARIZE_PASS: ${{ secrets.MACOS_NOTARIZE_PASS }}
+        MACOS_NOTARIZE_PROVIDER: ${{ secrets.MACOS_NOTARIZE_PROVIDER }}
+      run: |
+        chmod +x ./notarize.sh
+        set -- ui/dist/*.dmg
+        DMG_NAME=$1
+        BUNDLE_ID=com.io.pit.client
+        ./notarize.sh $DMG_NAME $BUNDLE_ID
+        shasum -a 256 $DMG_NAME > checksum.txt
 
     - name: Prepare artifacts [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
