@@ -260,12 +260,9 @@ jobs:
         name: ${{matrix.PLATFORM_NAME}}-beam-wallet-cli${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
           
     - name: Build electron [macos-10.15 && ubuntu all]
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' #|| matrix.os == 'macos-10.15'
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
       shell: bash
       run: |
-        sudo apt-get install tree
-        tree downloads
-        
         cd ui/service
         npm i --save-dev
         npm run build
@@ -306,25 +303,25 @@ jobs:
 #        yarn add electron-builder --dev
 #        yarn app:dist
 
-#    - name: Sign the electron dmg [macos-10.15]
-#      if: matrix.os == 'macos-10.15'
-#      run: |
-#        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg###
+    - name: Sign the electron dmg [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg###
 
-#    - name: Notarize [macos-10.15]
-#      shell: bash
-#      if: matrix.os == 'macos-10.15'
-#     env:
-#        MACOS_NOTARIZE_USER: ${{ secrets.MACOS_NOTARIZE_USER }}
-#        MACOS_NOTARIZE_PASS: ${{ secrets.MACOS_NOTARIZE_PASS }}
-#        MACOS_NOTARIZE_PROVIDER: ${{ secrets.MACOS_NOTARIZE_PROVIDER }}
-#      run: |
-#        chmod +x ./notarize.sh
-#        set -- ui/dist/*.dmg
-#        DMG_NAME=$1
-#        BUNDLE_ID=com.io.pit.client
-#        ./notarize.sh $DMG_NAME $BUNDLE_ID
-#        shasum -a 256 $DMG_NAME > checksum.txt
+    - name: Notarize [macos-10.15]
+      shell: bash
+      if: matrix.os == 'macos-10.15'
+      env:
+        MACOS_NOTARIZE_USER: ${{ secrets.MACOS_NOTARIZE_USER }}
+        MACOS_NOTARIZE_PASS: ${{ secrets.MACOS_NOTARIZE_PASS }}
+        MACOS_NOTARIZE_PROVIDER: ${{ secrets.MACOS_NOTARIZE_PROVIDER }}
+      run: |
+        chmod +x ./notarize.sh
+        set -- ui/dist/*.dmg
+        DMG_NAME=$1
+        BUNDLE_ID=com.io.pit.client
+        ./notarize.sh $DMG_NAME $BUNDLE_ID
+        shasum -a 256 $DMG_NAME > checksum.txt
 
     - name: Prepare artifacts [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
@@ -333,12 +330,12 @@ jobs:
         mkdir -p installer/${{matrix.PLATFORM_NAME}}
         cp ui/dist/*.AppImage installer/${{matrix.PLATFORM_NAME}}
 
- #   - name: Prepare artifacts [macos]
- #     if: matrix.os == 'macos-10.15'
- #     shell: bash
- #     run: |
- #       mkdir -p installer/${{matrix.PLATFORM_NAME}}
- #       cp ui/dist/*.dmg installer/${{matrix.PLATFORM_NAME}}
+    - name: Prepare artifacts [macos]
+      if: matrix.os == 'macos-10.15'
+      shell: bash
+      run: |
+        mkdir -p installer/${{matrix.PLATFORM_NAME}}
+        cp ui/dist/*.dmg installer/${{matrix.PLATFORM_NAME}}
 
  #   - name: Prepare artifacts [windows]
  #     if: matrix.os == 'windows-2019'
@@ -380,12 +377,12 @@ jobs:
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
         if-no-files-found: error
     
-#    - uses: actions/upload-artifact@v2
-#      if: matrix.os == 'macos-10.15'
-#      with:
-#        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
-#        path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
-#        if-no-files-found: error
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'macos-10.15'
+      with:
+        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
+        path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
+        if-no-files-found: error
         
 #    - uses: actions/upload-artifact@v2
 #      if: matrix.os == 'windows-2019'
