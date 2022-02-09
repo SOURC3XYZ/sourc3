@@ -281,27 +281,28 @@ jobs:
         yarn add electron-builder --dev
         yarn app:dist
         
-#    - name: Build electron [windows]
-#      shell: bash
-#      if: matrix.os == 'windows-2019'
-#      run: |
-#        cd ui/service
-#        npm i --save-dev
-#        npm run build
-#        npm run bundle:server
-#        cd ../front
-#        npm i --save-dev
-#        NODE_ENV=production npm run build
-#        cd ..
-#        mkdir -p ./beam-res/api ./beam-res/cli ./beam-res/node
-#        cp ../downloads/${{matrix.PLATFORM_NAME}}-wallet-api${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/api/
-#        cp ../downloads/${{matrix.PLATFORM_NAME}}-beam-wallet-cli${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/cli/
-#        cp ../downloads/${{matrix.PLATFORM_NAME}}-beam-node${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/node/
-#        cp ../downloads/beam-wasm${{env.BEAM_TARGET_SUFFIX}}-*/* ./front/dist/
-#        cp ../shaders/app.wasm ./front/dist/assets/
-#        npm install --global yarn
-#        yarn add electron-builder --dev
-#        yarn app:dist
+    - name: Build electron [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        cd ui/service
+        npm i --save-dev
+        npm run build
+        npm run bundle:server
+        cd ../front
+        npm i --save-dev
+        NODE_ENV=production npm run build
+        cd ..
+        mkdir -p ./beam-res/api ./beam-res/cli ./beam-res/node
+        ls -R ../downloads/
+        cp ../downloads/${{matrix.PLATFORM_NAME}}-wallet-api${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/api/
+        cp ../downloads/${{matrix.PLATFORM_NAME}}-beam-wallet-cli${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/cli/
+        cp ../downloads/${{matrix.PLATFORM_NAME}}-beam-node${{env.BEAM_TARGET_SUFFIX}}-*/* ./beam-res/node/
+        cp ../downloads/beam-wasm${{env.BEAM_TARGET_SUFFIX}}-*/* ./front/dist/
+        cp ../shaders/app.wasm ./front/dist/assets/
+        npm install --global yarn
+        yarn add electron-builder --dev
+        yarn app:dist
 
     - name: Sign the electron dmg [macos-10.15]
       if: matrix.os == 'macos-10.15'
