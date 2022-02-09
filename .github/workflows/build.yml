@@ -120,6 +120,9 @@ jobs:
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
         echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
         
+    - name: Change version for Electron
+      shell: bash
+      run: |
         sed 's/"version": "1.0.0"/"version": "'${{ env.PACKAGE_VERSION }}'"/g' ui/package.json > ui/package_tmp.json
         mv ui/package_tmp.json ui/package.json
 
