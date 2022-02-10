@@ -1,1 +1,1 @@
-export {default as Balance} from './balance';
+export { default as Balance } from './balance';

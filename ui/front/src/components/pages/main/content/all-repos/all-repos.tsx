@@ -23,6 +23,7 @@ type LocationState = {
 type AllReposProps = {
   repos: RepoType[],
   searchText: string,
+  isWeb?:boolean,
   getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void,
@@ -39,6 +40,7 @@ const initialState = {
 const AllRepos = ({
   repos,
   searchText,
+  isWeb,
   getAllRepos,
   createRepos,
   deleteRepos,
@@ -48,7 +50,7 @@ const AllRepos = ({
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [state, setState] = useObjectState<typeof initialState>(initialState);
-
+  const path = pathname.split('/').slice(1, 3).join('/');
   const { isLoading, isModalVisible, inputRepoName } = state;
 
   const filteredRepos = React.useMemo(() => searchFilter(
@@ -83,15 +85,25 @@ const AllRepos = ({
 
   return (
     <div className={styles.content}>
-      <Nav type={type} />
-      <Row className={styles.repoHeader}>
-        <Col span={8}>
-          <BeamButton title="New" callback={showModal} />
-        </Col>
-        <Col span={8} offset={8}>
-          <Search text={searchText} setInputText={setInputText} />
-        </Col>
-      </Row>
+      {isWeb ? (
+        <>
+          <Nav type={type} />
+          <Row className={styles.repoHeader}>
+            <Col span={8}>
+              <BeamButton title="New" callback={showModal} />
+            </Col>
+            <Col span={8} offset={8}>
+              <Search text={searchText} setInputText={setInputText} />
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <Row className={styles.repoHeader}>
+          <Col span={8} offset={8}>
+            <Search text={searchText} setInputText={setInputText} />
+          </Col>
+        </Row>
+      )}
 
       <Modal
         visible={isModalVisible}
@@ -107,6 +119,7 @@ const AllRepos = ({
         />
       </Modal>
       <RepoList
+        path={path}
         searchText={searchText}
         loading={isLoading}
         page={+page}

@@ -42,10 +42,10 @@ const AddButton = ({ createRepos }:AddButtonPropsType) => {
   const menu = (
     <Menu>
       <Menu.Item>
-        <Button type="link" onClick={showModal}>Clone repository</Button>
+        <Button type="link">Clone repository</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link">Create new Repository</Button>
+        <Button type="link" onClick={showModal}>Create new Repository</Button>
       </Menu.Item>
       <Menu.Item>
         <Button type="link">Add existing repository</Button>

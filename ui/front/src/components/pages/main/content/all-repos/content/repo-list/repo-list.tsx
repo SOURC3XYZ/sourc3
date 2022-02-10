@@ -8,6 +8,7 @@ import { BeamButton } from '../../../../../../shared/beam-button';
 import Excretion from '../../../../../../shared/excretion';
 
 type ListRenderProps = {
+  path: string,
   page: number,
   elements: RepoType[],
   deleteRepos: (repo_id: number) => void
@@ -17,18 +18,19 @@ type ListRenderProps = {
 };
 
 const RepoList = ({
-  page = 1, elements, searchText, deleteRepos, loading, type = 'repos'
+  page = 1, elements, searchText, deleteRepos, loading, type = 'repos', path
 }:ListRenderProps) => {
   const navigate = useNavigate();
   const textCash = React.useRef(searchText);
   const colorList = React.useMemo(() => Object.values(ActionColor), []);
+  const pathRepo = path.split('/').splice(0, 1).join('');
 
-  const onChange = (next:number) => navigate(`/main/repos/${type}/${next}`);
+  const onChange = (next:number) => navigate(`/${path}/${type}/${next}`);
 
   React.useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      navigate(`/main/repos/${type}/${1}`);
+      navigate(`/${path}/${type}/${1}`);
     }
   }, [searchText]);
 
@@ -65,7 +67,7 @@ const RepoList = ({
               title={(
                 <Link
                   to={
-                    `/main/repo/${item.repo_id}&${item.repo_name}/tree/`
+                    `/${pathRepo}/repo/${item.repo_id}&${item.repo_name}/tree/`
                   }
                   state={{ id: item.repo_id }}
                 >

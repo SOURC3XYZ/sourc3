@@ -6,7 +6,6 @@ import {
 } from 'react-router-dom';
 import { thunks } from '@libs/action-creators';
 import { Menu, Preload } from '@components/shared';
-import { Button } from 'antd';
 import {
   Notifications, Repo, AllRepos, Manager
 } from './content';
@@ -41,7 +40,7 @@ const Main = ({
 
   //   window.addEventListener('message', messageHandler);
   // };
-  //TODO: local git handler
+  // TODO: local git handler
   return (
     <>
       <Header />
@@ -62,7 +61,11 @@ const Main = ({
                 />
                 <Route
                   path="repos/:type/:page"
-                  element={<AllRepos />}
+                  element={(
+                    <AllRepos
+                      isWeb
+                    />
+                  )}
                 />
                 <Route
                   path="repo/:repoParams/*"

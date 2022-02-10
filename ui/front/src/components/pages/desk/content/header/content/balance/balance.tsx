@@ -2,7 +2,9 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Send from './send';
+import Receive from './receive';
 import styles from './balance.module.css';
 
 type BalancePropsType = {
@@ -10,25 +12,38 @@ type BalancePropsType = {
 };
 
 const Balance = ({ current }:BalancePropsType) => {
-  const [isVisible, seIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const showModal = () => {
-    seIsVisible(true);
+    setIsVisible(true);
   };
   const closeModal = () => {
-    seIsVisible(false);
+    // e.preventDefault();
+    setIsVisible(false);
+  };
+  const showModals = () => {
+    setVisible(true);
+  };
+  const closeModals = () => {
+    // e.preventDefault();
+    setVisible(false);
   };
 
   const menu = (
     <Menu>
       <Menu.Item>
-        <Button type="link">Send</Button>
+        <Button type="link" onClick={showModal}>Send</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link" onClick={showModal}>Receive</Button>
+        <Button type="link" onClick={showModals}>Receive</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link">Get More</Button>
+        <Button type="link">
+          <Link type="link" to="manager">
+            Get More
+          </Link>
+        </Button>
       </Menu.Item>
     </Menu>
   );
@@ -53,6 +68,10 @@ const Balance = ({ current }:BalancePropsType) => {
         current={current}
         isVisible={isVisible}
         onClose={closeModal}
+      />
+      <Receive
+        isVisible={visible}
+        onClose={closeModals}
       />
     </div>
   );

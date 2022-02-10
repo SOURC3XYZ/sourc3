@@ -55,7 +55,7 @@ const Login = ({ startWalletApi }: LoginProps) => {
               />
             </label>
             <Link to="/auth/restore">
-              I forgot my password
+              Restore account
             </Link>
             <div className={styles.btnNav}>
               <NavButton
