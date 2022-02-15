@@ -24,8 +24,8 @@ const Desk = ({
 }: MainDeskProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
-    getWalletStatus();
     if (!pkey)getPublicKey();
+    getWalletStatus();
   }, []);
   return (
     <>
