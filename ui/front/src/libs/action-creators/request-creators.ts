@@ -175,6 +175,19 @@ export const RC = {
       asset_id: 0,
       offline: false
     }
+  } as const),
+
+  setPublicKey: (
+  ) => ({
+    callID: 'set_public_key',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'get_key'
+      },
+      create_tx: false
+    }
   } as const)
 
 };

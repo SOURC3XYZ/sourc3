@@ -13,15 +13,22 @@ import styles from './main.module.css';
 import { Header } from '../desk/content';
 
 type MainProps = {
+  getWalletStatus: () => void,
+  getPublicKey: () => void,
   connectApi: () => void,
-  isApiConnected: boolean
+  isApiConnected: boolean,
+  balance: number
+  pkey: string
+
 };
 
 const Main = ({
-  isApiConnected, connectApi
+  isApiConnected, connectApi, balance, getWalletStatus, pkey, getPublicKey
 }:MainProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
+    getPublicKey();
+    getWalletStatus();
   }, []);
 
   // const path = window.location.pathname === 'Pit_demo/app/index.html'
@@ -43,7 +50,11 @@ const Main = ({
   // TODO: local git handler
   return (
     <>
-      <Header />
+      <Header
+        balance={balance}
+        pKey={pkey}
+
+      />
       <div className={styles.main}>
         <Menu />
         {/* <div>
@@ -85,14 +96,23 @@ const Main = ({
 };
 
 const mapState = ({
-  app: { isApiConnected }
+  app: { isApiConnected, balance, pkey }
 }: RootState) => ({
-  isApiConnected
+  isApiConnected,
+  balance,
+  pkey
+
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   connectApi: () => {
     dispatch(thunks.connectBeamApi());
+  },
+  getWalletStatus: () => {
+    dispatch(thunks.getWalletStatus());
+  },
+  getPublicKey: () => {
+    dispatch(thunks.getPublicKey());
   }
 });
 

@@ -266,5 +266,17 @@ export const thunks = {
         return dispatch(AC.setTx(res.result.txId));
       } throw new Error('failed to send beam');
     } catch (error) { return thunkCatch(error, dispatch); }
+  },
+  getPublicKey: () => async (dispatch: AppThunkDispatch) => {
+    try {
+      const res = await callApi(
+        RC.setPublicKey()
+      ) as unknown as { error: any, result: any };
+      if (res.result && !res.error) {
+        return dispatch(AC.setPublicKey(
+          JSON.parse(res.result.output).key
+        ));
+      } throw new Error('Failed to get public key');
+    } catch (error) { return thunkCatch(error, dispatch); }
   }
 };

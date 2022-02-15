@@ -11,18 +11,28 @@ import Repositories from './content/repositories/repositories';
 import styles from './desk.module.css';
 
 type MainDeskProps = {
+  getWalletStatus: () => void,
+  getPublicKey: () => void,
   connectApi: () => void,
-  isApiConnected: boolean
+  isApiConnected: boolean,
+  balance: number,
+  pkey: string
 };
 
-const Desk = ({ isApiConnected, connectApi }: MainDeskProps) => {
+const Desk = ({
+  isApiConnected, connectApi, balance, getWalletStatus, getPublicKey, pkey
+}: MainDeskProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
+    getWalletStatus();
+    getPublicKey();
   }, []);
   return (
     <>
       <Header
         isWeb
+        balance={balance}
+        pKey={pkey}
       />
       <div className={styles.wrapper}>
         {
@@ -45,7 +55,11 @@ const Desk = ({ isApiConnected, connectApi }: MainDeskProps) => {
                 />
                 <Route
                   path="manager"
-                  element={<Manager />}
+                  element={(
+                    <Manager
+                      isDesk
+                    />
+                  )}
                 />
               </Routes>
             )
@@ -59,14 +73,22 @@ const Desk = ({ isApiConnected, connectApi }: MainDeskProps) => {
   );
 };
 const mapState = ({
-  app: { isApiConnected }
+  app: { isApiConnected, balance, pkey }
 }: RootState) => ({
-  isApiConnected
+  isApiConnected,
+  balance,
+  pkey
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   connectApi: () => {
     dispatch(thunks.connectBeamApi());
+  },
+  getWalletStatus: () => {
+    dispatch(thunks.getWalletStatus());
+  },
+  getPublicKey: () => {
+    dispatch(thunks.getPublicKey());
   }
 });
 

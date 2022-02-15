@@ -12,6 +12,7 @@ interface IApp {
   } | null,
   balance: number,
   addrList: string
+  pkey: string
 }
 
 const initialState:IApp = {
@@ -19,7 +20,8 @@ const initialState:IApp = {
   txs: new Set(),
   error: null,
   balance: 0,
-  addrList: ''
+  addrList: '',
+  pkey: ''
 };
 
 const reducer = (
@@ -64,6 +66,10 @@ const reducer = (
 
     case ACTIONS.SET_WALLET_ADDRESS_LIST:
       newState.addrList = action.payload as string;
+      return newState;
+
+    case ACTIONS.SET_PUBLIC_KEY:
+      newState.pkey = action.payload as string;
       return newState;
 
     default:

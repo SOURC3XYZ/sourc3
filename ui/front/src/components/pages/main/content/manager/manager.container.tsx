@@ -11,6 +11,7 @@ import { thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { useObjectState } from '@libs/hooks';
+import { Link } from 'react-router-dom';
 import styles from './manager.module.css';
 
 type ManagerProps = {
@@ -23,6 +24,7 @@ type ManagerProps = {
     commentValue:string)=> void
   balance: number,
   addrList: string,
+  isDesk?: boolean
 };
 
 const initialState = {
@@ -37,7 +39,8 @@ const Manager = ({
   getWalletAddressList,
   setWalletSendBeam,
   balance,
-  addrList
+  addrList,
+  isDesk
 }: ManagerProps) => {
   const [state, setState] = useObjectState(initialState);
   const {
@@ -96,6 +99,9 @@ const Manager = ({
   console.log(amount);
   return (
     <>
+      {
+        isDesk ? (<Link to="/mainDesk">Back</Link>) : (<></>)
+      }
       <div className={styles.info}>
         <Card
           title="Finance"

@@ -134,6 +134,11 @@ export const AC = {
   setWalletAddressList: (payload: any) => ({
     type: ACTIONS.SET_WALLET_ADDRESS_LIST,
     payload
+  } as const),
+
+  setPublicKey: (payload: any) => ({
+    type: ACTIONS.SET_PUBLIC_KEY,
+    payload
   } as const)
 
 };

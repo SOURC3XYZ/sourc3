@@ -10,7 +10,7 @@
 
 }
 .toggle{
-    position: sticky;
+    position: absolute;
     top:25%;
-    right: 59.5%
+    right: 600px
 }
