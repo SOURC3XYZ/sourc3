@@ -26,9 +26,9 @@ const Main = ({
   isApiConnected, connectApi, balance, getWalletStatus, pkey, getPublicKey
 }:MainProps) => {
   React.useEffect(() => {
-    if (!isApiConnected) connectApi();
-    getPublicKey();
-    getWalletStatus();
+    if (!isApiConnected) return connectApi();
+    if (!pkey)getPublicKey();
+    return getWalletStatus();
   }, []);
 
   // const path = window.location.pathname === 'Pit_demo/app/index.html'

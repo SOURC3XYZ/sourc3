@@ -25,7 +25,7 @@ const Desk = ({
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
     getWalletStatus();
-    getPublicKey();
+    if (!pkey)getPublicKey();
   }, []);
   return (
     <>

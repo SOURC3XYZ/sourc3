@@ -59,6 +59,9 @@ const Balance = ({ current }:BalancePropsType) => {
           border: 'none', height: 60
         }}
         >
+          {' '}
+          Current balance:
+          <br />
           {current}
           {' '}
           PIT

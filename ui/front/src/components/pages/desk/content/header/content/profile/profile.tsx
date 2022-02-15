@@ -5,6 +5,7 @@ import {
 import Modal from 'antd/lib/modal/Modal';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import styles from './profile.module.css';
 
 type profileType = {
   pKey: string
@@ -57,7 +58,7 @@ const Profile = ({ pKey }:profileType) => {
 
   return (
     <>
-      <div className="wrapper">
+      <div className={styles.wrapper}>
         <Dropdown
           overlay={menu}
           placement="bottomCenter"
