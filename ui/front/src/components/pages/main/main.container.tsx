@@ -27,9 +27,16 @@ const Main = ({
 }:MainProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
-    if (!pkey)getPublicKey();
+    if (isApiConnected) {
+      if (!pkey) getPublicKey();
+      getWalletStatus();
+    }
+  }, [isApiConnected]);
+
+  React.useEffect(() => {
     getWalletStatus();
-  }, []);
+    if (!pkey) getPublicKey();
+  }, [isApiConnected]);
 
   // const path = window.location.pathname === 'Pit_demo/app/index.html'
   //   ? 'Pit_demo/app/index.html'

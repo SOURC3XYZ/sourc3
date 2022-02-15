@@ -12,8 +12,6 @@ type profileType = {
 };
 
 const Profile = ({ pKey }:profileType) => {
-  console.log(pKey);
-
   const [visible, setVisible] = useState(false);
   const showModal = () => {
     setVisible(true);
@@ -46,12 +44,9 @@ const Profile = ({ pKey }:profileType) => {
         <Button type="link">Support</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link">
-          <Link type="link" to="/auth">
-            Log out
-          </Link>
-
-        </Button>
+        <Link type="link" to="/auth">
+          Log out
+        </Link>
       </Menu.Item>
     </Menu>
   );
