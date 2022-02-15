@@ -225,6 +225,7 @@ jobs:
         path: downloads
         repo: BeamMW/beam
         name: ${{matrix.PLATFORM_NAME}}-wallet-api${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        search_artifacts: true
         
     - name: Download beam node
       uses: dawidd6/action-download-artifact@v2
@@ -236,6 +237,7 @@ jobs:
         path: downloads
         repo: BeamMW/beam
         name: ${{matrix.PLATFORM_NAME}}-beam-node${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        search_artifacts: true
         
     - name: Download beam wasm
       uses: dawidd6/action-download-artifact@v2
@@ -247,6 +249,7 @@ jobs:
         path: downloads
         repo: BeamMW/beam
         name: beam-wasm${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        search_artifacts: true
   
     - name: Download beam wallet cli
       uses: dawidd6/action-download-artifact@v2
@@ -258,6 +261,7 @@ jobs:
         path: downloads
         repo: BeamMW/beam
         name: ${{matrix.PLATFORM_NAME}}-beam-wallet-cli${{env.BEAM_TARGET_SUFFIX}}-${{env.BEAM_VERSION}}
+        search_artifacts: true
           
     - name: Prepare for electron build [windows-2019]
       shell: bash
