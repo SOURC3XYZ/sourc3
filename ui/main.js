@@ -8,7 +8,8 @@ let service = null
 function createWindow () {
   const win = new BrowserWindow({
     width: 800,
-    height: 600
+    height: 600,
+    title: "PIT Desktop Client"
   })
 
   if (service === null) {
@@ -32,7 +33,7 @@ function createWindow () {
       console.log(`Service ended with code ${code}`);
     })
   }
-
+  win.setMenu(null)
   win.loadFile('front/dist/index.html')
 }
 

@@ -25,7 +25,7 @@
     "@types/request": "^2.48.8",
     "@types/winston": "^2.4.4",
     "electron": "16.0.7",
-    "electron-builder": "^22.14.5"
+    "electron-builder": "^23.0.0-alpha.3"
   },
   "build": {
     "files": [
