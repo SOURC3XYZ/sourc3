@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Manager, Notifications, Repo } from '../main/content';
 import { Header } from './content';
+import LocalRepos from './content/local-rep/local-rep';
 import Repositories from './content/repositories/repositories';
 // import ReposEmpty from './content/repos-empty/repos-empty';
 import styles from './desk.module.css';
@@ -45,15 +46,21 @@ const Desk = ({
                   path="/"
                   element={
                     <Navigate replace to="repositories/my/1" />
+                    // <Navigate replace to="repositories" />
                   }
                 />
                 <Route
                   path="repositories/:type/:page"
+                  // path="repositories/"
                   element={<Repositories />}
                 />
                 <Route
                   path="/repo/:repoParams/*"
                   element={<Repo />}
+                />
+                <Route
+                  path="/localRepos"
+                  element={<LocalRepos />}
                 />
                 <Route
                   path="manager"

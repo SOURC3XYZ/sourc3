@@ -1,3 +1,4 @@
+// import { AllRepos } from '@components/pages/main/content';
 import { AllRepos } from '@components/pages/main/content';
 import { NavButton } from '@components/shared';
 import { thunks } from '@libs/action-creators';
@@ -10,6 +11,7 @@ import Modal from 'antd/lib/modal/Modal';
 import Text from 'antd/lib/typography/Text';
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
+// import LocalRepos from '../local-rep/local-rep';
 import styles from './repositories.module.css';
 
 type EmptyPropsType = {
@@ -56,6 +58,7 @@ const Repositories = ({
       <div className={styles.wrapper}>
         {repos.length ? (
           <AllRepos />
+          // <LocalRepos />
         ) : (
           <div className={styles.empty}>
             <Text className={styles.title}>
