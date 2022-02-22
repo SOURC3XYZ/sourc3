@@ -3,8 +3,7 @@ import path from 'path';
 import { program } from 'commander';
 
 const buildConfig = () => {
-  program
-    .option('-l, --user_data_loc <string>', 'set root path', './');
+  program.option('-l, --user_data_loc <string>', 'set root path', './');
 
   program.parse(process.argv);
   const options = program.opts();
@@ -25,5 +24,6 @@ export const {
   NODE_ENV,
   WALLET,
   WALLET_API_PORT,
-  BEAM_NODE_PORT
+  BEAM_NODE_PORT,
+  HTTP_MODE
 } = process.env;

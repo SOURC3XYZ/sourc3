@@ -5,45 +5,44 @@
 import {
   Blob, Clone, Commit, FetchOptions, Oid, Reference, Repository, Tree
 } from 'nodegit';
-import path from 'path';
-import fs from 'fs';
+import { isExistsSync } from './file-handlers';
 
 export enum Action {
   Cloned,
   Opened
 }
 
-const isGitSync = function isGitSync(dir:string) {
-  return fs.existsSync(path.join(dir, '.git'));
+type AsyncInitParams = {
+  promise: Promise<Repository>,
+  action: Action
 };
 
 export class GitHandler {
   private readonly url: string;
 
-  private readonly local_path: string;
+  private readonly localPath: string;
+
+  private asyncInitParams: AsyncInitParams;
 
   private repo: Repository;
 
   public constructor(
     url: string,
-    local_path: string,
-    opened_or_created_callback: (repo: Repository, action: Action) => void
+    localPath: string
   ) {
     this.url = url;
-    this.local_path = local_path;
-
-    if (isGitSync(this.local_path)) {
-      Repository.open(local_path).then((repo) => {
-        this.repo = repo;
-        opened_or_created_callback(this.repo, Action.Opened);
-      });
-    } else {
-      Clone.clone(this.url, local_path).then((repo) => {
-        this.repo = repo;
-        opened_or_created_callback(this.repo, Action.Cloned);
-      });
-    }
+    this.localPath = localPath;
+    this.asyncInitParams = isExistsSync(this.localPath, '.git')
+      ? { promise: Repository.open(localPath), action: Action.Opened }
+      : { promise: Clone.clone(this.url, localPath), action: Action.Cloned };
   }
+
+  public getContents = async () => {
+    this.repo = await this.asyncInitParams.promise;
+    return {
+      repo: this.repo, action: this.asyncInitParams.action
+    };
+  };
 
   public getBranches = async () => {
     const refs = await this.repo.getReferences();

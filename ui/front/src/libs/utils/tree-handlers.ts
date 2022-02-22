@@ -36,12 +36,7 @@ export const updateTreeData = (
   if (key === undefined) return children;
   if (!list) return null;
   const newList = list.map((node) => {
-    if (node.key === key) {
-      return {
-        ...node,
-        children
-      };
-    }
+    if (node.key === key) return { ...node, children };
     if (node.children) {
       return {
         ...node,
@@ -55,9 +50,7 @@ export const updateTreeData = (
 
 export const onLoadData = (
   id:RepoId, callback: (args: UpdateProps) => void
-) => (
-  props: DataNode
-) => new Promise<void>((resolve) => {
+) => (props: DataNode) => new Promise<void>((resolve) => {
   const { children, key, dataRef } = props as IDataNodeCustom;
   if (children) {
     resolve();

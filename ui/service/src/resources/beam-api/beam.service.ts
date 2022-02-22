@@ -1,18 +1,23 @@
-import request from 'request';
-import { WALLET_API_PORT } from '../../common';
+import { HTTP_MODE } from '../../common';
+import { IApiReq } from '../../types';
+import {
+  reqTCP,
+  reqHTTP,
+  getSyncParams,
+  killSyncSocket
+} from './beam.repository';
 
-export const resToBeamApi = async (
-  obj: { [key: string]: number | string }
-) => new Promise((resolve, reject) => {
-  request(
-    `http://127.0.0.1:${WALLET_API_PORT}/api/wallet`,
-    {
-      json: obj
-    },
+export const callApi = async (obj: IApiReq) => {
+  try {
+    const res = parseInt(`${HTTP_MODE}`, 10)
+      ? await reqHTTP(obj)
+      : await reqTCP(obj);
+    return { isOk: true, res };
+  } catch (error) {
+    return { isOk: false, error };
+  }
+};
 
-    (error, _info, body) => {
-      if (error) reject(error);
-      resolve(body);
-    }
-  );
-});
+export const getSyncEvents = () => getSyncParams();
+
+export const unsubSyncEvents = () => killSyncSocket();

@@ -1,15 +1,28 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
 let service = null
 
-function createWindow () {
+function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
-    title: "PIT Desktop Client"
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      enableRemoteModule: false,
+      contextIsolation: true
+    }
+  });
+
+  ipcMain.on('select-dirs', async (event, arg) => {
+    const result = await dialog.showOpenDialog(win, {
+      properties: ['openDirectory']
+    })
+    console.log('directories selected', result.filePaths)
+    win.webContents.send('ping', result.filePaths[0])
   })
 
   if (service === null) {
@@ -20,7 +33,7 @@ function createWindow () {
     }
 
     service = spawn('node', [`${path.join(__dirname, '..', 'service', 'bundle', 'bundle.js')}`, '-l',
-      `${app.getPath('userData')}`]);
+    `${app.getPath('userData')}`]);
     service.stdout.on('data', (data) => {
       console.log(`Service: ${data}`);
     })
@@ -28,12 +41,13 @@ function createWindow () {
     service.stderr.on('data', (data) => {
       console.log(`Service error: ${data}`);
     })
-    
+
     service.on('close', (code) => {
       console.log(`Service ended with code ${code}`);
     })
   }
-  win.setMenu(null)
+
+  win.setMenu(null);
   win.loadFile('front/dist/index.html')
 }
 
@@ -54,8 +68,8 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+  service.kill()
   if (process.platform !== 'darwin') {
     app.quit()
   }
-  service.kill()
 })

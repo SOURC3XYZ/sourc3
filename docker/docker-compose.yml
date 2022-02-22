@@ -1,0 +1,21 @@
+version: "3.3"
+
+services:
+  ui_docker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ui_docker
+    working_dir: /ui
+    volumes:
+      - ../ui:/ui
+    ports:
+      - "127.0.0.1:3333:22"
+
+# Solution if we use VPN
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.58.0/24

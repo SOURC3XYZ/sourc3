@@ -1,17 +1,31 @@
 import express from 'express';
 import { ErrorHandler } from '../../middlewares';
 import {
+  deleteRepoService,
+  getAllSeedsService,
   getBlobDataService,
   getBranchesService, getCommitsService, getTreeService, mountService
 } from './git.service';
 
 const router = express.Router();
 
-router.route('/init').post(
+router.route('/').get(async (_, res) => {
+  const data = await getAllSeedsService();
+  return res.status(201).json(data);
+});
+
+router.route('/branches').get(async (_, res, next) => {
+  const data = await getBranchesService();
+  if (data.isOk) return res.status(201).json(data);
+  return next(new ErrorHandler(404, data.message));
+});
+
+router.route('/:seedId').post(
   async (req, res, next) => {
     const { remote, local } = req.body;
+    const { seedId } = req.params;
     if (remote) {
-      const data = await mountService(remote, local);
+      const data = await mountService(remote, local, seedId);
       if (data.isOk) return res.status(201).json(data);
       return next(new ErrorHandler(404, data.message));
     } return next(new ErrorHandler(
@@ -20,12 +34,6 @@ router.route('/init').post(
     ));
   }
 );
-
-router.route('/branches').get(async (_, res, next) => {
-  const data = await getBranchesService();
-  if (data.isOk) return res.status(201).json(data);
-  return next(new ErrorHandler(404, data.message));
-});
 
 router.route('/commits/:oid').get(async (req, res, next) => {
   const { oid } = req.params;
@@ -44,6 +52,13 @@ router.route('/tree/:treeOid').get(async (req, res, next) => {
 router.route('/blob/:oid').get(async (req, res, next) => {
   const { oid } = req.params;
   const data = await getBlobDataService(oid);
+  if (data.isOk) return res.status(201).json(data);
+  return next(new ErrorHandler(404, data.message));
+});
+
+router.route('/:repoId').delete(async (req, res, next) => {
+  const { repoId } = req.params;
+  const data = await deleteRepoService(repoId);
   if (data.isOk) return res.status(201).json(data);
   return next(new ErrorHandler(404, data.message));
 });

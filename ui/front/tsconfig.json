@@ -3,7 +3,11 @@
 		"target": "es2020",
 		"plugins": [
 			{
-				"plugins": [{ "name": "typescript-plugin-css-modules" }]
+				"plugins": [
+					{
+						"name": "typescript-plugin-css-modules"
+					}
+				]
 			}
 		],
 		"lib": [
@@ -55,6 +59,7 @@
 		"node_modules",
 		"**/*.config.js",
 		"dist",
-		"index.js"
+		"index.js",
+		"preload.js"
 	]
 }

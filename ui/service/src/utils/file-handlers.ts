@@ -62,3 +62,7 @@ export function getExecutableFile(dirPath: string) {
     .find(isFileExecutable);
   return filePath;
 }
+
+export function isExistsSync(dir:string, filename: string) {
+  return fs.existsSync(path.join(dir, filename));
+}

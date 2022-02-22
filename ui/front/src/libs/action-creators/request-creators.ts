@@ -17,6 +17,18 @@ export const RC = {
     }
   } as const),
 
+  viewContracts: () => ({
+    callID: 'view_contracts',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'manager',
+        action: 'view_contracts'
+      },
+      create_tx: false
+    }
+  } as const),
+
   zeroMethodCall: () => ({
     callID: 'zero_method_call',
     method: 'invoke_contract',

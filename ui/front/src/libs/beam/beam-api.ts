@@ -20,7 +20,7 @@ type Modified<T> = T & {
   contract: Array<number>, args: string | ArgsObjectType };
 
 export class BeamAPI<T> {
-  private readonly cid: string;
+  public readonly cid: string;
 
   private readonly apiHost: string | null;
 

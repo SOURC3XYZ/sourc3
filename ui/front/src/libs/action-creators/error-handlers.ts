@@ -1,5 +1,6 @@
 import { AppThunkDispatch } from '@libs/redux';
 import { BeamApiRes, ContractResp, ErrorObj } from '@types';
+import { AxiosError } from 'axios';
 import { AC } from './action-creators';
 
 export const errorHandler = (
@@ -35,3 +36,16 @@ export function outputParser<T extends ContractResp>(
     return undefined;
   }
 }
+
+export const isAxiosError = (
+  x: any
+): x is AxiosError => typeof x.response === 'object';
+
+export const cbErrorHandler = (
+  error: unknown, callback: (err?: Error) => void
+) => {
+  if (isAxiosError(error)) {
+    const { message } = error.response?.data;
+    return callback(new Error(message));
+  } return callback(error as Error);
+};

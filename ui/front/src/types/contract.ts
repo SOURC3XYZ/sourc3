@@ -38,6 +38,14 @@ export interface RepoMetaResp extends ContractResp {
   objects: RepoMeta[]
 }
 
+export interface ContractsResp extends ContractResp {
+  contracts: { cid: string, Height: number }[]
+}
+
+export interface PKeyRes extends ContractResp {
+  key: string
+}
+
 export type Branch = {
   name: BranchName
   commit_hash: CommitHash

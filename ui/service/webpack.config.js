@@ -1,5 +1,5 @@
+const IgnorePlugin = require('webpack').IgnorePlugin
 const path = require('path');
-const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
   target: 'node',
@@ -11,4 +11,19 @@ module.exports = {
   optimization: {
     minimize: true,
   },
+  module: {
+    rules: [
+      {
+        test: /sqlite3-binding\.js$/,
+        use: ['sqlite3-loader'],
+      },
+      {
+        test: /\.node$/,
+        loader: "node-loader",
+      },
+    ],
+  },
+  plugins: [
+    new IgnorePlugin({ resourceRegExp: /build\/Debug\/nodegit.node/i })
+  ]
 };

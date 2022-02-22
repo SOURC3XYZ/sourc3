@@ -4,22 +4,17 @@ import { AddButton, Balance, Profile } from './content';
 import styles from './header.module.css';
 
 type HeaderPropsType = {
-  balance: number,
   pKey:string
+  balance: number,
+  isWeb?: boolean
 };
 
 const Header = ({ balance, pKey }:HeaderPropsType) => (
   <div className={styles.wrapper}>
     <div className={styles.nav}>
-      {' '}
-      <Balance
-        current={balance}
-      />
+      <Balance current={balance}/>
       <AddButton />
-      <Profile
-        pKey={pKey}
-      />
-
+      <Profile pKey={pKey} />
     </div>
   </div>
 );

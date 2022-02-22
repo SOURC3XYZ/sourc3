@@ -14,7 +14,6 @@ import { Header } from '../desk/content';
 
 type MainProps = {
   getWalletStatus: () => void,
-  getPublicKey: () => void,
   connectApi: () => void,
   isApiConnected: boolean,
   balance: number
@@ -23,19 +22,11 @@ type MainProps = {
 };
 
 const Main = ({
-  isApiConnected, connectApi, balance, getWalletStatus, pkey, getPublicKey
+  isApiConnected, connectApi, balance, getWalletStatus, pkey
 }:MainProps) => {
   React.useEffect(() => {
-    if (!isApiConnected) connectApi();
-    if (isApiConnected) {
-      if (!pkey) getPublicKey();
-      getWalletStatus();
-    }
-  }, [isApiConnected]);
-
-  React.useEffect(() => {
+    if (!isApiConnected) connectApi()
     getWalletStatus();
-    if (!pkey) getPublicKey();
   }, [isApiConnected]);
 
   // const path = window.location.pathname === 'Pit_demo/app/index.html'
@@ -115,9 +106,6 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   getWalletStatus: () => {
     dispatch(thunks.getWalletStatus());
-  },
-  getPublicKey: () => {
-    dispatch(thunks.getPublicKey());
   }
 });
 

@@ -1,4 +1,6 @@
 import {
+  deleteLocalRepo,
+  getAllSeeds,
   getBlobData,
   getBranches, getCommits, getTree, mountRepo
 } from './git.repository';
@@ -8,14 +10,20 @@ const errorResCreator = (error:unknown) => {
   return { isOk: false, message } as const;
 };
 
-export const mountService = async (remote: string, local:string) => {
+export const getAllSeedsService = async () => getAllSeeds();
+
+export const mountService = async (
+  remote: string,
+  local:string,
+  seedId:string
+) => {
   try {
-    const { opened, config } = await mountRepo(remote, local);
-    const message = opened ? 'opened' : 'cloned';
+    const answer = await mountRepo(remote, local, seedId);
+    const message = answer.opened ? 'opened' : 'cloned';
     return {
       isOk: true,
       message: `repo successfuly ${message}`,
-      config
+      ...answer
     } as const;
   } catch (error) { return errorResCreator(error); }
 };
@@ -60,6 +68,17 @@ export const getBlobDataService = async (treeOid:string) => {
       isOk: true,
       message: 'data successfully received',
       blob
+    } as const;
+  } catch (error) { return errorResCreator(error); }
+};
+
+export const deleteRepoService = async (repoId:string) => {
+  try {
+    const repo = await deleteLocalRepo(repoId);
+    return {
+      isOk: true,
+      message: 'repo successfuly deleted',
+      repo
     } as const;
   } catch (error) { return errorResCreator(error); }
 };

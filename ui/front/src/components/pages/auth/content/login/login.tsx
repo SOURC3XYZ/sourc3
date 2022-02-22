@@ -1,80 +1,68 @@
-import { loadingData } from '@libs/utils';
-import { Input } from 'antd';
-import Text from 'antd/lib/typography/Text';
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-// import icon from '../../../../../assets/img/TurtuleZorro.png';
 import { Preload } from '@components/shared';
-import { useAsyncError } from '@libs/hooks';
-import { NavButton } from '@components/shared/nav-button';
+import { useAsyncError, useObjectState } from '@libs/hooks';
 import styles from './login.module.css';
+import { Password, UpdatingNode } from './content';
+
+enum STATUS {
+  LOGIN,
+  LOADING,
+  SYNC
+}
 
 type LoginProps = {
-  startWalletApi: (password: string) => (
-    resolve: PromiseArg<string>, reject: PromiseArg<string>
-  ) => void
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void
 };
 
+type LoginState = {
+  pass: string,
+  status: STATUS,
+};
+
+const initial:LoginState = { pass: '', status: STATUS.LOGIN };
+
 const Login = ({ startWalletApi }: LoginProps) => {
-  const [isLoading, setLoading] = React.useState(false);
-  const [pass, setPass] = React.useState('');
+  const [{ pass, status }, setState] = useObjectState<LoginState>(initial);
   const throwError = useAsyncError();
-  const navigate = useNavigate();
+
+  const checkIsOk = (err?: Error) => {
+    if (err) return throwError(err);
+    return setState({ status: STATUS.SYNC });
+  };
 
   const onSubmit = () => {
-    loadingData(startWalletApi(pass) as (
-      resolve: PromiseArg<string>, reject?: PromiseArg<string>
-    ) => void)
-      .then(() => navigate('/mainDesk'))
-      .catch((data: string) => throwError(new Error(data)));
-    setLoading(true);
+    startWalletApi(pass, checkIsOk);
+    setState({ status: STATUS.LOADING });
   };
 
-  const onPassInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPass(e.target.value);
-  };
+  const onInput = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => setState({ pass: e.target.value });
+
+  // const View = () => {
+  //   switch (status) {
+  //     case STATUS.LOADING:
+  //       return <Preload />;
+
+  //     case STATUS.SYNC:
+  //       return <UpdatingNode errorCatcher={throwError} />;
+
+  //     default:
+  //       return <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />;
+  //   }
+  // };
 
   return (
     <div className={styles.wrapper}>
-      {isLoading
-        ? <Preload />
-        : (
-          <>
-            <Text
-              style={{ marginBottom: 30 }}
-            >
-              Sign In using your password
-
-            </Text>
-            <Text>Password</Text>
-            <label htmlFor="password">
-              <Input.Password
-                onChange={onPassInputChange}
-                value={pass}
-                type="password"
-                onPressEnter={onSubmit}
-              />
-            </label>
-            <Link to="/auth/restore">
-              Restore account
-            </Link>
-            <div className={styles.btnNav}>
-              <NavButton
-                name="Back"
-                link="/auth"
-              />
-              <NavButton
-                name="Sign in"
-                link="/auth/login"
-                onClick={onSubmit}
-              />
-            </div>
-          </>
-        )}
+      {
+        status === STATUS.LOADING
+          ? <Preload />
+          : status === STATUS.SYNC
+            ? <UpdatingNode errorCatcher={throwError} />
+            : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
+      }
     </div>
   );
 };
 
 export default Login;
-
-/* <img width={100} height={105} style={{ marginRight: 20 }} src={icon} alt="Incognito" /> */

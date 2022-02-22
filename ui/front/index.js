@@ -2,8 +2,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { app, BrowserWindow, session, ipcMain, dialog } = require('electron');
 const path = require('path');
+const env = process.env.NODE_ENV || 'production';
 
-
+require('electron-reload')(__dirname, {
+  electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+  hardResetMethod: 'exit'
+});
 
 const service = null;
 
@@ -25,7 +29,7 @@ function createWindow() {
       properties: ['openDirectory']
     })
     console.log('directories selected', result.filePaths)
-    win.webContents.send('ping', result.filePaths)
+    win.webContents.send('ping', result.filePaths[0])
   })
 
   win.loadFile('dist/index.html');

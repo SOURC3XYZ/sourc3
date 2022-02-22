@@ -1,7 +1,13 @@
+/* *, *::after, *::before {
+  -webkit-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-app-region: no-drag;
+} */
+
+
 body{
   overflow-y: scroll !important;
   width: unset !important;
-  
 }
 
 body::-webkit-scrollbar {

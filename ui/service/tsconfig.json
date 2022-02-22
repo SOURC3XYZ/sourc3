@@ -20,14 +20,16 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "strictPropertyInitialization":false
+    "strictPropertyInitialization": false
   },
-	"parserOptions": {
+  "parserOptions": {
     "project": "./webpack.config.js"
   },
   "exclude": [
-    "node_modules/"
+    "node_modules/",
+    "tests/"
   ],
-  "include":
-    ["src"]
+  "include": [
+    "src"
+  ]
 }

@@ -2,7 +2,7 @@ import { Preload } from '@components/shared';
 import NavMenu from '@components/shared/menu/menu';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Manager, Notifications, Repo } from '../main/content';
@@ -13,7 +13,6 @@ import styles from './desk.module.css';
 
 type MainDeskProps = {
   getWalletStatus: () => void,
-  getPublicKey: () => void,
   connectApi: () => void,
   isApiConnected: boolean,
   balance: number,
@@ -21,59 +20,52 @@ type MainDeskProps = {
 };
 
 const Desk = ({
-  isApiConnected, connectApi, balance, getWalletStatus, getPublicKey, pkey
+  isApiConnected, connectApi, balance, getWalletStatus, pkey
 }: MainDeskProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
-    if (isApiConnected) {
-      if (!pkey) getPublicKey();
-      getWalletStatus();
-    }
-  }, [isApiConnected]);
+    getWalletStatus();
+  }, []);
+
+  const data = [
+    {
+      path: '/',
+      element: <Navigate replace to="repositories/my/1" />
+    },
+    {
+      path: 'repositories/:type/:page',
+      element: <Repositories />
+    },
+    {
+      path: '/repo/:repoParams/*',
+      element: <Repo />
+    },
+    {
+      path: 'manager',
+      element: <Manager isDesk />
+    },
+  {
+    path:"/localRepos",
+  element:<LocalRepos />
+}
+  ];
+
+  const routes = data.map(
+    ({ path, element }) => <Route path={path} element={element} />
+  );
+
+  const View = useMemo(() => () => (
+    isApiConnected
+      ? <Routes>{routes}</Routes>
+      : <Preload />
+  ), [isApiConnected]);
+
   return (
     <>
-      <Header
-        balance={balance}
-        pKey={pkey}
-      />
+      <Header isWeb balance={balance} pKey={pkey} />
       <NavMenu />
       <div className={styles.wrapper}>
-        {
-          isApiConnected
-            ? (
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Navigate replace to="repositories/my/1" />
-                  }
-                />
-                <Route
-                  path="repositories/:type/:page"
-                  element={<Repositories />}
-                />
-                <Route
-                  path="/repo/:repoParams/*"
-                  element={<Repo />}
-                />
-                <Route
-                  path="/localRepos"
-                  element={<LocalRepos />}
-                />
-                <Route
-                  path="manager"
-                  element={(
-                    <Manager
-                      isDesk
-                    />
-                  )}
-                />
-              </Routes>
-            )
-            : (
-              <Preload />
-            )
-        }
+        <View />
         <Notifications />
       </div>
     </>
@@ -93,9 +85,6 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   getWalletStatus: () => {
     dispatch(thunks.getWalletStatus());
-  },
-  getPublicKey: () => {
-    dispatch(thunks.getPublicKey());
   }
 });
 

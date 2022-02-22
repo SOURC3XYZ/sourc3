@@ -2,9 +2,9 @@ import { ErrorBoundary } from '@components/hoc';
 import { FailPage, Preload } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import React from 'react';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Login, Start, SignUp } from './content';
 import { Restore } from './content/restore';
 import styles from './auth.module.css';
@@ -14,55 +14,70 @@ type LoggedProps = {
   isApiConnected: boolean;
   mountWallet: () => void;
   killWalletApi: () => void;
-  startWalletApi: (
-    password: string
-  ) => (
-    resolve: PromiseArg<string>,
-    reject: PromiseArg<string>
-  ) => void
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void
+};
+
+type FallbackProps = {
+  message: string
 };
 
 function Auth({
-  isWalletConnected, isApiConnected,
-  killWalletApi, mountWallet, startWalletApi
+  isWalletConnected,
+  isApiConnected,
+  killWalletApi,
+  mountWallet,
+  startWalletApi
 }: LoggedProps) {
-  React.useEffect(() => {
+  const isConnected = isWalletConnected && !isApiConnected;
+
+  useEffect(() => {
     if (isApiConnected) killWalletApi();
     if (!isWalletConnected) mountWallet();
   }, []);
 
+  const data = [
+    {
+      link: '', component: <Start />
+    },
+    {
+      link: 'sign-up', component: <SignUp />
+    },
+    {
+      link: 'login', component: <Login startWalletApi={startWalletApi} />
+    },
+    {
+      link: 'restore', component: <Restore />
+    }
+  ];
+
+  const fallback = ({ message }:FallbackProps) => (
+    <div style={{ margin: '0 auto' }}>
+      <FailPage comeBack="/auth" subTitle={message || 'invalid pass'} isBtn />
+    </div>
+  );
+
+  const routeElements = data.map((el, i) => (
+    <Route
+      path={el.link}
+      element={(
+        i
+          ? (
+            <ErrorBoundary fallback={fallback}>
+              {el.component}
+            </ErrorBoundary>
+          )
+          : el.component
+      )}
+    />
+  ));
+
   return (
     <>
-      {isWalletConnected && !isApiConnected
+      {isConnected
         ? (
           <div className={styles.logged}>
             <Routes>
-              <Route
-                path=""
-                element={<Start />}
-              />
-              <Route
-                path="login"
-                element={(
-                  <ErrorBoundary
-                    fallback={() => (
-                      <div style={{ margin: '0 auto' }}>
-                        <FailPage subTitle="invalid pass" isBtn />
-                      </div>
-                    )}
-                  >
-                    <Login startWalletApi={startWalletApi} />
-                  </ErrorBoundary>
-                )}
-              />
-              <Route
-                path="sign-up"
-                element={<SignUp />}
-              />
-              <Route
-                path="restore"
-                element={<Restore />}
-              />
+              {routeElements}
             </Routes>
           </div>
         )
@@ -79,20 +94,11 @@ const mapState = (
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  mountWallet: () => {
-    dispatch(thunks.mountWallet());
-  },
-  killWalletApi: () => {
-    dispatch(thunks.killBeamApi());
-  },
+  mountWallet: () => dispatch(thunks.mountWallet()),
+  killWalletApi: () => dispatch(thunks.killBeamApi()),
   startWalletApi: (
-    password: string
-  ) => (
-    resolve: PromiseArg<string>,
-    reject: PromiseArg<string>
-  ) => {
-    dispatch(thunks.startWalletApi(password, resolve, reject));
-  }
+    password: string, cb: (err?:Error) => void
+  ) => dispatch(thunks.startWalletApi(password, cb))
 });
 
 export default connect(mapState, mapDispatch)(Auth);

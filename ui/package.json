@@ -4,9 +4,6 @@
   "description": "PIT client for 'masternet'",
   "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
     "app:dist": "electron-builder",
     "app:dir": "electron-builder --dir"
   },
@@ -25,12 +22,14 @@
     "@types/request": "^2.48.8",
     "@types/winston": "^2.4.4",
     "electron": "16.0.7",
-    "electron-builder": "^23.0.0-alpha.3"
+    "electron-builder": "^22.14.13",
+    "electron-rebuild": "^3.2.7"
   },
   "build": {
     "files": [
       "front/dist/**",
       "main.js",
+      "preload.js",
       "!**/node_modules/**/*",
       "!**/*.json"
     ],

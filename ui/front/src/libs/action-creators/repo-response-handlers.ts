@@ -37,17 +37,22 @@ const getCommitParent = async (
 export const buildCommitList = async (
   call: CallType<RepoCommitResp>,
   id: RepoId,
-  workingStack: BranchCommit[], commitList:BranchCommit[] = []
+  workingStack: BranchCommit[],
+  commitList:BranchCommit[] = [],
+  commitIds: Set<string> = new Set()
 ):Promise<BranchCommit[]> => {
   if (workingStack.length) {
     const commit = workingStack.pop() as BranchCommit;
+    commitIds.add(commit.commit_oid);
     commitList.push(commit);
     const parentCommits = await Promise.all(
-      commit.parents
-        .map((el) => getCommitParent(call, id, el.oid))
+      commit.parents.map((el) => getCommitParent(call, id, el.oid))
     );
-    workingStack.push(...parentCommits);
-    return buildCommitList(call, id, workingStack, commitList);
+    parentCommits.forEach((el) => {
+      if (!commitIds.has(el.commit_oid)) workingStack.push(el);
+    });
+
+    return buildCommitList(call, id, workingStack, commitList, commitIds);
   }
   return commitList.reverse();
 };

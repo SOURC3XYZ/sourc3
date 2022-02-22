@@ -3,93 +3,90 @@ import { thunks } from '@libs/action-creators';
 import { useObjectState } from '@libs/hooks';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
-  Button, Menu, Dropdown, Input
+  Button, Menu, Dropdown
 } from 'antd';
-import Modal from 'antd/lib/modal/Modal';
 import { connect } from 'react-redux';
 import styles from './add.module.css';
+import { CloneModal } from './content';
+import { CreateModal } from './content/create-modal';
 
 type AddButtonPropsType = {
-  createRepos: (repo_name:string) => void,
+  createRepo: (repo_name:string) => void,
+  cloneRepo: (local:string, remote:string) => void
 };
+
+enum MODAL { NONE, CLONE, CREATE, ADD }
+
 const initialState = {
   isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
+  modal: MODAL.NONE
 };
 
-const AddButton = ({ createRepos }:AddButtonPropsType) => {
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isModalVisible, inputRepoName } = state;
+const AddButton = ({ createRepo, cloneRepo }:AddButtonPropsType) => {
+  const [state, setState] = useObjectState(initialState);
+  const { modal } = state;
 
-  const showModal = () => {
-    setState({ isModalVisible: true });
-  };
+  const showModal = (mode: MODAL) => setState({ modal: mode });
+
+  const handleCancel = () => setState({ modal: MODAL.NONE });
 
   const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
+    setState({ modal: MODAL.NONE });
   };
 
-  const handleCancel = () => {
-    setState({ isModalVisible: false });
-  };
+  const data = [
+    { title: 'Clone repository', mode: MODAL.CLONE },
+    { title: 'Create new Repository', mode: MODAL.CREATE },
+    { title: 'Add existing repository', mode: MODAL.ADD }
+  ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setState({ inputRepoName: e.target.value });
+  const ModalView = ():JSX.Element | null => {
+    switch (modal) {
+      case MODAL.CLONE:
+        return (
+          <CloneModal
+            handleOk={handleOk}
+            handleCancel={handleCancel}
+            cloneRepo={cloneRepo}
+          />
+        );
+      case MODAL.CREATE:
+        return (
+          <CreateModal
+            handleOk={handleOk}
+            handleCancel={handleCancel}
+            createRepo={createRepo}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   const menu = (
     <Menu>
-      <Menu.Item>
-        <Button type="link">Clone repository</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link" onClick={showModal}>Create new Repository</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Add existing repository</Button>
-      </Menu.Item>
+      {data.map(({ title, mode }) => {
+        const onClick = () => showModal(mode);
+        return (
+          <Menu.Item>
+            <Button type="link" onClick={onClick}>{title}</Button>
+          </Menu.Item>
+        );
+      })}
     </Menu>
   );
 
   return (
     <>
+      <ModalView />
       <div className={styles.wrapper}>
-        <Dropdown
-          overlay={menu}
-          placement="bottomCenter"
-          trigger={['click']}
-        >
-          <Button style={{
-            border: 'none', height: 60
-          }}
-          >
+        <Dropdown overlay={menu} placement="bottomCenter" trigger={['click']}>
+          <Button className={styles.addButton}>
             Add
-            {' '}
             <PlusOutlined />
           </Button>
         </Dropdown>
-        {/* <Send
-        current={current}
-        isVisible={isVisible}
-        onClose={closeModal}
-      /> */}
       </div>
-      <Modal
-        visible={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        closable={false}
-      >
-        <Input
-          placeholder="Enter name repository"
-          value={inputRepoName}
-          onChange={handleChange}
-          onPressEnter={handleOk}
-        />
-      </Modal>
-
     </>
   );
 };
@@ -100,9 +97,13 @@ const mapState = ({
   isApiConnected
 });
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  createRepos: (repo_name:string) => {
+  createRepo: (repo_name:string) => {
     if (repo_name === null) return;
     dispatch(thunks.createRepos(repo_name));
+  },
+
+  cloneRepo: (local:string, remote: string) => {
+    dispatch(thunks.cloneRepo(local, remote));
   }
 });
 

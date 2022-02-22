@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 
 const useAsyncError = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setError] = React.useState();
   return React.useCallback(
-    (e) => {
+    (e:Error) => {
       setError(() => {
         throw e;
       });

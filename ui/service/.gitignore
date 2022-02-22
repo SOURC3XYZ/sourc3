@@ -13,3 +13,7 @@ node.db-journal
 node.db
 wallet.db
 bundle
+coverage
+ipfs-repo
+testrepo
+repos.db

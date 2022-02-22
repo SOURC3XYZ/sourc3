@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { Seed } from '../../entities';
 import {
   checkRunningApi,
   exportOwnerKey,
+  getNodeUpdate,
   killApiServer,
   restoreExistedWallet,
   runWalletApi,
@@ -10,7 +12,8 @@ import {
 
 type ProcessStatus = {
   isOk: boolean,
-  message: string
+  message: string,
+  restored?: Seed
 };
 
 export const checkApi = () => checkRunningApi();
@@ -20,13 +23,19 @@ export const restoreWallet = async (
   password: string
 ): Promise<ProcessStatus> => {
   try {
-    const isRestored = await restoreExistedWallet(seed, password);
-    return { isOk: true, message: isRestored };
+    const restored = await restoreExistedWallet(seed, password);
+    return {
+      restored,
+      isOk: true,
+      message: 'wallet successfully restored'
+    } as const;
   } catch (error) {
     const { message } = error as Error;
-    return { isOk: false, message };
+    return { isOk: false, message } as const;
   }
 };
+
+export const getNodeUpdateService = () => getNodeUpdate();
 
 export const enterUser = async (password: string): Promise<ProcessStatus> => {
   try {

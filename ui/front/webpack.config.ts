@@ -3,9 +3,9 @@ import fs from 'fs';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CompressionPlugin from 'compression-webpack-plugin';
+// import CompressionPlugin from 'compression-webpack-plugin';
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import MomentTimezoneDataPlugin from 'moment-timezone-data-webpack-plugin';
+// import MomentTimezoneDataPlugin from 'moment-timezone-data-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as webpack from 'webpack';
 import { Configuration } from 'webpack';
@@ -16,46 +16,33 @@ interface IConfig extends Configuration {
   devServer: { [key:string]: any }
 }
 
+type ModeType = 'production' | 'development';
+
 const lessToJs = require('less-vars-to-js');
 
 const themeVariables = lessToJs(
   fs.readFileSync(path.join(__dirname, './ant-theme-vars.less'), 'utf8')
 );
 
-console.log('env', process.env.NODE_ENV);
+const env:ModeType = <ModeType>process.env.NODE_ENV || 'production';
+
+console.log('env', env);
 
 const build:IConfig = {
   entry: './src/index.tsx',
-  bail: true,
+  // bail: true,
   output: {
     path: path.join(__dirname, 'dist'),
     filename: '[name].bundle.js',
     chunkFilename: '[name].js',
     assetModuleFilename: 'assets/[name][ext]',
-    publicPath: process.env.NODE_ENV === 'production' ? './' : '/'
+    // publicPath: './'
+    publicPath: env === 'production' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: 'source-map',
   optimization: {
     nodeEnv: 'production'
-    // minimize: true,
-
-    // splitChunks: {
-    //   chunks: 'all',
-    //   minSize: 30000,
-    //   maxAsyncRequests: 5,
-    //   maxInitialRequests: 3,
-    //   automaticNameDelimiter: '~',
-
-    //   cacheGroups: {
-    //     vendors: {
-    //       chunks: 'all',
-    //       test: /(antd|prism)/,
-    //       priority: 100,
-    //       name: 'vendors'
-    //     }
-    //   }
-    // }
   },
   resolve: {
     extensions: ['.ts', '.js', '.tsx'],
@@ -148,26 +135,26 @@ const build:IConfig = {
     new webpack.ProvidePlugin({
       React: 'react'
     }),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    }),
-    new webpack.ContextReplacementPlugin(/moment[/\\]locale$/),
-    new MomentTimezoneDataPlugin({
-      startYear: 1950,
-      endYear: 2100,
-      matchZones: /^America\//
-    }),
+    // new webpack.DefinePlugin({
+    //   'process.env.NODE_ENV': JSON.stringify('production')
+    // }),
+    // new webpack.ContextReplacementPlugin(/moment[/\\]locale$/),
+    // new MomentTimezoneDataPlugin({
+    //   startYear: 1950,
+    //   endYear: 2100,
+    //   matchZones: /^America\//
+    // }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'public', 'index.html')
     }),
     new MiniCssExtractPlugin({
       filename: 'styles/[name].css',
       chunkFilename: 'styles/[id].css'
-    }),
-    new CompressionPlugin({
-      include: /\/includes/,
-      deleteOriginalAssets: true
     })
+    // new CompressionPlugin({
+    //   include: /\/includes/,
+    //   deleteOriginalAssets: true
+    // })
   ]
 };
 export default build;

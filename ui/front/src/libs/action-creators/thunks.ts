@@ -6,7 +6,9 @@ import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
 import {
   BeamApiRes,
   CallApiProps,
+  ContractsResp,
   ObjectDataResp,
+  PKeyRes,
   RepoId, RepoListType,
   RepoMetaResp,
   ReposResp,
@@ -22,7 +24,7 @@ import batcher from './batcher';
 import { repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
-import { outputParser, thunkCatch } from './error-handlers';
+import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
   CONTRACT.CID, `${CONTRACT.HOST}/beam`
@@ -55,12 +57,23 @@ export const thunks = {
     dispatch(AC.setWalletConnection(true));
   },
 
+  cloneRepo: (
+    local: string, remote:string
+  ) => async (dispatch: AppThunkDispatch) => {
+    const url = `${CONTRACT.HOST}/git/init`;
+    try {
+      await axios.post(url, { local, remote }, { headers });
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
   generateSeed: () => async (dispatch: AppThunkDispatch) => {
     dispatch(AC.setGeneratedSeed(wallet.generateSeed()));
   },
 
   sendParams2Service: (
-    seed: string[], pass:string, callback: (str:'ok' | 'fail') => void
+    seed: string[],
+    pass:string,
+    callback: (err?: Error) => void
   ) => async () => {
     const body = {
       seed: `${seed.join(';')};`,
@@ -69,25 +82,19 @@ export const thunks = {
     const url = `${CONTRACT.HOST}/wallet/restore`;
     try {
       await axios.post(url, body, { headers });
-      callback('ok');
-    } catch (error) {
-      callback('fail');
-    }
+      return callback();
+    } catch (error) { return cbErrorHandler(error, callback); }
   },
 
   startWalletApi: (
     password: string,
-    resolve: PromiseArg<string>,
-    reject: PromiseArg<string>
+    callback: (err?: Error) => void
   ) => async () => {
     const url = `${CONTRACT.HOST}/wallet/start`;
     try {
-      const data = await axios.post(url, { password }, { headers });
-      resolve(data.statusText);
-    } catch (error) {
-      const { message } = error as Error;
-      reject(message);
-    }
+      await axios.post(url, { password }, { headers });
+      return callback();
+    } catch (error) { return cbErrorHandler(error, callback); }
   },
 
   validateSeed: (seed: string[]) => async (
@@ -113,8 +120,15 @@ export const thunks = {
       try {
         await loadAPI(someMessage);
         await initContract(wasm);
-        const output = await getOutput(RC.zeroMethodCall(), dispatch);
-        if (output) dispatch(AC.setIsConnected(true));
+        const action = RC.viewContracts();
+        const output = await getOutput<ContractsResp>(action, dispatch);
+        if (output) {
+          const finded = output.contracts.find((el) => el.cid === beam.cid);
+          if (!finded) throw new Error(`no specified cid (${beam.cid})`);
+          dispatch(AC.setIsConnected(Boolean(finded)));
+        }
+        const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
+        if (pKey) dispatch(AC.setPublicKey(pKey.key));
       } catch (error) { thunkCatch(error, dispatch); }
     },
 
@@ -130,9 +144,9 @@ export const thunks = {
   },
 
   checkTxStatus:
-    (
-      callback: SetPropertiesType<TxResponse>
-    ) => () => ({ result: { comment, status_string } }: BeamApiRes) => {
+    (callback: SetPropertiesType<TxResponse>) => () => (
+      { result: { comment, status_string } }: BeamApiRes
+    ) => {
       callback({
         message: comment,
         status_string

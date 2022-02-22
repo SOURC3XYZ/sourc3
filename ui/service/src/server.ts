@@ -1,14 +1,11 @@
 import { PORT } from './common/config';
 import app from './app';
+import { tryBDConnect } from './utils/typeorm-handler';
 
-// const obj = {
-//   jsonrpc: '2.0',
-//   id: 1,
-//   method: 'get_version'
-// };
+const port = PORT || 6666;
 
-const port = PORT || 666;
-
-app.listen(port, () => console.log(
-  `App is running on http://localhost:${port}`
-));
+tryBDConnect(() => {
+  app.listen(port, () => console.log(
+    `App is running on http://localhost:${port}`
+  ));
+});

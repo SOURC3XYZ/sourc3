@@ -2,7 +2,7 @@ import { spawn, ChildProcess } from 'child_process';
 
 type BufferHandler = (data: Buffer) => undefined | void;
 
-type OnCloseHandler = (code:number | null) => undefined | void;
+type OnCloseHandler = (code:number | null, signal?: any) => undefined | void;
 
 type SpawnProcessParams = {
   path: string;
@@ -26,7 +26,7 @@ export const runSpawnProcess = (
 
   if (onError) childProcess.stderr.on('error', onError);
 
-  if (onClose) childProcess.stdout.on('close', onClose);
+  if (onClose) childProcess.on('close', onClose);
 
   if (setCurrentProcess) setCurrentProcess(childProcess);
 };

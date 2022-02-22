@@ -291,11 +291,17 @@ jobs:
       shell: bash
       run: |
         cd ui/service
-        npm i --save-dev
+        npm i --save-dev --legacy-peer-deps
+        cd node_modules
+        git clone https://github.com/nodegit/nodegit
+        cd nodegit
+        git checkout 2e63ec9c361d83b9e2224bf22f3f81b6ad71e1b3
+        npm install
+        cd ../..
         npm run build
         npm run bundle:server
         cd ../front
-        npm i --save-dev
+        npm i --save-dev --legacy-peer-deps
         NODE_ENV=production npm run build
         cd ..
         yarn add electron-builder --dev

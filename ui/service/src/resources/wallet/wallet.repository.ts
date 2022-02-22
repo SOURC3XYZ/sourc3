@@ -1,9 +1,11 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-restricted-syntax */
-import { execFile, ChildProcess } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs';
-import { BEAM_NODE_PORT, WALLET_API_PORT } from '../../common';
+import { getRepository } from 'typeorm';
+import { BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT } from '../../common';
+import { Seed } from '../../entities';
 import {
   cliPath,
   getExecutableFile,
@@ -17,11 +19,24 @@ import { runSpawnProcess } from '../../utils/process-handlers';
 
 let currentProcess: ChildProcess | undefined;
 
-const success = /Start server on/i;
-const error = /Please check your password/i;
+let nodeUpdate = 0;
+
+const successReg = /Start server on/i;
+const errorReg = /Please check your password/i;
 const ownerKeyReg = /Owner Viewer key/i;
-const walletRestoreSuccess = /generated:/i;
-const walletRestoreError = /provide a valid seed phrase for the wallet./i;
+const walletRestoreSuccessReg = /generated:/i;
+const walletRestoreErrorReg = /provide a valid seed phrase for the wallet./i;
+const nodeUpdatingReq = /Updating node/i;
+const notInitializedReg = /Please initialize your wallet first/i;
+
+const peers = [
+  'eu-node01.masternet.beam.mw:8100',
+  'eu-node02.masternet.beam.mw:8100',
+  'eu-node03.masternet.beam.mw:8100',
+  'eu-node04.masternet.beam.mw:8100'
+];
+
+export function getNodeUpdate() { return nodeUpdate; }
 
 export function checkRunningApi() {
   return !!(currentProcess && !currentProcess.killed);
@@ -101,8 +116,13 @@ export function exportOwnerKey(
           .trim();
         resolve(key);
       }
-      if (bufferString.match(error)) {
-        reject(new Error('bad pass'));
+      if (bufferString.match(errorReg)) {
+        reject(new Error('Please check your password'));
+      }
+      if (bufferString.match(notInitializedReg)) {
+        reject(
+          new Error('Please initialize your wallet first...')
+        );
       }
     };
 
@@ -124,11 +144,20 @@ export function startBeamNode(
     const beamNodePath = getExecutableFile(nodePath);
     if (beamNodePath) {
       console.log('Beam node is: ', beamNodePath);
-      const node = execFile(beamNodePath, [`--port=${BEAM_NODE_PORT}`,
-        '--peer=eu-node01.masternet.beam.mw:8100,eu-node02.masternet.beam.mw:8100,eu-node03.masternet.beam.mw:8100,eu-node04.masternet.beam.mw:8100',
+      const node = spawn(beamNodePath, [
+        `--port=${BEAM_NODE_PORT}`,
+        `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password]);
+
+      node.stdout.on('data', (data:Buffer) => {
+        const bufferString = data.toString('utf-8');
+        if (bufferString.match(nodeUpdatingReq)) {
+          const str = String(bufferString.split('node')[1]);
+          nodeUpdate = Number(/\d+/.exec(str));
+        }
+      });
 
       // process.on('exit', () => {
       //   node.kill('SIGTERM');
@@ -142,12 +171,14 @@ export function startBeamNode(
 export function restoreExistedWallet(
   seed: string,
   password: string
-): Promise<string> {
+): Promise<Seed> {
   return new Promise((resolve, reject): void => {
     const cliWalletPath = getExecutableFile(cliPath);
     if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
     if (currentProcess && !currentProcess.killed) setCurrentProcess();
     if (fs.existsSync(walletDBPath)) deleteFile(walletDBPath);
+    const seedRepository = getRepository(Seed);
+    const newSeed = seedRepository.create({ seed });
 
     const args = [
       'restore',
@@ -159,10 +190,17 @@ export function restoreExistedWallet(
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       console.log('stdout:', bufferString);
-      if (bufferString.match(walletRestoreSuccess)) {
-        return resolve('wallet successfully restored');
+      if (bufferString.match(walletRestoreSuccessReg)) {
+        seedRepository.findOne({ where: { seed } })
+          .then((finded) => {
+            if (!finded) {
+              return seedRepository.save(newSeed)
+                .then((saved) => resolve(saved));
+            }
+            return resolve(finded);
+          });
       }
-      if (bufferString.match(walletRestoreError)) {
+      if (bufferString.match(walletRestoreErrorReg)) {
         return reject(new Error(
           'wrong seed-phrase or wallet api is running now'
         ));
@@ -185,23 +223,24 @@ export function runWalletApi(
   return new Promise((resolve, reject) => {
     const walletApiExe = getExecutableFile(walletApiPath);
     if (!walletApiExe) return reject(new Error('Wallet api not found'));
+
     const args = [
       '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
       '-p', `${WALLET_API_PORT}`,
       `--pass=${password}`,
-      '--use_http=1',
-      `--wallet_path=${walletDBPath}`
+      `--use_http=${HTTP_MODE}`,
+      `--wallet_path=${walletDBPath}`,
+      '--enable_ipfs=true'
     ];
-
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
       console.log(`stdout: ${bufferString}`);
-      if (bufferString.match(success)) {
+      if (bufferString.match(successReg)) {
         resolve('wallet api started successfully');
       }
-      if (bufferString.match(error)) {
+      if (bufferString.match(errorReg)) {
         killApiServer()
-          .then(() => reject(new Error('something went wrong')));
+          .then(() => reject(new Error('Please, check your password')));
       }
     };
 
