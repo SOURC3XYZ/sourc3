@@ -52,6 +52,7 @@ const Login = ({ startWalletApi }: LoginProps) => {
                 onChange={onPassInputChange}
                 value={pass}
                 type="password"
+                onPressEnter={onSubmit}
               />
             </label>
             <Link to="/auth/restore">

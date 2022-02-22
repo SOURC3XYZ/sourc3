@@ -80,9 +80,7 @@ const Main = ({
                 <Route
                   path="repos/:type/:page"
                   element={(
-                    <AllRepos
-                      isWeb
-                    />
+                    <AllRepos />
                   )}
                 />
                 <Route

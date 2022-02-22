@@ -1,4 +1,5 @@
 import { Preload } from '@components/shared';
+import NavMenu from '@components/shared/menu/menu';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import React from 'react';
@@ -8,7 +9,6 @@ import { Manager, Notifications, Repo } from '../main/content';
 import { Header } from './content';
 import LocalRepos from './content/local-rep/local-rep';
 import Repositories from './content/repositories/repositories';
-// import ReposEmpty from './content/repos-empty/repos-empty';
 import styles from './desk.module.css';
 
 type MainDeskProps = {
@@ -33,10 +33,10 @@ const Desk = ({
   return (
     <>
       <Header
-        isWeb
         balance={balance}
         pKey={pkey}
       />
+      <NavMenu />
       <div className={styles.wrapper}>
         {
           isApiConnected
@@ -46,12 +46,10 @@ const Desk = ({
                   path="/"
                   element={
                     <Navigate replace to="repositories/my/1" />
-                    // <Navigate replace to="repositories" />
                   }
                 />
                 <Route
                   path="repositories/:type/:page"
-                  // path="repositories/"
                   element={<Repositories />}
                 />
                 <Route

@@ -23,7 +23,6 @@ type LocationState = {
 type AllReposProps = {
   repos: RepoType[],
   searchText: string,
-  isWeb?:boolean,
   getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void,
@@ -40,7 +39,6 @@ const initialState = {
 const AllRepos = ({
   repos,
   searchText,
-  isWeb,
   getAllRepos,
   createRepos,
   deleteRepos,
@@ -85,25 +83,20 @@ const AllRepos = ({
 
   return (
     <div className={styles.content}>
-      {isWeb ? (
-        <>
-          <Nav type={type} />
-          <Row className={styles.repoHeader}>
-            <Col span={8}>
-              <BeamButton title="New" callback={showModal} />
-            </Col>
-            <Col span={8} offset={8}>
-              <Search text={searchText} setInputText={setInputText} />
-            </Col>
-          </Row>
-        </>
-      ) : (
+      <>
+        <Nav
+          type={type}
+          path={path}
+        />
         <Row className={styles.repoHeader}>
+          <Col span={8}>
+            <BeamButton title="New" callback={showModal} />
+          </Col>
           <Col span={8} offset={8}>
             <Search text={searchText} setInputText={setInputText} />
           </Col>
         </Row>
-      )}
+      </>
 
       <Modal
         visible={isModalVisible}

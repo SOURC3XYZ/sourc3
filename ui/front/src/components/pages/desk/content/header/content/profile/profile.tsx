@@ -61,7 +61,7 @@ const Profile = ({ pKey }:profileType) => {
         >
           <div>
             <Avatar size="large" icon={<UserOutlined />} />
-            <span>yourmail.@gmail.com</span>
+            <span className={styles.disabled}>yourmail.@gmail.com</span>
           </div>
         </Dropdown>
       </div>

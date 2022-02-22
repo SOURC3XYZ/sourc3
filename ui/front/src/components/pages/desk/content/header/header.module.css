@@ -9,8 +9,8 @@
     padding: 0 10px;
 
 }
-.toggle{
-    position: absolute;
-    top:25%;
-    right: 600px
+ .nav{
+  display: flex;
+  align-items: center;
 }
+

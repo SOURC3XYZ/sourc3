@@ -1,5 +1,5 @@
 import {
-  Select, Form, Button, Radio
+  Select, Form, Button, Tabs
 } from 'antd';
 
 import styles from './local-rep.module.css';
@@ -11,6 +11,8 @@ const LocalRepos = () => {
   const handleChange = (value:any) => {
     console.log(`selected ${value}`);
   };
+  const { TabPane } = Tabs;
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.wrapperSelect}>
@@ -63,13 +65,28 @@ const LocalRepos = () => {
 
       </div>
       <div className={styles.wrapperRadio}>
-        {' '}
-        <Radio.Group onChange={(e) => (console.log(e.target.value))} defaultValue="a" size="middle">
-          <Radio.Button value="a">Changes</Radio.Button>
-          <Radio.Button value="b">History</Radio.Button>
-          <Radio.Button value="c">Merge</Radio.Button>
-          <Radio.Button value="d">Pull request</Radio.Button>
-        </Radio.Group>
+        <Tabs defaultActiveKey="1" type="card">
+          <TabPane tab="Changes" key="1">
+            <div style={{ width: '75em' }}>
+              <ul>
+                <li>2</li>
+                <li>3</li>
+                <li>2</li>
+                <li>33</li>
+                <li>2</li>
+              </ul>
+            </div>
+          </TabPane>
+          <TabPane tab="History" key="3">
+            Content of card tab 2
+          </TabPane>
+          <TabPane tab="Merge" key="4">
+            Content of card tab 3
+          </TabPane>
+          <TabPane tab="Pull request" key="5">
+            Content of card tab 4
+          </TabPane>
+        </Tabs>
 
       </div>
     </div>

@@ -5,9 +5,10 @@ import style from './nav.module.css';
 
 type NavProps = {
   type: RepoListType
+  path:string
 };
 
-const Nav = ({ type }:NavProps) => (
+const Nav = ({ type, path }:NavProps) => (
   <>
     <div className={style.nav}>
       <Menu
@@ -15,10 +16,10 @@ const Nav = ({ type }:NavProps) => (
         mode="horizontal"
       >
         <Menu.Item key="all">
-          <Link to="/main/repos/all/1">All Repository</Link>
+          <Link to={`/${path}/all/1`}>All Repository</Link>
         </Menu.Item>
         <Menu.Item key="my">
-          <Link to="/main/repos/my/1">My repository</Link>
+          <Link to={`/${path}/my/1`}>My repository</Link>
         </Menu.Item>
       </Menu>
     </div>
