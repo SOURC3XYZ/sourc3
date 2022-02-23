@@ -92,7 +92,7 @@ namespace pit
 
     /////////////////////////////////////////////////////
 
-    void ObjectCollector::Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden)
+    void ObjectCollector::Traverse(const std::vector<Refs>& refs, const std::vector<git_oid>& hidden)
     {
         using namespace git;
         RevWalk walk;

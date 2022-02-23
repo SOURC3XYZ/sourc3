@@ -88,7 +88,7 @@ namespace pit
     {
     public:
         using git::RepoAccessor::RepoAccessor;
-        void Traverse(const std::vector<Refs> refs, const std::vector<git_oid>& hidden);
+        void Traverse(const std::vector<Refs>& refs, const std::vector<git_oid>& hidden);
         template<typename Func>
         void Serialize(Func func) 
         {
