@@ -4,7 +4,7 @@ import {
   deleteRepoService,
   getAllSeedsService,
   getBlobDataService,
-  getBranchesService, getCommitsService, getTreeService, mountService
+  getBranchesService, getCommitsService, getCurrentService, getTreeService, mountService
 } from './git.service';
 
 const router = express.Router();
@@ -12,6 +12,12 @@ const router = express.Router();
 router.route('/').get(async (_, res) => {
   const data = await getAllSeedsService();
   return res.status(201).json(data);
+});
+
+router.route('/current').get(async (_, res, next) => {
+  const data = await getCurrentService();
+  if (data.isOk) return res.status(201).json(data.current);
+  return next(new ErrorHandler(500, data.message));
 });
 
 router.route('/branches').get(async (_, res, next) => {

@@ -9,6 +9,7 @@ module.exports = {
     },
     git: {
         getSeeds: () => '/git',
-        initRepo: (id) => `/git/${id}`
+        initRepo: (id) => `/git/${id}`,
+        getCurrent: () => '/git/current'
     }
 };

@@ -1,15 +1,11 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
-import { TxItem } from '@types';
+import { BeamError, TxItem } from '@types';
 
 interface IApp {
   isApiConnected: boolean;
   txs: Set<TxItem>
-  error: {
-    code?: number,
-    status?: string,
-    message: string
-  } | null,
+  error: BeamError | null,
   balance: number,
   addrList: string
   pkey: string

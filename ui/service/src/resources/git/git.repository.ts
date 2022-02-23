@@ -24,8 +24,8 @@ export const mountRepo = async (
     } await repoRepository.remove(isAlreadyExists);
   }
 
-  const init = new GitHandler(remote, local);
-  const { repo, action } = await init.getContents();
+  currentRepo = new GitHandler(remote, local);
+  const { repo, action } = await currentRepo.getContents();
   const answer = {
     opened: action,
     config: await repo.getRemoteNames()
@@ -36,6 +36,7 @@ export const mountRepo = async (
       remote, local, name, seedId: seed
     });
     await repoRepository.save(newRepo);
+    currentRepo.currentId = newRepo.id;
     return { repo: newRepo, ...answer };
   } throw new Error('seed not found');
 };
@@ -94,4 +95,12 @@ export const deleteLocalRepo = async (repoId: string) => {
   const repo = await repoRepository.findOne({ where: { id: repoId } });
   if (repo) return repoRepository.remove(repo);
   throw new Error('repo not found');
+};
+
+export const getCurrent = async () => {
+  const { currentId } = currentRepo;
+  const repoRepository = await getRepository(Repo);
+  const repo = await repoRepository.findOne({ where: { id: currentId } });
+  if (!repo) throw new Error('current repo not found in database');
+  return repo;
 };

@@ -1,7 +1,9 @@
 import { Logged, Main } from '@components/pages';
+import { ErrorAlert } from '@components/shared';
 import { AC } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { Alert, Button } from 'antd';
+import { BeamError } from '@types';
+import { useMemo, useRef } from 'react';
 import { connect } from 'react-redux';
 import {
   Navigate, Route, Routes, useNavigate
@@ -9,61 +11,49 @@ import {
 import { Desk } from './desk';
 
 type AppProps = {
-  error: {
-    code?: number,
-    status?: string
-    message: string,
-  } | null;
+  error: BeamError | null;
   resetErr: () => void
 };
 
 function App({ error, resetErr }: AppProps) {
   const navigate = useNavigate();
+
   const onClick = () => {
     resetErr();
     navigate('/');
   };
-  return error
-    ? (
-      <Alert
-        message="Error Text"
-        showIcon
-        description={error.message}
-        type="error"
-        action={(
-          <Button onClick={onClick} size="small" type="default">
-            Reload
-          </Button>
-        )}
-      />
-    )
-    : (
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Navigate replace to="auth/" />
-          }
-        />
-        <Route
-          path="auth/*"
-          element={<Logged />}
-        />
-        <Route
-          path="main/*"
-          element={
-            <Main />
-          }
-        />
-        <Route
-          path="mainDesk/*"
-          element={
-            <Desk />
-          }
-        />
 
-      </Routes>
-    );
+  const routes = [
+    {
+      path: '/',
+      element: <Navigate replace to="auth/" />
+    },
+    {
+      path: 'auth/*',
+      element: <Logged />
+    },
+    {
+      path: 'main/*',
+      element: <Main />
+    },
+    {
+      path: 'mainDesk/*',
+      element: <Desk />
+    }
+  ];
+
+  const routesRef = useRef(routes.map(({ path, element }) => (
+    <Route path={path} element={element} />
+  )));
+
+  const View = useMemo(() => {
+    const Component = error
+      ? <ErrorAlert onClick={onClick} error={error} />
+      : <Routes>{routesRef.current}</Routes>;
+    return () => Component;
+  }, [error]);
+
+  return <View />;
 }
 
 const mapState = ({ app: { error } }:RootState) => ({

@@ -3,6 +3,7 @@
 const { app, BrowserWindow, session, ipcMain, dialog } = require('electron');
 const path = require('path');
 const env = process.env.NODE_ENV || 'production';
+const os = require('os')
 
 require('electron-reload')(__dirname, {
   electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
@@ -35,19 +36,24 @@ function createWindow() {
   win.loadFile('dist/index.html');
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     details.responseHeaders['Cross-Origin-Embedder-Policy'] = 'require-corp';
     details.responseHeaders['Cross-Origin-Opener-Policy'] = 'same-origin';
     callback({ responseHeaders: details.responseHeaders });
   });
-
+  await session.defaultSession.loadExtension(path.join(os.homedir(),
+    '.config/google-chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.0.9_0/'),
+    { allowFileAccess: true }
+  )
   createWindow();
 
   app.on('ready', () => {
+
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
+
   });
 });
 

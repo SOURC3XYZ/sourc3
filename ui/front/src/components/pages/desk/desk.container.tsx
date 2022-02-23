@@ -44,25 +44,26 @@ const Desk = ({
       path: 'manager',
       element: <Manager isDesk />
     },
-  {
-    path:"/localRepos",
-  element:<LocalRepos />
-}
+    {
+      path: '/localRepos',
+      element: <LocalRepos />
+    }
   ];
 
   const routes = data.map(
     ({ path, element }) => <Route path={path} element={element} />
   );
 
-  const View = useMemo(() => () => (
-    isApiConnected
+  const View = useMemo(() => {
+    const Component = isApiConnected
       ? <Routes>{routes}</Routes>
-      : <Preload />
-  ), [isApiConnected]);
+      : <Preload />;
+    return () => Component;
+  }, [isApiConnected]);
 
   return (
     <>
-      <Header isWeb balance={balance} pKey={pkey} />
+      <Header balance={balance} pKey={pkey} />
       <NavMenu />
       <div className={styles.wrapper}>
         <View />
@@ -80,12 +81,8 @@ const mapState = ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  connectApi: () => {
-    dispatch(thunks.connectBeamApi());
-  },
-  getWalletStatus: () => {
-    dispatch(thunks.getWalletStatus());
-  }
+  connectApi: () => dispatch(thunks.connectBeamApi()),
+  getWalletStatus: () => dispatch(thunks.getWalletStatus())
 });
 
 export default connect(mapState, mapDispatch)(Desk);

@@ -11,44 +11,53 @@ import {
   Commit,
   BranchName,
   RepoId,
-  Seed2ValidationType
+  Seed2ValidationType,
+  LocalRepoBranch,
+  LocalRepoName
 } from '@types';
 
 export const AC = {
+  setLocalRepoMap: (
+    payload: Map<LocalRepoName, LocalRepoBranch[]> | null
+  ) => ({
+    type: ACTIONS.SET_LOCAL_MAP,
+    payload
+  } as const),
+
   setWalletConnection: (payload: boolean) => ({
     type: ACTIONS.SET_WALLET_CONNECTION,
     payload
-  }),
+  } as const),
 
   setGeneratedSeed: (payload: string | null) => ({
     type: ACTIONS.SET_GENERATED_SEED,
     payload
-  }),
+  } as const),
 
   setSeed2Validation: (payload: Partial<Seed2ValidationType>) => ({
     type: ACTIONS.SET_SEED_TO_VALIDATION,
     payload
-  }),
+  } as const),
 
   setTx: (payload: string) => ({
     type: ACTIONS.SET_TX,
     payload
-  }),
+  } as const),
 
   removeTx: (payload: TxItem) => ({
     type: ACTIONS.REMOVE_TX,
     payload
-  }),
+  } as const),
 
   setTxNotifyTrue: (payload: TxItem) => ({
     type: ACTIONS.SET_TX_NOTIFY,
     payload
-  }),
+  } as const),
 
   setRepos: (payload: RepoType[]) => ({
     type: ACTIONS.GET_ALL_REPOS,
     payload
-  }),
+  } as const),
 
   setIsConnected: (payload: boolean) => ({
     type: ACTIONS.CONNECTION,

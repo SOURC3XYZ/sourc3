@@ -12,6 +12,7 @@ node-utxo-image.bin
 node.db-journal
 node.db
 wallet.db
+wallet.db-journal
 bundle
 coverage
 ipfs-repo

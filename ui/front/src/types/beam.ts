@@ -55,3 +55,8 @@ export type ErrorObj = {
 export type SetPropertiesType<T> = React.Dispatch<
 React.SetStateAction<T>
 >;
+
+export interface BeamError extends Error {
+  code?: number,
+  status?: string
+}

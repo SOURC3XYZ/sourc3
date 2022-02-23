@@ -2,6 +2,7 @@ export { default as Info } from './info';
 export { default as Search } from './search';
 export { default as FailPage } from './fail-page';
 export { default as OkPage } from './ok-page';
+export { default as ErrorAlert } from './error-alert';
 export * from './preload';
 export * from './beam-button';
 export * from './file-tree';

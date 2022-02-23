@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
@@ -26,6 +27,8 @@ export class GitHandler {
 
   private repo: Repository;
 
+  private _id: string;
+
   public constructor(
     url: string,
     localPath: string
@@ -35,6 +38,14 @@ export class GitHandler {
     this.asyncInitParams = isExistsSync(this.localPath, '.git')
       ? { promise: Repository.open(localPath), action: Action.Opened }
       : { promise: Clone.clone(this.url, localPath), action: Action.Cloned };
+  }
+
+  public set currentId(id: string) {
+    this._id = id;
+  }
+
+  public get currentId() : string {
+    return this._id;
   }
 
   public getContents = async () => {

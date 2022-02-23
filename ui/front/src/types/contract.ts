@@ -16,6 +16,9 @@ export type TreeElementFilename = string;
 export type TreeElementOid = string;
 export type ObjectData = string;
 export type RepoListType = 'all' | 'my';
+export type LocalRepoName = string | null;
+export type LocalRepoBranch = string;
+export type LocalRepoId = string | null;
 
 export type BeamReqAction = { [key: string]: string };
 

@@ -57,7 +57,25 @@ export const thunks = {
     dispatch(AC.setWalletConnection(true));
   },
 
+  getLocalRepoBranches: (
+    local: string, remote:string
+  ) => async (dispatch: AppThunkDispatch) => {
+    const url = `${CONTRACT.HOST}/git/init`;
+    try {
+      await axios.post(url, { local, remote }, { headers });
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
   cloneRepo: (
+    local: string, remote:string
+  ) => async (dispatch: AppThunkDispatch) => {
+    const url = `${CONTRACT.HOST}/git/init`;
+    try {
+      await axios.post(url, { local, remote }, { headers });
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
+  setCommits: (
     local: string, remote:string
   ) => async (dispatch: AppThunkDispatch) => {
     const url = `${CONTRACT.HOST}/git/init`;

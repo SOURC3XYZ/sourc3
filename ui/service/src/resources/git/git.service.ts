@@ -2,7 +2,7 @@ import {
   deleteLocalRepo,
   getAllSeeds,
   getBlobData,
-  getBranches, getCommits, getTree, mountRepo
+  getBranches, getCommits, getCurrent, getTree, mountRepo
 } from './git.repository';
 
 const errorResCreator = (error:unknown) => {
@@ -80,5 +80,12 @@ export const deleteRepoService = async (repoId:string) => {
       message: 'repo successfuly deleted',
       repo
     } as const;
+  } catch (error) { return errorResCreator(error); }
+};
+
+export const getCurrentService = async () => {
+  try {
+    const current = await getCurrent();
+    return { isOk: true, current } as const;
   } catch (error) { return errorResCreator(error); }
 };

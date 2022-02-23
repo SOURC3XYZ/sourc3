@@ -38,6 +38,7 @@ declare interface Window {
   qt: QWebChannelTransport;
   BeamApi: QObject;
   BeamModule: any;
+  __REDUX_DEVTOOLS_EXTENSION__: () => any
 }
 
 declare interface EventTarget {

@@ -69,5 +69,9 @@ describe('restore wallet', () => {
         const repos = await request(git.getSeeds(), {}, 'GET');
         expect(typeof repos.find(el => el.repos.find(el => el.id === localRepoId)))
             .toBe('object');
+
+        const current = await request(git.getCurrent(), {}, 'GET')
+        expect(current.id)
+            .toBe(localRepoId);
     })
 })
