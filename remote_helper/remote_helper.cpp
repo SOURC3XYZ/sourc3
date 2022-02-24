@@ -255,6 +255,13 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
     collector.Traverse(refs, mergeBases);
 
+    auto& objs = collector.m_objects;
+    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.oid < right.oid; });
+    {
+        auto it = std::unique(objs.begin(), objs.end(), [](auto&& left, auto& right) { return left.oid == right.oid; });
+        objs.erase(it, objs.end());
+    }
+
     for (auto& obj : collector.m_objects)
     {
         if (uploadedObjects.find(obj.oid) != uploadedObjects.end())
@@ -263,12 +270,21 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
     }
 
+    {
+        auto it = std::remove_if(objs.begin(), objs.end(), 
+            [](const auto& o)
+            {
+                return o.selected; 
+            });
+        objs.erase(it, objs.end());
+    }
+
     for (auto& obj : collector.m_objects)
     {
         if (obj.selected)
             continue;
 
-        if (obj.type == GIT_OBJECT_BLOB && obj.GetSize() > 46)
+        if (obj.GetSize() > 46)
         {
             auto res = wc.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
             auto r = json::parse(res);
@@ -277,7 +293,9 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         }
     }
 
-    collector.Serialize([&](const auto& buf)
+    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.GetSize() > right.GetSize(); });
+
+    collector.Serialize([&](const auto& buf, bool lastBlock)
         {
             // log
             {
@@ -296,12 +314,15 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             auto strData = ToHex(buf.data(), buf.size());
             std::stringstream ss;
             ss << "role=user,action=push_objects,data="
-                << strData << ',';
-            for (const auto& r : collector.m_refs)
+                << strData;// << ',';
+            if (lastBlock)
             {
-                ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+                ss << ',';
+                for (const auto& r : collector.m_refs)
+                {
+                    ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+                }
             }
-
             wc.InvokeWallet(ss.str());
         });
 

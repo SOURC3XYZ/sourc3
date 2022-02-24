@@ -63,8 +63,9 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector)
 
     BOOST_TEST_CHECK(collector.m_objects.size() == 27);
 
-    collector.Serialize([&](const auto& buf)
+    collector.Serialize([&](const auto& buf, bool lastBlock)
         {
+            BOOST_TEST_CHECK(lastBlock == true);
             size_t size = sizeof(pit::ObjectsInfo);
             const auto* p = reinterpret_cast<const pit::ObjectsInfo*>(buf.data());
             BOOST_TEST_CHECK(p->objects_number == uint32_t(27));

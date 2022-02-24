@@ -93,7 +93,14 @@ namespace pit
         void Serialize(Func func) 
         {
             // TODO: replace code below with calling serializer
-            constexpr size_t SIZE_THRESHOLD = 500000;
+            constexpr size_t SIZE_THRESHOLD = 100000;
+            size_t totalSize = 0;
+            for (const auto& o : m_objects)
+            {
+                if (o.selected)
+                    continue;
+                totalSize += o.GetSize();
+            }
             while (true)
             {
                 uint32_t count = 0;
@@ -135,8 +142,8 @@ namespace pit
                     std::copy_n(obj.GetData(), obj.GetSize(), data);
                     serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
                 }
-
-                func(buf);
+                totalSize -= size;
+                func(buf, totalSize == 0);
             }
         }
     private:

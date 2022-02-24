@@ -239,32 +239,41 @@ namespace
         }
         Env::DocAddNum("repo_id", params->repo_id);
 
+        SigRequest sig;
+        sig.m_pID = &cid;
+        sig.m_nID = sizeof(cid);
+
         char refName[GitRef::MAX_NAME_SIZE + 1];
         auto nameLen = Env::DocGetText("ref", refName, _countof(refName));
-        if (nameLen <= 1) {
+        if (nameLen == 1) {
             return On_error("failed to read 'ref'");
-        }
-        --nameLen; // remove '0'-term;
-        size_t refsCount = 1; // single ref for now
-        auto refArgsSize = sizeof(PushRefsParams) + sizeof(GitRef) + nameLen;
-        auto resMemory = std::make_unique<uint8_t[]>(refArgsSize);
-        auto* refsParams = reinterpret_cast<PushRefsParams*>(resMemory.get());
-        refsParams->repo_id = params->repo_id;
-        refsParams->refs_info.refs_number = refsCount;
-        auto* ref = reinterpret_cast<GitRef*>(refsParams + 1);
-        if (!Env::DocGetBlob("ref_target", &ref->commit_hash, sizeof(git_oid))) {
-            return On_error("failed to read 'ref_target'");
-        }
-        ref->name_length = nameLen;
-        Env::Memcpy(ref->name, refName, nameLen);
+        } else if (nameLen > 1) {
+            --nameLen; // remove '0'-term;
+            size_t refsCount = 1; // single ref for now
+            auto refArgsSize = sizeof(PushRefsParams) + sizeof(GitRef) + nameLen;
+            auto resMemory = std::make_unique<uint8_t[]>(refArgsSize);
+            auto* refsParams = reinterpret_cast<PushRefsParams*>(resMemory.get());
+            refsParams->repo_id = params->repo_id;
+            refsParams->refs_info.refs_number = refsCount;
+            auto* ref = reinterpret_cast<GitRef*>(refsParams + 1);
+            if (!Env::DocGetBlob("ref_target", &ref->commit_hash, sizeof(git_oid))) {
+                return On_error("failed to read 'ref_target'");
+            }
+            ref->name_length = nameLen;
+            Env::Memcpy(ref->name, refName, nameLen);
 
-        // dump refs for debug
-        Env::DocGroup grr("refs");
-        {
-            Env::DocAddNum32("count", refsParams->refs_info.refs_number);
-            Env::DocGroup gr2("ref");
-            Env::DocAddBlob("oid", &ref->commit_hash, 20);
-            Env::DocAddText("name", ref->name);
+            // dump refs for debug
+            Env::DocGroup grr("refs");
+            {
+                Env::DocAddNum32("count", refsParams->refs_info.refs_number);
+                Env::DocGroup gr2("ref");
+                Env::DocAddBlob("oid", &ref->commit_hash, 20);
+                Env::DocAddText("name", ref->name);
+            }
+
+            Env::DerivePk(refsParams->user, &cid, sizeof(cid));
+            Env::GenerateKernel(&cid, PushRefsParams::METHOD, refsParams, refArgsSize,
+                nullptr, 0, &sig, 1, "Pushing refs", 10000000);
         }
 
         // dump objects for debug
@@ -288,17 +297,8 @@ namespace
         }
 
         Env::DerivePk(params->user, &cid, sizeof(cid));
-        Env::DerivePk(refsParams->user, &cid, sizeof(cid));
-
-        SigRequest sig;
-        sig.m_pID = &cid;
-        sig.m_nID = sizeof(cid);
-
         Env::GenerateKernel(&cid, PushObjectsParams::METHOD, params, argsSize,
-            nullptr, 0, &sig, 1, "Pushing objects", 20000000);
-
-        Env::GenerateKernel(&cid, PushRefsParams::METHOD, refsParams, refArgsSize,
-            nullptr, 0, &sig, 1, "Pushing refs", 10000000);
+            nullptr, 0, &sig, 1, "Pushing objects", 20000000 + 100000*params->objects_number);
     }
 
     void On_action_list_refs(const ContractID& cid)
