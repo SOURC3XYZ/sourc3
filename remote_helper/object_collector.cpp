@@ -46,11 +46,12 @@ namespace pit
     ObjectInfo::ObjectInfo(ObjectInfo&& other) noexcept
         : oid(other.oid)
         , type(other.type)
+        , object(std::exchange(other.object, nullptr))
         , name(std::move(other.name))
         , fullPath(std::move(other.fullPath))
         , selected(other.selected)
         , ipfsHash(std::move(other.ipfsHash))
-        , object(std::exchange(other.object, nullptr))
+        
     {
     }
 
@@ -60,11 +61,11 @@ namespace pit
         {
             oid = other.oid;
             type = other.type;
+            object = std::exchange(other.object, nullptr);
             name = std::move(other.name);
             fullPath = std::move(other.fullPath);
             selected = other.selected;
             ipfsHash = std::move(other.ipfsHash);
-            object = std::exchange(other.object, nullptr);
         }
         return *this;
     }
