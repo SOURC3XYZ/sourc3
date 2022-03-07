@@ -25,6 +25,8 @@ function createWindow() {
     }
   });
 
+  win.webContents.userAgent = 'SOURC3-DESKTOP';
+
   ipcMain.on('select-dirs', async (event, arg) => {
     const result = await dialog.showOpenDialog(win, {
       properties: ['openDirectory']
@@ -38,6 +40,7 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    details.responseHeaders['User-Agent'] = 'SuperDuperAgent';
     details.responseHeaders['Cross-Origin-Embedder-Policy'] = 'require-corp';
     details.responseHeaders['Cross-Origin-Opener-Policy'] = 'same-origin';
     callback({ responseHeaders: details.responseHeaders });

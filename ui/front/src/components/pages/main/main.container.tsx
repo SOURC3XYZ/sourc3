@@ -13,7 +13,6 @@ import styles from './main.module.css';
 import { Header } from '../desk/content';
 
 type MainProps = {
-  getWalletStatus: () => void,
   connectApi: () => void,
   isApiConnected: boolean,
   balance: number
@@ -22,30 +21,13 @@ type MainProps = {
 };
 
 const Main = ({
-  isApiConnected, connectApi, balance, getWalletStatus, pkey
+  isApiConnected, connectApi, balance, pkey
 }:MainProps) => {
   React.useEffect(() => {
-    if (!isApiConnected) connectApi()
-    getWalletStatus();
+    if (!isApiConnected) connectApi();
+    // getWalletStatus();
   }, [isApiConnected]);
 
-  // const path = window.location.pathname === 'Pit_demo/app/index.html'
-  //   ? 'Pit_demo/app/index.html'
-  //   : window.location.pathname.substring(1);
-  // const onClick = () => {
-  //   window.postMessage({
-  //     type: 'select-dirs'
-  //   });
-  //   const messageHandler = (e:MessageEvent<any>) => {
-  //     if (e.data.type === 'select-dirs-answer') {
-  //       console.log(e.data.path);
-  //       window.removeEventListener('message', messageHandler);
-  //     }
-  //   };
-
-  //   window.addEventListener('message', messageHandler);
-  // };
-  // TODO: local git handler
   return (
     <>
       <Header

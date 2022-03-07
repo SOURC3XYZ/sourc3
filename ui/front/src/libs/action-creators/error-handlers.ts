@@ -13,6 +13,7 @@ export const errorHandler = (
 
 export const thunkCatch = (err: unknown, dispatch: AppThunkDispatch) => {
   const { message } = err as Error;
+  console.error(err);
   errorHandler({ message }, dispatch);
 };
 
@@ -24,9 +25,7 @@ export function outputParser<T extends ContractResp>(
     if (res.result.output) {
       const output = JSON.parse(res.result.output) as T;
       if (output.error) {
-        return errorHandler(
-          { message: output.error }, dispatch
-        );
+        return errorHandler({ message: output.error }, dispatch);
       }
       return output;
     } throw new Error('no output');
