@@ -8,7 +8,7 @@ module.exports = {
         req: () => '/beam'
     },
     git: {
-        getSeeds: () => '/git',
+        getSeedRepos: (id) => `/git/repos/${id}`,
         initRepo: (id) => `/git/${id}`,
         getCurrent: () => '/git/current'
     }

@@ -52,8 +52,8 @@ describe('restore wallet', () => {
 
     });
     it('get repos', async () => {
-        const repos = await request(git.getSeeds(), {}, 'GET');
-        expect(typeof repos.find(el => el.id === id)).toBe('object');
+        const repos = await request(git.getSeedRepos(id), {}, 'GET');
+        expect(repos.id).toBe(id);
     })
     it('init local repo', async () => {
         let localRepoId;
@@ -66,11 +66,12 @@ describe('restore wallet', () => {
         localRepoId = init.repo.id;
         expect(init.isOk).toBe(true);
 
-        const repos = await request(git.getSeeds(), {}, 'GET');
-        expect(typeof repos.find(el => el.repos.find(el => el.id === localRepoId)))
+        const repos = await request(git.getSeedRepos(id), {}, 'GET');
+        expect(typeof repos.repos.find(el => el.id === localRepoId))
             .toBe('object');
 
         const current = await request(git.getCurrent(), {}, 'GET')
+        console.log('current', current)
         expect(current.id)
             .toBe(localRepoId);
     })

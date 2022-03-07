@@ -5,8 +5,8 @@ import { GitHandler } from '../../utils/libgit';
 
 let currentRepo: GitHandler;
 
-export const getAllSeeds = () => getRepository(Seed)
-  .find({ relations: ['repos'] });
+export const getAllSeeds = (seedId: string) => getRepository(Seed)
+  .findOne({ where: { id: seedId }, relations: ['repos'] });
 
 export const mountRepo = async (
   remote:string,

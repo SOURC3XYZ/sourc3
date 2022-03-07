@@ -10,7 +10,7 @@ const errorResCreator = (error:unknown) => {
   return { isOk: false, message } as const;
 };
 
-export const getAllSeedsService = async () => getAllSeeds();
+export const getAllSeedsService = async (seedId:string) => getAllSeeds(seedId);
 
 export const mountService = async (
   remote: string,

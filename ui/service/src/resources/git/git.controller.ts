@@ -4,13 +4,18 @@ import {
   deleteRepoService,
   getAllSeedsService,
   getBlobDataService,
-  getBranchesService, getCommitsService, getCurrentService, getTreeService, mountService
+  getBranchesService,
+  getCommitsService,
+  getCurrentService,
+  getTreeService,
+  mountService
 } from './git.service';
 
 const router = express.Router();
 
-router.route('/').get(async (_, res) => {
-  const data = await getAllSeedsService();
+router.route('/repos/:seedId').get(async (req, res) => {
+  const { seedId } = req.params;
+  const data = await getAllSeedsService(seedId);
   return res.status(201).json(data);
 });
 
