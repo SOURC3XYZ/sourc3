@@ -26,10 +26,12 @@ const themeVariables = lessToJs(
 
 const env:ModeType = <ModeType>process.env.NODE_ENV || 'production';
 
+const mode = process.env.WEB ? 'web' : 'desktop';
+
 console.log('env', env);
 
 const build:IConfig = {
-  entry: './src/index.tsx',
+  entry: `./src/apps/${mode}/index.tsx`,
   // bail: true,
   output: {
     path: path.join(__dirname, 'dist'),

@@ -63,13 +63,10 @@ export const onLoadData = (
 
 export const getTree = (
   treeNode:DataNode[],
-  pathname: string,
+  pathArray: string[],
   updateTree: (props: Omit<UpdateProps, 'id'>) => void,
   index = 0
 ): DataNode[] | null => {
-  const pathArray = pathname.split('/')
-    .slice(7);
-
   if (!pathArray.length) {
     return treeNode;
   }
@@ -84,7 +81,7 @@ export const getTree = (
       if (index === pathArray.length - 1) return currentFile.children;
       return getTree(
         currentFile.children,
-        pathname,
+        pathArray,
         updateTree,
         index + 1
       );

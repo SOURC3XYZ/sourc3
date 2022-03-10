@@ -12,6 +12,7 @@ const NavMenu = () => {
     borderRight: 'none',
     padding: '0 1rem'
   };
+
   return (
     <div className={styles.menu}>
       <Menu
@@ -21,10 +22,10 @@ const NavMenu = () => {
       >
         <Menu.Divider />
         <Menu.Item key="all" icon={<ContainerOutlined />}>
-          <Link to="/mainDesk/repositories/my/1">Repositories</Link>
+          <Link to="/main/repos/all/1">Repositories</Link>
         </Menu.Item>
         <Menu.Item key="local" icon={<ContainerOutlined />}>
-          <Link to="/mainDesk/localRepos">Local Repositories</Link>
+          <Link to="/main/localRepos">Local Repositories</Link>
         </Menu.Item>
       </Menu>
     </div>

@@ -22,7 +22,7 @@ type Modified<T> = T & {
 export class BeamAPI<T> {
   public readonly cid: string;
 
-  private readonly apiHost: string | null;
+  private apiHost?: string;
 
   private API: null | QObject;
 
@@ -30,9 +30,8 @@ export class BeamAPI<T> {
 
   private readonly callbacks: Map<string, BeamApiReqHandlers>;
 
-  constructor(cid: string, apiHost?:string) {
+  constructor(cid: string) {
     this.cid = cid;
-    this.apiHost = apiHost || null;
     this.API = null;
     this.contract = null;
     this.callbacks = new Map();
@@ -83,7 +82,9 @@ export class BeamAPI<T> {
 
   readonly loadAPI = async (message: {
     [key: string]: string;
-  }): Promise<BeamAPI<T>> => {
+  }, apiHost?:string): Promise<BeamAPI<T>> => {
+    this.apiHost = apiHost;
+
     const ua = navigator.userAgent;
     if (!this.apiHost) {
       try {

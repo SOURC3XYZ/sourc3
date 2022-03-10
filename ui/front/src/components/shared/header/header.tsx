@@ -1,23 +1,19 @@
-import { FormOutlined } from '@ant-design/icons';
-import {
-  PageHeader, Button
-} from 'antd';
-// import SubMenu from 'antd/lib/menu/SubMenu';
+import { AddButton, Balance, Profile } from '@components/shared';
+import styles from './header.module.css';
 
-const Header = () => (
-  <>
-    <PageHeader
-      style={{ background: 'white', margin: '0 auto', maxWidth: '74rem' }}
-      className="site-page-header-responsive"
-      title="PIT"
-      // subTitle="This is a subtitle"
-      extra={[
-        <>
-          <Button shape="round" icon={<FormOutlined />}>New</Button>
-        </>
-      ]}
-    />
-  </>
+type HeaderPropsType = {
+  pKey:string
+  balance: number,
+};
+
+const Header = ({ balance, pKey }:HeaderPropsType) => (
+  <div className={styles.wrapper}>
+    <div className={styles.nav}>
+      <Balance current={balance} />
+      <AddButton />
+      <Profile pKey={pKey} />
+    </div>
+  </div>
 );
 
 export default Header;

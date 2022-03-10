@@ -27,7 +27,7 @@ import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
 const beam = new BeamAPI<RequestCreators['params']>(
-  CONTRACT.CID, `${CONTRACT.HOST}/beam`
+  CONTRACT.CID
 );
 
 const { callApi, initContract, loadAPI } = beam;
@@ -134,9 +134,9 @@ export const thunks = {
   },
 
   connectBeamApi:
-    (someMessage = messageBeam) => async (dispatch: AppThunkDispatch) => {
+    (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
       try {
-        await loadAPI(someMessage);
+        await loadAPI(messageBeam, apiHost);
         await initContract(wasm);
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);

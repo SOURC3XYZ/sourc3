@@ -9,6 +9,7 @@
     "watch": "webpack --watch",
     "testbuild": "export NODE_ENV=production; webpack",
     "start": "export NODE_ENV=development; webpack serve --mode development",
+    "web": "export WEB=1; export NODE_ENV=development; webpack serve --mode development",
     "electron": "electron ."
   },
   "homepage": "./",
