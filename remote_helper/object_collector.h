@@ -104,7 +104,8 @@ namespace pit
             while (true)
             {
                 uint32_t count = 0;
-                size_t size = 0;
+                size_t serializedSize = 0;
+                size_t objectsSize = 0;
                 std::vector<size_t> indecies;
                 for (size_t i = 0; i < m_objects.size(); ++i)
                 {
@@ -112,15 +113,17 @@ namespace pit
                     if (obj.selected)
                         continue;
 
-                    auto s = sizeof(GitObject) + obj.GetSize();
-                    if (size + s <= SIZE_THRESHOLD)
+                    auto objSize = obj.GetSize();
+                    auto s = sizeof(GitObject) + objSize;
+                    if (serializedSize + s <= SIZE_THRESHOLD)
                     {
-                        size += s;
+                        serializedSize += s;
+                        objectsSize += objSize;
                         ++count;
                         indecies.emplace_back(i);
                         obj.selected = true;
                     }
-                    if (size == SIZE_THRESHOLD)
+                    if (serializedSize == SIZE_THRESHOLD)
                         break;
                 }
                 if (count == 0)
@@ -128,7 +131,7 @@ namespace pit
 
                 // serializing
                 ByteBuffer buf;
-                buf.resize(size + sizeof(ObjectsInfo)); // objects count size
+                buf.resize(serializedSize + sizeof(ObjectsInfo)); // objects count size
                 auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
                 p->objects_number = count;
                 auto* serObj = reinterpret_cast<GitObject*>(p + 1);
@@ -142,7 +145,7 @@ namespace pit
                     std::copy_n(obj.GetData(), obj.GetSize(), data);
                     serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
                 }
-                totalSize -= size;
+                totalSize -= objectsSize;
                 func(buf, totalSize == 0);
             }
         }
