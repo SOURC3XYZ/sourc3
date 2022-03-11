@@ -95,14 +95,16 @@ int DoOption([[maybe_unused]] SimpleWalletClient& wc
 
 int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 {
-    std::deque<std::string> objectHashes;
-    objectHashes.emplace_back( args[1].data(), args[1].size() );
+    std::set<std::string> objectHashes;
+    objectHashes.emplace( args[1].data(), args[1].size() );
     std::set<std::string> receivedObjects;
 
     auto enuqueObject = [&](const std::string& oid)
     {
         if (receivedObjects.find(oid) == receivedObjects.end())
-            objectHashes.push_back(oid);
+        {
+            objectHashes.insert(oid);
+        }
     };
 
     git::RepoAccessor accessor(wc.GetRepoDir());
@@ -126,22 +128,27 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
 
     while (!objectHashes.empty())
     {
+        auto itToReceive = objectHashes.begin();
+        const auto& objectToReceive = *itToReceive;
         std::stringstream ss;
-        ss << "role=user,action=repo_get_data,obj_id=" << objectHashes.front();
+        ss << "role=user,action=repo_get_data,obj_id=" << objectToReceive;
 
         auto res = wc.InvokeWallet(ss.str());
         auto root = json::parse(res);
         git_oid oid;
-        git_oid_fromstr(&oid, objectHashes.front().data());
+        git_oid_fromstr(&oid, objectToReceive.data());
 
-        auto it = std::find_if(objects.begin(), objects.end(), [&](auto&& o) { return o.hash == oid; });
+        auto it = std::find_if(objects.begin(), objects.end(),
+            [&](auto&& o) { return o.hash == oid; });
         if (it == objects.end())
         {
-            cout << "failed\n";
-            break;
+            cerr << "No object data for " << objectToReceive << ", possibly submodule" << endl;
+            receivedObjects.insert(objectToReceive); // move to received
+            objectHashes.erase(itToReceive);
+            continue;
         }
-        cerr << "Received data for:  " << objectHashes.front() << '\n';
-        receivedObjects.insert(to_string(oid));
+        cerr << "Received data for:  " << objectToReceive << endl;
+        receivedObjects.insert(objectToReceive);
 
         auto data = root.as_object()["object_data"].as_string();
 
@@ -151,6 +158,12 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             auto hash = FromHex(data);
             auto responce = wc.LoadObjectFromIPFS(std::string(hash.cbegin(), hash.cend()));
             auto r = json::parse(responce);
+            if (r.as_object().find("result") == r.as_object().end())
+            {
+                cerr << "message: " << r.as_object()["error"].as_object()["message"].as_string() <<
+                        "\ndata:    " << r.as_object()["error"].as_object()["data"].as_string() << endl;
+                return -1;
+            }
             auto d = r.as_object()["result"].as_object()["data"].as_array();
             buf.reserve(d.size());
             for (auto&& v : d)
@@ -200,7 +213,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             enuqueObject(to_string(*git_commit_tree_id(*commit)));
         }
 
-        objectHashes.pop_front();
+        objectHashes.erase(itToReceive);
     }
     cout << endl;
     return 0;
