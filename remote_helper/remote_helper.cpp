@@ -19,6 +19,7 @@
 #include <string_view>
 #include <string>
 #include <vector>
+#include <optional>
 #include "version.h"
 
 namespace po = boost::program_options;
@@ -28,6 +29,59 @@ using namespace pit;
 
 namespace
 {
+    struct Options
+    {
+        bool progress = true;
+    };
+
+
+    class ProgressReporter
+    {
+    public:
+        ProgressReporter(std::string_view title, size_t total)
+            : m_title(title)
+            , m_total(total)
+        {
+
+        }
+
+        void UpdateProgress(size_t done)
+        {
+            m_done = done;
+            ShowProgress("\r");
+        }
+
+        void StopProgress(std::string_view result)
+        {
+            ShowProgress(result);
+        }
+
+    private:
+
+        void ShowProgress(std::string_view eol)
+        {
+            std::stringstream ss;
+            ss << m_title << ": ";
+            if (m_total > 0)
+            {
+                size_t percent = m_done * 100 / m_total;
+                ss << percent << "%" << " (" << m_done << "/" << m_total << ")";
+            }
+            else
+            {
+                ss << m_done;
+            }
+            ss << ", " << eol;
+            cerr << ss.str();
+            cerr.flush();
+        }
+    private:
+        std::string_view m_title;
+        size_t m_done = 0;
+        size_t m_total;
+    };
+
+
     template<typename String>
     ByteBuffer FromHex(const String& s)
     {
@@ -108,13 +162,21 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
     };
 
     git::RepoAccessor accessor(wc.GetRepoDir());
+    size_t totalObjects = 0;
     std::vector<GitObject> objects;
     {
+        std::optional<ProgressReporter> progress;
+
+        progress.emplace("Enumerating objects", 0);
         // hack Collect objects metainfo
         auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
         auto root = json::parse(res);
+        
         for (auto& objVal : root.as_object()["objects"].as_array())
         {
+            if (progress)
+                progress->UpdateProgress(totalObjects++);
+
             auto& o = objects.emplace_back();
             auto& obj = objVal.as_object();
             o.data_size = obj["object_size"].to_number<uint32_t>();
@@ -124,8 +186,15 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             if (git_odb_exists(*accessor.m_odb, &o.hash))
                 receivedObjects.insert(s);
         }
+        if (progress)
+            progress->StopProgress("done\n");
     }
 
+    std::optional<ProgressReporter> progress;
+
+    progress.emplace("Receiving objects", totalObjects - receivedObjects.size());
+
+    size_t done = 0;
     while (!objectHashes.empty())
     {
         auto itToReceive = objectHashes.begin();
@@ -142,12 +211,16 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             [&](auto&& o) { return o.hash == oid; });
         if (it == objects.end())
         {
-            cerr << "No object data for " << objectToReceive << ", possibly submodule" << endl;
+            //cerr << "No object data for " << objectToReceive << ", possibly submodule" << endl;
             receivedObjects.insert(objectToReceive); // move to received
             objectHashes.erase(itToReceive);
+
+            if (progress)
+                progress->UpdateProgress(done++);
+
             continue;
         }
-        cerr << "Received data for:  " << objectToReceive << endl;
+        //cerr << "Received data for:  " << objectToReceive << endl;
         receivedObjects.insert(objectToReceive);
 
         auto data = root.as_object()["object_data"].as_string();
@@ -212,9 +285,13 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
             }
             enuqueObject(to_string(*git_commit_tree_id(*commit)));
         }
+        if (progress)
+            progress->UpdateProgress(done++);
 
         objectHashes.erase(itToReceive);
     }
+    if (progress)
+        progress->StopProgress("done\n");
     cout << endl;
     return 0;
 }
@@ -313,19 +390,19 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             std::stringstream ss;
             if (!buf.empty())
             {
-                // log
-                {
-                    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
-                    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
-                    for (uint32_t i = 0; i < p->objects_number; ++i)
-                    {
-                        size_t s = cur->data_size;
-                        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
-                        ++cur;
-                        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
-                    }
-                    std::cerr << std::endl;
-                }
+                //// log
+                //{
+                //    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
+                //    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
+                //    for (uint32_t i = 0; i < p->objects_number; ++i)
+                //    {
+                //        size_t s = cur->data_size;
+                //        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
+                //        ++cur;
+                //        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+                //    }
+                //    std::cerr << std::endl;
+                //}
                 auto strData = ToHex(buf.data(), buf.size());
 
                 ss << "role=user,action=push_objects,data="
@@ -369,7 +446,6 @@ int DoCapabilities([[maybe_unused]] SimpleWalletClient& wc
 
 int main(int argc, char* argv[])
 {
-    cerr << "PIT v." << PROJECT_VERSION.data() << endl;
     if (argc != 3)
     {
         cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
@@ -418,12 +494,11 @@ int main(int argc, char* argv[])
         {
             options.repoPath = gitDir;
         }
-        cerr << "Hello PIT."
-            "\n     Remote: " << argv[1]
-            << "\n        URL: " << argv[2]
-            << "\nWorking dir: " << boost::filesystem::current_path()
-            << "\nRepo folder: " << options.repoPath
-            << endl;
+        cerr << "     Remote: " << argv[1]
+             << "\n        URL: " << argv[2]
+             << "\nWorking dir: " << boost::filesystem::current_path()
+             << "\nRepo folder: " << options.repoPath
+             << endl;
         SimpleWalletClient walletClient(options);
         git::Init init;
         string input;

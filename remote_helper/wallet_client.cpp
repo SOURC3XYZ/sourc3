@@ -47,7 +47,7 @@ namespace pit
 
     std::string SimpleWalletClient::InvokeShader(const std::string& args)
     {
-        std::cerr << "Args: " << args << std::endl;
+        //std::cerr << "Args: " << args << std::endl;
         auto msg = json::value
         {
             {JsonRpcHeader, JsonRpcVersion},
@@ -62,7 +62,7 @@ namespace pit
         };
 
         auto result = ExtractResult(CallAPI(json::serialize(msg)));
-        std::cerr << "Result: " << result << std::endl;
+        //std::cerr << "Result: " << result << std::endl;
         return result;
     }
 
