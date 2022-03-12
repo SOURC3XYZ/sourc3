@@ -53,7 +53,9 @@ namespace
 
         void StopProgress(std::string_view result)
         {
-            ShowProgress(result);
+            std::stringstream ss;
+            ss << ", " << result << ".\n";
+            ShowProgress(ss.str());
         }
 
     private:
@@ -71,7 +73,7 @@ namespace
             {
                 ss << m_done;
             }
-            ss << ", " << eol;
+            ss << eol;
             cerr << ss.str();
             cerr.flush();
         }
@@ -187,7 +189,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
                 receivedObjects.insert(s);
         }
         if (progress)
-            progress->StopProgress("done\n");
+            progress->StopProgress("done");
     }
 
     std::optional<ProgressReporter> progress;
@@ -291,7 +293,7 @@ int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
         objectHashes.erase(itToReceive);
     }
     if (progress)
-        progress->StopProgress("done\n");
+        progress->StopProgress("done");
     cout << endl;
     return 0;
 }
@@ -320,6 +322,9 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
 
     std::set<git_oid> uploadedObjects;
     {
+        std::optional<ProgressReporter> progress;
+
+        progress.emplace("Enumerating uploaded objects", 0);
         // hack Collect objects metainfo
         auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
         auto root = json::parse(res);
@@ -329,6 +334,8 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             git_oid oid;
             git_oid_fromstr(&oid, s.c_str());
             uploadedObjects.insert(oid);
+            if (progress)
+                progress->UpdateProgress(uploadedObjects.size());
         }
     }
 
@@ -369,56 +376,79 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
         objs.erase(it, objs.end());
     }
 
-    for (auto& obj : collector.m_objects)
     {
-        if (obj.selected)
-            continue;
+        std::optional<ProgressReporter> progress;
 
-        if (obj.GetSize() > 46)
+        progress.emplace("Uploading objects to IPFS", collector.m_objects.size());
+        size_t i = 0;
+        for (auto& obj : collector.m_objects)
         {
-            auto res = wc.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
-            auto r = json::parse(res);
-            auto hashStr = r.as_object()["result"].as_object()["hash"].as_string();
-            obj.ipfsHash = ByteBuffer(hashStr.cbegin(), hashStr.cend());
+            if (obj.selected)
+                continue;
+
+            if (obj.GetSize() > 46)
+            {
+                auto res = wc.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
+                auto r = json::parse(res);
+                auto hashStr = r.as_object()["result"].as_object()["hash"].as_string();
+                obj.ipfsHash = ByteBuffer(hashStr.cbegin(), hashStr.cend());
+            }
+            if (progress)
+                progress->UpdateProgress(i++);
         }
+        if (progress)
+            progress->StopProgress("done");
     }
+    
 
     std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.GetSize() > right.GetSize(); });
 
-    collector.Serialize([&](const auto& buf, bool lastBlock)
-        {
-            std::stringstream ss;
-            if (!buf.empty())
-            {
-                //// log
-                //{
-                //    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
-                //    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
-                //    for (uint32_t i = 0; i < p->objects_number; ++i)
-                //    {
-                //        size_t s = cur->data_size;
-                //        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
-                //        ++cur;
-                //        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
-                //    }
-                //    std::cerr << std::endl;
-                //}
-                auto strData = ToHex(buf.data(), buf.size());
+    {
+        std::optional<ProgressReporter> progress;
 
-                ss << "role=user,action=push_objects,data="
-                   << strData;
-            }
-
-            if (lastBlock)
+        progress.emplace("Uploading metadata to blockchain", objs.size());
+        collector.Serialize([&](const auto& buf, size_t done)
             {
-                ss << ',';
-                for (const auto& r : collector.m_refs)
+                std::stringstream ss;
+                if (!buf.empty())
                 {
-                    ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+                    //// log
+                    //{
+                    //    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
+                    //    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
+                    //    for (uint32_t i = 0; i < p->objects_number; ++i)
+                    //    {
+                    //        size_t s = cur->data_size;
+                    //        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
+                    //        ++cur;
+                    //        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+                    //    }
+                    //    std::cerr << std::endl;
+                    //}
+                    auto strData = ToHex(buf.data(), buf.size());
+
+                    ss << "role=user,action=push_objects,data="
+                        << strData;
                 }
-            }
-            wc.InvokeWallet(ss.str());
-        });
+
+                if (progress)
+                    progress->UpdateProgress(done);
+
+                if (done == objs.size())
+                {
+                    ss << ',';
+                    for (const auto& r : collector.m_refs)
+                    {
+                        ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+                    }
+                }
+                wc.InvokeWallet(ss.str());
+            });
+
+        if (progress)
+            progress->StopProgress("done");
+    }
+    
 
     cout << endl;
     return 0;
