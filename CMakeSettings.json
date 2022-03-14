@@ -48,6 +48,20 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "cmakeToolchain": "${env.WASI_SDK_PREFIX}/share/cmake/wasi-sdk.cmake"
+    },
+    {
+      "name": "WSL-GCC-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "-DBOOST_ROOT=/home/anatol/boost_prebuild",
+      "buildCommandArgs": "-j15",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "variables": []
     }
   ]
 }

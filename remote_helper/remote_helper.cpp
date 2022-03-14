@@ -29,6 +29,7 @@ using namespace pit;
 
 namespace
 {
+    constexpr size_t IPFS_ADDRESS_SIZE = 46;
     struct Options
     {
         bool progress = true;
@@ -45,10 +46,32 @@ namespace
 
         }
 
+        ~ProgressReporter()
+        {
+            if (m_failureReason.empty())
+            {
+                Done();
+            }
+            else
+            {
+                StopProgress(m_failureReason);
+            }
+        }
+
         void UpdateProgress(size_t done)
         {
             m_done = done;
             ShowProgress("\r");
+        }
+
+        void Done()
+        {
+            StopProgress("done");
+        }
+
+        void Failed()
+        {
+            StopProgress("failed");
         }
 
         void StopProgress(std::string_view result)
@@ -79,6 +102,7 @@ namespace
         }
     private:
         std::string_view m_title;
+        std::string m_failureReason;
         size_t m_done = 0;
         size_t m_total;
     };
@@ -94,239 +118,369 @@ namespace
     }
 }
 
-typedef int (*Action)(SimpleWalletClient& wc, const vector<string_view>& args);
-
-struct Command
+class RemoteHelper
 {
-    string_view command;
-    Action action;
-};
+public:
 
-std::vector<Ref> RequestRefs(SimpleWalletClient& wc)
-{
-    std::stringstream ss;
-    ss << "role=user,action=list_refs";
-
-    std::vector<Ref> refs;
-    auto res = wc.InvokeWallet(ss.str());
-    if (!res.empty())
+    RemoteHelper(SimpleWalletClient& wc)
+        : m_walletClient{wc}
     {
-        auto root = json::parse(res);
-        for (auto& rv : root.as_object()["refs"].as_array())
+
+    }
+
+    int DoCommand(string_view command, vector<string_view>& args)
+    {
+        auto it = find_if(begin(m_commands), end(m_commands),
+            [&](const auto& c)
+            {
+                return command == c.command;
+            });
+        if (it == end(m_commands))
         {
-            auto& ref = refs.emplace_back();
-            auto& r = rv.as_object();
-            ref.name = r["name"].as_string().c_str();
-            git_oid_fromstr(&ref.target, r["commit_hash"].as_string().c_str());
+            cerr << "Unknown command: " << command << endl;
+            return -1;
         }
+        return std::invoke(it->action, this, args);
     }
-    return refs;
-}
 
-int DoCapabilities(SimpleWalletClient& wc, const vector<string_view>& args);
-
-int DoList(SimpleWalletClient& wc, [[maybe_unused]] const vector<string_view>& args)
-{
-    auto refs = RequestRefs(wc);
-
-    for (const auto& r : refs)
+    int DoList([[maybe_unused]] const vector<string_view>& args)
     {
-        cout << to_string(r.target) << " " << r.name << '\n';
-    }
-    if (!refs.empty())
-    {
-        cout << "@" << refs.back().name << " HEAD\n";
-    }
-    cout << endl;
-    return 0;
-}
+        auto refs = RequestRefs();
 
-int DoOption([[maybe_unused]] SimpleWalletClient& wc
-           , [[maybe_unused]] const vector<string_view>& args)
-{
-    cerr << "Option: " << args[1] << "=" << args[2] << endl;
-    cout << "ok" << endl;
-    return 0;
-}
-
-int DoFetch(SimpleWalletClient& wc, const vector<string_view>& args)
-{
-    std::set<std::string> objectHashes;
-    objectHashes.emplace( args[1].data(), args[1].size() );
-    std::set<std::string> receivedObjects;
-
-    auto enuqueObject = [&](const std::string& oid)
-    {
-        if (receivedObjects.find(oid) == receivedObjects.end())
+        for (const auto& r : refs)
         {
-            objectHashes.insert(oid);
+            cout << to_string(r.target) << " " << r.name << '\n';
         }
-    };
+        if (!refs.empty())
+        {
+            cout << "@" << refs.back().name << " HEAD\n";
+        }
+        cout << endl;
+        return 0;
+    }
 
-    git::RepoAccessor accessor(wc.GetRepoDir());
-    size_t totalObjects = 0;
-    std::vector<GitObject> objects;
+    int DoOption([[maybe_unused]] const vector<string_view>& args)
     {
+        cerr << "Option: " << args[1] << "=" << args[2] << endl;
+
+        cout << "ok" << endl;
+        return 0;
+    }
+
+    int DoFetch(const vector<string_view>& args)
+    {
+        std::set<std::string> objectHashes;
+        objectHashes.emplace(args[1].data(), args[1].size());
+        std::set<std::string> receivedObjects;
+
+        auto enuqueObject = [&](const std::string& oid)
+        {
+            if (receivedObjects.find(oid) == receivedObjects.end())
+            {
+                objectHashes.insert(oid);
+            }
+        };
+
+        git::RepoAccessor accessor(m_walletClient.GetRepoDir());
+        size_t totalObjects = 0;
+        std::vector<GitObject> objects;
+        {
+            std::optional<ProgressReporter> progress;
+
+            progress.emplace("Enumerating objects", 0);
+            // hack Collect objects metainfo
+            auto res = m_walletClient.InvokeWallet("role=user,action=repo_get_meta");
+            auto root = json::parse(res);
+
+            for (auto& objVal : root.as_object()["objects"].as_array())
+            {
+                if (progress)
+                    progress->UpdateProgress(++totalObjects);
+
+                auto& o = objects.emplace_back();
+                auto& obj = objVal.as_object();
+                o.data_size = obj["object_size"].to_number<uint32_t>();
+                o.type = static_cast<int8_t>(obj["object_type"].to_number<uint32_t>());
+                std::string s = obj["object_hash"].as_string().c_str();
+                git_oid_fromstr(&o.hash, s.c_str());
+                if (git_odb_exists(*accessor.m_odb, &o.hash))
+                    receivedObjects.insert(s);
+            }
+        }
+
         std::optional<ProgressReporter> progress;
 
-        progress.emplace("Enumerating objects", 0);
-        // hack Collect objects metainfo
-        auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
-        auto root = json::parse(res);
-        
-        for (auto& objVal : root.as_object()["objects"].as_array())
+        progress.emplace("Receiving objects", totalObjects - receivedObjects.size());
+
+        size_t done = 0;
+        while (!objectHashes.empty())
         {
-            if (progress)
-                progress->UpdateProgress(totalObjects++);
+            auto itToReceive = objectHashes.begin();
+            const auto& objectToReceive = *itToReceive;
+            std::stringstream ss;
+            ss << "role=user,action=repo_get_data,obj_id=" << objectToReceive;
 
-            auto& o = objects.emplace_back();
-            auto& obj = objVal.as_object();
-            o.data_size = obj["object_size"].to_number<uint32_t>();
-            o.type = static_cast<int8_t>(obj["object_type"].to_number<uint32_t>());
-            std::string s = obj["object_hash"].as_string().c_str();
-            git_oid_fromstr(&o.hash, s.c_str());
-            if (git_odb_exists(*accessor.m_odb, &o.hash))
-                receivedObjects.insert(s);
-        }
-        if (progress)
-            progress->StopProgress("done");
-    }
+            auto res = m_walletClient.InvokeWallet(ss.str());
+            auto root = json::parse(res);
+            git_oid oid;
+            git_oid_fromstr(&oid, objectToReceive.data());
 
-    std::optional<ProgressReporter> progress;
-
-    progress.emplace("Receiving objects", totalObjects - receivedObjects.size());
-
-    size_t done = 0;
-    while (!objectHashes.empty())
-    {
-        auto itToReceive = objectHashes.begin();
-        const auto& objectToReceive = *itToReceive;
-        std::stringstream ss;
-        ss << "role=user,action=repo_get_data,obj_id=" << objectToReceive;
-
-        auto res = wc.InvokeWallet(ss.str());
-        auto root = json::parse(res);
-        git_oid oid;
-        git_oid_fromstr(&oid, objectToReceive.data());
-
-        auto it = std::find_if(objects.begin(), objects.end(),
-            [&](auto&& o) { return o.hash == oid; });
-        if (it == objects.end())
-        {
-            //cerr << "No object data for " << objectToReceive << ", possibly submodule" << endl;
-            receivedObjects.insert(objectToReceive); // move to received
-            objectHashes.erase(itToReceive);
-
-            if (progress)
-                progress->UpdateProgress(done++);
-
-            continue;
-        }
-        //cerr << "Received data for:  " << objectToReceive << endl;
-        receivedObjects.insert(objectToReceive);
-
-        auto data = root.as_object()["object_data"].as_string();
-
-        ByteBuffer buf;
-        if (it->IsIPFSObject())
-        {
-            auto hash = FromHex(data);
-            auto responce = wc.LoadObjectFromIPFS(std::string(hash.cbegin(), hash.cend()));
-            auto r = json::parse(responce);
-            if (r.as_object().find("result") == r.as_object().end())
+            auto it = std::find_if(objects.begin(), objects.end(),
+                [&](auto&& o) { return o.hash == oid; });
+            if (it == objects.end())
             {
-                cerr << "message: " << r.as_object()["error"].as_object()["message"].as_string() <<
+                //cerr << "No object data for " << objectToReceive << ", possibly submodule" << endl;
+                receivedObjects.insert(objectToReceive); // move to received
+                objectHashes.erase(itToReceive);
+
+                continue;
+            }
+            //cerr << "Received data for:  " << objectToReceive << endl;
+            receivedObjects.insert(objectToReceive);
+
+            auto data = root.as_object()["object_data"].as_string();
+
+            ByteBuffer buf;
+            if (it->IsIPFSObject())
+            {
+                auto hash = FromHex(data);
+                auto responce = m_walletClient.LoadObjectFromIPFS(std::string(hash.cbegin(), hash.cend()));
+                auto r = json::parse(responce);
+                if (r.as_object().find("result") == r.as_object().end())
+                {
+                    cerr << "message: " << r.as_object()["error"].as_object()["message"].as_string() <<
                         "\ndata:    " << r.as_object()["error"].as_object()["data"].as_string() << endl;
+                    return -1;
+                }
+                auto d = r.as_object()["result"].as_object()["data"].as_array();
+                buf.reserve(d.size());
+                for (auto&& v : d)
+                {
+                    buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+                }
+            }
+            else
+            {
+                buf = FromHex(data);
+            }
+
+            git_oid res_oid;
+            auto type = it->GetObjectType();
+            git_oid r;
+            git_odb_hash(&r, buf.data(), buf.size(), type);
+            if (r != oid)
+            {
+                // invalid hash
                 return -1;
             }
-            auto d = r.as_object()["result"].as_object()["data"].as_array();
-            buf.reserve(d.size());
-            for (auto&& v : d)
+            git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type);
+            if (type == GIT_OBJECT_TREE)
             {
-                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+                git::Tree tree;
+                git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
+
+                auto count = git_tree_entrycount(*tree);
+                for (size_t i = 0; i < count; ++i)
+                {
+                    auto* entry = git_tree_entry_byindex(*tree, i);
+                    auto s = to_string(*git_tree_entry_id(entry));
+                    enuqueObject(s);
+                }
             }
-        }
-        else
-        {
-            buf = FromHex(data);
-        }
-
-        git_oid res_oid;
-        auto type = it->GetObjectType();
-        git_oid r;
-        git_odb_hash(&r, buf.data(), buf.size(), type);
-        if (r != oid)
-        {
-            // invalid hash
-            return -1;
-        }
-        git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type);
-        if (type == GIT_OBJECT_TREE)
-        {
-            git::Tree tree;
-            git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
-
-            auto count = git_tree_entrycount(*tree);
-            for (size_t i = 0; i < count; ++i)
+            else if (type == GIT_OBJECT_COMMIT)
             {
-                auto* entry = git_tree_entry_byindex(*tree, i);
-                auto s = to_string(*git_tree_entry_id(entry));
-                enuqueObject(s);
+                git::Commit commit;
+                git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+                auto count = git_commit_parentcount(*commit);
+                for (unsigned i = 0; i < count; ++i)
+                {
+                    auto* id = git_commit_parent_id(*commit, i);
+                    auto s = to_string(*id);
+                    enuqueObject(s);
+                }
+                enuqueObject(to_string(*git_commit_tree_id(*commit)));
             }
-        }
-        else if (type == GIT_OBJECT_COMMIT)
-        {
-            git::Commit commit;
-            git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-            auto count = git_commit_parentcount(*commit);
-            for (unsigned i = 0; i < count; ++i)
-            {
-                auto* id = git_commit_parent_id(*commit, i);
-                auto s = to_string(*id);
-                enuqueObject(s);
-            }
-            enuqueObject(to_string(*git_commit_tree_id(*commit)));
-        }
-        if (progress)
-            progress->UpdateProgress(done++);
+            if (progress)
+                progress->UpdateProgress(++done);
 
-        objectHashes.erase(itToReceive);
-    }
-    if (progress)
-        progress->StopProgress("done");
-    cout << endl;
-    return 0;
-}
-
-int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
-{
-    ObjectCollector collector(wc.GetRepoDir());
-    std::vector<Refs> refs;
-    std::vector<git_oid> localRefs;
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        auto& arg = args[i];
-        auto p = arg.find(':');
-        auto& r = refs.emplace_back();
-        r.localRef = arg.substr(0, p);
-        r.remoteRef = arg.substr(p + 1);
-        git::Reference localRef;
-        if (git_reference_lookup(localRef.Addr(), *collector.m_repo, r.localRef.c_str()) < 0)
-        {
-            cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
-            return -1;
+            objectHashes.erase(itToReceive);
         }
-        auto& lr = localRefs.emplace_back();
-        git_oid_cpy(&lr, git_reference_target(*localRef));
+
+        cout << endl;
+        return 0;
     }
 
-    std::set<git_oid> uploadedObjects;
+    int DoPush(const vector<string_view>& args)
     {
+        ObjectCollector collector(m_walletClient.GetRepoDir());
+        std::vector<Refs> refs;
+        std::vector<git_oid> localRefs;
+        for (size_t i = 1; i < args.size(); ++i)
+        {
+            auto& arg = args[i];
+            auto p = arg.find(':');
+            auto& r = refs.emplace_back();
+            r.localRef = arg.substr(0, p);
+            r.remoteRef = arg.substr(p + 1);
+            git::Reference localRef;
+            if (git_reference_lookup(localRef.Addr(), *collector.m_repo, r.localRef.c_str()) < 0)
+            {
+                cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
+                return -1;
+            }
+            auto& lr = localRefs.emplace_back();
+            git_oid_cpy(&lr, git_reference_target(*localRef));
+        }
+
+        auto uploadedObjects = GetUploadedObjects();
+        auto remoteRefs = RequestRefs();
+        std::vector<git_oid> mergeBases;
+        for (const auto& remoteRef : remoteRefs)
+        {
+            for (const auto& localRef : localRefs)
+            {
+                auto& base = mergeBases.emplace_back();
+                git_merge_base(&base, *collector.m_repo, &remoteRef.target, &localRef);
+            }
+        }
+
+        collector.Traverse(refs, mergeBases);
+
+        auto& objs = collector.m_objects;
+        std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.oid < right.oid; });
+        {
+            auto it = std::unique(objs.begin(), objs.end(), [](auto&& left, auto& right) { return left.oid == right.oid; });
+            objs.erase(it, objs.end());
+        }
+
+        for (auto& obj : collector.m_objects)
+        {
+            if (uploadedObjects.find(obj.oid) != uploadedObjects.end())
+            {
+                obj.selected = true;
+            }
+        }
+
+        {
+            auto it = std::remove_if(objs.begin(), objs.end(),
+                [](const auto& o)
+                {
+                    return o.selected;
+                });
+            objs.erase(it, objs.end());
+        }
+
+        {
+            std::optional<ProgressReporter> progress;
+
+            progress.emplace("Uploading objects to IPFS", collector.m_objects.size());
+            size_t i = 0;
+            for (auto& obj : collector.m_objects)
+            {
+                if (obj.selected)
+                    continue;
+
+                if (obj.GetSize() > IPFS_ADDRESS_SIZE)
+                {
+                    auto res = m_walletClient.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
+                    auto r = json::parse(res);
+                    auto hashStr = r.as_object()["result"].as_object()["hash"].as_string();
+                    obj.ipfsHash = ByteBuffer(hashStr.cbegin(), hashStr.cend());
+                }
+                if (progress)
+                    progress->UpdateProgress(++i);
+            }
+        }
+
+        std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.GetSize() > right.GetSize(); });
+
+        {
+            std::optional<ProgressReporter> progress;
+
+            progress.emplace("Uploading metadata to blockchain", objs.size());
+            collector.Serialize([&](const auto& buf, size_t done)
+                {
+                    std::stringstream ss;
+                    if (!buf.empty())
+                    {
+                        //// log
+                        //{
+                        //    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
+                        //    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
+                        //    for (uint32_t i = 0; i < p->objects_number; ++i)
+                        //    {
+                        //        size_t s = cur->data_size;
+                        //        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
+                        //        ++cur;
+                        //        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
+                        //    }
+                        //    std::cerr << std::endl;
+                        //}
+                        auto strData = ToHex(buf.data(), buf.size());
+
+                        ss << "role=user,action=push_objects,data="
+                            << strData;
+                    }
+
+                    if (progress)
+                        progress->UpdateProgress(done);
+
+                    if (done == objs.size())
+                    {
+                        ss << ',';
+                        for (const auto& r : collector.m_refs)
+                        {
+                            ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+                        }
+                    }
+                    m_walletClient.InvokeWallet(ss.str());
+                });
+        }
+
+        cout << endl;
+        return 0;
+    }
+
+    int DoCapabilities([[maybe_unused]] const vector<string_view>& args)
+    {
+        for (auto ib = begin(m_commands) + 1, ie = end(m_commands); ib != ie; ++ib)
+        {
+            cout << ib->command << '\n';
+        }
+        cout << endl;
+        return 0;
+    }
+private:
+    std::vector<Ref> RequestRefs()
+    {
+        std::stringstream ss;
+        ss << "role=user,action=list_refs";
+
+        std::vector<Ref> refs;
+        auto res = m_walletClient.InvokeWallet(ss.str());
+        if (!res.empty())
+        {
+            auto root = json::parse(res);
+            for (auto& rv : root.as_object()["refs"].as_array())
+            {
+                auto& ref = refs.emplace_back();
+                auto& r = rv.as_object();
+                ref.name = r["name"].as_string().c_str();
+                git_oid_fromstr(&ref.target, r["commit_hash"].as_string().c_str());
+            }
+        }
+        return refs;
+    }
+
+    std::set<git_oid> GetUploadedObjects()
+    {
+        std::set<git_oid> uploadedObjects;
+        
         std::optional<ProgressReporter> progress;
 
         progress.emplace("Enumerating uploaded objects", 0);
         // hack Collect objects metainfo
-        auto res = wc.InvokeWallet("role=user,action=repo_get_meta");
+        auto res = m_walletClient.InvokeWallet("role=user,action=repo_get_meta");
         auto root = json::parse(res);
         for (auto& obj : root.as_object()["objects"].as_array())
         {
@@ -337,142 +491,28 @@ int DoPush(SimpleWalletClient& wc, const vector<string_view>& args)
             if (progress)
                 progress->UpdateProgress(uploadedObjects.size());
         }
+        return uploadedObjects;
     }
+private:
+    SimpleWalletClient& m_walletClient;
 
-    auto remoteRefs = RequestRefs(wc);
-    std::vector<git_oid> mergeBases;
-    for (const auto& remoteRef : remoteRefs)
+    typedef int (RemoteHelper::*Action)(const vector<string_view>& args);
+
+    struct Command
     {
-        for (const auto& localRef : localRefs)
-        {
-            auto& base = mergeBases.emplace_back();
-            git_merge_base(&base, *collector.m_repo, &remoteRef.target, &localRef);
-        }
-    }
+        string_view command;
+        Action action;
+    };
 
-    collector.Traverse(refs, mergeBases);
-
-    auto& objs = collector.m_objects;
-    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.oid < right.oid; });
+    Command m_commands[5] =
     {
-        auto it = std::unique(objs.begin(), objs.end(), [](auto&& left, auto& right) { return left.oid == right.oid; });
-        objs.erase(it, objs.end());
-    }
-
-    for (auto& obj : collector.m_objects)
-    {
-        if (uploadedObjects.find(obj.oid) != uploadedObjects.end())
-        {
-            obj.selected = true;
-        }
-    }
-
-    {
-        auto it = std::remove_if(objs.begin(), objs.end(), 
-            [](const auto& o)
-            {
-                return o.selected; 
-            });
-        objs.erase(it, objs.end());
-    }
-
-    {
-        std::optional<ProgressReporter> progress;
-
-        progress.emplace("Uploading objects to IPFS", collector.m_objects.size());
-        size_t i = 0;
-        for (auto& obj : collector.m_objects)
-        {
-            if (obj.selected)
-                continue;
-
-            if (obj.GetSize() > 46)
-            {
-                auto res = wc.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
-                auto r = json::parse(res);
-                auto hashStr = r.as_object()["result"].as_object()["hash"].as_string();
-                obj.ipfsHash = ByteBuffer(hashStr.cbegin(), hashStr.cend());
-            }
-            if (progress)
-                progress->UpdateProgress(i++);
-        }
-        if (progress)
-            progress->StopProgress("done");
-    }
-    
-
-    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.GetSize() > right.GetSize(); });
-
-    {
-        std::optional<ProgressReporter> progress;
-
-        progress.emplace("Uploading metadata to blockchain", objs.size());
-        collector.Serialize([&](const auto& buf, size_t done)
-            {
-                std::stringstream ss;
-                if (!buf.empty())
-                {
-                    //// log
-                    //{
-                    //    const auto* p = reinterpret_cast<const ObjectsInfo*>(buf.data());
-                    //    const auto* cur = reinterpret_cast<const GitObject*>(p + 1);
-                    //    for (uint32_t i = 0; i < p->objects_number; ++i)
-                    //    {
-                    //        size_t s = cur->data_size;
-                    //        std::cerr << to_string(cur->hash) << '\t' << s << '\t' << (int)cur->type << '\n';
-                    //        ++cur;
-                    //        cur = reinterpret_cast<const GitObject*>(reinterpret_cast<const uint8_t*>(cur) + s);
-                    //    }
-                    //    std::cerr << std::endl;
-                    //}
-                    auto strData = ToHex(buf.data(), buf.size());
-
-                    ss << "role=user,action=push_objects,data="
-                        << strData;
-                }
-
-                if (progress)
-                    progress->UpdateProgress(done);
-
-                if (done == objs.size())
-                {
-                    ss << ',';
-                    for (const auto& r : collector.m_refs)
-                    {
-                        ss << "ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
-                    }
-                }
-                wc.InvokeWallet(ss.str());
-            });
-
-        if (progress)
-            progress->StopProgress("done");
-    }
-    
-
-    cout << endl;
-    return 0;
-}
-
-Command g_Commands[] =
-{
-    {"capabilities",	DoCapabilities},
-    {"list",			DoList },
-    //{"option",			DoOption},
-    {"fetch",			DoFetch},
-    {"push",			DoPush}
+        {"capabilities",	&RemoteHelper::DoCapabilities},
+        {"list",			&RemoteHelper::DoList },
+        {"option",			&RemoteHelper::DoOption},
+        {"fetch",			&RemoteHelper::DoFetch},
+        {"push",			&RemoteHelper::DoPush}
+    };
 };
-
-int DoCapabilities([[maybe_unused]] SimpleWalletClient& wc
-                 , [[maybe_unused]] const vector<string_view>& args)
-{
-    for (auto ib = begin(g_Commands) + 1, ie = end(g_Commands); ib != ie; ++ib)
-    {
-        cout << ib->command << '\n';
-    }
-    cout << endl;
-    return 0;
-}
 
 int main(int argc, char* argv[])
 {
@@ -529,7 +569,8 @@ int main(int argc, char* argv[])
              << "\nWorking dir: " << boost::filesystem::current_path()
              << "\nRepo folder: " << options.repoPath
              << endl;
-        SimpleWalletClient walletClient(options);
+        SimpleWalletClient walletClient{ options };
+        RemoteHelper helper{ walletClient };
         git::Init init;
         string input;
         while (getline(cin, input, '\n'))
@@ -549,20 +590,9 @@ int main(int argc, char* argv[])
             if (args.empty())
                 return 0;
 
-            const auto& command = args[0];
-
-            auto it = find_if(begin(g_Commands), end(g_Commands),
-                [&](const auto& c)
-                {
-                    return command == c.command;
-                });
-            if (it == end(g_Commands))
-            {
-                cerr << "Unknown command: " << command << endl;
-                return -1;
-            }
             cerr << "Command: " << input << endl;
-            if (it->action(walletClient, args) == -1)
+
+            if (helper.DoCommand(args[0], args) == -1)
             {
                 return -1;
             }

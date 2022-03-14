@@ -148,13 +148,10 @@ namespace pit
         void TraverseTree(const git_tree* tree);
         std::string Join(const std::vector<std::string>& path, const std::string& name);
         ObjectInfo& CollectObject(const git_oid& oid);
-        void ThrowIfError(int res, std::string_view sv);
     public:
         std::set<git_oid>           m_set;
         std::vector<ObjectInfo>     m_objects;
         std::vector<Ref>            m_refs;
-        size_t                      m_maxSize = 0;
-        size_t                      m_totalSize = 0;
         std::vector<std::string>    m_path;
     };
 }
