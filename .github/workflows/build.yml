@@ -45,6 +45,8 @@ jobs:
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
         brew install boost
         brew install krb5
+        # Workaround bug with Boost 1.75 in static linking with Regex, see: https://github.com/Homebrew/homebrew-core/issues/67427
+        export LIBRARY_PATH=${LIBRARY_PATH}:/usr/local/opt/icu4c/lib
 
     - name: Create Build Environment [ubuntu all]
       shell: bash
