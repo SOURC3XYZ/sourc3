@@ -38,7 +38,7 @@ namespace
             : m_title(title)
             , m_total(total)
         {
-
+            UpdateProgress(0);
         }
 
         ~ProgressReporter()
@@ -64,9 +64,9 @@ namespace
             StopProgress("done");
         }
 
-        void Failed()
+        void Failed(const std::string& failure)
         {
-            StopProgress("failed");
+            m_failureReason = failure;
         }
 
         void StopProgress(std::string_view result)
@@ -101,7 +101,6 @@ namespace
         size_t m_done = 0;
         size_t m_total;
     };
-
 
     template<typename String>
     ByteBuffer FromHex(const String& s)
@@ -189,9 +188,7 @@ public:
         size_t totalObjects = 0;
         std::vector<GitObject> objects;
         {
-            std::optional<ProgressReporter> progress;
-
-            progress.emplace("Enumerating objects", 0);
+            auto progress = MakeProgress("Enumerating objects", 0);
             // hack Collect objects metainfo
             auto res = m_walletClient.InvokeWallet("role=user,action=repo_get_meta");
             auto root = json::parse(res);
@@ -212,9 +209,7 @@ public:
             }
         }
 
-        std::optional<ProgressReporter> progress;
-
-        progress.emplace("Receiving objects", totalObjects - receivedObjects.size());
+        auto progress = MakeProgress("Receiving objects", totalObjects - receivedObjects.size());
 
         size_t done = 0;
         while (!objectHashes.empty())
@@ -379,9 +374,7 @@ public:
         }
 
         {
-            std::optional<ProgressReporter> progress;
-
-            progress.emplace("Uploading objects to IPFS", collector.m_objects.size());
+            auto progress = MakeProgress("Uploading objects to IPFS", collector.m_objects.size());
             size_t i = 0;
             for (auto& obj : collector.m_objects)
             {
@@ -403,9 +396,7 @@ public:
         std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {return left.GetSize() > right.GetSize(); });
 
         {
-            std::optional<ProgressReporter> progress;
-
-            progress.emplace("Uploading metadata to blockchain", objs.size());
+            auto progress = MakeProgress("Uploading metadata to blockchain", objs.size());
             collector.Serialize([&](const auto& buf, size_t done)
                 {
                     std::stringstream ss;
@@ -443,14 +434,29 @@ public:
                         }
                     }
                     m_walletClient.InvokeWallet(ss.str());
-
-                    if (last)
-                    {
-                        cout << (m_walletClient.WaitForCompletion() ? "ok " : "error ")
-                             << refs[0].remoteRef << '\n';
-                    }
                 });
         }
+        {
+            auto progress = MakeProgress("Waiting for the transaction completion", m_walletClient.GetTransactionCount());
+
+            auto res = m_walletClient.WaitForCompletion([&](size_t d, const auto& error)
+                {
+                    if (progress)
+                    {
+                        if (error.empty())
+                        {
+                            progress->UpdateProgress(d);
+                        }
+                        else
+                        {
+                            progress->Failed(error);
+                        }
+                    }
+                });
+            cout << (res ? "ok " : "error ")
+                 << refs[0].remoteRef << '\n';
+        }
+        
 
         cout << endl;
         return 0;
@@ -466,6 +472,15 @@ public:
         return 0;
     }
 private:
+
+    std::optional<ProgressReporter> MakeProgress(std::string_view title, size_t total)
+    {
+        if (m_options.progress)
+            return std::optional<ProgressReporter>(std::in_place, title, total);
+
+        return {};
+    }
+
     std::vector<Ref> RequestRefs()
     {
         std::stringstream ss;
@@ -491,9 +506,7 @@ private:
     {
         std::set<git_oid> uploadedObjects;
         
-        std::optional<ProgressReporter> progress;
-
-        progress.emplace("Enumerating uploaded objects", 0);
+        auto progress = MakeProgress("Enumerating uploaded objects", 0);
         // hack Collect objects metainfo
         auto res = m_walletClient.InvokeWallet("role=user,action=repo_get_meta");
         auto root = json::parse(res);
