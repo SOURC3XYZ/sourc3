@@ -41,7 +41,7 @@ namespace pit
         return CallAPI(json::serialize(msg));
     }
 
-    bool SimpleWalletClient::WaitForCompletion()
+    bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func)
     {
         if (m_transactions.empty())
             return true; // ok
@@ -50,17 +50,14 @@ namespace pit
         BOOST_SCOPE_EXIT_ALL(&, this) {
             SubUnsubEvents(false);
         };
-
+        size_t done = 0;
         while(!m_transactions.empty())
         {
             auto response = ReadAPI();
             auto r = json::parse(response);
 
             auto& res = r.as_object()["result"].as_object();
-            if (res["change_str"].as_string() != "updated")
-            {
-                continue;
-            }
+
             for (auto& val : res["txs"].as_array())
             {
                 auto& tx = val.as_object();
@@ -72,13 +69,19 @@ namespace pit
                 }
 
                 auto status = tx["status"].as_int64();
-                if (status == 2 || status == 4)
+                if (status == 4)
                 {
-                    // failed
+                    func(++done, tx["failure_reason"].as_string().c_str());
                     return false;
                 }
-                else if (status == 4)
+                else if (status == 2)
                 {
+                    func(++done, "canceled");
+                    return false;
+                }
+                else if (status == 3)
+                {
+                    func(++done, "");
                     m_transactions.erase(txID);
                 }
             }
@@ -119,7 +122,10 @@ namespace pit
         auto r = json::parse(response);
         if (auto* txid = r.as_object()["result"].as_object().if_contains("txid"); txid)
         {
-            m_transactions.insert(txid->as_string().c_str());
+            if (!std::all_of(txid->as_string().begin(), txid->as_string().end(), [](auto c) {return c == '0'; }))
+            {
+                m_transactions.insert(txid->as_string().c_str());
+            }
         }
         return r.as_object()["result"].as_object()["output"].as_string().c_str();
     }

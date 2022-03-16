@@ -75,7 +75,12 @@ namespace pit
         std::string LoadObjectFromIPFS(std::string&& hash);
         std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
-        bool WaitForCompletion();
+        using WaitFunc = std::function<void(size_t, const std::string&)>;
+        bool WaitForCompletion(WaitFunc&&);
+        size_t GetTransactionCount() const
+        {
+            return m_transactions.size();
+        }
 
     private:
         std::string SubUnsubEvents(bool sub);
