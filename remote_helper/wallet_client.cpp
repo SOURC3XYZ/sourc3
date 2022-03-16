@@ -1,5 +1,6 @@
 #include "wallet_client.h"
 #include <boost/json.hpp>
+#include <boost/asio.hpp>
 
 namespace pit
 {
@@ -37,6 +38,18 @@ namespace pit
             }
         };
         return CallAPI(json::serialize(msg));
+    }
+
+    void SimpleWalletClient::EnsureConnected()
+    {
+        if (m_connected)
+            return;
+
+        auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
+
+        // Make the connection on the IP address we get from a lookup
+        m_stream.connect(results);
+        m_connected = true;
     }
 
     std::string SimpleWalletClient::ExtractResult(const std::string& response)
@@ -104,30 +117,53 @@ namespace pit
         return m_repoID;
     }
 
+    template<typename Buf>
+    std::size_t FindNewline(Buf const& buffers)
+    {
+        auto begin = net::buffers_iterator<Buf>::begin(buffers);
+        auto end = net::buffers_iterator<Buf>::end(buffers);
+        auto result = std::find(begin, end, '\n');
+
+        if (result == end)
+            return 0; // not found
+
+        return result + 1 - begin;
+    }
 
     std::string SimpleWalletClient::CallAPI(std::string&& request)
     {
         // snippet from boost beast sync http client example, there is no need for something complicated atm.
         EnsureConnected();
-        // Set up an HTTP GET request message
-        http::request<http::string_body> req{ http::verb::get, m_options.apiTarget, 11 };
-        req.set(http::field::host, m_options.apiHost);
-        req.set(http::field::user_agent, "PIT/0.0.1"); // TODO: add version here
-        req.body() = std::move(request);
-        req.content_length(req.body().size());
+        request.push_back('\n');
+        size_t s = request.size();
+        size_t transferred = boost::asio::write(m_stream, boost::asio::buffer(request));
+        if (s != transferred)
+        {
+            return "";
+        }
+        beast::multi_buffer buffer;
+        boost::system::error_code ec;
+        while (true)
+        {
+            auto pos = FindNewline(buffer.data());
+            if (pos == 0)
+            {
+                auto bytesRead = m_stream.read_some(buffer.prepare(65536), ec);
+                if (ec)
+                {
+                    std::cerr << "Error: " << ec.message() << std::endl;
+                    return "";
+                }
+                buffer.commit(bytesRead);
+            }
+            else
+            {
+                break;
+            }
+            
+        }
+        
 
-        // Send the HTTP request to the remote host
-        http::write(m_stream, req);
-
-        // This buffer is used for reading and must be persisted
-        beast::flat_buffer buffer;
-
-        // Declare a container to hold the response
-        http::response<http::dynamic_body> res;
-
-        // Receive the HTTP response
-        http::read(m_stream, buffer, res);
-
-        return beast::buffers_to_string(res.body().data());
+        return beast::buffers_to_string(buffer.data());
     }
 }

@@ -115,7 +115,7 @@ else()
     configure_file("${PROJECT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/version.h")
     file(WRITE version.gen ${PROJECT_VERSION})
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
-    find_package(Boost REQUIRED COMPONENTS program_options date_time filesystem container json)
+    find_package(Boost REQUIRED COMPONENTS program_options date_time regex filesystem container json)
     if (PIT_TESTS_ENABLED)
         enable_testing()
 

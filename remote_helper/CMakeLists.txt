@@ -24,6 +24,7 @@ target_link_libraries(helper_lib
 		Boost::date_time
 		Boost::container
 		Boost::json
+		Boost::regex
 )
 
 target_link_libraries(${TARGET_NAME} 

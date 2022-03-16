@@ -6,6 +6,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <iostream>
+#include <thread>
 #include "utils.h"
 
 namespace pit
@@ -76,18 +77,7 @@ namespace pit
 
     private:
 
-        void EnsureConnected()
-        {
-            if (m_connected)
-                return;
-
-            auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
-
-            // Make the connection on the IP address we get from a lookup
-            m_stream.connect(results);
-            m_connected = true;
-        }
-
+        void EnsureConnected();
         std::string ExtractResult(const std::string& response);
         std::string InvokeShader(const std::string& args);
         const std::string& GetCID();
@@ -96,6 +86,7 @@ namespace pit
 
     private:
         net::io_context     m_ioc;
+        std::thread         m_iothread;
         tcp::resolver       m_resolver;
         beast::tcp_stream   m_stream;
         bool                m_connected = false;
