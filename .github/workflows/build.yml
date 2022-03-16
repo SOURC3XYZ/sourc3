@@ -45,8 +45,9 @@ jobs:
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
         brew install boost
         brew install krb5
-        brew install icu4c
-        # Workaround bug with Boost 1.75 in static linking with Regex, see: https://github.com/Homebrew/homebrew-core/issues/67427
+        brew install --force icu4c
+        brew link icu4c --force
+        # Workaround bug with Boost Regex in static linking, see: https://github.com/Homebrew/homebrew-core/issues/67427
         export LIBRARY_PATH=${LIBRARY_PATH}:/usr/local/opt/icu4c/lib
 
     - name: Create Build Environment [ubuntu all]
