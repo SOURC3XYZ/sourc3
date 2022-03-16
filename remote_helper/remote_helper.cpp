@@ -30,11 +30,6 @@ using namespace pit;
 namespace
 {
     constexpr size_t IPFS_ADDRESS_SIZE = 46;
-    struct Options
-    {
-        bool progress = true;
-    };
-
 
     class ProgressReporter
     {
@@ -161,9 +156,17 @@ public:
 
     int DoOption([[maybe_unused]] const vector<string_view>& args)
     {
-        cerr << "Option: " << args[1] << "=" << args[2] << endl;
+        static string_view results[] =
+        {
+            "error invalid value",
+            "ok",
+            "unsupported"
+        };
 
-        cout << "ok" << endl;
+        auto res = m_options.Set(args[1], args[2]);
+        
+        cout << results[size_t(res)];
+        cout << endl;
         return 0;
     }
 
@@ -171,6 +174,7 @@ public:
     {
         std::set<std::string> objectHashes;
         objectHashes.emplace(args[1].data(), args[1].size());
+        size_t depth = 1;
         std::set<std::string> receivedObjects;
 
         auto enuqueObject = [&](const std::string& oid)
@@ -291,12 +295,16 @@ public:
             {
                 git::Commit commit;
                 git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-                auto count = git_commit_parentcount(*commit);
-                for (unsigned i = 0; i < count; ++i)
+                if (depth < m_options.depth || m_options.depth == Options::InfiniteDepth)
                 {
-                    auto* id = git_commit_parent_id(*commit, i);
-                    auto s = to_string(*id);
-                    enuqueObject(s);
+                    auto count = git_commit_parentcount(*commit);
+                    for (unsigned i = 0; i < count; ++i)
+                    {
+                        auto* id = git_commit_parent_id(*commit, i);
+                        auto s = to_string(*id);
+                        enuqueObject(s);
+                    }
+                    ++depth;
                 }
                 enuqueObject(to_string(*git_commit_tree_id(*commit)));
             }
@@ -512,6 +520,67 @@ private:
         {"fetch",			&RemoteHelper::DoFetch},
         {"push",			&RemoteHelper::DoPush}
     };
+
+    struct Options
+    {
+        enum struct SetResult
+        {
+            InvalidValue,
+            Ok,
+            Unsupported
+        };
+
+        static constexpr uint32_t InfiniteDepth = (uint32_t)std::numeric_limits<int32_t>::max();
+        bool          progress = true;
+        long          verbosity = 0;
+        uint32_t      depth = InfiniteDepth;
+
+        SetResult Set(string_view option, string_view value)
+        {
+            if (option == "progress")
+            {
+                if (value == "true")
+                {
+                    progress = true;
+                }
+                else if (value == "false")
+                {
+                    progress = false;
+                }
+                else
+                {
+                    return SetResult::InvalidValue;
+                }
+                return SetResult::Ok;
+            }
+/*          else if (option == "verbosity")
+            {
+                char* endPos;
+                auto v = std::strtol(value.data(), &endPos, 10);
+                if (endPos == value.data())
+                {
+                    return SetResult::InvalidValue;
+                }
+                verbosity = v;
+                return SetResult::Ok;
+            }
+            else if (option == "depth")
+            {
+                char* endPos;
+                auto v = std::strtoul(value.data(), &endPos, 10);
+                if (endPos == value.data())
+                {
+                    return SetResult::InvalidValue;
+                }
+                depth = v;
+                return SetResult::Ok;
+            }
+*/
+            return SetResult::Unsupported;
+        }
+    };
+
+    Options m_options;
 };
 
 int main(int argc, char* argv[])
