@@ -641,7 +641,6 @@ int main(int argc, char* argv[])
             po::store(po::parse_config_file(cfg, desc), vm);
         }
         vm.notify();
-        ::MessageBox(NULL, "", "", MB_OK);
         string_view sv(argv[2]);
         const string_view SCHEMA = "pit://";
         sv = sv.substr(SCHEMA.size());
