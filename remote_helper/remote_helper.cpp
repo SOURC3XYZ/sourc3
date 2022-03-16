@@ -433,7 +433,8 @@ public:
                     if (progress)
                         progress->UpdateProgress(done);
 
-                    if (done == objs.size())
+                    bool last = (done == objs.size());
+                    if (last)
                     {
                         ss << ',';
                         for (const auto& r : collector.m_refs)
@@ -442,6 +443,12 @@ public:
                         }
                     }
                     m_walletClient.InvokeWallet(ss.str());
+
+                    if (last)
+                    {
+                        cout << (m_walletClient.WaitForCompletion() ? "ok " : "error ")
+                             << refs[0].remoteRef << '\n';
+                    }
                 });
         }
 
@@ -621,7 +628,7 @@ int main(int argc, char* argv[])
             po::store(po::parse_config_file(cfg, desc), vm);
         }
         vm.notify();
-
+        ::MessageBox(NULL, "", "", MB_OK);
         string_view sv(argv[2]);
         const string_view SCHEMA = "pit://";
         sv = sv.substr(SCHEMA.size());

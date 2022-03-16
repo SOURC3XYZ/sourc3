@@ -1,6 +1,8 @@
 #include "wallet_client.h"
 #include <boost/json.hpp>
 #include <boost/asio.hpp>
+#include <boost/scope_exit.hpp>
+#include <boost/beast/core/buffers_adaptor.hpp>
 
 namespace pit
 {
@@ -25,7 +27,6 @@ namespace pit
 
     std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data, size_t size)
     {
-        
         auto msg = json::value
         {
             {JsonRpcHeader, JsonRpcVersion},
@@ -34,6 +35,67 @@ namespace pit
             {"params",
                 {
                     {"data", json::array(data, data + size)},
+                }
+            }
+        };
+        return CallAPI(json::serialize(msg));
+    }
+
+    bool SimpleWalletClient::WaitForCompletion()
+    {
+        if (m_transactions.empty())
+            return true; // ok
+
+        SubUnsubEvents(true);
+        BOOST_SCOPE_EXIT_ALL(&, this) {
+            SubUnsubEvents(false);
+        };
+
+        while(!m_transactions.empty())
+        {
+            auto response = ReadAPI();
+            auto r = json::parse(response);
+
+            auto& res = r.as_object()["result"].as_object();
+            if (res["change_str"].as_string() != "updated")
+            {
+                continue;
+            }
+            for (auto& val : res["txs"].as_array())
+            {
+                auto& tx = val.as_object();
+                std::string txID = tx["txId"].as_string().c_str();
+                auto it = m_transactions.find(txID);
+                if (it == m_transactions.end())
+                {
+                    continue;
+                }
+
+                auto status = tx["status"].as_int64();
+                if (status == 2 || status == 4)
+                {
+                    // failed
+                    return false;
+                }
+                else if (status == 4)
+                {
+                    m_transactions.erase(txID);
+                }
+            }
+        }
+        return true;
+    }
+
+    std::string SimpleWalletClient::SubUnsubEvents(bool sub)
+    {
+        auto msg = json::value
+        {
+            {JsonRpcHeader, JsonRpcVersion},
+            {"id", 1},
+            {"method", "ev_subunsub"},
+            {"params",
+                {
+                    {"ev_txs_changed", sub},
                 }
             }
         };
@@ -55,6 +117,10 @@ namespace pit
     std::string SimpleWalletClient::ExtractResult(const std::string& response)
     {
         auto r = json::parse(response);
+        if (auto* txid = r.as_object()["result"].as_object().if_contains("txid"); txid)
+        {
+            m_transactions.insert(txid->as_string().c_str());
+        }
         return r.as_object()["result"].as_object()["output"].as_string().c_str();
     }
 
@@ -74,9 +140,7 @@ namespace pit
             }
         };
 
-        auto result = ExtractResult(CallAPI(json::serialize(msg)));
-        //std::cerr << "Result: " << result << std::endl;
-        return result;
+        return ExtractResult(CallAPI(json::serialize(msg)));
     }
 
     const std::string& SimpleWalletClient::GetCID()
@@ -117,22 +181,8 @@ namespace pit
         return m_repoID;
     }
 
-    template<typename Buf>
-    std::size_t FindNewline(Buf const& buffers)
-    {
-        auto begin = net::buffers_iterator<Buf>::begin(buffers);
-        auto end = net::buffers_iterator<Buf>::end(buffers);
-        auto result = std::find(begin, end, '\n');
-
-        if (result == end)
-            return 0; // not found
-
-        return result + 1 - begin;
-    }
-
     std::string SimpleWalletClient::CallAPI(std::string&& request)
     {
-        // snippet from boost beast sync http client example, there is no need for something complicated atm.
         EnsureConnected();
         request.push_back('\n');
         size_t s = request.size();
@@ -141,29 +191,14 @@ namespace pit
         {
             return "";
         }
-        beast::multi_buffer buffer;
-        boost::system::error_code ec;
-        while (true)
-        {
-            auto pos = FindNewline(buffer.data());
-            if (pos == 0)
-            {
-                auto bytesRead = m_stream.read_some(buffer.prepare(65536), ec);
-                if (ec)
-                {
-                    std::cerr << "Error: " << ec.message() << std::endl;
-                    return "";
-                }
-                buffer.commit(bytesRead);
-            }
-            else
-            {
-                break;
-            }
-            
-        }
-        
+        return ReadAPI();
+    }
 
-        return beast::buffers_to_string(buffer.data());
+    std::string SimpleWalletClient::ReadAPI()
+    {
+        auto n = boost::asio::read_until(m_stream, boost::asio::dynamic_buffer(m_data), '\n');
+        auto line = m_data.substr(0, n);
+        m_data.erase(0, n);
+        return line;
     }
 }

@@ -6,7 +6,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <iostream>
-#include <thread>
+#include <set>
 #include "utils.h"
 
 namespace pit
@@ -75,23 +75,28 @@ namespace pit
         std::string LoadObjectFromIPFS(std::string&& hash);
         std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
-    private:
+        bool WaitForCompletion();
 
+    private:
+        std::string SubUnsubEvents(bool sub);
         void EnsureConnected();
         std::string ExtractResult(const std::string& response);
         std::string InvokeShader(const std::string& args);
         const std::string& GetCID();
         const std::string& GetRepoID();
         std::string CallAPI(std::string&& request);
+        std::string ReadAPI();
 
     private:
-        net::io_context     m_ioc;
-        std::thread         m_iothread;
-        tcp::resolver       m_resolver;
-        beast::tcp_stream   m_stream;
-        bool                m_connected = false;
-        const Options&      m_options;
-        std::string         m_repoID;
-        std::string         m_cid;
+        net::io_context       m_ioc;
+        std::thread           m_iothread;
+        tcp::resolver         m_resolver;
+        beast::tcp_stream     m_stream;
+        bool                  m_connected = false;
+        const Options&        m_options;
+        std::string           m_repoID;
+        std::string           m_cid;
+        std::set<std::string> m_transactions;
+        std::string           m_data;
     };
 }
