@@ -45,9 +45,6 @@ jobs:
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
         brew install boost
         brew install krb5
-        brew link icu4c
-        export LDFLAGS="-L/usr/local/opt/icu4c/lib"
-        export CPPFLAGS="-I/usr/local/opt/icu4c/include"
 
     - name: Create Build Environment [ubuntu all]
       shell: bash
@@ -136,6 +133,9 @@ jobs:
     - name: Build [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: cmake --build . --parallel --config $BUILD_TYPE
+      env:
+      	LDFLAGS: "-L/usr/local/opt/icu4c/lib"
+      	CPPFLAGS: "-I/usr/local/opt/icu4c/include"
 
     - name: Build [ubuntu all]
       shell: bash
