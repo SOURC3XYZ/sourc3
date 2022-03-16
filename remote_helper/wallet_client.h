@@ -94,7 +94,6 @@ namespace pit
 
     private:
         net::io_context       m_ioc;
-        std::thread           m_iothread;
         tcp::resolver         m_resolver;
         beast::tcp_stream     m_stream;
         bool                  m_connected = false;
