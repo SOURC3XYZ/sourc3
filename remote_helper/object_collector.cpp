@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <utility>
 #include <iostream>
-namespace pit
+namespace sourc3
 {
     /////////////////////////////////////////////////////
 

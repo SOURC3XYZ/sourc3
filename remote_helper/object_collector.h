@@ -9,7 +9,7 @@
 
 //struct git_odb_object;
 
-namespace pit
+namespace sourc3
 {
     // structs for serialization
 #pragma pack(push, 1)

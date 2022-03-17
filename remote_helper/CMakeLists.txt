@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.17)
 
-set(TARGET_NAME git-remote-pit)
+set(TARGET_NAME git-remote-sourc3)
 
 add_executable (${TARGET_NAME} remote_helper.cpp)
 

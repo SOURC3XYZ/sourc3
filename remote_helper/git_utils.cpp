@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace pit::git
+namespace sourc3::git
 {
     Init::Init() noexcept
     {
@@ -27,7 +27,7 @@ namespace pit::git
         }
     }
 }
-namespace pit
+namespace sourc3
 {
     std::string to_string(const git_oid& oid)
     {

@@ -9,7 +9,7 @@
 #include <set>
 #include "utils.h"
 
-namespace pit
+namespace sourc3
 {
     constexpr const char JsonRpcHeader[] = "jsonrpc";
     constexpr const char JsonRpcVersion[] = "2.0";

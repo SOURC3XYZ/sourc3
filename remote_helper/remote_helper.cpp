@@ -25,7 +25,9 @@
 namespace po = boost::program_options;
 namespace json = boost::json;
 using namespace std;
-using namespace pit;
+using namespace sourc3;
+
+#define PROTO_NAME "sourc3"
 
 namespace
 {
@@ -607,7 +609,7 @@ int main(int argc, char* argv[])
 {
     if (argc != 3)
     {
-        cerr << "USAGE: git-remote-pit <remote> <url>" << endl;
+        cerr << "USAGE: git-remote-sourc3 <remote> <url>" << endl;
         return -1;
     }
     try
@@ -628,10 +630,10 @@ int main(int argc, char* argv[])
 #else
         const auto* homeDir = std::getenv("HOME");
 #endif
-        std::string configPath = "pit-remote.cfg";
+        std::string configPath = PROTO_NAME "-remote.cfg";
         if (homeDir)
         {
-            configPath = std::string(homeDir) + "/.pit/" + configPath;
+            configPath = std::string(homeDir) + "/." PROTO_NAME "/ " + configPath;
         }
         cerr << "Reading config from: " << configPath << "..." << endl;
         const auto fullPath = boost::filesystem::system_complete(configPath).string();
@@ -642,7 +644,7 @@ int main(int argc, char* argv[])
         }
         vm.notify();
         string_view sv(argv[2]);
-        const string_view SCHEMA = "pit://";
+        const string_view SCHEMA = PROTO_NAME "://";
         sv = sv.substr(SCHEMA.size());
         auto delimiterOwnerNamePos = sv.find('/');
         options.repoOwner = sv.substr(0, delimiterOwnerNamePos);
