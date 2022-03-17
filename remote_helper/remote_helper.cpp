@@ -633,7 +633,7 @@ int main(int argc, char* argv[])
         std::string configPath = PROTO_NAME "-remote.cfg";
         if (homeDir)
         {
-            configPath = std::string(homeDir) + "/." PROTO_NAME "/ " + configPath;
+            configPath = std::string(homeDir) + "/." PROTO_NAME "/" + configPath;
         }
         cerr << "Reading config from: " << configPath << "..." << endl;
         const auto fullPath = boost::filesystem::system_complete(configPath).string();
