@@ -9,7 +9,7 @@
 
 //struct git_odb_object;
 
-namespace pit
+namespace sourc3
 {
     // structs for serialization
 #pragma pack(push, 1)
@@ -94,13 +94,8 @@ namespace pit
         {
             // TODO: replace code below with calling serializer
             constexpr size_t SIZE_THRESHOLD = 100000;
-            size_t totalSize = 0;
-            for (const auto& o : m_objects)
-            {
-                if (o.selected)
-                    continue;
-                totalSize += o.GetSize();
-            }
+            size_t done = 0;
+
             while (true)
             {
                 uint32_t count = 0;
@@ -145,21 +140,18 @@ namespace pit
                     std::copy_n(obj.GetData(), obj.GetSize(), data);
                     serObj = reinterpret_cast<GitObject*>(data + obj.GetSize());
                 }
-                totalSize -= objectsSize;
-                func(buf, totalSize == 0);
+                done += count;
+                func(buf, done);
             }
         }
     private:
         void TraverseTree(const git_tree* tree);
         std::string Join(const std::vector<std::string>& path, const std::string& name);
         ObjectInfo& CollectObject(const git_oid& oid);
-        void ThrowIfError(int res, std::string_view sv);
     public:
         std::set<git_oid>           m_set;
         std::vector<ObjectInfo>     m_objects;
         std::vector<Ref>            m_refs;
-        size_t                      m_maxSize = 0;
-        size_t                      m_totalSize = 0;
         std::vector<std::string>    m_path;
     };
 }

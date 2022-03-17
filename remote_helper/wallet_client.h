@@ -6,9 +6,10 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <iostream>
+#include <set>
 #include "utils.h"
 
-namespace pit
+namespace sourc3
 {
     constexpr const char JsonRpcHeader[] = "jsonrpc";
     constexpr const char JsonRpcVersion[] = "2.0";
@@ -74,33 +75,32 @@ namespace pit
         std::string LoadObjectFromIPFS(std::string&& hash);
         std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
-    private:
-
-        void EnsureConnected()
+        using WaitFunc = std::function<void(size_t, const std::string&)>;
+        bool WaitForCompletion(WaitFunc&&);
+        size_t GetTransactionCount() const
         {
-            if (m_connected)
-                return;
-
-            auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
-
-            // Make the connection on the IP address we get from a lookup
-            m_stream.connect(results);
-            m_connected = true;
+            return m_transactions.size();
         }
 
+    private:
+        std::string SubUnsubEvents(bool sub);
+        void EnsureConnected();
         std::string ExtractResult(const std::string& response);
         std::string InvokeShader(const std::string& args);
         const std::string& GetCID();
         const std::string& GetRepoID();
         std::string CallAPI(std::string&& request);
+        std::string ReadAPI();
 
     private:
-        net::io_context     m_ioc;
-        tcp::resolver       m_resolver;
-        beast::tcp_stream   m_stream;
-        bool                m_connected = false;
-        const Options&      m_options;
-        std::string         m_repoID;
-        std::string         m_cid;
+        net::io_context       m_ioc;
+        tcp::resolver         m_resolver;
+        beast::tcp_stream     m_stream;
+        bool                  m_connected = false;
+        const Options&        m_options;
+        std::string           m_repoID;
+        std::string           m_cid;
+        std::set<std::string> m_transactions;
+        std::string           m_data;
     };
 }

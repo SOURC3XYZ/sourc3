@@ -1,7 +1,7 @@
 {
-  "name": "pit-client-masternet",
+  "name": "sourc3-client-masternet",
   "version": "1.0.0",
-  "description": "PIT client for 'masternet'",
+  "description": "SOURC3 client for 'masternet'",
   "main": "main.js",
   "scripts": {
     "app:dist": "electron-builder",

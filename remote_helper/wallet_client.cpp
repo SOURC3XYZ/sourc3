@@ -1,7 +1,10 @@
 #include "wallet_client.h"
 #include <boost/json.hpp>
+#include <boost/asio.hpp>
+#include <boost/scope_exit.hpp>
+#include <boost/beast/core/buffers_adaptor.hpp>
 
-namespace pit
+namespace sourc3
 {
     namespace json = boost::json;
 
@@ -24,7 +27,6 @@ namespace pit
 
     std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data, size_t size)
     {
-        
         auto msg = json::value
         {
             {JsonRpcHeader, JsonRpcVersion},
@@ -39,15 +41,98 @@ namespace pit
         return CallAPI(json::serialize(msg));
     }
 
+    bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func)
+    {
+        if (m_transactions.empty())
+            return true; // ok
+
+        SubUnsubEvents(true);
+        BOOST_SCOPE_EXIT_ALL(&, this) {
+            SubUnsubEvents(false);
+        };
+        size_t done = 0;
+        while(!m_transactions.empty())
+        {
+            auto response = ReadAPI();
+            auto r = json::parse(response);
+
+            auto& res = r.as_object()["result"].as_object();
+
+            for (auto& val : res["txs"].as_array())
+            {
+                auto& tx = val.as_object();
+                std::string txID = tx["txId"].as_string().c_str();
+                auto it = m_transactions.find(txID);
+                if (it == m_transactions.end())
+                {
+                    continue;
+                }
+
+                auto status = tx["status"].as_int64();
+                if (status == 4)
+                {
+                    func(++done, tx["failure_reason"].as_string().c_str());
+                    return false;
+                }
+                else if (status == 2)
+                {
+                    func(++done, "canceled");
+                    return false;
+                }
+                else if (status == 3)
+                {
+                    func(++done, "");
+                    m_transactions.erase(txID);
+                }
+            }
+        }
+        return true;
+    }
+
+    std::string SimpleWalletClient::SubUnsubEvents(bool sub)
+    {
+        auto msg = json::value
+        {
+            {JsonRpcHeader, JsonRpcVersion},
+            {"id", 1},
+            {"method", "ev_subunsub"},
+            {"params",
+                {
+                    {"ev_txs_changed", sub},
+                }
+            }
+        };
+        return CallAPI(json::serialize(msg));
+    }
+
+    void SimpleWalletClient::EnsureConnected()
+    {
+        if (m_connected)
+            return;
+
+        auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
+
+        // Make the connection on the IP address we get from a lookup
+        m_stream.connect(results);
+        m_connected = true;
+    }
+
     std::string SimpleWalletClient::ExtractResult(const std::string& response)
     {
         auto r = json::parse(response);
+        if (auto* txid = r.as_object()["result"].as_object().if_contains("txid"); txid)
+        {
+            if (!std::all_of(txid->as_string().begin(), txid->as_string().end(), [](auto c) {return c == '0'; }))
+            {
+                m_transactions.insert(txid->as_string().c_str());
+            }
+        }
         return r.as_object()["result"].as_object()["output"].as_string().c_str();
     }
 
     std::string SimpleWalletClient::InvokeShader(const std::string& args)
     {
-        std::cerr << "Args: " << args << std::endl;
+        //std::cerr << "Args: " << args << std::endl;
         auto msg = json::value
         {
             {JsonRpcHeader, JsonRpcVersion},
@@ -61,9 +146,7 @@ namespace pit
             }
         };
 
-        auto result = ExtractResult(CallAPI(json::serialize(msg)));
-        std::cerr << "Result: " << result << std::endl;
-        return result;
+        return ExtractResult(CallAPI(json::serialize(msg)));
     }
 
     const std::string& SimpleWalletClient::GetCID()
@@ -104,30 +187,24 @@ namespace pit
         return m_repoID;
     }
 
-
     std::string SimpleWalletClient::CallAPI(std::string&& request)
     {
-        // snippet from boost beast sync http client example, there is no need for something complicated atm.
         EnsureConnected();
-        // Set up an HTTP GET request message
-        http::request<http::string_body> req{ http::verb::get, m_options.apiTarget, 11 };
-        req.set(http::field::host, m_options.apiHost);
-        req.set(http::field::user_agent, "PIT/0.0.1"); // TODO: add version here
-        req.body() = std::move(request);
-        req.content_length(req.body().size());
+        request.push_back('\n');
+        size_t s = request.size();
+        size_t transferred = boost::asio::write(m_stream, boost::asio::buffer(request));
+        if (s != transferred)
+        {
+            return "";
+        }
+        return ReadAPI();
+    }
 
-        // Send the HTTP request to the remote host
-        http::write(m_stream, req);
-
-        // This buffer is used for reading and must be persisted
-        beast::flat_buffer buffer;
-
-        // Declare a container to hold the response
-        http::response<http::dynamic_body> res;
-
-        // Receive the HTTP response
-        http::read(m_stream, buffer, res);
-
-        return beast::buffers_to_string(res.body().data());
+    std::string SimpleWalletClient::ReadAPI()
+    {
+        auto n = boost::asio::read_until(m_stream, boost::asio::dynamic_buffer(m_data), '\n');
+        auto line = m_data.substr(0, n);
+        m_data.erase(0, n);
+        return line;
     }
 }

@@ -7,7 +7,7 @@
 //struct git_repository;
 //struct git_odb;
 
-namespace pit
+namespace sourc3
 {
     template<typename T, void (D)(T*)>
     class Holder

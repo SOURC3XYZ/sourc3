@@ -23,7 +23,6 @@ jobs:
           - os: windows-2019
             PLATFORM_NAME: win
 
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -101,18 +100,20 @@ jobs:
     - name: Configure CMake [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPIT_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+      env:
+        LDFLAGS: -L/usr/local/opt/icu4c/lib
 
     - name: Configure CMake [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       run: |
-        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPIT_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
 
     - name: Configure CMake [windows]
       if: matrix.os == 'windows-2019'
       shell: bash
       run: |
-        cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DPIT_USE_STATIC=ON -DPIT_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+        cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
 
     - name: Save version info
       shell: bash
@@ -176,44 +177,44 @@ jobs:
     - name: Sign the mac binaries [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp remote_helper/git-remote-pit
+        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp remote_helper/git-remote-sourc3
 
     - name: Checksum [ubuntu]
       if: matrix.os == 'ubuntu-16.04' || matrix.os =='ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       run: |
-        sha256sum remote_helper/git-remote-pit > remote_helper/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        sha256sum remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
     - name: Checksum [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
-        shasum -a 256 remote_helper/git-remote-pit > remote_helper/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        shasum -a 256 remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
     - name: Collect [macos-10.15 && ubuntu all]
       shell: bash
       if: matrix.os != 'windows-2019'
       run: |
         mkdir artifacts
-        tar -cvf artifacts/pit.tar -C remote_helper git-remote-pit git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt pit-remote.cfg
+        tar -cvf artifacts/sourc3.tar -C remote_helper git-remote-sourc3 git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt sourc3-remote.cfg
 
     - name: Collect [windows]
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
         mkdir artifacts
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-pit.exe artifacts/git-remote-pit.exe
-        cp remote_helper/pit-remote.cfg artifacts/pit-remote.cfg
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe artifacts/git-remote-sourc3.exe
+        cp remote_helper/sourc3-remote.cfg artifacts/sourc3-remote.cfg
 
     - name: Collect pdb [windows]
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
         mkdir pdb
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-pit.pdb pdb/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}.pdb
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.pdb pdb/git-remote-sourc3{{env.BEAM_TARGET_SUFFIX}}.pdb
 
     - name: Checksum [windows]
       if: matrix.os == 'windows-2019'
       run: |
-        certUtil -hashfile artifacts/git-remote-pit.exe SHA256 > artifacts/git-remote-pit${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
+        certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
         
     - name: Download wallet api
       uses: dawidd6/action-download-artifact@v2
@@ -317,7 +318,7 @@ jobs:
         chmod +x ./notarize.sh
         set -- ui/dist/*.dmg
         DMG_NAME=$1
-        BUNDLE_ID=com.io.pit.client
+        BUNDLE_ID=com.io.sourc3.client
         ./notarize.sh $DMG_NAME $BUNDLE_ID
         shasum -a 256 $DMG_NAME > checksum.txt
 
@@ -356,7 +357,7 @@ jobs:
 ###############################################################################
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
+        name: ${{matrix.PLATFORM_NAME}}-sourc3${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: artifacts/*
         if-no-files-found: error
 
@@ -364,28 +365,28 @@ jobs:
           #- uses: actions/upload-artifact@v2
           #if: matrix.os == 'macos-10.15'
           #with:
-          #name: pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
+          #name: sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
           #path: installer/*
           #if-no-files-found: error
 
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
+        name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
         if-no-files-found: error
     
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'macos-10.15'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
+        name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
         if-no-files-found: error
         
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:
-        name: ${{matrix.PLATFORM_NAME}}-pit-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
+        name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.exe
         if-no-files-found: error
 
@@ -395,6 +396,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:
-        name: pit${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-pdb
+        name: sourc3${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-pdb
         path: pdb
         if-no-files-found: error

@@ -4,7 +4,7 @@
 
 #include <iterator>
 
-namespace pit
+namespace sourc3
 {
     std::string ToHex(const void* p, size_t size)
     {

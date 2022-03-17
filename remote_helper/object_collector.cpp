@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <utility>
 #include <iostream>
-namespace pit
+namespace sourc3
 {
     /////////////////////////////////////////////////////
 
@@ -212,19 +212,7 @@ namespace pit
         auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
         git_oid r;
         git_odb_hash(&r, git_odb_object_data(dbobj), objSize, git_odb_object_type(dbobj));
-        
-        m_maxSize = std::max(m_maxSize, objSize);
-        m_totalSize += objSize;
 
         return obj;
     }
-
-    void ObjectCollector::ThrowIfError(int res, std::string_view sv)
-    {
-        if (res < 0)
-        {
-            throw std::runtime_error(sv.data());
-        }
-    }
-
 }
