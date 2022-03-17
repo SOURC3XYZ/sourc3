@@ -1,20 +1,20 @@
 import { Input } from 'antd';
-import React from 'react';
+import { ChangeEvent, useEffect, useRef } from 'react';
 
 type SearchProps = {
-
-  text: string
+  text: string;
+  placeholder: string;
   setInputText: (inputText: string) => void
 };
 
-const Search = ({ text, setInputText }:SearchProps) => {
-  const searchRef = React.useRef<Input>(null);
+const Search = ({ text, placeholder, setInputText }:SearchProps) => {
+  const searchRef = useRef<Input>(null);
 
   const onSearchChange = (
-    e:React.ChangeEvent<HTMLInputElement>
-  ) => { setInputText(e.target.value); };
+    e:ChangeEvent<HTMLInputElement>
+  ) => setInputText(e.target.value);
 
-  React.useEffect(() => {
+  useEffect(() => {
     searchRef.current?.focus({
       cursor: 'end'
     });
@@ -22,7 +22,7 @@ const Search = ({ text, setInputText }:SearchProps) => {
 
   return (
     <Input
-      placeholder="enter repo name or id"
+      placeholder={placeholder}
       value={text}
       onChange={onSearchChange}
     />

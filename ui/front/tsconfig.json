@@ -20,6 +20,9 @@
 			"node_modules/@types"
 		],
 		"paths": {
+			"@styles/*": [
+				"styles/*"
+			],
 			"@components/*": [
 				"components/*"
 			],

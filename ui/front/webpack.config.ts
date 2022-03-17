@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable max-len */
 import path from 'path';
 import fs from 'fs';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
@@ -10,13 +12,13 @@ import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as webpack from 'webpack';
 import { Configuration } from 'webpack';
 
+type ModeType = 'production' | 'development';
+
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 interface IConfig extends Configuration {
   devServer: { [key:string]: any }
 }
-
-type ModeType = 'production' | 'development';
 
 const lessToJs = require('less-vars-to-js');
 
@@ -47,7 +49,7 @@ const build:IConfig = {
     nodeEnv: 'production'
   },
   resolve: {
-    extensions: ['.ts', '.js', '.tsx'],
+    extensions: ['.ts', '.js', '.tsx', '.scss'],
     plugins: [new TsconfigPathsPlugin()],
     modules: [
       path.join(__dirname, './src/types'),
@@ -80,19 +82,42 @@ const build:IConfig = {
       {
         test: /\.css$/,
         use: [
+          'style-loader',
           {
-            loader: MiniCssExtractPlugin.loader,
+            loader: 'css-loader',
             options: {
-              publicPath: './build/styles'
+              modules: {
+                localIdentName: '[name]--[hash:base64:5]'
+
+              },
+              sourceMap: true
             }
+          }
+        ]
+      },
+      {
+        test: /\.(scss)$/,
+        use: [
+          {
+            // Adds CSS to the DOM by injecting a `<style>` tag
+            loader: 'style-loader'
           },
           {
+            // Interprets `@import` and `url()` like `import/require()` and will resolve them
             loader: 'css-loader',
             options: {
               modules: {
                 localIdentName: '[name]--[hash:base64:5]'
               }
             }
+          },
+          {
+            // Loader for webpack to process CSS with PostCSS
+            loader: 'postcss-loader'
+          },
+          {
+            // Loads a SASS/SCSS file and compiles it to CSS
+            loader: 'sass-loader'
           }
         ]
       },
@@ -149,9 +174,13 @@ const build:IConfig = {
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'public', 'index.html')
     }),
+    // new MiniCssExtractPlugin({
+    //   filename: 'styles/[name].css',
+    //   chunkFilename: 'styles/[id].css'
+    // }),
     new MiniCssExtractPlugin({
-      filename: 'styles/[name].css',
-      chunkFilename: 'styles/[id].css'
+      filename: env !== 'production' ? '[name].css' : '[name].[hash].css',
+      chunkFilename: env !== 'production' ? '[id].css' : '[id].[hash].css'
     })
     // new CompressionPlugin({
     //   include: /\/includes/,

@@ -11,9 +11,20 @@ type CallApiProps<T> = {
   params: T;
 };
 
+const headlessNode = 'eu-node01.masternet.beam.mw:8200';
+
 type BeamApiReqHandlers = {
   resolve: (value: BeamApiRes) => void,
   reject: (reason?: any) => void
+};
+
+type BeamObject = {
+  api: QObject,
+  headless?: boolean,
+  module?: any,
+  factory?: any,
+  client?: any,
+  appid?: any,
 };
 
 type Modified<T> = T & {
@@ -24,7 +35,7 @@ export class BeamAPI<T> {
 
   private apiHost?: string;
 
-  private API: null | QObject;
+  private BEAM: null | BeamObject;
 
   private contract: Array<number> | null;
 
@@ -32,7 +43,7 @@ export class BeamAPI<T> {
 
   constructor(cid: string) {
     this.cid = cid;
-    this.API = null;
+    this.BEAM = null;
     this.contract = null;
     this.callbacks = new Map();
   }
@@ -47,6 +58,50 @@ export class BeamAPI<T> {
       else cb.resolve(parsed);
       this.callbacks.delete(id);
     } return undefined;
+  };
+
+  createHeadlessAPI = async (
+    apiver:any, apivermin:any, appname:any, apirescback:any
+  ): Promise<BeamObject> => {
+    const WasmModule = await window.BeamModule();
+    const { WasmWalletClient } = WasmModule;
+    const client = new WasmWalletClient(headlessNode);
+    client.startWallet();
+
+    client.subscribe((response:any) => {
+      const err = `Unexpected wasm wallet client response call: ${response}`;
+      console.log(err);
+      throw new Error(err);
+    });
+
+    client.setApproveContractInfoHandler((info:any) => {
+      const err = `Unexpected wasm wallet client transaction in headless wallet: ${info}`;
+      console.log(err);
+      throw new Error(err);
+    });
+
+    return new Promise((resolve, reject) => {
+      const appid = WasmWalletClient
+        .GenerateAppID(appname, window.location.href);
+
+      client.createAppAPI(
+        apiver, apivermin, appid, appname, (err:any, api:any) => {
+          if (err) {
+            reject(err);
+          }
+
+          api.setHandler(apirescback);
+          resolve({
+            headless: true,
+            module: WasmModule,
+            factory: WasmWalletClient,
+            client,
+            appid,
+            api: api as QObject
+          });
+        }
+      );
+    });
   };
 
   private readonly connectToWebWallet = (
@@ -69,6 +124,13 @@ export class BeamAPI<T> {
     window.postMessage(message, window.origin);
   });
 
+  readonly connectHeadless = async () => {
+    this.BEAM = await this.createHeadlessAPI(
+      'current', '', 'bla', this.onApiResult
+    );
+    return this;
+  };
+
   readonly connectToApi = async (): Promise<QObject> => {
     const { qt } = window;
     const api = await new Promise<QObject>(
@@ -80,22 +142,41 @@ export class BeamAPI<T> {
     return api;
   };
 
-  readonly loadAPI = async (message: {
-    [key: string]: string;
-  }, apiHost?:string): Promise<BeamAPI<T>> => {
+  public isDapps = () => {
+    const ua = navigator.userAgent;
+    return /QtWebEngine/i.test(ua);
+  };
+
+  public isElectron = () => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  };
+
+  readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
 
-    const ua = navigator.userAgent;
     if (!this.apiHost) {
       try {
-        this.API = /QtWebEngine/i.test(ua)
-          ? await this.connectToApi()
-          : await this.connectToWebWallet(message);
+        this.BEAM = this.isDapps()
+          ? { api: await this.connectToApi() }
+          : await this.createHeadlessAPI(
+            'current', '', 'bla', this.onApiResult
+          );
       } catch {
-        throw new Error();
+        throw new Error('beam api connection error');
       }
     }
     return this;
+  };
+
+  readonly extensionConnect = async (message: {
+    [key: string]: string;
+  }) => {
+    try {
+      this.BEAM = { api: await this.connectToWebWallet(message) };
+    } catch {
+      throw new Error('extension connection error');
+    }
   };
 
   readonly initContract = async (
@@ -153,12 +234,25 @@ export class BeamAPI<T> {
     }
 
     this.callbacks.set(id, { resolve, reject });
+
+    // webApi
     if (window.BeamApi) {
       return window.BeamApi.callWalletApi(
         id, method, { ...params, contract: this.contract }
       );
     }
-    return (this.API?.callWalletApi as CallApiDesktop)(JSON.stringify(request));
+
+    // headless
+    if (this.BEAM?.headless) {
+      return (
+        this.BEAM?.api.callWalletApi as CallApiDesktop
+      )(JSON.stringify(request));
+    }
+
+    // desktop
+    return (
+      this.BEAM?.api.callWalletApi as CallApiDesktop
+    )(JSON.stringify(request));
   };
 
   private readonly fetchApi = (

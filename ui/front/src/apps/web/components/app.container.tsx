@@ -1,40 +1,34 @@
 import React from 'react';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
-import {
-  Navigate, Route, Routes
-} from 'react-router-dom';
-import { thunks } from '@libs/action-creators';
+import { Route, Routes } from 'react-router-dom';
+import { AC, thunks } from '@libs/action-creators';
 import {
   Manager,
   Notifications,
   AllRepos,
   Preload,
-  Repo,
-  Header
+  Repo
 } from '@components/shared';
-import styles from './main.module.css';
+import styles from './app.module.scss';
+import { Header, Lendos } from './content';
 
 type MainProps = {
   connectApi: () => void,
-  isApiConnected: boolean,
-  balance: number
-  pkey: string
-
+  isApiConnected: boolean
 };
 
 const Main = ({
-  isApiConnected, connectApi, balance, pkey
+  isApiConnected, connectApi
 }:MainProps) => {
   React.useEffect(() => {
     if (!isApiConnected) connectApi();
-    // getWalletStatus();
   }, [isApiConnected]);
 
   const routes = [
     {
       path: '/',
-      element: <Navigate replace to="repos/all/1" />
+      element: <Lendos />
     },
     {
       path: 'repos/:type/:page',
@@ -59,19 +53,17 @@ const Main = ({
     </Routes>
   );
 
-  const View = () => (isApiConnected
-    ? (
-      <>
-        <Header balance={balance} pKey={pkey} />
-        <div className={styles.main}>
-          <RoutesView />
-          <Notifications />
-        </div>
-      </>
-    )
-    : <Preload />);
+  const Block = () => (
+    <>
+      <Header />
+      <div className={styles.main}>
+        <RoutesView />
+        <Notifications />
+      </div>
+    </>
+  );
 
-  return <View />;
+  return isApiConnected ? <Block /> : <Preload />;
 };
 
 const mapState = ({
@@ -80,16 +72,12 @@ const mapState = ({
   isApiConnected,
   balance,
   pkey
-
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  connectApi: () => {
-    dispatch(thunks.connectBeamApi());
-  },
-  getWalletStatus: () => {
-    dispatch(thunks.getWalletStatus());
-  }
+  setInputText: (text:string) => dispatch(AC.setSearch(text)),
+  connectApi: () => dispatch(thunks.connectBeamApi()),
+  getWalletStatus: () => dispatch(thunks.getWalletStatus())
 });
 
 export default connect(mapState, mapDispatch)(Main);

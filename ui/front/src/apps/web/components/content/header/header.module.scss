@@ -1,0 +1,21 @@
+.wrapper{
+    margin: 0 auto;
+    background-color: #fff;
+    flex-shrink: 0; 
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    width:100%;
+    .nav{
+      display: flex;
+      align-items: center;
+      span {
+        color: #fff;
+        font-family: Visby;
+        font-size: 18px;
+        line-height: 20px;
+        font-style: normal;
+      }
+    }
+}
+

@@ -16,6 +16,8 @@ export type CallApiWeb = (
     [key:string]:string | number | boolean | number[] }) => void;
 
 export type QObject = {
+  api?: any; // TODO: rewrite connections
+  headless?:boolean;
   callWalletApiResult: ApiResult | ApiResultWeb;
   callWalletApi: CallApiWeb | CallApiDesktop;
   callApi: (callid: string, method: string, params: {

@@ -26,11 +26,11 @@ import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
-const beam = new BeamAPI<RequestCreators['params']>(
-  CONTRACT.CID
-);
+const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
 
-const { callApi, initContract, loadAPI } = beam;
+const {
+  callApi, initContract, loadAPI
+} = beam;
 
 const wallet = new WasmWallet();
 
@@ -38,7 +38,7 @@ const messageBeam = {
   type: 'create_beam_api',
   apiver: 'current',
   apivermin: '',
-  appname: 'BEAM NFT-GALLERY'
+  appname: 'SOURC3'
 };
 
 const headers = { 'Content-Type': 'application/json' };
@@ -52,6 +52,31 @@ async function getOutput<T>(
 }
 
 export const thunks = {
+  connectExtension: () => async (dispatch: AppThunkDispatch) => {
+    await beam.extensionConnect(messageBeam);
+    const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
+    if (pKey) dispatch(AC.setPublicKey(pKey.key));
+  },
+
+  connectBeamApi:
+    (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
+      try {
+        await loadAPI(apiHost);
+        await initContract(wasm);
+        const action = RC.viewContracts();
+        const output = await getOutput<ContractsResp>(action, dispatch);
+        if (output) {
+          const finded = output.contracts.find((el) => el.cid === beam.cid);
+          if (!finded) throw new Error(`no specified cid (${beam.cid})`);
+          dispatch(AC.setIsConnected(Boolean(finded)));
+        }
+        if (beam.isDapps() || beam.isElectron()) {
+          const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
+          if (pKey) dispatch(AC.setPublicKey(pKey.key));
+        }
+      } catch (error) { thunkCatch(error, dispatch); }
+    },
+
   mountWallet: () => async (dispatch: AppThunkDispatch) => {
     await wallet.mount(window.BeamModule);
     dispatch(AC.setWalletConnection(true));
@@ -132,24 +157,6 @@ export const thunks = {
       dispatch(AC.setIsConnected(false));
     } catch (error) { thunkCatch(error, dispatch); }
   },
-
-  connectBeamApi:
-    (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
-      try {
-        await loadAPI(messageBeam, apiHost);
-        await initContract(wasm);
-        const action = RC.viewContracts();
-        const output = await getOutput<ContractsResp>(action, dispatch);
-        if (output) {
-          const finded = output.contracts.find((el) => el.cid === beam.cid);
-          if (!finded) throw new Error(`no specified cid (${beam.cid})`);
-          dispatch(AC.setIsConnected(Boolean(finded)));
-        }
-        const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
-        if (pKey) dispatch(AC.setPublicKey(pKey.key));
-      } catch (error) { thunkCatch(error, dispatch); }
-    },
-
   getAllRepos: (
     type:RepoListType, resolve?: () => void
   ) => async (dispatch: AppThunkDispatch) => {

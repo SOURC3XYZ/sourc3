@@ -4,7 +4,7 @@ import {
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
-import React from 'react';
+import React, { ChangeEvent, useCallback } from 'react';
 import { connect } from 'react-redux';
 import {
   Modal, Input, Row, Col
@@ -21,6 +21,7 @@ type LocationState = {
 };
 
 type AllReposProps = {
+  pkey:string,
   repos: RepoType[],
   searchText: string,
   getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
@@ -37,6 +38,7 @@ const initialState = {
 };
 
 const AllRepos = ({
+  pkey,
   repos,
   searchText,
   getAllRepos,
@@ -78,23 +80,25 @@ const AllRepos = ({
     setState({ isModalVisible: false });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setState({ inputRepoName: e.target.value });
   };
 
-  return (
-    <div className={styles.content}>
-      <>
-        <Nav type={type} path={path} />
-        <Row className={styles.repoHeader}>
-          <Col span={8}>
-            <BeamButton title="New" callback={showModal} />
-          </Col>
-          <Col span={8} offset={8}>
-            <Search text={searchText} setInputText={setInputText} />
-          </Col>
-        </Row>
-      </>
+  const RepoManager = (inputText: string) => (
+    <>
+      <Nav type={type} path={path} />
+      <Row className={styles.repoHeader}>
+        <Col span={8}>
+          <BeamButton title="New" callback={showModal} />
+        </Col>
+        <Col span={8} offset={8}>
+          <Search
+            text={inputText}
+            setInputText={setInputText}
+            placeholder="type something"
+          />
+        </Col>
+      </Row>
 
       <Modal
         visible={isModalVisible}
@@ -109,6 +113,18 @@ const AllRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
+    </>
+  );
+
+  const RepoManagerView = useCallback((props:{ text:string }) => (
+    <>
+      {Boolean(pkey) && RepoManager(props.text)}
+    </>
+  ), [pkey, state]);
+
+  return (
+    <div className={styles.content}>
+      <RepoManagerView text={searchText} />
       <RepoList
         path={path}
         searchText={searchText}
@@ -123,9 +139,10 @@ const AllRepos = ({
 };
 
 const mapState = ({
-  app: { isApiConnected },
+  app: { isApiConnected, pkey },
   repos: { repos, searchText }
 }: RootState) => ({
+  pkey,
   isApiConnected,
   repos,
   searchText

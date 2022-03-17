@@ -4,9 +4,7 @@ interface WalletClient {
   GeneratePhrase: () => string;
 }
 
-type BeamModuleType = () => Promise<{
-  WasmWalletClient: WalletClient
-}>;
+type BeamModuleType = () => Promise<{ WasmWalletClient: WalletClient }>;
 
 export class WasmWallet {
   private WalletClient: WalletClient | null = null;
