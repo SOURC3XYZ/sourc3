@@ -32,6 +32,7 @@ const Header = ({
   const bgColor = searchText || !isOnLendos ? 'white' : 'black';
 
   console.log(bgColor);
+  console.log(searchText.length);
 
   useEffect(() => {
     if (searchText.length && isOnLendos) {
@@ -44,19 +45,32 @@ const Header = ({
   };
 
   const headerElements = (text:string, color:string) => [
-    <img alt="source" src={img} />,
+    <div className={styles.navWrapper}>
+      <img className={styles.logo} alt="source" src={img} />
+      <ul className={styles.navList} style={{ color }}>
+        <li>Repositiories</li>
+        <li>Explore</li>
+      </ul>
+    </div>,
     isPkey && <Balance current={balance} />,
     isPkey && <AddButton />,
     isPkey && <Profile pKey={pkey} />,
-    <span style={{ color }}>Repositiories</span>,
     !isPkey && (
-      <Search
-        text={text}
-        placeholder="Search"
-        setInputText={setInputTextWrap}
-      />
-    ),
-    !isPkey && <button type="button" onClick={onConnect}>connect</button>
+      <div className={styles.connect}>
+        <Search
+          text={text}
+          placeholder="Search"
+          setInputText={setInputTextWrap}
+        />
+        <button
+          type="button"
+          onClick={onConnect}
+        >
+          connect
+
+        </button>
+      </div>
+    )
   ];
 
   const View = useCallback(({ text, color }: { [key:string]: any }) => (

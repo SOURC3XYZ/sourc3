@@ -8,6 +8,12 @@ type SearchProps = {
 };
 
 const Search = ({ text, placeholder, setInputText }:SearchProps) => {
+  const style = {
+    background: 'rgba(255, 255, 255, 0.1)',
+    opacity: 0.5,
+    border: '1px solid #FFFFFF',
+    borderRadius: 8
+  };
   const searchRef = useRef<Input>(null);
 
   const onSearchChange = (
@@ -22,6 +28,7 @@ const Search = ({ text, placeholder, setInputText }:SearchProps) => {
 
   return (
     <Input
+      style={style}
       placeholder={placeholder}
       value={text}
       onChange={onSearchChange}
