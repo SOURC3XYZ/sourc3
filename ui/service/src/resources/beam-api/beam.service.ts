@@ -2,9 +2,7 @@ import { HTTP_MODE } from '../../common';
 import { IApiReq } from '../../types';
 import {
   reqTCP,
-  reqHTTP,
-  getSyncParams,
-  killSyncSocket
+  reqHTTP
 } from './beam.repository';
 
 export const callApi = async (obj: IApiReq) => {
@@ -17,7 +15,3 @@ export const callApi = async (obj: IApiReq) => {
     return { isOk: false, error };
   }
 };
-
-export const getSyncEvents = () => getSyncParams();
-
-export const unsubSyncEvents = () => killSyncSocket();

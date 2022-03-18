@@ -230,7 +230,8 @@ export function runWalletApi(
       `--pass=${password}`,
       `--use_http=${HTTP_MODE}`,
       `--wallet_path=${walletDBPath}`,
-      '--enable_ipfs=true'
+      '--enable_ipfs=true',
+      '--tcp_max_line=128000'
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);

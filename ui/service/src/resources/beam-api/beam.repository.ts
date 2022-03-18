@@ -1,16 +1,11 @@
 import { Socket } from 'net';
 import request from 'request';
-import path from 'path';
-import { HTTP_MODE, WALLET_API_PORT } from '../../common';
+import { WALLET_API_PORT } from '../../common';
 import { IApiReq } from '../../types';
-import { binPath } from '../../utils';
 
 let socket:Socket;
-const sync = new Map<IApiReq['id'], any>();
-
-export function getSyncParams() {
-  return Array.from(sync.values());
-}
+let callIndex = 0;
+const calls: { [key:string]: any } = {};
 
 export function killSyncSocket() {
   if (socket) {
@@ -35,70 +30,60 @@ export const reqHTTP = async (
   );
 });
 
-export function reqStandardTCP(req:IApiReq) {
-  return new Promise((resolve, reject) => {
-    const client = new Socket();
-    client.connect(Number(WALLET_API_PORT), '127.0.0.1', () => {
-      console.log('Connected');
-      if (Number(HTTP_MODE) && req.params) {
-        delete req.params.contract;
-        req.params
-          .contract_file = path.join(binPath, 'app.wasm');
-      }
-      // TODO: DANIK, something wrong
-      client.write(`${JSON.stringify(req)}\n`);
-    });
+export const onResponce = (response: string):void => {
+  try {
+    const answer = JSON.parse(response);
 
-    let acc = '';
-    client.on('error', () => reject(new Error('connection error')));
+    const nocback = () => {
+      // TODO: comming soon
+    };
 
-    client.on('data', (data) => {
-      try {
-        acc += data;
-        if (data.indexOf('\n') !== -1) {
-          const res = JSON.parse(acc);
-          resolve(res);
-          client.destroy();
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
-  });
-}
+    const { id } = answer;
+    const cback = calls[id] || nocback;
+    delete calls[id];
 
-export function reqSyncTCP(req:IApiReq):Promise<void> {
-  killSyncSocket();
-  return new Promise((resolve, reject) => {
-    socket = new Socket();
-    socket.connect(Number(WALLET_API_PORT), '127.0.0.1', () => {
-      console.log('Connected');
-      socket.write(`${JSON.stringify(req)}\n`);
-    });
+    return cback(answer);
+  } catch (err) {
+    console.log(`Failed to parse Wallet API response\n\t${response}\n\t${err}`);
+    return undefined;
+  }
+};
 
+export const tcpFactory = () => new Promise<void>((resolve) => {
+  if (socket && !socket.destroyed) {
+    resolve();
+    return;
+  }
+  socket = new Socket();
+  socket.connect(Number(WALLET_API_PORT), '127.0.0.1', () => {
+    console.log('tcp сonnected');
     let acc = '';
 
-    socket.on('error', () => reject(new Error('connection error')));
-
+    socket.on('close', () => {
+      console.log('tcp connection closed');
+    });
     socket.on('data', (data) => {
-      acc += data;
-      if (data.indexOf('\n') !== -1) {
-        const res = acc.split('\n')
-          .filter(Boolean)
-          .map((el) => JSON.parse(el));
-        res.forEach((el) => sync.set(el.id, el));
-        resolve();
-        console.log('Received:', res);
-        acc = '';
+      acc += data.toString();
+
+      while (true) {
+        const br = acc.indexOf('\n');
+        if (br === -1) return;
+
+        const split = acc.split('\n');
+        const response = split[0];
+        acc = split.slice(1).join('\n');
+        if (response) onResponce(response);
       }
     });
+    resolve();
   });
-}
+});
 
 export async function reqTCP(req:IApiReq) {
-  if (req.method === 'ev_subunsub') {
-    await reqSyncTCP(req);
-    return sync.get(req.id);
-  }
-  return reqStandardTCP(req);
+  await tcpFactory();
+  req.id = ['call', callIndex++].join('-');
+  socket.write(`${JSON.stringify(req)}\n`);
+  return new Promise((resolve) => {
+    calls[req.id] = resolve;
+  });
 }
