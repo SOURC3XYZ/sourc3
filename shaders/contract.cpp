@@ -183,3 +183,24 @@ BEAM_EXPORT void Method_7(const PushRefsParams& params)
 
 	Env::AddSig(params.user);
 }
+
+BEAM_EXPORT void Method_8(const StarUnstarRepoParams& params)
+{
+    std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
+
+    RepoUser::Key key_user(params.user, params.repo_id);
+    UserInfo user_info;
+    Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
+
+    if (user_info.starred == 1) {
+        user_info.starred = 0;
+        repo_info->stars_amount--;
+    } else {
+        user_info.starred = 1;
+        repo_info->stars_amount++;
+    }
+
+    save_repo(repo_info);
+
+    Env::AddSig(params.user);
+}

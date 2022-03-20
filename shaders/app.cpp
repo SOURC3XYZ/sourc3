@@ -194,6 +194,31 @@ namespace
                 nullptr, 0, &sig, 1, "delete repo", 10000000);
     }
 
+    void On_action_star_unstar_repo(const ContractID& cid) {
+        uint64_t repo_id;
+        if (!Env::DocGet("repo_id", repo_id)) {
+            return On_error("no repo id for starring");
+        }
+
+        PubKey user;
+        if (!Env::DocGet("user", user)) {
+            return On_error("no user for starring");
+        }
+
+        GitRemoteBeam::StarUnstarRepoParams request;
+        request.repo_id = repo_id;
+        request.user = user;
+
+        Env::DerivePk(request.user, &cid, sizeof(cid));
+
+        SigRequest sig;
+        sig.m_pID = &cid;
+        sig.m_nID = sizeof(cid);
+
+        Env::GenerateKernel(&cid, GitRemoteBeam::StarUnstarRepoParams::METHOD, &request, sizeof(request),
+                            nullptr, 0, &sig, 1, "star repo", 10000000);
+    }
+
     void On_action_add_user_params(const ContractID& cid) {
         GitRemoteBeam::AddUserParams request;
         Env::DocGet("repo_id", request.repo_id);
@@ -573,6 +598,12 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("cid", "ContractID");
             }
             {
+                Env::DocGroup grMethod("star_unstar_repo");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("user", "User PubKey");
+            }
+            {
                 Env::DocGroup grMethod("delete_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
@@ -656,6 +687,7 @@ BEAM_EXPORT void Method_1() {
             {"my_repos",           On_action_my_repos},
             {"all_repos",          On_action_all_repos},
             {"delete_repo",        On_action_delete_repo},
+            {"star_unstar_repo",   On_action_star_unstar_repo},
             {"add_user_params",    On_action_add_user_params},
             {"remove_user_params", On_action_remove_user_params},
             {"push_objects",       On_action_push_objects},

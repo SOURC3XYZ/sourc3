@@ -70,6 +70,7 @@ namespace GitRemoteBeam
 		size_t cur_objs_number;
 		PubKey owner;
 		size_t name_length;
+        uint64_t stars_amount;
 		char name[];
 	};
 
@@ -191,6 +192,7 @@ namespace GitRemoteBeam
 	struct UserInfo
 	{
 		uint8_t permissions;
+        uint8_t starred;
 	};
 
 	struct ContractState
@@ -258,6 +260,13 @@ namespace GitRemoteBeam
 		PubKey user;
 		RefsInfo refs_info;
 	};
+
+    struct StarUnstarRepoParams
+    {
+        static const uint32_t METHOD = 8;
+        uint64_t repo_id;
+        PubKey user;
+    };
 
 #pragma pack(pop)
 }
