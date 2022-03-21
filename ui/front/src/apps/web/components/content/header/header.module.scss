@@ -23,10 +23,6 @@
     }
 }
 
-
-// .logo{
-//   margin-left: 35px;
-// }
 .navWrapper{
   width: 525px;
   display: flex;
@@ -43,6 +39,7 @@
     line-height: 20px;
     margin-bottom: 0px;
     margin: 0;
+    align-items: center;
     li{
       margin-right: 40px;
     }
@@ -63,5 +60,45 @@
   opacity: 0.5;
   border: 1px solid #FFFFFF;
   background: rgba(255, 255, 255, 0.1);
+}
+.manage{
+ display: flex;
+ align-items: center;
+}
+.listManage{
+  display: flex;
+  list-style: none;
+  align-items: center;
+  margin: 0;
+    .balance{
+      border-radius: 8px;
+      color: black;
+      width: 147px;
+      height: 36px;
+      border:none;
+      font-size: 14px;
+      font-family: Visby;
+      line-height: 14px;
+      font-weight: 900;
+      letter-spacing: 0.1px;
+  }
+  li{
+    margin-right: 24px;
+  }
+  .profile{
+    display: flex;
+    align-items: center;
+    margin-right: 46px;
+    span{
+      margin-left: 16px;
+      margin-right: 14px;
+      color:black;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 16px;
+      text-align: right;
+      letter-spacing: 0.1px;
+    }
+  }
 }
 

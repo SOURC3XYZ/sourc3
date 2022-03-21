@@ -1,12 +1,17 @@
 import {
-  AddButton, Balance, BeamButton, Profile, Search
+  BeamButton, Search
 } from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { useCallback, useEffect } from 'react';
+import { ChangeEvent, useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Input } from 'antd';
 import img from '@assets/img/source-header-logo.svg';
+import iconAvatar from '@assets/img/icon-avatar.svg';
+import iconButtonArrowDown from '@assets/img/icon-arrow-button-down.svg';
+import Modal from 'antd/lib/modal/Modal';
+import { useObjectState } from '@libs/hooks';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
@@ -14,11 +19,18 @@ type HeaderPropsType = {
   balance: number,
   searchText:string,
   setInputText: (inputText: string) => void;
-  connectToExtention: () => void
+  connectToExtention: () => void;
+  createRepos: (repo_name:string) => void,
+};
+
+const initialState = {
+  isLoading: true,
+  isModalVisible: false,
+  inputRepoName: ''
 };
 
 const Header = ({
-  balance, pkey, searchText, setInputText, connectToExtention
+  balance, pkey, searchText, setInputText, connectToExtention, createRepos
 }:HeaderPropsType) => {
   const isPkey = Boolean(pkey);
   const setInputTextWrap = (text: string) => setInputText(text);
@@ -31,8 +43,8 @@ const Header = ({
 
   const bgColor = searchText || !isOnLendos ? 'white' : 'black';
 
-  console.log(bgColor);
-  console.log(searchText.length);
+  const [state, setState] = useObjectState<typeof initialState>(initialState);
+  const { isModalVisible, inputRepoName } = state;
 
   useEffect(() => {
     if (searchText.length && isOnLendos) {
@@ -42,6 +54,22 @@ const Header = ({
 
   const onConnect = () => {
     connectToExtention();
+  };
+  const showModal = () => {
+    setState({ isModalVisible: true });
+  };
+
+  const handleOk = () => {
+    setState({ isModalVisible: false });
+    createRepos(inputRepoName);
+  };
+
+  const handleCancel = () => {
+    setState({ isModalVisible: false });
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setState({ inputRepoName: e.target.value });
   };
 
   const headerElements = (text:string, color:string) => [
@@ -62,9 +90,37 @@ const Header = ({
         </li>
       </ul>
     </div>,
-    isPkey && <Balance current={balance} />,
-    isPkey && <AddButton />,
-    isPkey && <Profile pKey={pkey} />,
+    // isPkey && <Balance current={balance} />,
+    // isPkey && <AddButton />,
+    // isPkey && <Profile pKey={pkey} />,
+    isPkey && (
+      <div className={styles.manage}>
+        <ul className={styles.listManage}>
+          <li>
+            <BeamButton callback={showModal}>New</BeamButton>
+          </li>
+          <li>
+            <button
+              type="button"
+              className={styles.balance}
+            >
+              {balance || 0}
+              {' '}
+              SC3
+            </button>
+          </li>
+          <li>
+            {' '}
+            <div className={styles.profile}>
+              <img src={iconAvatar} alt="avatar" />
+              <span style={{ color: textColor }}>Long John Silver</span>
+              <img src={iconButtonArrowDown} alt="down" />
+            </div>
+
+          </li>
+        </ul>
+      </div>
+    ),
     !isPkey && (
       <div className={styles.connect}>
         <Search
@@ -92,6 +148,19 @@ const Header = ({
       style={{ background: bgColor }}
     >
       <View text={searchText} color={textColor} />
+      <Modal
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        closable={false}
+      >
+        <Input
+          placeholder="Enter name repository"
+          value={inputRepoName}
+          onChange={handleChange}
+          onPressEnter={handleOk}
+        />
+      </Modal>
     </div>
   );
 };
@@ -106,7 +175,11 @@ const mapState = (
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
   setInputText: (text: string) => dispatch(AC.setSearch(text)),
-  connectToExtention: () => dispatch(thunks.connectExtension())
+  connectToExtention: () => dispatch(thunks.connectExtension()),
+  createRepos: (repo_name:string) => {
+    if (repo_name === null) return;
+    dispatch(thunks.createRepos(repo_name));
+  }
 });
 
 export default connect(mapState, mapDispatch)(Header);

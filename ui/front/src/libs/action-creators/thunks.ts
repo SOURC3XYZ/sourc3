@@ -35,7 +35,7 @@ const {
 const wallet = new WasmWallet();
 
 const messageBeam = {
-  type: 'create_beam_api',
+  type: 'create_sourc3_api',
   apiver: 'current',
   apivermin: '',
   appname: 'SOURC3'
