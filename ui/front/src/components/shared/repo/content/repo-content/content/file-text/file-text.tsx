@@ -5,7 +5,7 @@ import {
 } from '@types';
 import React from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { synthwave84 } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { syntax } from './syntax';
 
 syntax.forEach((el) => SyntaxHighlighter.registerLanguage(el.ext, el.data));
@@ -56,7 +56,7 @@ const FileText = ({
             language={ext}
             wrapLongLine
             showLineNumbers
-            style={synthwave84}
+            style={vs}
           >
             {fileText}
           </SyntaxHighlighter>
