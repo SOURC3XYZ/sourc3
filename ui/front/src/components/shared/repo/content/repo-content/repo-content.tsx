@@ -4,7 +4,7 @@ import { setBranchAndCommit } from '@libs/utils';
 import {
   BranchCommit, BranchName, DataNode, RepoId, UpdateProps
 } from '@types';
-import React from 'react';
+import { useEffect } from 'react';
 import {
   Route, Routes, useLocation, useNavigate
 } from 'react-router-dom';
@@ -52,7 +52,6 @@ const setBranchCommit = (
 const RepoContent = ({
   id,
   repoMap,
-  repoName,
   fileText,
   tree,
   prevReposHref,
@@ -69,11 +68,11 @@ const RepoContent = ({
 
   const pathArray = splitted.slice(splitted.indexOf(commit.commit_oid) + 1);
 
-  React.useEffect(() => {
+  useEffect(() => {
     navigate(`tree/${branch}/${commit.commit_oid}`);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (tree) killTree();
     updateTree({ oid: commit.tree_oid });
   }, [commit]);
@@ -87,7 +86,6 @@ const RepoContent = ({
     <>
       <UpperMenu
         pathname={pathname}
-        repoName={repoName}
         baseUrl={baseUrl}
         branch={branch}
         prevReposHref={prevReposHref}

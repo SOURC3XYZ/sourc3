@@ -1,8 +1,8 @@
 import {
   BranchCommit, TreeOid
 } from '@types';
-import { Select, Typography } from 'antd';
-import React from 'react';
+import { Select } from 'antd';
+import styles from './commits-select.module.scss';
 
 const selectOptionMap = (el: BranchCommit) => (
   <Select.Option
@@ -25,24 +25,16 @@ const CommitsSelect = ({
 }:CommitSelectProps) => {
   const onChangeDecor = (commit:string) => onChange(commit);
   return (
-    <div style={
-      {
-        display: 'flex'
-      }
-    }
-    >
-      <Typography.Title
-        style={{ paddingRight: '5px' }}
-        level={5}
-      >
-        commits
+    <div className={styles.branchSelect}>
+      <span className={styles.title}>
+        Commits
 
-      </Typography.Title>
+      </span>
       <div>
         <Select
+          bordered={false}
           value={value}
           size="small"
-          style={{ width: 200 }}
           onChange={onChangeDecor}
         >
           {keys.map(selectOptionMap)}

@@ -78,7 +78,7 @@ export const thunks = {
     },
 
   mountWallet: () => async (dispatch: AppThunkDispatch) => {
-    await wallet.mount(window.BeamModule);
+    await wallet.mount();
     dispatch(AC.setWalletConnection(true));
   },
 

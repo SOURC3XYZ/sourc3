@@ -12,6 +12,8 @@ import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as webpack from 'webpack';
 import { Configuration } from 'webpack';
 
+const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').default;
+
 type ModeType = 'production' | 'development';
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -181,7 +183,8 @@ const build:IConfig = {
     new MiniCssExtractPlugin({
       filename: env !== 'production' ? '[name].css' : '[name].[hash].css',
       chunkFilename: env !== 'production' ? '[id].css' : '[id].[hash].css'
-    })
+    }),
+    new HTMLInlineCSSWebpackPlugin()
     // new CompressionPlugin({
     //   include: /\/includes/,
     //   deleteOriginalAssets: true

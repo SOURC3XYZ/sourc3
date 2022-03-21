@@ -1,7 +1,8 @@
 import {
   BranchName
 } from '@types';
-import { Select, Typography } from 'antd';
+import { Select } from 'antd';
+import styles from './branch-select.module.scss';
 
 type BranchSelectProps = {
   keys: BranchName[],
@@ -27,27 +28,16 @@ const BranchSelect = ({
   const onChangeDecor = (branch: string) => onChange(commit, branch);
 
   return (
-    <div style={
-      {
-        display: 'flex'
-      }
-    }
-    >
-      <Typography.Title
-        style={
-          { paddingRight: '5px' } // TODO: Put in css file
-        }
-        level={5}
-      >
-        branch
-
-      </Typography.Title>
+    <div className={styles.branchSelect}>
+      <span className={styles.title}>
+        Branch
+      </span>
       <div>
         <Select
+          bordered={false}
           defaultValue={keys[keys.length - 1]}
           size="small"
           value={value}
-          style={{ width: 200 }}
           onChange={onChangeDecor}
         >
           { keys.map(selectOptionMap) }

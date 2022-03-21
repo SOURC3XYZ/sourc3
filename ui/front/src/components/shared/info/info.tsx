@@ -1,4 +1,6 @@
 import { Typography } from 'antd';
+import img from '@assets/img/copy.svg';
+import styles from './info.module.scss';
 
 type InfoProps = {
   message: string;
@@ -9,13 +11,17 @@ type InfoProps = {
 const Info = ({ message, title, link }:InfoProps) => (
   <>
     {title && (
-      <Typography.Text>
+      <span className={styles.title}>
         {title}
-      </Typography.Text>
+      </span>
     )}
 
     {link && (
-      <Typography.Text type="secondary" copyable={{ text: link }}>
+      <Typography.Text
+        className={styles.message}
+        type="secondary"
+        copyable={{ text: link, icon: <img alt="copy" src={img} /> }}
+      >
         {message}
       </Typography.Text>
     )}

@@ -1,11 +1,11 @@
 import {
-  AddButton, Balance, Profile, Search
+  AddButton, Balance, BeamButton, Profile, Search
 } from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import img from '@assets/img/source-header-logo.svg';
 import styles from './header.module.scss';
 
@@ -46,10 +46,20 @@ const Header = ({
 
   const headerElements = (text:string, color:string) => [
     <div className={styles.navWrapper}>
-      <img className={styles.logo} alt="source" src={img} />
+      <Link to="/">
+        <img className={styles.logo} alt="source" src={img} />
+      </Link>
       <ul className={styles.navList} style={{ color }}>
-        <li>Repositiories</li>
-        <li>Explore</li>
+        <li>
+          <Link style={{ color, textDecoration: 'none' }} to="/repos/all/1">
+            Repositiories
+          </Link>
+        </li>
+        <li>
+          <Link style={{ color, textDecoration: 'none' }} to="/repos/all/1">
+            Explore
+          </Link>
+        </li>
       </ul>
     </div>,
     isPkey && <Balance current={balance} />,
@@ -58,17 +68,14 @@ const Header = ({
     !isPkey && (
       <div className={styles.connect}>
         <Search
+          className={color === 'black' ? '' : styles.lendosInput}
           text={text}
           placeholder="Search"
           setInputText={setInputTextWrap}
         />
-        <button
-          type="button"
-          onClick={onConnect}
-        >
+        <BeamButton callback={onConnect}>
           connect
-
-        </button>
+        </BeamButton>
       </div>
     )
   ];

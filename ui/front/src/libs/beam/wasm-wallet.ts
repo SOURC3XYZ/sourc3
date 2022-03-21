@@ -4,19 +4,28 @@ interface WalletClient {
   GeneratePhrase: () => string;
 }
 
-type BeamModuleType = () => Promise<{ WasmWalletClient: WalletClient }>;
-
 export class WasmWallet {
   private WalletClient: WalletClient | null = null;
 
-  mount = async (BeamModule: BeamModuleType): Promise<boolean> => {
-    const module = await BeamModule();
+  mount = async (): Promise<boolean> => {
+    await this.injectScript('./wasm-client.js');
+    const module = await window.BeamModule();
     this.WalletClient = module.WasmWalletClient;
 
     return new Promise((resolve) => {
       this.WalletClient?.MountFS(resolve);
     });
   };
+
+  injectScript = async (url:string) => new Promise<void>((resolve, reject) => {
+    const js = document.createElement('script');
+    js.type = 'text/javascript';
+    js.async = true;
+    js.src = url;
+    js.onload = () => resolve();
+    js.onerror = (err) => reject(err);
+    document.getElementsByTagName('body')[0].appendChild(js);
+  });
 
   isAllowedWord = (
     word: string, callback?: () => void

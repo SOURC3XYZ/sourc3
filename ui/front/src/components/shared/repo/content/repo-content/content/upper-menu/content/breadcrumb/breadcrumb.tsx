@@ -2,6 +2,7 @@ import { Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { clipString } from '@libs/utils';
+import styles from './breadcrumb.module.scss';
 
 type BreadCrumbMenuProps = {
   prevReposHref: string | null;
@@ -56,7 +57,7 @@ const BreadCrumbMenu = ({
   // TODO: DANIK refactor all calculations into one function
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className={styles.breadcrumb}>
       <Breadcrumb.Item>
         <Link to={prevReposHref || '/repos/all/1'}>
           <HomeOutlined />

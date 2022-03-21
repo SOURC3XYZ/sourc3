@@ -10,7 +10,6 @@ import {
 } from './content';
 
 type UpperMenuProps = {
-  repoName: string,
   branch: string,
   baseUrl: string,
   repoMap: Map<string, BranchCommit[]>,
@@ -24,7 +23,6 @@ const UpperMenu = ({
   branch,
   commit,
   repoMap,
-  repoName,
   pathname,
   prevReposHref,
   baseUrl,
@@ -52,8 +50,17 @@ const UpperMenu = ({
 
   return (
     <>
-      <Row align="middle">
-        <Col span={8}>
+      <Row>
+        <BreadCrumbMenu
+          pathname={pathname}
+          branch={branch}
+          commit={commit_oid}
+          baseUrl={baseUrl}
+          prevReposHref={prevReposHref}
+        />
+      </Row>
+      <Row align="middle" style={{ marginTop: '40px' }}>
+        <Col span={7}>
           <BranchSelect
             keys={keys}
             value={branch}
@@ -71,19 +78,10 @@ const UpperMenu = ({
         </Col>
       </Row>
 
-      <Row>
+      <Row style={{ marginTop: '1rem' }}>
         <Col span={24}>
-          <RepoMeta name={repoName} commit={commit} />
+          <RepoMeta commit={commit} />
         </Col>
-      </Row>
-      <Row>
-        <BreadCrumbMenu
-          pathname={pathname}
-          branch={branch}
-          commit={commit_oid}
-          baseUrl={baseUrl}
-          prevReposHref={prevReposHref}
-        />
       </Row>
     </>
   );

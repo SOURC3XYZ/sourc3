@@ -1,5 +1,4 @@
-export { default as Info } from './info';
-export { default as Search } from './search';
+export * from './info';
 export { default as FailPage } from './fail-page';
 export { default as OkPage } from './ok-page';
 export { default as ErrorAlert } from './error-alert';
@@ -18,3 +17,4 @@ export * from './repo';
 export * from './notifications';
 export * from './all-repos';
 export * from './manager';
+export * from './search';

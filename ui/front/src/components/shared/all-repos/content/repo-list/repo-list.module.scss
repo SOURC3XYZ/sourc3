@@ -1,0 +1,8 @@
+.list{
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+        [class~=ant-list-item]{
+            padding: 24px !important; // TODO: redo through selector weights 
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+}

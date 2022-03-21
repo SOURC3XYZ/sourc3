@@ -63,6 +63,7 @@ export class BeamAPI<T> {
   createHeadlessAPI = async (
     apiver:any, apivermin:any, appname:any, apirescback:any
   ): Promise<BeamObject> => {
+    await this.injectScript('/wasm-client.js');
     const WasmModule = await window.BeamModule();
     const { WasmWalletClient } = WasmModule;
     const client = new WasmWalletClient(headlessNode);
@@ -141,6 +142,16 @@ export class BeamAPI<T> {
     (<ApiResult>api.callWalletApiResult).connect(this.onApiResult);
     return api;
   };
+
+  injectScript = async (url:string) => new Promise<void>((resolve, reject) => {
+    const js = document.createElement('script');
+    js.type = 'text/javascript';
+    js.async = true;
+    js.src = url;
+    js.onload = () => resolve();
+    js.onerror = (err) => reject(err);
+    document.getElementsByTagName('body')[0].appendChild(js);
+  });
 
   public isDapps = () => {
     const ua = navigator.userAgent;

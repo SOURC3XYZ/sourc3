@@ -1,0 +1,28 @@
+.tree{
+    margin-top: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    .listItem.listItem {
+        padding: 18px 25.33px;
+
+    .treeElement{
+        display: flex;
+        align-items: center;
+
+        img{
+            width: 13.33px;
+            height: auto;
+            display: block;
+            margin-right: 17.33px;
+        }
+        a{
+            font-family: Visby;
+            color: #000000;
+            font-size: 1rem;
+        }
+        a:hover {
+            color: #FF791F;
+        }
+    }
+}
+}

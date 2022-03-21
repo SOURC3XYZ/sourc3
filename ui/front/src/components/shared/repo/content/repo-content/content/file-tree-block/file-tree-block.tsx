@@ -1,11 +1,14 @@
-import { FileTextTwoTone, FolderTwoTone } from '@ant-design/icons';
 import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
   DataNode, RepoId, UpdateProps
 } from '@types';
+import { List } from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import fileImg from '@assets/img/file.svg';
+import folderImg from '@assets/img/folder.svg';
+import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
   id: RepoId;
@@ -19,18 +22,34 @@ const leafCreator = (url:string, node: DataNode) => {
   if (node.isLeaf) {
     const blobUrl = url.replace('tree', 'blob');
     return (
-      <div>
-        <FileTextTwoTone twoToneColor="#0044ff" />
-        <Link to={`${blobUrl}/${node.title}`}>
-          {node.title}
-        </Link>
-      </div>
+      <List.Item
+        className={styles.listItem}
+        actions={[(<span className={styles.time}>Updated 5 hours ago</span>)]}
+      >
+        <List.Item.Meta
+          title={(
+            <div className={styles.treeElement}>
+              <img alt="leaf" src={fileImg} />
+              <Link to={`${blobUrl}/${node.title}`}>{node.title}</Link>
+            </div>
+          )}
+        />
+      </List.Item>
     );
   } return (
-    <div>
-      <FolderTwoTone twoToneColor="#ffb700" />
-      <Link to={`${url}/${node.title}`}>{node.title}</Link>
-    </div>
+    <List.Item
+      className={styles.listItem}
+      actions={[(<span className={styles.time}>Updated 5 hours ago</span>)]}
+    >
+      <List.Item.Meta
+        title={(
+          <div className={styles.treeElement}>
+            <img alt="folder" src={folderImg} />
+            <Link to={`${url}/${node.title}`}>{node.title}</Link>
+          </div>
+        )}
+      />
+    </List.Item>
   );
 };
 
@@ -45,10 +64,22 @@ const FileTreeBlock = ({
     tree,
     pathArray,
     updateTreeDecor
-  )?.map((el) => leafCreator(pathname, el));
+  );
+  // .map((el) => leafCreator(pathname, el));
   return (
     <>
-      {treeList || <Preload />}
+      {
+        treeList
+          ? (
+            <List
+              className={styles.tree}
+              bordered
+              size="small"
+              dataSource={treeList}
+              renderItem={(item) => leafCreator(pathname, item)}
+            />
+          ) : <Preload />
+      }
     </>
   );
 };

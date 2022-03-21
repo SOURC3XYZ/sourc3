@@ -6,13 +6,11 @@ import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
 import React, { ChangeEvent, useCallback } from 'react';
 import { connect } from 'react-redux';
-import {
-  Modal, Input, Row, Col
-} from 'antd';
+import { Modal, Input } from 'antd';
 import { useLocation, useParams } from 'react-router-dom';
 import { loadingData, searchFilter } from '@libs/utils';
 import { useObjectState } from '@libs/hooks';
-import styles from './all-repos.module.css';
+import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
 type LocationState = {
@@ -85,20 +83,24 @@ const AllRepos = ({
   };
 
   const RepoManager = (inputText: string) => (
-    <>
+    <div className={styles.repoHeader}>
+
       <Nav type={type} path={path} />
-      <Row className={styles.repoHeader}>
-        <Col span={8}>
-          <BeamButton title="New" callback={showModal} />
-        </Col>
-        <Col span={8} offset={8}>
+
+      <div className={styles.manage}>
+        <div className={styles.searchWrapper}>
           <Search
             text={inputText}
             setInputText={setInputText}
-            placeholder="type something"
+            placeholder="Search by repo name or ID"
           />
-        </Col>
-      </Row>
+        </div>
+        <div className={styles.buttonWrapper}>
+          <BeamButton callback={showModal}>
+            Add new
+          </BeamButton>
+        </div>
+      </div>
 
       <Modal
         visible={isModalVisible}
@@ -113,12 +115,12 @@ const AllRepos = ({
           onPressEnter={handleOk}
         />
       </Modal>
-    </>
+    </div>
   );
 
   const RepoManagerView = useCallback((props:{ text:string }) => (
     <>
-      {Boolean(pkey) && RepoManager(props.text)}
+      {pkey && RepoManager(props.text)}
     </>
   ), [pkey, state]);
 
