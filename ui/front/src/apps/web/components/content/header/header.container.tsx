@@ -113,7 +113,7 @@ const Header = ({
             {' '}
             <div className={styles.profile}>
               <img src={iconAvatar} alt="avatar" />
-              <span style={{ color: textColor }}>Long John Silver</span>
+              <span style={{ color }}>Long John Silver</span>
               <img src={iconButtonArrowDown} alt="down" />
             </div>
 

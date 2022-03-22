@@ -53,6 +53,7 @@ async function getOutput<T>(
 
 export const thunks = {
   connectExtension: () => async (dispatch: AppThunkDispatch) => {
+    console.log(messageBeam);
     await beam.extensionConnect(messageBeam);
     const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
     if (pKey) dispatch(AC.setPublicKey(pKey.key));
