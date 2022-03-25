@@ -146,7 +146,7 @@ export function startBeamNode(
       console.log('Beam node is: ', beamNodePath);
       const node = spawn(beamNodePath, [
         `--port=${BEAM_NODE_PORT}`,
-        `--peer=${peers.join(',')}`,
+        `--peer="${peers.join(',')}"`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password]);

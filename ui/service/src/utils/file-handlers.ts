@@ -47,6 +47,10 @@ function isFileExecutable(exec: string) {
     return result;
   }
   try {
+    if (fs.lstatSync(exec).isDirectory()) {
+      return false;
+    }
+
     // Check if linux has execution rights
     fs.accessSync(exec, fs.constants.X_OK);
     return result;
