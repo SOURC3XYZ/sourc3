@@ -21,6 +21,10 @@ module.exports = {
         test: /\.node$/,
         loader: "node-loader",
       },
+      {
+        test: /\.txt|\.md$/, 
+        use: 'raw-loader',
+      }
     ],
   },
   plugins: [
