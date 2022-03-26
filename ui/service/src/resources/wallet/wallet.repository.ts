@@ -13,7 +13,8 @@ import {
   nodeDBPath,
   nodePath,
   walletApiPath,
-  walletDBPath
+  walletDBPath,
+  ipfsPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
 
@@ -230,7 +231,8 @@ export function runWalletApi(
       `--use_http=${HTTP_MODE}`,
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
-      '--tcp_max_line=128000'
+      '--tcp_max_line=128000',
+      `--ipfs_repo=${ipfsPath}`
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);

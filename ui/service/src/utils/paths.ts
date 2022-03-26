@@ -10,3 +10,5 @@ export const keyPath = path.join(binPath, '/key.txt');
 export const walletDBPath = path.join(configPath, 'wallet.db');
 
 export const nodeDBPath = path.join(configPath, 'node.db');
+
+export const ipfsPath = path.join(configPath, 'ipfs-repo');
