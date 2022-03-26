@@ -33,4 +33,15 @@ export const runSpawnProcess = (
   process.on('SIGINT', () => {
     childProcess.kill();
   });
+
+  childProcess.stdout.on('data', (data:Buffer) => {
+    const bufferString = data.toString('utf-8');
+    console.log(`Got process output: ${bufferString}`);
+  });
+
+  childProcess.stderr.on('data', (data:Buffer) => {
+    const bufferString = data.toString('utf-8');
+    console.log(`Got process error: ${bufferString}`);
+  });
+
 };

@@ -154,10 +154,16 @@ export function startBeamNode(
 
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');
+        console.log(`Got node output: ${bufferString}`);
         if (bufferString.match(nodeUpdatingReq)) {
           const str = String(bufferString.split('node')[1]);
           nodeUpdate = Number(/\d+/.exec(str));
         }
+      });
+
+      node.stderr.on('data', (data:Buffer) => {
+        const bufferString = data.toString('utf-8');
+        console.log(`Got node error: ${bufferString}`);
       });
 
       process.on('SIGINT', () => {
