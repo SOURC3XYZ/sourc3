@@ -131,7 +131,7 @@ export function exportOwnerKey(
     };
 
     runSpawnProcess({
-      path: cliWalletPath, args, detached: true, onData, onClose
+      path: cliWalletPath, args, onData, onClose
     });
   });
 }
@@ -146,7 +146,7 @@ export function startBeamNode(
       console.log('Beam node is: ', beamNodePath);
       const node = spawn(beamNodePath, [
         `--port=${BEAM_NODE_PORT}`,
-        `--peer="${peers.join(',')}"`,
+        `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password]);
@@ -159,9 +159,9 @@ export function startBeamNode(
         }
       });
 
-      // process.on('exit', () => {
-      //   node.kill('SIGTERM');
-      // });
+      process.on('SIGINT', () => {
+        node.kill();
+      });
       return resolve(node);
     }
     return reject(new Error('No node executable'));
@@ -209,7 +209,6 @@ export function restoreExistedWallet(
 
     runSpawnProcess({
       path: cliWalletPath,
-      detached: true,
       args,
       onData
     });

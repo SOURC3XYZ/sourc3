@@ -45,6 +45,10 @@ function createWindow() {
     service.on('close', (code) => {
       console.log(`Service ended with code ${code}`);
     })
+
+    service.on('exit', (code) => {
+      console.log(`Service ended with code ${code}`);
+    })
   }
 
   win.setMenu(null);
@@ -68,7 +72,7 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  service.kill()
+  service.kill("SIGINT")
   if (process.platform !== 'darwin') {
     app.quit()
   }

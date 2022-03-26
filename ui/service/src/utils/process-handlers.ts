@@ -29,4 +29,8 @@ export const runSpawnProcess = (
   if (onClose) childProcess.on('close', onClose);
 
   if (setCurrentProcess) setCurrentProcess(childProcess);
+
+  process.on('SIGINT', () => {
+    childProcess.kill();
+  });
 };
