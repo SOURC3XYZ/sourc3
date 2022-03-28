@@ -458,6 +458,24 @@ namespace
         }
     }
 
+    void ParseObjectData(const std::function<void(GitRemoteBeam::GitObject::Data *, size_t, GitRemoteBeam::git_oid)>& handler) {
+        using GitRemoteBeam::GitObject;
+        using GitRemoteBeam::git_oid;
+        auto dataLen = Env::DocGetBlob("data", nullptr, 0);
+        if (!dataLen) {
+            return On_error("there is no data");
+        }
+        auto buf = std::make_unique<uint8_t[]>(dataLen);
+        if (Env::DocGetBlob("data", buf.get(), dataLen) != dataLen) {
+            return On_error("failed to read data");
+        }
+        auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
+        git_oid hash;
+        Env::DocGetBlob("obj_id", &hash, sizeof(hash));
+
+        handler(value, dataLen, std::move(hash));
+    }
+
     void On_action_get_commit(const ContractID &cid) {
         using GitRemoteBeam::RepoInfo;
         using GitRemoteBeam::GitObject;
@@ -480,9 +498,17 @@ namespace
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             Env::DocAddBlob("object_data", nullptr, 0);
-//            On_error("sorry, but no object_data(");
         }
     }
+
+void On_action_get_commit_from_data(const ContractID &) {
+    using GitRemoteBeam::GitObject;
+    ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
+        mygit2::git_commit commit;
+        commit_parse(&commit, value->data, valueLen, 0);
+        AddCommit(commit, hash);
+    });
+}
 
     void On_action_get_tree(const ContractID &cid) {
         using GitRemoteBeam::RepoInfo;
@@ -507,6 +533,15 @@ namespace
         } else {
             On_error("No data for tree");
         }
+    }
+
+    void On_action_get_tree_from_data(const ContractID &) {
+        using GitRemoteBeam::GitObject;
+        ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
+            mygit2::git_tree tree;
+            tree_parse(&tree, value->data, valueLen);
+            AddTree(tree);
+        });
     }
 
     void GetObjects(const ContractID& cid, GitRemoteBeam::GitObject::Meta::Type type) {
@@ -630,9 +665,21 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
+                Env::DocGroup grMethod("repo_get_commit_from_data");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("data", "Commit data");
+                Env::DocAddText("obj_id", "Object hash");
+            }
+            {
                 Env::DocGroup grMethod("repo_get_tree");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("obj_id", "Object hash");
+            }
+            {
+                Env::DocGroup grMethod("repo_get_tree_from_data");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("data", "Commit data");
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
@@ -652,22 +699,24 @@ BEAM_EXPORT void Method_0() {
 BEAM_EXPORT void Method_1() {
     Env::DocGroup root("");
     const Actions_map_t VALID_USER_ACTIONS = {
-            {"create_repo",        On_action_create_repo},
-            {"my_repos",           On_action_my_repos},
-            {"all_repos",          On_action_all_repos},
-            {"delete_repo",        On_action_delete_repo},
-            {"add_user_params",    On_action_add_user_params},
-            {"remove_user_params", On_action_remove_user_params},
-            {"push_objects",       On_action_push_objects},
-            {"list_refs",          On_action_list_refs},
-            {"get_key",            On_action_user_get_key},
-            {"repo_id_by_name",    On_action_user_get_repo},
-            {"repo_get_data",      On_action_get_repo_data},
-            {"repo_get_meta",      On_action_get_repo_meta},
-            {"repo_get_commit",    On_action_get_commit},
-            {"repo_get_tree",      On_action_get_tree},
-            {"list_commits",       On_action_get_commits},
-            {"list_trees",         On_action_get_trees}
+            {"create_repo",                     On_action_create_repo},
+            {"my_repos",                        On_action_my_repos},
+            {"all_repos",                       On_action_all_repos},
+            {"delete_repo",                     On_action_delete_repo},
+            {"add_user_params",                 On_action_add_user_params},
+            {"remove_user_params",              On_action_remove_user_params},
+            {"push_objects",                    On_action_push_objects},
+            {"list_refs",                       On_action_list_refs},
+            {"get_key",                         On_action_user_get_key},
+            {"repo_id_by_name",                 On_action_user_get_repo},
+            {"repo_get_data",                   On_action_get_repo_data},
+            {"repo_get_meta",                   On_action_get_repo_meta},
+            {"repo_get_commit",                 On_action_get_commit},
+            {"repo_get_commit_from_data",       On_action_get_commit_from_data},
+            {"repo_get_tree",                   On_action_get_tree},
+            {"repo_get_tree_from_data",         On_action_get_tree_from_data},
+            {"list_commits",                    On_action_get_commits},
+            {"list_trees",                      On_action_get_trees}
     };
 
     const Actions_map_t VALID_MANAGER_ACTIONS = {
