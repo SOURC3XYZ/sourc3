@@ -3,7 +3,7 @@ import { getTree } from '@libs/utils';
 import {
   DataNode, IDataNodeCustom, RepoId, UpdateProps
 } from '@types';
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { syntax } from './syntax';
@@ -22,7 +22,7 @@ type FileTextProps = {
 const FileText = ({
   id, tree, fileText, pathArray, getFileData, updateTree
 }: FileTextProps) => {
-  const [ext, setExt] = React.useState('');
+  const [ext, setExt] = useState('');
 
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
     updateTree({ ...props, id });
@@ -45,7 +45,7 @@ const FileText = ({
     }
   };
 
-  React.useEffect(fileChecker, [tree]);
+  useEffect(fileChecker, [tree]);
 
   return (
     <>

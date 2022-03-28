@@ -8,6 +8,9 @@ export interface IAssetMeta {
 }
 
 export interface BeamApiResult {
+  current_height?: number,
+  tip_height?: number,
+  is_in_sync?:boolean, // api events props
   output?: string;
   txid: string;
   txId: string;
