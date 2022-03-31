@@ -27,7 +27,7 @@ async function main() {
     try {
         const token = core.getInput("github_token", { required: true })
         const workflow = core.getInput("workflow", { required: true })
-        const downloadable_artifacts = core.getInput("workflow", { required: true }).split(";")
+        const downloadable_artifacts = core.getInput("download_artifacts", { required: true }).split(";")
         const [owner, repo] = core.getInput("repo", { required: true }).split("/")
         const path = core.getInput("path", { required: true })
         const platform_name = core.getInput("platform_name")

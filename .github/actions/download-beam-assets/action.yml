@@ -55,7 +55,7 @@ inputs:
   search_artifacts:
     description: Search workflow runs for artifact with specified name
     required: false
-  downloadable_artifacts:
+  download_artifacts:
     description: List of assets, that will be downloaded separated by `;`. Default is beam-node;cli;api;wasm
     required: false
     default: "beam-node;cli;api;wasm"
