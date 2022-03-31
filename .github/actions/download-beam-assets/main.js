@@ -56,7 +56,7 @@ async function main() {
         if (pr) {
             console.log("==> PR:", pr)
 
-            const pull = await client.pulls.get({
+            const pull = await client.rest.pulls.get({
                 owner: owner,
                 repo: repo,
                 pull_number: pr,
@@ -157,7 +157,7 @@ async function main() {
 
             console.log(`==> Downloading: ${artifact.name}.zip (${size})`)
 
-            const zip = await client.actions.downloadArtifact({
+            const zip = await client.rest.actions.downloadArtifact({
                 owner: owner,
                 repo: repo,
                 artifact_id: artifact.id,
