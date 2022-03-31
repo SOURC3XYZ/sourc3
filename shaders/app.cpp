@@ -354,8 +354,6 @@ namespace
         Env::Key_T<RepoKey> reader_key = { .m_KeyInContract = key };
         reader_key.m_Prefix.m_Cid = cid;
         RepoInfo::ID repo_id = 0;
-        Env::DocAddText("accepted_name", repoName);
-        Env::DocAddBlob_T("accepted_hash", name_hash);
         if (!Env::VarReader::Read_T(reader_key, repo_id)) {
             return On_error("Failed to read repo ids");
         }
@@ -376,7 +374,7 @@ namespace
         MetaKey end { .m_KeyInContract = { repo_id, std::numeric_limits<GitObject::ID>::max() } };
         start.m_Prefix.m_Cid = cid;
         end.m_Prefix.m_Cid = cid;
-        MetaKey key { .m_KeyInContract = { repo_id, 0 } }; // dummy values to initialize;
+        MetaKey key { .m_KeyInContract = { repo_id, 0 } }; // dummy value to initialize reading
         return {start, end, key};
     }
 
@@ -442,6 +440,11 @@ namespace
             git_oid_fmt(oid_buffer, &commit.parent_ids.ptr[i]);
             Env::DocAddText("oid", oid_buffer);
         }
+        Env::Heap_Free(commit.parent_ids.ptr);
+        Env::Heap_Free(commit.author);
+        Env::Heap_Free(commit.raw_message);
+        Env::Heap_Free(commit.raw_header);
+        Env::Heap_Free(commit.committer);
     }
 
     void AddTree(const mygit2::git_tree& tree) {
@@ -456,6 +459,7 @@ namespace
             Env::DocAddNum("attributes", static_cast<uint32_t>(tree.entries.ptr[i].attr));
             Env::DocAddText("oid", oid_buffer);
         }
+        Env::Heap_Free(tree.entries.ptr);
     }
 
     void ParseObjectData(const std::function<void(GitRemoteBeam::GitObject::Data *, size_t, GitRemoteBeam::git_oid)>& handler) {
@@ -473,7 +477,7 @@ namespace
         git_oid hash;
         Env::DocGetBlob("obj_id", &hash, sizeof(hash));
 
-        handler(value, dataLen, std::move(hash));
+        handler(value, dataLen, hash);
     }
 
     void On_action_get_commit(const ContractID &cid) {
@@ -501,14 +505,14 @@ namespace
         }
     }
 
-void On_action_get_commit_from_data(const ContractID &) {
-    using GitRemoteBeam::GitObject;
-    ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
-        mygit2::git_commit commit;
-        commit_parse(&commit, value->data, valueLen, 0);
-        AddCommit(commit, hash);
-    });
-}
+    void On_action_get_commit_from_data(const ContractID &) {
+        using GitRemoteBeam::GitObject;
+        ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
+            mygit2::git_commit commit{};
+            commit_parse(&commit, value->data, valueLen, 0);
+            AddCommit(commit, hash);
+        });
+    }
 
     void On_action_get_tree(const ContractID &cid) {
         using GitRemoteBeam::RepoInfo;
@@ -526,7 +530,7 @@ void On_action_get_commit_from_data(const ContractID &) {
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
-            mygit2::git_tree tree;
+            mygit2::git_tree tree{};
             tree_parse(&tree, value->data, valueLen);
             Env::DocAddBlob("object_data", value->data, valueLen);
             AddTree(tree);
@@ -538,7 +542,7 @@ void On_action_get_commit_from_data(const ContractID &) {
     void On_action_get_tree_from_data(const ContractID &) {
         using GitRemoteBeam::GitObject;
         ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
-            mygit2::git_tree tree;
+            mygit2::git_tree tree{};
             tree_parse(&tree, value->data, valueLen);
             AddTree(tree);
         });
@@ -553,7 +557,8 @@ void On_action_get_commit_from_data(const ContractID &) {
         oid_buffer[GIT_OID_HEXSZ] = '\0';
         Env::DocArray objects_array("objects");
         for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-            if (value.type == type) {
+            auto current_type = value.type & 0x7f; // clear first bit
+            if (current_type == type) {
                 Env::DocGroup obj("");
                 Env::DocAddBlob_T("object_hash", value.hash);
                 Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));

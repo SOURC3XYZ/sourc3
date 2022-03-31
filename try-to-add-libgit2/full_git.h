@@ -239,7 +239,7 @@ int git_array_grow(void *_a, size_t item_size) {
 
     size_t newsize = new_size * item_size;
     new_array = (char*) Env::Heap_Alloc(newsize);
-    Env::Memcpy(new_array, a->ptr, a->size);
+    Env::Memcpy(new_array, a->ptr, a->size * item_size);
 
     a->ptr = new_array;
     a->asize = new_size;
