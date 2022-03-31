@@ -49,6 +49,10 @@ async function main() {
 
         console.log("==> Conclusion:", workflowConclusion)
 
+        console.log("==> Platform: ", platform_name)
+
+        console.log("==> Network: ", network_name)
+
         if (pr) {
             console.log("==> PR:", pr)
 
@@ -79,7 +83,7 @@ async function main() {
         }
 
         if (!runID) {
-            for await (const runs of client.paginate.iterator(client.actions.listWorkflowRuns, {
+            for await (const runs of client.paginate.iterator(client.rest.actions.listWorkflowRuns, {
                 owner: owner,
                 repo: repo,
                 workflow_id: workflow,
@@ -98,7 +102,7 @@ async function main() {
                         continue
                     }
                     if (checkArtifacts || searchArtifacts) {
-                        let artifacts = await client.actions.listWorkflowRunArtifacts({
+                        let artifacts = await client.rest.actions.listWorkflowRunArtifacts({
                             owner: owner,
                             repo: repo,
                             run_id: run.id,
@@ -130,14 +134,14 @@ async function main() {
             throw new Error("no matching workflow run found")
         }
 
-        let artifacts = await client.paginate(client.actions.listWorkflowRunArtifacts, {
+        let artifacts = await client.paginate(client.rest.actions.listWorkflowRunArtifacts, {
             owner: owner,
             repo: repo,
             run_id: runID,
         })
 
         // One artifact or all if `name` input is not specified.
-        if (name) {
+        if (platform_name && network_name) {
             artifacts = artifacts.filter((artifact) => {
                 return checkArtifact(artifact, platform_name, network_name, downloadable_artifacts);
             })
@@ -160,7 +164,7 @@ async function main() {
                 archive_format: "zip",
             })
 
-            const dir = name ? path : pathname.join(path, artifact.name)
+            const dir = pathname.join(path, artifact.name)
 
             fs.mkdirSync(dir, { recursive: true })
 
