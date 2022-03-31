@@ -1,0 +1,63 @@
+name: Download BEAM workflows artifact
+description: Download and extract an artifact associated with given workflow and commit
+author: SOURC3
+inputs:
+  github_token:
+    description: GitHub token
+    required: false
+    default: ${{github.token}}
+  workflow:
+    description: Workflow name
+    required: true
+  workflow_conclusion:
+    description: |
+      Wanted status or conclusion to search for in recent runs
+
+      https://docs.github.com/en/free-pro-team@latest/rest/reference/actions#list-workflow-runs
+    required: false
+    default: success
+  repo:
+    description: Repository name with owner (like actions/checkout)
+    required: false
+    default: ${{github.repository}}
+  pr:
+    description: Pull request number
+    required: false
+  commit:
+    description: Commit hash
+    required: false
+  branch:
+    description: Branch name
+    required: false
+  event:
+    description: Event type
+    required: false
+  run_id:
+    description: Workflow run id
+    required: false
+  run_number:
+    description: Workflow run number
+    required: false
+  net_name:
+    description: Network, for which assets will be downloaded. Default is masternet
+    required: false
+    default: masternet
+  platform_name:
+    description: Platform name
+    required: true
+  path:
+    description: Where to unpack the artifact
+    required: false
+    default: "./"
+  check_artifacts:
+    description: Check workflow run whether it has an artifact
+    required: false
+  search_artifacts:
+    description: Search workflow runs for artifact with specified name
+    required: false
+outputs:
+  error_message:
+    description: The error message, if an error occurs
+runs:
+  using: node16
+  main: main.js
