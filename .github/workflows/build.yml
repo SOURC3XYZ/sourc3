@@ -217,7 +217,7 @@ jobs:
         certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
     
     - name: Download assets
-      uses: actions/download-beam-assets/action.yml
+      uses: ./.github/actions/download-beam-assets
       with:
         github_token: ${{secrets.INSTALLER_TOKEN}}
         workflow: build.yml
