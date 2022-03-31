@@ -11,12 +11,11 @@ type ListRenderProps = {
   elements: RepoType[],
   deleteRepos: (repo_id: number) => void
   type: string;
-  loading: boolean;
   searchText: string;
 };
 
 const RepoList = ({
-  page = 1, type = 'repos', elements, searchText, loading, path, deleteRepos
+  page = 1, type = 'repos', elements, searchText, path, deleteRepos
 }:ListRenderProps) => {
   const navigate = useNavigate();
   const textCash = useRef(searchText);
@@ -40,7 +39,6 @@ const RepoList = ({
     <List
       className={styles.list}
       bordered
-      loading={loading}
       size="small"
       pagination={pagination}
       dataSource={elements}

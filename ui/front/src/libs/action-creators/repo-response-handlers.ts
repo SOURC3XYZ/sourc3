@@ -1,4 +1,5 @@
 import { BeamAPI } from '@libs/beam';
+import { AppThunkDispatch } from '@libs/redux';
 import { clipString, treeDataMaker, updateTreeData } from '@libs/utils';
 import {
   BeamApiRes,
@@ -9,30 +10,45 @@ import {
   RepoTreeResp, TreeDataNode,
   UpdateProps, BranchName
 } from '@types';
-import { AC } from './action-creators';
-import { RC, RequestCreators } from './request-creators';
+import {
+  thunks, AC, RC, RequestCreators
+} from '@libs/action-creators';
 
 type TypedBeamApi = BeamAPI<RequestCreators['params']>;
 
 type CallType<T> = (req: RequestCreators) => Promise<T>;
 
-export const callApi = (
-  beam: TypedBeamApi
-) => async function<T>(req: RequestCreators):Promise<T> {
-  const { result } = await beam.callApi(req) as BeamApiRes;
-  if (result?.output) return JSON.parse(result.output) as T;
-  throw new Error('something wrong with output');
-};
+export function apiEventManager(dispatch: AppThunkDispatch) {
+  return function ({ result }:BeamApiRes) {
+    const isInSync = !result.is_in_sync
+    || result.tip_height !== result.current_height;
+    if (isInSync) return;
+    // we're not in sync, wait
 
-const getCommitParent = async (
+    dispatch(thunks.getAllRepos('all'));
+    // dispatch(thunks.getAllRepos('my'));
+    dispatch(thunks.getWalletStatus());
+    // dispatch(thunks.getWalletAddressList());
+  };
+}
+
+export function callApi(beam: TypedBeamApi) {
+  return async function<T>(req: RequestCreators):Promise<T> {
+    const { result } = await beam.callApi(req) as BeamApiRes;
+    if (result?.output) return JSON.parse(result.output) as T;
+    throw new Error('something wrong with output');
+  };
+}
+
+async function getCommitParent(
   call: CallType<RepoCommitResp>,
   id: RepoId, oid: string
-) => {
+) {
   const res = await call(
     RC.repoGetCommit(id, oid)
   );
   return res.commit;
-};
+}
 
 export const buildCommitList = async (
   call: CallType<RepoCommitResp>,

@@ -33,6 +33,8 @@ type Modified<T> = T & {
 export class BeamAPI<T> {
   public readonly cid: string;
 
+  private callIndex: number = 0;
+
   private apiHost?: string;
 
   private BEAM: null | BeamObject;
@@ -40,6 +42,8 @@ export class BeamAPI<T> {
   private contract: Array<number> | null;
 
   private readonly callbacks: Map<string, BeamApiReqHandlers>;
+
+  private eventManager:any;
 
   constructor(cid: string) {
     this.cid = cid;
@@ -53,11 +57,11 @@ export class BeamAPI<T> {
     console.log('response', parsed);
     const { id } = parsed;
     const cb = this.callbacks.get(id);
+    this.callbacks.delete(id);
     if (cb) {
-      if (parsed.error) cb.reject(new Error(parsed.error.message));
-      else cb.resolve(parsed);
-      this.callbacks.delete(id);
-    } return undefined;
+      if (parsed.error) return cb.reject(new Error(parsed.error.message));
+      return cb.resolve(parsed);
+    } return this.eventManager(parsed);
   };
 
   createHeadlessAPI = async (
@@ -163,19 +167,17 @@ export class BeamAPI<T> {
     return /SOURC3-DESKTOP/i.test(ua);
   };
 
-  readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
+  readonly loadAPI = async (
+    eventManager: any, apiHost?:string
+  ): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
-
+    this.eventManager = eventManager;
     if (!this.apiHost) {
-      try {
-        this.BEAM = this.isDapps()
-          ? { api: await this.connectToApi() }
-          : await this.createHeadlessAPI(
-            'current', '', 'bla', this.onApiResult
-          );
-      } catch {
-        throw new Error('beam api connection error');
-      }
+      this.BEAM = this.isDapps()
+        ? { api: await this.connectToApi() }
+        : await this.createHeadlessAPI(
+          'current', '', 'bla', this.onApiResult
+        );
     }
     return this;
   };
@@ -183,11 +185,7 @@ export class BeamAPI<T> {
   readonly extensionConnect = async (message: {
     [key: string]: string;
   }) => {
-    try {
-      this.BEAM = { api: await this.connectToWebWallet(message) };
-    } catch {
-      throw new Error('extension connection error');
-    }
+    this.BEAM = { api: await this.connectToWebWallet(message) };
   };
 
   readonly initContract = async (
@@ -202,15 +200,16 @@ export class BeamAPI<T> {
     this.contract = Array.from(new Uint8Array(shader));
   };
 
-  isNoContractMethod = (method:string):boolean => {
-    if (!(/(tx_status|get_utxo|tx_split)/i.test(method))) return true;
-    return false;
-  };
+  private readonly isNoContractMethod = (
+    method:string
+  ):boolean => !(
+    /(tx_status|get_utxo|tx_split|ev_subunsub)/i.test(method)
+  );
 
   readonly callApi = (
     { callID, method, params }: CallApiProps<T>
   ): Promise<BeamApiRes> => {
-    const id = `${callID}(${new Date().getTime()})`;
+    const id = [callID, this.callIndex++].join('-');
     const modifiedParams = { ...params } as Modified<T>;
     if (this.isNoContractMethod(method)) {
       if (this.contract) {
@@ -249,7 +248,7 @@ export class BeamAPI<T> {
     // webApi
     if (window.BeamApi) {
       return window.BeamApi.callWalletApi(
-        id, method, { ...params, contract: this.contract }
+        id, method, { ...params }
       );
     }
 

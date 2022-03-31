@@ -25,6 +25,7 @@ export type BeamReqAction = { [key: string]: string };
 export type RepoType = {
   repo_name: RepoName;
   repo_id: RepoId;
+  repo_owner: string;
 };
 
 export interface ReposResp extends ContractResp {

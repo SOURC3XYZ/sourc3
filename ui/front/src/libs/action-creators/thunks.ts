@@ -21,7 +21,7 @@ import {
 import axios from 'axios';
 import { AC } from './action-creators';
 import batcher from './batcher';
-import { repoReq } from './repo-response-handlers';
+import { apiEventManager, repoReq } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
@@ -62,7 +62,7 @@ export const thunks = {
   connectBeamApi:
     (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
       try {
-        await loadAPI(apiHost);
+        await loadAPI(apiEventManager(dispatch), apiHost);
         await initContract(wasm);
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
@@ -71,6 +71,7 @@ export const thunks = {
           if (!finded) throw new Error(`no specified cid (${beam.cid})`);
           dispatch(AC.setIsConnected(Boolean(finded)));
         }
+        await callApi(RC.subUnsub()); // subscribe to api events
         if (beam.isDapps() || beam.isElectron()) {
           const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
           if (pKey) dispatch(AC.setPublicKey(pKey.key));

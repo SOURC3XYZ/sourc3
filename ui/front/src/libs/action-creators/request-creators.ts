@@ -9,6 +9,15 @@ export const RC = {
     params: { data }
   } as const),
 
+  subUnsub: () => ({
+    callID: 'subunsub',
+    method: 'ev_subunsub',
+    params: {
+      ev_system_state: true
+      // ev_txs_changed: true
+    }
+  } as const),
+
   getTxStatus: (txId: string) => ({
     callID: `tx_status_${txId}`,
     method: 'tx_status',

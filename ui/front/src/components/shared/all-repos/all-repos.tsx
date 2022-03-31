@@ -8,7 +8,7 @@ import React, { ChangeEvent, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
 import { useLocation, useParams } from 'react-router-dom';
-import { loadingData, searchFilter } from '@libs/utils';
+import { searchFilter } from '@libs/utils';
 import { useObjectState } from '@libs/hooks';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
@@ -22,7 +22,6 @@ type AllReposProps = {
   pkey:string,
   repos: RepoType[],
   searchText: string,
-  getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
   createRepos: (repo_name:string) => void,
   deleteRepos: (repo_id: RepoId) => void,
   setInputText: (inputText: string) => void,
@@ -39,27 +38,24 @@ const AllRepos = ({
   pkey,
   repos,
   searchText,
-  getAllRepos,
   createRepos,
   deleteRepos,
   setInputText,
   setPrevHref
 }:AllReposProps) => {
-  const location = useLocation();
-  const { pathname } = location;
+  const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isLoading, isModalVisible, inputRepoName } = state;
+  const { isModalVisible, inputRepoName } = state;
   const path = pathname.split('repos/')[0];
 
-  const filteredRepos = React.useMemo(() => searchFilter(
-    searchText, repos, ['repo_id', 'repo_name']
-  ), [searchText, repos]);
+  const byRouteRepos = pkey && type === 'my'
+    ? repos.filter(({ repo_owner }) => repo_owner === pkey)
+    : repos;
 
-  React.useEffect(() => {
-    loadingData(getAllRepos(type))
-      .then(() => setState({ isLoading: false }));
-  }, [type]);
+  const filteredRepos = React.useMemo(() => searchFilter(
+    searchText, byRouteRepos, ['repo_id', 'repo_name']
+  ), [searchText, repos, type]);
 
   React.useEffect(() => {
     setPrevHref(pathname);
@@ -130,7 +126,6 @@ const AllRepos = ({
       <RepoList
         path={path}
         searchText={searchText}
-        loading={isLoading}
         page={+page}
         deleteRepos={deleteRepos}
         elements={filteredRepos}
