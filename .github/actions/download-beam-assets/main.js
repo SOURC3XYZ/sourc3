@@ -8,7 +8,7 @@ const fs = require('fs')
 function checkArtifact(artifact_name, platform_name, network_name, downloadable_artifacts) {
     var is_target_artifact = false;
     for (const target_artifact of downloadable_artifacts) {
-        if (artifact.name.indexOf(platform_name) != -1) {
+        if (artifact_name.indexOf(platform_name) != -1) {
             is_target_artifact = true;
             break;
         }
@@ -17,8 +17,8 @@ function checkArtifact(artifact_name, platform_name, network_name, downloadable_
         return false;
     }
 
-    return artifact.name.indexOf(platform_name) != -1 && 
-            (artifact.name.indexOf(network_name) != -1 || artifact.name.indexOf("wasm") != -1)
+    return artifact_name.indexOf(platform_name) != -1 && 
+            (artifact_name.indexOf(network_name) != -1 || artifact_name.indexOf("wasm") != -1)
 }
 
 async function main() {
@@ -112,7 +112,7 @@ async function main() {
                         }
                         if (searchArtifacts) {
                             const artifact = artifacts.data.artifacts.find((artifact) => {
-                                return checkArtifact(artifact, platform_name, network_name, downloadable_artifacts);
+                                return checkArtifact(artifact.name, platform_name, network_name, downloadable_artifacts);
                             })
                             if (!artifact) {
                                 continue
@@ -143,7 +143,7 @@ async function main() {
         // One artifact or all if `name` input is not specified.
         if (platform_name && network_name) {
             artifacts = artifacts.filter((artifact) => {
-                return checkArtifact(artifact, platform_name, network_name, downloadable_artifacts);
+                return checkArtifact(artifact.name, platform_name, network_name, downloadable_artifacts);
             })
         }
 
