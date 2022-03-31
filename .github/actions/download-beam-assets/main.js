@@ -8,7 +8,7 @@ const fs = require('fs')
 function checkArtifact(artifact_name, platform_name, network_name, downloadable_artifacts) {
     var is_target_artifact = false;
     for (const target_artifact of downloadable_artifacts) {
-        if (artifact_name.indexOf(platform_name) != -1) {
+        if (artifact_name.indexOf(target_artifact) != -1) {
             is_target_artifact = true;
             break;
         }
@@ -16,9 +16,11 @@ function checkArtifact(artifact_name, platform_name, network_name, downloadable_
     if (!is_target_artifact) {
         return false;
     }
+    if (artifact_name.indexOf("wasm") != -1) {
+        return true;
+    }
 
-    return artifact_name.indexOf(platform_name) != -1 && 
-            (artifact_name.indexOf(network_name) != -1 || artifact_name.indexOf("wasm") != -1)
+    return artifact_name.indexOf(platform_name) != -1 && artifact_name.indexOf(network_name) != -1;
 }
 
 async function main() {
