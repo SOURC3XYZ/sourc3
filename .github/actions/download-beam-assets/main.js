@@ -54,6 +54,8 @@ async function main() {
 
         console.log("==> Network: ", network_name)
 
+        console.log("==> Assets: ", downloadable_artifacts)
+
         if (pr) {
             console.log("==> PR:", pr)
 
