@@ -7,13 +7,24 @@ export const argsStringify = (args: BeamReqAction): string => Object
   .map((arg) => arg.join('='))
   .join(',');
 
+export const str2bytes = (str: string) => {
+  const utf8Encode = new TextEncoder();
+  return Array.from(utf8Encode.encode(str));
+};
+
 export const hexParser = (str: ObjectData) => {
   const bytes = new Uint8Array(
-    str.match(/.{1,2}/g)
-      ?.map((byte) => parseInt(byte, 16)) as number[]
+    str.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) as number[]
   );
   return new TextDecoder().decode(bytes);
 };
+
+export function buf2hex(buffer: number[] | ArrayBuffer) {
+  // buffer is an ArrayBuffer
+  return [...new Uint8Array(buffer)]
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export const equalKeyIndex = (key: string, inputText: string) => key
   .toLowerCase()
@@ -85,3 +96,19 @@ export const fullBranchName = (
 export const clipString = (
   fullName:string, cut = 'refs/heads/'
 ) => fullName.replace(cut, '');
+
+export const readFile = (str: string):Promise<string> => {
+  const file = new Blob([str]); // your file
+  return new Promise((res) => {
+    const fr = new FileReader();
+    fr.addEventListener('load', () => {
+      const { result } = fr;
+      console.log(fr.result);
+      if (result instanceof ArrayBuffer) {
+        const answ = buf2hex(result);
+        res(answ); // work with this
+      }
+    });
+    fr.readAsArrayBuffer(file);
+  });
+};

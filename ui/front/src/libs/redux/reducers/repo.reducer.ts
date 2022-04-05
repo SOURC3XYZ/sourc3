@@ -1,11 +1,12 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import {
-  DataNode, BranchCommit, BranchName, RepoId
+  DataNode, BranchCommit, BranchName, RepoId, MetaHash, RepoMeta
 } from '@types';
 
 interface IRepo {
   id: RepoId | null,
+  repoMetas: Map<MetaHash, RepoMeta>,
   repoMap: Map<BranchName, BranchCommit[]> | null,
   tree: DataNode[] | null,
   fileText: string | null,
@@ -14,6 +15,7 @@ interface IRepo {
 
 export const initialState:IRepo = {
   id: null,
+  repoMetas: new Map(),
   repoMap: null,
   tree: null,
   fileText: null,
@@ -48,6 +50,10 @@ const reducer = (
     }
     case ACTIONS.SET_PREV_REPO_HREF: {
       newState.prevReposHref = action.payload as IRepo['prevReposHref'];
+      return newState;
+    }
+    case ACTIONS.REPO_META: {
+      newState.repoMetas = action.payload as IRepo['repoMetas'];
       return newState;
     }
     default:

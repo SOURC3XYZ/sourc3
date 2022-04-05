@@ -28,7 +28,7 @@ const Repositories = ({
 }:EmptyPropsType) => {
   const [state, setState] = useObjectState(initialState);
   const { isModalVisible, inputRepoName } = state;
-  const type = 'my';
+  const type = 'all';
   const showModal = () => {
     setState({ isModalVisible: true });
   };

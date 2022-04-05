@@ -3,6 +3,44 @@ import {
 } from '@types';
 
 export const RC = {
+  getIpfsData: (ipfsHash: string) => ({
+    callID: 'ipfs_get',
+    method: 'ipfs_get',
+    params: {
+      hash: ipfsHash
+    }
+  } as const),
+
+  getCommitFromData: (hash: string, hex:string) => ({
+    callID: 'repo_get_commit_from_data',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'repo_get_commit_from_data',
+        data: hex,
+        obj_id: hash
+      },
+      create_tx: false
+
+    }
+  } as const),
+
+  getTreeFromData: (hash: string, data:string) => ({
+    callID: 'repo_get_tree_from_data',
+    method: 'invoke_contract',
+    params: {
+      args: {
+        role: 'user',
+        action: 'repo_get_tree_from_data',
+        obj_id: hash,
+        data
+      },
+      create_tx: false
+
+    }
+  } as const),
+
   startTx: (data: number[]) => ({
     callID: 'start_tx',
     method: 'process_invoke_data',

@@ -25,7 +25,8 @@ export enum ACTIONS {
   SET_WALLET_CONNECTION = 'SET_WALLET_CONNECTION',
   SET_SEED_TO_VALIDATION = 'SET_SEED_TO_VALIDATION',
   SET_PUBLIC_KEY = 'SET_PUBLIC_KEY',
-  SET_LOCAL_MAP = 'SET_LOCAL_MAP'
+  SET_LOCAL_MAP = 'SET_LOCAL_MAP',
+  SET_REPO_METAS = 'SET_REPO_METAS'
 }
 
 export enum ActionColor {
@@ -40,11 +41,6 @@ export enum ActionColor {
   SMTH_GREEN = 'rgba(42, 207, 29, 0.2)',
   SMTH_PURPLE = 'rgba(100, 100, 255, 0.2)',
   SMTH_ORANGE = 'rgba(255, 122, 33, 0.2)'
-}
-
-export enum FileCodes {
-  FOLDER = 16384,
-  LEAF = 33188
 }
 
 export enum Routes {

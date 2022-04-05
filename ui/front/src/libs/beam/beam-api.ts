@@ -1,6 +1,8 @@
+import { CONTRACT } from '@libs/constants';
 import {
-  QObject, BeamApiRes, ApiResultWeb, ApiResult, CallApiDesktop
+  QObject, BeamApiRes, ApiResultWeb, ApiResult, CallApiDesktop, BeamApiResult
 } from '@types';
+import axios from 'axios';
 import { QWebChannel } from 'qwebchannel';
 
 type ArgsObjectType = { [key:string]: string | number };
@@ -28,7 +30,7 @@ type BeamObject = {
 };
 
 type Modified<T> = T & {
-  contract: Array<number>, args: string | ArgsObjectType };
+  contract: Array<number>, args: string | ArgsObjectType, hash?:string };
 
 export class BeamAPI<T> {
   public readonly cid: string;
@@ -200,10 +202,10 @@ export class BeamAPI<T> {
     this.contract = Array.from(new Uint8Array(shader));
   };
 
-  private readonly isNoContractMethod = (
+  readonly isNoContractMethod = (
     method:string
   ):boolean => !(
-    /(tx_status|get_utxo|tx_split|ev_subunsub)/i.test(method)
+    /(tx_status|get_utxo|tx_split|ev_subunsub|ipfs_get)/i.test(method)
   );
 
   readonly callApi = (
@@ -247,6 +249,9 @@ export class BeamAPI<T> {
 
     // webApi
     if (window.BeamApi) {
+      if (request.method === 'ipfs_get' && request.params.hash) {
+        return this.fetchIpfs(resolve, reject, request.params.hash);
+      }
       return window.BeamApi.callWalletApi(
         id, method, { ...params }
       );
@@ -254,6 +259,9 @@ export class BeamAPI<T> {
 
     // headless
     if (this.BEAM?.headless) {
+      if (request.method === 'ipfs_get' && request.params.hash) {
+        return this.fetchIpfs(resolve, reject, request.params.hash);
+      }
       return (
         this.BEAM?.api.callWalletApi as CallApiDesktop
       )(JSON.stringify(request));
@@ -263,6 +271,27 @@ export class BeamAPI<T> {
     return (
       this.BEAM?.api.callWalletApi as CallApiDesktop
     )(JSON.stringify(request));
+  };
+
+  private readonly fetchIpfs = (
+    resolve:BeamApiReqHandlers['resolve'],
+    reject:BeamApiReqHandlers['reject'],
+    hash: string
+  ) => {
+    axios.get<string>([CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'))
+      .then((res) => {
+        console.log('DATA', res);
+        const result = {} as BeamApiResult;
+        result.data = res.data;
+        // TODO: make without unknown
+        resolve(
+          {
+            id: hash,
+            jsonrpc: '1.0',
+            result
+          }
+        );
+      });
   };
 
   private readonly fetchApi = (

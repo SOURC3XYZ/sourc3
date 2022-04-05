@@ -46,6 +46,14 @@ export interface ContractsResp extends ContractResp {
   contracts: { cid: string, Height: number }[]
 }
 
+export interface CommitFromDataResp extends ContractResp {
+  contracts: { cid: string, Height: number }[]
+}
+
+export interface DataResp extends ContractResp {
+  object_data: string;
+}
+
 export interface PKeyRes extends ContractResp {
   key: string
 }

@@ -13,7 +13,8 @@ import {
   RepoId,
   Seed2ValidationType,
   LocalRepoBranch,
-  LocalRepoName
+  LocalRepoName,
+  MetaHash
 } from '@types';
 
 export const AC = {
@@ -75,7 +76,7 @@ export const AC = {
     payload
   } as const),
 
-  setRepoMeta: (payload: RepoMeta[]) => ({
+  setRepoMeta: (payload: Map<MetaHash, RepoMeta>) => ({
     type: ACTIONS.REPO_META,
     payload
   } as const),

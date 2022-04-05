@@ -2,17 +2,20 @@ import wasm from '@assets/app.wasm';
 import { BeamAPI, WasmWallet } from '@libs/beam';
 import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { hexParser, treeDataMaker, updateTreeData } from '@libs/utils';
+import {
+  CommitMapParser, hexParser, TreeListParser
+} from '@libs/utils';
 import {
   BeamApiRes,
   CallApiProps,
   ContractsResp,
+  MetaHash,
   ObjectDataResp,
   PKeyRes,
   RepoId, RepoListType,
+  RepoMeta,
   RepoMetaResp,
   ReposResp,
-  RepoTreeResp,
   SetPropertiesType,
   TreeElementOid,
   TxResponse,
@@ -21,21 +24,22 @@ import {
 import axios from 'axios';
 import { AC } from './action-creators';
 import batcher from './batcher';
-import { apiEventManager, repoReq } from './repo-response-handlers';
+import { apiEventManager } from './repo-response-handlers';
 import { RC, RequestCreators } from './request-creators';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
-const beam = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
+const api = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
 
 const {
   callApi, initContract, loadAPI
-} = beam;
+} = api;
 
 const wallet = new WasmWallet();
 
 const messageBeam = {
-  type: 'create_sourc3_api',
+  // type: 'create_sourc3_api',
+  type: 'create_beam_api',
   apiver: 'current',
   apivermin: '',
   appname: 'SOURC3'
@@ -54,7 +58,7 @@ async function getOutput<T>(
 export const thunks = {
   connectExtension: () => async (dispatch: AppThunkDispatch) => {
     console.log(messageBeam);
-    await beam.extensionConnect(messageBeam);
+    await api.extensionConnect(messageBeam);
     const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
     if (pKey) dispatch(AC.setPublicKey(pKey.key));
   },
@@ -67,12 +71,12 @@ export const thunks = {
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
         if (output) {
-          const finded = output.contracts.find((el) => el.cid === beam.cid);
-          if (!finded) throw new Error(`no specified cid (${beam.cid})`);
+          const finded = output.contracts.find((el) => el.cid === api.cid);
+          if (!finded) throw new Error(`no specified cid (${api.cid})`);
           dispatch(AC.setIsConnected(Boolean(finded)));
         }
         await callApi(RC.subUnsub()); // subscribe to api events
-        if (beam.isDapps() || beam.isElectron()) {
+        if (api.isDapps() || api.isElectron()) {
           const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
           if (pKey) dispatch(AC.setPublicKey(pKey.key));
         }
@@ -200,20 +204,38 @@ export const thunks = {
       } catch (error) { thunkCatch(error, dispatch); }
     },
 
-  repoGetMeta: (id: number) => async (dispatch: AppThunkDispatch) => {
-    try {
-      const action = RC.repoGetMeta(id);
-      const output = await getOutput<RepoMetaResp>(action, dispatch);
-      if (output) dispatch(AC.setRepoMeta(output.objects));
-    } catch (error) { thunkCatch(error, dispatch); }
-  },
+  // repoGetMeta: (id: number) => async (dispatch: AppThunkDispatch) => {
+  //   try {
+  //     const action = RC.repoGetMeta(id);
+  //     const output = await getOutput<RepoMetaResp>(action, dispatch);
+  //     if (output) dispatch(AC.setRepoMeta(output.objects));
+  //   } catch (error) { thunkCatch(error, dispatch); }
+  // },
 
   getRepo: (
     id: RepoId, resolve?: () => void
   ) => async (dispatch: AppThunkDispatch) => {
     try {
-      const chain = await repoReq(id, beam);
-      batcher(dispatch, chain);
+      const metas = new Map<MetaHash, RepoMeta>();
+      const metaArray = await getOutput<RepoMetaResp>(
+        RC.repoGetMeta(id), dispatch
+      );
+      if (metaArray) {
+        metaArray.objects.forEach((el) => {
+          metas.set(el.object_hash, el);
+        });
+      }
+      const commitTree = await new CommitMapParser({
+        id, metas, api, expect: 'commit'
+      })
+        .buildCommitTree();
+
+      batcher(dispatch, [
+        AC.setRepoMeta(metas),
+        AC.setRepoId(id),
+        AC.setRepoMap(commitTree),
+        AC.setTreeData(null)
+      ]);
       if (resolve) resolve();
     } catch (error) { thunkCatch(error, dispatch); }
   },
@@ -224,15 +246,14 @@ export const thunks = {
     }: UpdateProps
   ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
     try {
-      const { repo: { tree } } = getState();
-      const action = RC.repoGetTree(id, oid);
-      const output = await getOutput<RepoTreeResp>(action, dispatch);
-      if (output) {
-        const updated = updateTreeData(
-          tree, treeDataMaker(output.tree?.entries, key), key
-        );
-        dispatch(AC.setTreeData(updated));
-      }
+      const { repo: { tree, repoMetas: metas } } = getState();
+      const parserProps = {
+        id, metas, api, key
+      };
+      const updated = await new TreeListParser(
+        { ...parserProps, expect: 'tree' }
+      ).getTree(oid, tree);
+      dispatch(AC.setTreeData(updated));
       if (resolve) resolve();
     } catch (error) { thunkCatch(error, dispatch); }
   },
