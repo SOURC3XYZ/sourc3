@@ -150,7 +150,8 @@ export function startBeamNode(
         `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
-        '--pass', password], {shell: true});
+        '--pass', password,
+        '--file_log_level=verbose'], {shell: true});
 
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');
