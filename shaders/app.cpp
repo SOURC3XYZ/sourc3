@@ -496,9 +496,10 @@ namespace
             auto buf = std::make_unique<uint8_t[]>(valueLen);
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
-            mygit2::git_commit commit;
-            commit_parse(&commit, value->data, valueLen, 0);
-            AddCommit(commit, hash);
+            mygit2::git_commit commit{};
+            if (commit_parse(&commit, value->data, valueLen, 0) == 0) {
+                AddCommit(commit, hash);
+            }
             Env::DocAddBlob("object_data", value->data, valueLen);
         } else {
             Env::DocAddBlob("object_data", nullptr, 0);
@@ -509,8 +510,9 @@ namespace
         using GitRemoteBeam::GitObject;
         ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
             mygit2::git_commit commit{};
-            commit_parse(&commit, value->data, valueLen, 0);
-            AddCommit(commit, hash);
+            if (commit_parse(&commit, value->data, valueLen, 0) == 0) {
+                AddCommit(commit, hash);
+            }
         });
     }
 
@@ -531,9 +533,11 @@ namespace
             reader.MoveNext(nullptr, keyLen, buf.get(), valueLen, 1);
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_tree tree{};
-            tree_parse(&tree, value->data, valueLen);
-            Env::DocAddBlob("object_data", value->data, valueLen);
-            AddTree(tree);
+            if (tree_parse(&tree, value->data, valueLen) == 0) {
+                AddTree(tree);
+            } else {
+                On_error("no tree in data");
+            }
         } else {
             On_error("No data for tree");
         }
@@ -541,10 +545,14 @@ namespace
 
     void On_action_get_tree_from_data(const ContractID &) {
         using GitRemoteBeam::GitObject;
-        ParseObjectData([] (GitObject::Data* value, size_t valueLen, GitRemoteBeam::git_oid hash) {
+        using GitRemoteBeam::git_oid;
+        ParseObjectData([] (GitObject::Data* value, size_t valueLen, git_oid hash) {
             mygit2::git_tree tree{};
-            tree_parse(&tree, value->data, valueLen);
-            AddTree(tree);
+            if (tree_parse(&tree, value->data, valueLen) == 0) {
+                AddTree(tree);
+            } else {
+                On_error("no tree in data");
+            }
         });
     }
 
@@ -553,8 +561,6 @@ namespace
         using GitRemoteBeam::GitObject;
         auto[start, end, key] = PrepareGetObject(cid);
         GitObject::Meta value;
-        char oid_buffer[GIT_OID_HEXSZ + 1];
-        oid_buffer[GIT_OID_HEXSZ] = '\0';
         Env::DocArray objects_array("objects");
         for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
             auto current_type = value.type & 0x7f; // clear first bit
