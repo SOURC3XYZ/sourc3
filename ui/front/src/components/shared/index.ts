@@ -4,7 +4,6 @@ export { default as OkPage } from './ok-page';
 export { default as ErrorAlert } from './error-alert';
 export * from './preload';
 export * from './beam-button';
-export * from './file-tree';
 export * from './nav';
 export * from './menu';
 export * from './header';

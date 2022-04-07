@@ -1,7 +1,7 @@
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
-  BranchCommit, DataNode, RepoId, TreeElementOid, UpdateProps
+  BranchCommit, DataNode, MetaHash, RepoId, TreeElementOid, UpdateProps
 } from '@types';
 import React from 'react';
 import { batch, connect } from 'react-redux';
@@ -20,6 +20,7 @@ type LocationState = {
 type RepoProps = {
   currentId: RepoId | null;
   repoMap: Map<string, BranchCommit[]> | null;
+  filesMap: Map<MetaHash, string>;
   tree: DataNode[] | null;
   fileText: string | null;
   prevReposHref: string | null
@@ -32,8 +33,8 @@ type RepoProps = {
 const UserRepos = ({
   currentId,
   repoMap,
+  filesMap,
   tree,
-  fileText,
   prevReposHref,
   getRepoData,
   updateTree,
@@ -56,8 +57,8 @@ const UserRepos = ({
   const repoContentProps = {
     id: +id,
     repoMap: repoMap as Map<string, BranchCommit[]>,
+    filesMap,
     tree,
-    fileText,
     repoName,
     prevReposHref,
     updateTree: update,
@@ -79,11 +80,12 @@ const UserRepos = ({
 
 const mapState = ({
   repo: {
-    id, repoMap, tree, fileText, prevReposHref
+    id, repoMap, filesMap, tree, fileText, prevReposHref
   }
 }:RootState) => ({
   currentId: id,
   repoMap,
+  filesMap,
   tree,
   fileText,
   prevReposHref

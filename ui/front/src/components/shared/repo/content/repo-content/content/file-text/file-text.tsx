@@ -1,7 +1,7 @@
 import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
-  DataNode, IDataNodeCustom, RepoId, UpdateProps
+  DataNode, IDataNodeCustom, MetaHash, RepoId, UpdateProps
 } from '@types';
 import { useState, useEffect } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -12,17 +12,18 @@ syntax.forEach((el) => SyntaxHighlighter.registerLanguage(el.ext, el.data));
 
 type FileTextProps = {
   id: RepoId;
-  fileText: string | null;
   tree: DataNode[] | null;
   pathArray: string[];
+  filesMap: Map<MetaHash, string>,
   getFileData: (repoId: RepoId, oid: string) => void;
   updateTree: (props: UpdateProps) => void
 };
 
 const FileText = ({
-  id, tree, fileText, pathArray, getFileData, updateTree
+  id, tree, filesMap, pathArray, getFileData, updateTree
 }: FileTextProps) => {
   const [ext, setExt] = useState('');
+  const [text, setText] = useState<string | null>(null);
 
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
     updateTree({ ...props, id });
@@ -37,19 +38,22 @@ const FileText = ({
       const file = currentFileList.find(
         (el) => el.title === fileName
       ) as IDataNodeCustom | undefined;
-      if (file) getFileData(id, file.dataRef.oid);
-      else throw new Error('no file');
+      if (file) {
+        const memoized = filesMap.get(file.dataRef.oid);
+        if (memoized) setText(memoized);
+        else getFileData(id, file.dataRef.oid);
+      } else throw new Error('no file');
     }
     if (fileName) {
       setExt(fileName.slice(fileName.lastIndexOf('.') + 1));
     }
   };
 
-  useEffect(fileChecker, [tree]);
+  useEffect(fileChecker, [tree, filesMap]);
 
   return (
     <>
-      {fileText === null
+      {text === null
         ? <Preload />
         : (
           <SyntaxHighlighter
@@ -58,7 +62,7 @@ const FileText = ({
             showLineNumbers
             style={vs}
           >
-            {fileText}
+            {text}
           </SyntaxHighlighter>
         ) }
     </>

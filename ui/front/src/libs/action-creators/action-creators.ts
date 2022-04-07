@@ -60,6 +60,11 @@ export const AC = {
     payload
   } as const),
 
+  addFileToMap: (payload: [MetaHash, string]) => ({
+    type: ACTIONS.SET_REPO_FILE,
+    payload
+  } as const),
+
   setIsConnected: (payload: boolean) => ({
     type: ACTIONS.CONNECTION,
     payload

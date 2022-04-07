@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties */
 import { BeamAmmount } from '@libs/constants';
 import { ObjectData, BeamReqAction } from '@types';
 
@@ -6,6 +7,11 @@ export const argsStringify = (args: BeamReqAction): string => Object
   .filter((arg) => arg[1].length)
   .map((arg) => arg.join('='))
   .join(',');
+
+export function arrayBufferToString(buffer:number[]) {
+  const bytes = new Uint8Array(buffer);
+  return new TextDecoder().decode(bytes);
+}
 
 export const str2bytes = (str: string) => {
   const utf8Encode = new TextEncoder();
@@ -40,11 +46,9 @@ export function searchFilter<T>(
       const entries = Object.entries(el) as [keyof T, T[keyof T]][];
       const filtered = entries
         .filter((field) => keysToEqual.find((key) => key === field[0]))
-        .find(
-          (field) => (
-            typeof field[1] === 'string' || typeof field[1] === 'number')
-            && ~(equalKeyIndex(String(field[1]), searchInputTxt))
-        );
+        .find((field) => (
+          typeof field[1] === 'string' || typeof field[1] === 'number')
+            && ~(equalKeyIndex(String(field[1]), searchInputTxt)));
       if (filtered) return el;
       return null;
     });
@@ -96,19 +100,3 @@ export const fullBranchName = (
 export const clipString = (
   fullName:string, cut = 'refs/heads/'
 ) => fullName.replace(cut, '');
-
-export const readFile = (str: string):Promise<string> => {
-  const file = new Blob([str]); // your file
-  return new Promise((res) => {
-    const fr = new FileReader();
-    fr.addEventListener('load', () => {
-      const { result } = fr;
-      console.log(fr.result);
-      if (result instanceof ArrayBuffer) {
-        const answ = buf2hex(result);
-        res(answ); // work with this
-      }
-    });
-    fr.readAsArrayBuffer(file);
-  });
-};

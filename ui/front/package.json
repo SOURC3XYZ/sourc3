@@ -99,6 +99,7 @@
     "antd": "^4.17.3",
     "axios": "^0.25.0",
     "beam-wasm-client-masternet": "^6.3.12620",
+    "hexdump-js": "^0.1.0",
     "qwebchannel": "^5.9.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

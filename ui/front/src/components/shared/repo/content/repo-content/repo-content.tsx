@@ -2,7 +2,7 @@ import { ErrorBoundary } from '@components/hoc';
 import { FailPage } from '@components/shared';
 import { setBranchAndCommit } from '@libs/utils';
 import {
-  BranchCommit, BranchName, DataNode, RepoId, UpdateProps
+  BranchCommit, BranchName, DataNode, MetaHash, RepoId, UpdateProps
 } from '@types';
 import { useEffect } from 'react';
 import {
@@ -13,9 +13,9 @@ import { FileText, FileTreeBlock, UpperMenu } from './content';
 export type UpperMenuProps = {
   id: RepoId;
   repoName: string;
-  fileText: string | null;
   tree: DataNode[] | null;
   repoMap: Map<BranchName, BranchCommit[]>;
+  filesMap: Map<MetaHash, string>;
   prevReposHref: string | null;
   updateTree: (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
@@ -52,7 +52,7 @@ const setBranchCommit = (
 const RepoContent = ({
   id,
   repoMap,
-  fileText,
+  filesMap,
   tree,
   prevReposHref,
   killTree,
@@ -115,7 +115,7 @@ const RepoContent = ({
             <ErrorBoundary fallback={fallback}>
               <FileText
                 id={id}
-                fileText={fileText}
+                filesMap={filesMap}
                 tree={tree}
                 pathArray={pathArray}
                 getFileData={getFileData}

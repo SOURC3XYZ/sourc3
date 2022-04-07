@@ -3,17 +3,16 @@ import { BeamAPI } from '@libs/beam';
 import {
   RepoId, MetaHash, RepoMeta, DataResp, BeamApiResult
 } from '@types';
-import {
-  buf2hex, hexParser, readFile, str2bytes
-} from '@libs/utils';
+import { arrayBufferToString, buf2hex, hexParser } from '@libs/utils';
 
 type TypedBeamApi = BeamAPI<RequestCreators['params']>;
 
-type IpfsRequestType = 'commit' | 'tree';
+type IpfsRequestType = 'commit' | 'tree' | 'blob';
 
 type IpfsRequestCreators = {
   commit: typeof RC['getCommitFromData'],
-  tree: typeof RC['getTreeFromData']
+  tree: typeof RC['getTreeFromData'],
+  blob: typeof RC['getData']
 };
 
 export type ParserProps = {
@@ -34,7 +33,8 @@ export default abstract class AbstractParser {
 
   protected readonly ipfsRequest: IpfsRequestCreators = {
     commit: RC.getCommitFromData,
-    tree: RC.getTreeFromData
+    tree: RC.getTreeFromData,
+    blob: RC.getData
   };
 
   constructor({
@@ -73,10 +73,11 @@ export default abstract class AbstractParser {
     ipfsHash: string, gitHash: string
   ) => {
     const { data } = await this.call<BeamApiResult>(RC.getIpfsData(ipfsHash));
+    if (this.expect === 'blob') {
+      return arrayBufferToString(data as number[]) as unknown as T;
+    }
     const action = this.ipfsRequest[this.expect];
-    const toParse = this.expect === 'commit'
-      ? buf2hex(str2bytes(data as string))
-      : await readFile(data as string) as string;
+    const toParse = buf2hex(data as number[]);
     const getCommitFromIpfs = await this.call(action(gitHash, toParse));
     return getCommitFromIpfs as T;
   };

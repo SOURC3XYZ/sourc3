@@ -3,14 +3,13 @@ import { BeamAPI, WasmWallet } from '@libs/beam';
 import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
-  CommitMapParser, hexParser, TreeListParser
+  CommitMapParser, TreeBlobParser, TreeListParser
 } from '@libs/utils';
 import {
   BeamApiRes,
   CallApiProps,
   ContractsResp,
   MetaHash,
-  ObjectDataResp,
   PKeyRes,
   RepoId, RepoListType,
   RepoMeta,
@@ -285,11 +284,18 @@ export const thunks = {
 
   getTextData: (
     repoId: RepoId, oid: TreeElementOid, resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
     try {
-      const action = RC.getData(repoId, oid);
-      const output = await getOutput<ObjectDataResp>(action, dispatch);
-      if (output) dispatch(AC.setFileText(hexParser(output.object_data)));
+      // const action = RC.getData(repoId, oid);
+      const { repo: { repoMetas: metas } } = getState();
+      const parserProps = {
+        id: repoId, metas, api
+      };
+      // const output = await getOutput<ObjectDataResp>(action, dispatch);
+      const output = await new TreeBlobParser(
+        { ...parserProps, expect: 'blob' }
+      ).parseBlob(oid);
+      if (output) dispatch(AC.addFileToMap([oid, output]));
       if (resolve) resolve();
     } catch (error) { thunkCatch(error, dispatch); }
   },

@@ -1,5 +1,7 @@
 import { RC } from '@libs/action-creators';
-import { IDataNodeCustom, RepoTreeResp, TreeElement } from '@types';
+import {
+  DataResp, IDataNodeCustom, RepoTreeResp, TreeElement
+} from '@types';
 import { DataNode } from 'antd/lib/tree';
 import AbstractParser, { ParserProps } from './abstract-parser';
 
@@ -27,12 +29,20 @@ export default class TreeListParser extends AbstractParser {
   public getTree = async (oid: string, tree: DataNode[] | null) => {
     const output = this.isIpfsHash(oid)
       ? await this.getIpfsData<RepoTreeResp>(oid)
-      : await this.call<RepoTreeResp>(RC.repoGetTree(this.id, oid));
+      : await this.getTreeFromBC(oid);
     this.children = this.treeDataMaker(output.tree.entries || []);
     return this.updateTreeData(tree);
   };
 
-  public readonly updateTreeData = (
+  private readonly getTreeFromBC = async (oid: string) => {
+    const data = await this.call<DataResp>(RC.getData(this.id, oid));
+    const tree = await this.call<RepoTreeResp>(
+      RC.getTreeFromData(oid, data.object_data)
+    );
+    return tree;
+  };
+
+  private readonly updateTreeData = (
     list: DataNode[] | null
   ): DataNode[] | null => {
     const { children } = this;

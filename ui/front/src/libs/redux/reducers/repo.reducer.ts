@@ -9,6 +9,7 @@ interface IRepo {
   repoMetas: Map<MetaHash, RepoMeta>,
   repoMap: Map<BranchName, BranchCommit[]> | null,
   tree: DataNode[] | null,
+  filesMap: Map<MetaHash, string>,
   fileText: string | null,
   prevReposHref: string | null
 }
@@ -16,6 +17,7 @@ interface IRepo {
 export const initialState:IRepo = {
   id: null,
   repoMetas: new Map(),
+  filesMap: new Map(),
   repoMap: null,
   tree: null,
   fileText: null,
@@ -29,11 +31,17 @@ const reducer = (
     ...state,
     repoMap: state.repoMap
       ? new Map(Array.from(state.repoMap))
-      : null
+      : null,
+    filesMap: new Map(Array.from(state.filesMap))
   } as IRepo;
   switch (action.type) {
     case ACTIONS.SET_REPO_ID: {
       newState.id = action.payload as IRepo['id'];
+      newState.filesMap = new Map();
+      return newState;
+    }
+    case ACTIONS.SET_REPO_FILE: {
+      newState.filesMap.set(...action.payload as [MetaHash, string]);
       return newState;
     }
     case ACTIONS.TREE_DATA: {

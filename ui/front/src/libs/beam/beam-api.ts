@@ -2,7 +2,6 @@ import { CONTRACT } from '@libs/constants';
 import {
   QObject, BeamApiRes, ApiResultWeb, ApiResult, CallApiDesktop, BeamApiResult
 } from '@types';
-import axios from 'axios';
 import { QWebChannel } from 'qwebchannel';
 
 type ArgsObjectType = { [key:string]: string | number };
@@ -278,20 +277,25 @@ export class BeamAPI<T> {
     reject:BeamApiReqHandlers['reject'],
     hash: string
   ) => {
-    axios.get<string>([CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'))
-      .then((res) => {
-        console.log('DATA', res);
-        const result = {} as BeamApiResult;
-        result.data = res.data;
-        // TODO: make without unknown
-        resolve(
-          {
-            id: hash,
-            jsonrpc: '1.0',
-            result
-          }
-        );
-      });
+    const oReq = new XMLHttpRequest();
+    oReq.open('GET', [CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'), true);
+    oReq.responseType = 'blob';
+
+    oReq.onload = async function () {
+      const blob = oReq.response as Blob;
+      const buffer = await blob.arrayBuffer();
+      const result = {} as BeamApiResult;
+      result.data = Array.from(new Uint8Array(buffer));
+      resolve(
+        {
+          id: hash,
+          jsonrpc: '1.0',
+          result
+        }
+      );
+    };
+
+    oReq.send();
   };
 
   private readonly fetchApi = (
