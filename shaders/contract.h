@@ -5,6 +5,9 @@
 
 namespace GitRemoteBeam
 {
+
+#include "contract_sid.i"
+
     enum Operations : uint8_t {
         REPO,
         OBJECTS,
@@ -24,6 +27,16 @@ namespace GitRemoteBeam
 
 	typedef Opaque<20> git_oid;
 	typedef Opaque<32> Hash256;
+
+    struct Config {
+        PubKey m_pkAdmin;
+    };
+
+    struct State {
+        static const uint8_t s_Key = 0;
+
+        Config m_Config;
+    };
 
 	Hash256 get_name_hash(const char* name, size_t len);
 
@@ -200,6 +213,7 @@ namespace GitRemoteBeam
 
 	struct InitialParams
 	{
+        Config m_Config;
 		static const uint32_t METHOD = 0;
 	};
 

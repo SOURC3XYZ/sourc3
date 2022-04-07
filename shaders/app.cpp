@@ -1,5 +1,7 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
+#include "../upgradable2/contract.h"
+#include "../upgradable2/app_common_impl.h"
 
 namespace Env {
 #include "bvm2_cost.h"
@@ -16,11 +18,6 @@ namespace Env {
 #include <limits>
 
 #include "../try-to-add-libgit2/full_git.h"
-
-namespace GitRemoteBeam
-{
-#include "contract_sid.i"
-}
 
 namespace
 {
@@ -44,34 +41,72 @@ namespace
         });
     }
 
-    void On_action_create_contract(const ContractID& unused)
-    {
-        GitRemoteBeam::InitialParams params;
+    namespace KeyMaterial {
+        const char g_szAdmin[] = "sorc3-key-admin";
 
-        Env::GenerateKernel(nullptr, GitRemoteBeam::InitialParams::METHOD, &params, sizeof(params), nullptr, 0, nullptr, 0, "Create GitRemoteBeam contract", 0);
+        struct MyAdminKey : public Env::KeyID {
+            MyAdminKey() : Env::KeyID(g_szAdmin, sizeof(g_szAdmin) - sizeof(char)) {}
+        };
+
     }
 
-    void On_action_destroy_contract(const ContractID& cid)
-    {
-        Env::GenerateKernel(&cid, 1, nullptr, 0, nullptr, 0, nullptr, 0, "Destroy GitRemoteBeam contract", 0);
-    }
+    struct StatePlus
+            : public GitRemoteBeam::State {
+        bool Init(const ContractID &cid) {
+            Env::Key_T <uint8_t> key;
+            _POD_(key.m_Prefix.m_Cid) = cid;
+            key.m_KeyInContract = GitRemoteBeam::State::s_Key;
+
+            if (Env::VarReader::Read_T(key, Cast::Down<GitRemoteBeam::State>(*this)))
+                return true;
+
+            On_error("no such a contract");
+            return false;
+        }
+    };
 
     void On_action_view_contracts(const ContractID& unused)
     {
-        EnumAndDumpContracts(GitRemoteBeam::s_SID);
+        static const ShaderID s_pSid[] = {
+                GitRemoteBeam::s_SID
+        };
+
+        ContractID pVerCid[_countof(s_pSid)];
+        Height pVerDeploy[_countof(s_pSid)];
+
+        ManagerUpgadable2::Walker wlk;
+        wlk.m_VerInfo.m_Count = _countof(s_pSid);
+        wlk.m_VerInfo.s_pSid = s_pSid;
+        wlk.m_VerInfo.m_pCid = pVerCid;
+        wlk.m_VerInfo.m_pHeight = pVerDeploy;
+
+        KeyMaterial::MyAdminKey kid;
+        wlk.ViewAll(&kid);
+
     }
 
     void On_action_view_contract_params(const ContractID& cid)
     {
-        Env::Key_T<int> k;
-        k.m_Prefix.m_Cid = cid;
-        k.m_KeyInContract = 0;
+        StatePlus s;
+        if (!s.Init(cid))
+            return;
 
-        GitRemoteBeam::InitialParams params;
-        if (!Env::VarReader::Read_T(k, params))
-            return On_error("Failed to read contract's initial params");
+        PubKey pk;
+        KeyMaterial::MyAdminKey().get_Pk(pk);
 
-        Env::DocGroup gr("params");
+        uint32_t bIsAdmin = (_POD_(s.m_Config.m_pkAdmin) == pk);
+
+        Env::DocAddNum("Admin", bIsAdmin);
+    }
+
+    void On_action_my_admin_key(const ContractID& cid) {
+        PubKey pk;
+        KeyMaterial::MyAdminKey().get_Pk(pk);
+        Env::DocAddBlob_T("admin_key", pk);
+    }
+
+    void On_action_explicit_upgrade(const ContractID& cid) {
+        ManagerUpgadable2::MultiSigRitual::Perform_ExplicitUpgrade(cid);
     }
 
     GitRemoteBeam::Hash256 get_name_hash(const char* name, size_t len)
@@ -191,7 +226,7 @@ namespace
         sig.m_nID = sizeof(cid);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::DeleteRepoParams::METHOD, &request, sizeof(request),
-                nullptr, 0, &sig, 1, "delete repo", 10000000);
+                            nullptr, 0, &sig, 1, "delete repo", 10000000);
     }
 
     void On_action_add_user_params(const ContractID& cid) {
@@ -204,7 +239,7 @@ namespace
         sig.m_nID = sizeof(cid);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::AddUserParams::METHOD, &request, sizeof(request),
-            nullptr, 0, &sig, 1, "add user params", 0);
+                            nullptr, 0, &sig, 1, "add user params", 0);
     }
 
     void On_action_remove_user_params(const ContractID& cid) {
@@ -217,7 +252,7 @@ namespace
         sig.m_nID = sizeof(cid);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::RemoveUserParams::METHOD, &request, sizeof(request),
-            nullptr, 0, &sig, 1, "remove user params", 0);
+                            nullptr, 0, &sig, 1, "remove user params", 0);
     }
 
     void On_action_push_objects(const ContractID& cid)
@@ -273,7 +308,7 @@ namespace
 
             Env::DerivePk(refsParams->user, &cid, sizeof(cid));
             Env::GenerateKernel(&cid, PushRefsParams::METHOD, refsParams, refArgsSize,
-                nullptr, 0, &sig, 1, "Pushing refs", 10000000);
+                                nullptr, 0, &sig, 1, "Pushing refs", 10000000);
         }
 
         // dump objects for debug
@@ -298,7 +333,7 @@ namespace
 
         Env::DerivePk(params->user, &cid, sizeof(cid));
         Env::GenerateKernel(&cid, PushObjectsParams::METHOD, params, argsSize,
-            nullptr, 0, &sig, 1, "Pushing objects", 20000000 + 100000*params->objects_number);
+                            nullptr, 0, &sig, 1, "Pushing objects", 20000000 + 100000*params->objects_number);
     }
 
     void On_action_list_refs(const ContractID& cid)
@@ -600,13 +635,6 @@ BEAM_EXPORT void Method_0() {
         {
             Env::DocGroup grRole("manager");
             {
-                Env::DocGroup grMethod("create_contract");
-            }
-            {
-                Env::DocGroup grMethod("destroy_contract");
-                Env::DocAddText("cid", "ContractID");
-            }
-            {
                 Env::DocGroup grMethod("view_contracts");
             }
             {
@@ -742,8 +770,6 @@ BEAM_EXPORT void Method_1() {
     };
 
     const Actions_map_t VALID_MANAGER_ACTIONS = {
-            {"create_contract",      On_action_create_contract},
-            {"destroy_contract",     On_action_destroy_contract},
             {"view_contracts",       On_action_view_contracts},
             {"view_contract_params", On_action_view_contract_params},
     };
