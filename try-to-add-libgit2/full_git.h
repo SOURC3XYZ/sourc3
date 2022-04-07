@@ -228,7 +228,6 @@ typedef git_array_t(char) git_array_generic_t;
 int git_array_grow(void *_a, size_t item_size) {
     volatile git_array_generic_t *a = (git_array_generic_t *) _a;
     size_t new_size;
-    char *new_array;
 
     if (a->size < 8) {
         new_size = 8;
@@ -238,9 +237,9 @@ int git_array_grow(void *_a, size_t item_size) {
     }
 
     size_t newsize = new_size * item_size;
-    new_array = (char*) Env::Heap_Alloc(newsize);
-    Env::Memcpy(new_array, a->ptr, a->size);
-
+    char *new_array = (char*) Env::Heap_Alloc(newsize);
+    Env::Memcpy(new_array, a->ptr, a->size * item_size);
+    Env::Heap_Free(a->ptr);
     a->ptr = new_array;
     a->asize = new_size;
     return 0;

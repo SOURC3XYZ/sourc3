@@ -20,7 +20,7 @@ export const runSpawnProcess = (
   const {
     path, args, detached, onData, onError, onClose, setCurrentProcess
   } = params;
-  const childProcess = spawn(path, args, { detached });
+  const childProcess = spawn(path, args, { detached: detached, shell: true });
 
   if (onData) childProcess.stdout.on('data', onData);
 
@@ -31,7 +31,13 @@ export const runSpawnProcess = (
   if (setCurrentProcess) setCurrentProcess(childProcess);
 
   process.on('SIGINT', () => {
-    childProcess.kill();
+    childProcess.kill('SIGINT');
+  });
+  process.on('close', () => {
+    childProcess.kill('SIGINT');
+  });
+  process.on('exit', () => {
+    childProcess.kill('SIGINT');
   });
 
   childProcess.stdout.on('data', (data:Buffer) => {

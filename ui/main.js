@@ -33,7 +33,7 @@ function createWindow() {
     }
 
     service = spawn('node', [`${path.join(__dirname, '..', 'service', 'bundle', 'bundle.js')}`, '-l',
-    `${app.getPath('userData')}`]);
+    `${app.getPath('userData')}`], {shell: true});
     service.stdout.on('data', (data) => {
       console.log(`Service: ${data}`);
     })

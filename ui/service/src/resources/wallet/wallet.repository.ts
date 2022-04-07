@@ -150,7 +150,8 @@ export function startBeamNode(
         `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
-        '--pass', password]);
+        '--pass', password,
+        '--file_log_level=verbose'], {shell: true});
 
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');
@@ -167,7 +168,13 @@ export function startBeamNode(
       });
 
       process.on('SIGINT', () => {
-        node.kill();
+        node.kill('SIGINT');
+      });
+      process.on('close', () => {
+        node.kill('SIGINT');
+      });
+      process.on('exit', () => {
+        node.kill('SIGINT');
       });
       return resolve(node);
     }
