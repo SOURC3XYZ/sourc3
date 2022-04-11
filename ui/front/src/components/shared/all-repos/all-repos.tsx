@@ -43,6 +43,8 @@ const AllRepos = ({
     pkey, repos, searchText, setPrevHref
   });
 
+  const { type, path } = talonProps;
+
   const showModal = () => {
     setState({ isModalVisible: true });
   };
@@ -63,7 +65,7 @@ const AllRepos = ({
   const RepoManager = (inputText: string) => (
     <div className={styles.repoHeader}>
 
-      <Nav {...talonProps} />
+      <Nav type={type} path={path} />
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>

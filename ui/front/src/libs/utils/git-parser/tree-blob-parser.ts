@@ -8,7 +8,6 @@ export default class TreeBlobParser extends AbstractParser {
     const output = this.isIpfsHash(oid)
       ? await this.getIpfsData<string>(oid)
       : await this.getDataFromBC(oid);
-    debugger;
     return output;
   };
 

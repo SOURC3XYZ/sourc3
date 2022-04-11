@@ -8,9 +8,10 @@ import {
   Notifications,
   AllRepos,
   Preload,
-  Repo
+  Repo,
+  FailPage
 } from '@components/shared';
-import { PreloadComponent } from '@components/hoc';
+import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -45,6 +46,11 @@ const Main = ({
     }
   ];
 
+  const fallback = (props:any) => {
+    const updatedProps = { ...props, subTitle: props.message || 'no data' };
+    return <FailPage {...updatedProps} isBtn />;
+  };
+
   const RoutesView = () => (
     <Routes>
       {
@@ -58,7 +64,9 @@ const Main = ({
                   callback={connectApi}
                   Fallback={Preload}
                 >
-                  {element}
+                  <ErrorBoundary fallback={fallback}>
+                    {element}
+                  </ErrorBoundary>
                 </PreloadComponent>
               );
             return <Route path={path} element={route} />;

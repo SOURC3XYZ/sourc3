@@ -54,7 +54,8 @@ export default abstract class AbstractParser {
     if (
       this.pathname !== window.location.pathname
     ) throw new Error('url has changed');
-    const { result } = await this.api.callApi(req);
+    const { result, error } = await this.api.callApi(req);
+    if (error) throw new Error(error.message);
     if (result?.output) {
       return JSON.parse(result.output) as T;
     } return result as unknown as T; // TODO Danik: do without unknown

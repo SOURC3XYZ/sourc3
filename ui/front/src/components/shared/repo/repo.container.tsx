@@ -61,15 +61,16 @@ const UserRepos = ({
 
   return (
     <div className={styles.wrapper}>
-      <PreloadComponent
-        isLoaded={isLoaded}
-        callback={loadingHandler}
-        Fallback={Preload}
-      >
-        <ErrorBoundary fallback={fallback}>
+      <ErrorBoundary fallback={fallback}>
+        <PreloadComponent
+          isLoaded={isLoaded}
+          callback={loadingHandler}
+          Fallback={Preload}
+        >
           <RepoContent {...props} />
-        </ErrorBoundary>
-      </PreloadComponent>
+
+        </PreloadComponent>
+      </ErrorBoundary>
     </div>
   );
 };
