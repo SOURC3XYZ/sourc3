@@ -10,6 +10,7 @@ import {
   Preload,
   Repo
 } from '@components/shared';
+import { PreloadComponent } from '@components/hoc';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -47,13 +48,27 @@ const Main = ({
   const RoutesView = () => (
     <Routes>
       {
-        routes.map((el) => <Route path={el.path} element={el.element} />)
+        routes
+          .map(({ path, element }) => {
+            const route = path === '/'
+              ? element
+              : (
+                <PreloadComponent
+                  isLoaded={isApiConnected}
+                  callback={connectApi}
+                  Fallback={Preload}
+                >
+                  {element}
+                </PreloadComponent>
+              );
+            return <Route path={path} element={route} />;
+          })
       }
 
     </Routes>
   );
 
-  const Block = () => (
+  return (
     <>
       <Header />
       <div className={styles.main}>
@@ -62,8 +77,6 @@ const Main = ({
       </div>
     </>
   );
-
-  return isApiConnected ? <Block /> : <Preload />;
 };
 
 const mapState = ({

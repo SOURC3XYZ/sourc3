@@ -1,7 +1,8 @@
 import { Preload } from '@components/shared';
+import { useAsyncError } from '@libs/hooks';
 import { getTree } from '@libs/utils';
 import {
-  DataNode, IDataNodeCustom, MetaHash, RepoId, UpdateProps
+  DataNode, ErrorHandler, IDataNodeCustom, MetaHash, RepoId, UpdateProps
 } from '@types';
 import { useState, useEffect } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -15,18 +16,19 @@ type FileTextProps = {
   tree: DataNode[] | null;
   pathArray: string[];
   filesMap: Map<MetaHash, string>,
-  getFileData: (repoId: RepoId, oid: string) => void;
-  updateTree: (props: UpdateProps) => void
+  getFileData: (repoId: RepoId, oid: string, errHandler: ErrorHandler) => void;
+  updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void
 };
 
 const FileText = ({
   id, tree, filesMap, pathArray, getFileData, updateTree
 }: FileTextProps) => {
+  const setError = useAsyncError();
   const [ext, setExt] = useState('');
   const [text, setText] = useState<string | null>(null);
 
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id });
+    updateTree({ ...props, id }, setError);
   };
 
   const fileChecker = () => {
@@ -41,7 +43,7 @@ const FileText = ({
       if (file) {
         const memoized = filesMap.get(file.dataRef.oid);
         if (memoized) setText(memoized);
-        else getFileData(id, file.dataRef.oid);
+        else getFileData(id, file.dataRef.oid, setError);
       } else throw new Error('no file');
     }
     if (fileName) {

@@ -19,7 +19,8 @@ export type ParserProps = {
   id:RepoId,
   metas: Map<MetaHash, RepoMeta>,
   api: TypedBeamApi,
-  expect: IpfsRequestType
+  expect: IpfsRequestType,
+  pathname: string;
 };
 
 export default abstract class AbstractParser {
@@ -31,6 +32,8 @@ export default abstract class AbstractParser {
 
   private readonly expect: IpfsRequestType;
 
+  private readonly pathname: string;
+
   protected readonly ipfsRequest: IpfsRequestCreators = {
     commit: RC.getCommitFromData,
     tree: RC.getTreeFromData,
@@ -38,15 +41,19 @@ export default abstract class AbstractParser {
   };
 
   constructor({
-    id, metas, api, expect
+    id, metas, api, expect, pathname
   }:ParserProps) {
     this.id = id;
     this.metas = metas;
     this.api = api;
     this.expect = expect;
+    this.pathname = pathname;
   }
 
   protected readonly call = async <T>(req: RequestCreators):Promise<T> => {
+    if (
+      this.pathname !== window.location.pathname
+    ) throw new Error('url has changed');
     const { result } = await this.api.callApi(req);
     if (result?.output) {
       return JSON.parse(result.output) as T;

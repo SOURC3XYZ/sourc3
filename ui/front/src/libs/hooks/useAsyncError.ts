@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
+import { useCallback, useState } from 'react';
 
 const useAsyncError = () => {
-  const [_, setError] = React.useState();
-  return React.useCallback(
+  const [_, setError] = useState();
+  return useCallback(
     (e:Error) => {
       setError(() => {
         throw e;

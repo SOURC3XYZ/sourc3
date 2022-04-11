@@ -1,8 +1,14 @@
 import { ErrorBoundary } from '@components/hoc';
 import { FailPage } from '@components/shared';
+import { useAsyncError } from '@libs/hooks';
 import { setBranchAndCommit } from '@libs/utils';
 import {
-  BranchCommit, BranchName, DataNode, MetaHash, RepoId, UpdateProps
+  BranchCommit,
+  BranchName,
+  DataNode,
+  ErrorHandler,
+  MetaHash, RepoId,
+  UpdateProps
 } from '@types';
 import { useEffect } from 'react';
 import {
@@ -17,9 +23,11 @@ export type UpperMenuProps = {
   repoMap: Map<BranchName, BranchCommit[]>;
   filesMap: Map<MetaHash, string>;
   prevReposHref: string | null;
-  updateTree: (props: Omit<UpdateProps, 'id'>) => void;
+  updateTree: (
+    props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void;
   killTree: () => void;
-  getFileData: (repoId: RepoId, oid: string) => void;
+  getFileData: (
+    repoId: RepoId, oid: string, errorHandler: ErrorHandler) => void;
 };
 
 const splitUrl = (routes: string[], fullUrl: string) => {
@@ -59,6 +67,7 @@ const RepoContent = ({
   updateTree,
   getFileData
 }: UpperMenuProps) => {
+  const setError = useAsyncError();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { baseUrl, params } = splitUrl(['tree', 'blob'], pathname);
@@ -69,16 +78,17 @@ const RepoContent = ({
   const pathArray = splitted.slice(splitted.indexOf(commit.commit_oid) + 1);
 
   useEffect(() => {
+    if (repoMap === null) setError(new Error('no data'));
     navigate(`tree/${branch}/${commit.commit_oid}`);
   }, []);
 
   useEffect(() => {
     if (tree) killTree();
-    updateTree({ oid: commit.tree_oid });
+    updateTree({ oid: commit.tree_oid }, setError);
   }, [commit]);
 
   const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: 'no data' };
+    const updatedProps = { ...props, subTitle: props.message || 'no data' };
     return <FailPage {...updatedProps} />;
   };
 

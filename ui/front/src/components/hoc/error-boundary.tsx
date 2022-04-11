@@ -10,8 +10,12 @@ type ErrorBoundaryState = {
   message: string;
 };
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
-  state:ErrorBoundaryState = { hasError: false, message: '' };
+class ErrorBoundary extends React
+  .Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, message: '' };
+  }
 
   static getDerivedStateFromError(err: Error) {
     return { hasError: true, message: err.message };

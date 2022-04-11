@@ -7,16 +7,9 @@ import { RepoId, RepoListType, RepoType } from '@types';
 import React, { ChangeEvent, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
-import { useLocation, useParams } from 'react-router-dom';
-import { searchFilter } from '@libs/utils';
-import { useObjectState } from '@libs/hooks';
+import { useAllRepos, useObjectState } from '@libs/hooks';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
-
-type LocationState = {
-  page: string,
-  type: RepoListType
-};
 
 type AllReposProps = {
   pkey:string,
@@ -43,23 +36,12 @@ const AllRepos = ({
   setInputText,
   setPrevHref
 }:AllReposProps) => {
-  const { pathname } = useLocation();
-  const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const [state, setState] = useObjectState<typeof initialState>(initialState);
   const { isModalVisible, inputRepoName } = state;
-  const path = pathname.split('repos/')[0];
 
-  const byRouteRepos = pkey && type === 'my'
-    ? repos.filter(({ repo_owner }) => repo_owner === pkey)
-    : repos;
-
-  const filteredRepos = React.useMemo(() => searchFilter(
-    searchText, byRouteRepos, ['repo_id', 'repo_name']
-  ), [searchText, repos, type]);
-
-  React.useEffect(() => {
-    setPrevHref(pathname);
-  }, [page]);
+  const talonProps = useAllRepos({
+    pkey, repos, searchText, setPrevHref
+  });
 
   const showModal = () => {
     setState({ isModalVisible: true });
@@ -81,7 +63,7 @@ const AllRepos = ({
   const RepoManager = (inputText: string) => (
     <div className={styles.repoHeader}>
 
-      <Nav type={type} path={path} />
+      <Nav {...talonProps} />
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>
@@ -124,12 +106,9 @@ const AllRepos = ({
     <div className={styles.content}>
       <RepoManagerView text={searchText} />
       <RepoList
-        path={path}
+        {...talonProps}
         searchText={searchText}
-        page={+page}
         deleteRepos={deleteRepos}
-        elements={filteredRepos}
-        type={type}
       />
     </div>
   );

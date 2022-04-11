@@ -1,13 +1,14 @@
 import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
-  DataNode, RepoId, UpdateProps
+  DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
 import { List } from 'antd';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
+import { useAsyncError } from '@libs/hooks';
 import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
@@ -15,7 +16,7 @@ type FileTreeBlockProps = {
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
-  updateTree: (props: UpdateProps) => void;
+  updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void;
 };
 
 const leafCreator = (url:string, node: DataNode) => {
@@ -56,8 +57,10 @@ const leafCreator = (url:string, node: DataNode) => {
 const FileTreeBlock = ({
   id, tree, pathname, pathArray, updateTree
 }:FileTreeBlockProps) => {
+  const setError = useAsyncError();
+
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id });
+    updateTree({ ...props, id }, setError);
   };
 
   const treeList = tree && getTree(
@@ -65,7 +68,6 @@ const FileTreeBlock = ({
     pathArray,
     updateTreeDecor
   );
-  // .map((el) => leafCreator(pathname, el));
   return (
     <>
       {

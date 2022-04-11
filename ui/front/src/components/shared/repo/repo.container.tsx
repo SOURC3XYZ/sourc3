@@ -1,21 +1,14 @@
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
-  BranchCommit, DataNode, MetaHash, RepoId, TreeElementOid, UpdateProps
+  BranchCommit, DataNode, ErrorHandler, MetaHash, RepoId, TreeElementOid, UpdateProps
 } from '@types';
-import React from 'react';
 import { batch, connect } from 'react-redux';
-import {
-  useParams
-} from 'react-router-dom';
 import { FailPage, Preload } from '@components/shared';
-import { loadingData } from '@libs/utils';
+import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { useUserRepos } from '@libs/hooks';
 import { RepoContent } from './content';
 import styles from './repo.module.css';
-
-type LocationState = {
-  repoParams:string;
-};
 
 type RepoProps = {
   currentId: RepoId | null;
@@ -24,10 +17,16 @@ type RepoProps = {
   tree: DataNode[] | null;
   fileText: string | null;
   prevReposHref: string | null
-  getRepoData: (id: RepoId) => (resolve: () => void) => void;
-  updateTree: (id: RepoId) => (props: Omit<UpdateProps, 'id'>) => void;
+  getRepoData: (
+    id: RepoId, errHandler: ErrorHandler
+  ) => (resolve: () => void) => void;
+  updateTree: (
+    id: RepoId, errHandler: ErrorHandler
+  ) => (props: Omit<UpdateProps, 'id'>) => void;
   killTree: () => void;
-  getFileData: (repoId: RepoId, oid: string) => void;
+  getFileData: (
+    repoId: RepoId, oid: string, errHandler: ErrorHandler
+  ) => void;
 };
 
 const UserRepos = ({
@@ -41,39 +40,36 @@ const UserRepos = ({
   killTree,
   getFileData
 }:RepoProps) => {
-  const location = useParams<'repoParams'>() as LocationState;
-  const { repoParams } = location;
-  const [id, repoName] = repoParams.split('&');
-  const update = React.useCallback(updateTree(+id), []);
-  const [isLoading, setIsLoading] = React.useState(currentId !== +id);
+  const talonProps = useUserRepos({ currentId, getRepoData, updateTree });
 
-  React.useEffect(() => {
-    if (isLoading) {
-      loadingData(getRepoData(+id))
-        .then(() => setIsLoading(false));
-    }
-  }, []);
+  const { isLoaded, loadingHandler } = talonProps;
 
-  const repoContentProps = {
-    id: +id,
-    repoMap: repoMap as Map<string, BranchCommit[]>,
-    filesMap,
+  const fallback = (props:any) => {
+    const updatedProps = { ...props, subTitle: props.message || 'no data' };
+    return <FailPage {...updatedProps} isBtn />;
+  };
+
+  const props = {
+    ...talonProps,
+    repoMap: repoMap as NonNullable<typeof repoMap>,
     tree,
-    repoName,
+    filesMap,
     prevReposHref,
-    updateTree: update,
     killTree,
     getFileData
   };
+
   return (
-    <div
-      className={styles.wrapper}
-    >
-      {isLoading
-        ? <Preload />
-        : repoMap
-          ? <RepoContent {...repoContentProps} />
-          : <FailPage isBtn subTitle="no data" />}
+    <div className={styles.wrapper}>
+      <PreloadComponent
+        isLoaded={isLoaded}
+        callback={loadingHandler}
+        Fallback={Preload}
+      >
+        <ErrorBoundary fallback={fallback}>
+          <RepoContent {...props} />
+        </ErrorBoundary>
+      </PreloadComponent>
     </div>
   );
 };
@@ -92,8 +88,10 @@ const mapState = ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getRepoData: (id:RepoId) => (resolve: () => void) => {
-    dispatch(thunks.getRepo(id, resolve));
+  getRepoData: (
+    id:RepoId, errHandler: ErrorHandler
+  ) => (resolve: () => void) => {
+    dispatch(thunks.getRepo(id, errHandler, resolve));
   },
   killTree: () => {
     batch(() => {
@@ -101,11 +99,15 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
       dispatch(AC.setTreeData(null));
     });
   },
-  updateTree: (id: RepoId) => (props: Omit<UpdateProps, 'id'>) => {
-    dispatch(thunks.getTree({ ...props, id }));
+  updateTree: (
+    id: RepoId, errHandler: ErrorHandler
+  ) => (props: Omit<UpdateProps, 'id'>) => {
+    dispatch(thunks.getTree({ ...props, id }, errHandler));
   },
-  getFileData: (repoId: RepoId, oid: TreeElementOid) => {
-    dispatch(thunks.getTextData(repoId, oid));
+  getFileData: (
+    repoId: RepoId, oid: TreeElementOid, errHandler: ErrorHandler
+  ) => {
+    dispatch(thunks.getTextData(repoId, oid, errHandler));
   }
 });
 

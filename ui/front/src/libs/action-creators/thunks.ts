@@ -203,18 +203,11 @@ export const thunks = {
       } catch (error) { thunkCatch(error, dispatch); }
     },
 
-  // repoGetMeta: (id: number) => async (dispatch: AppThunkDispatch) => {
-  //   try {
-  //     const action = RC.repoGetMeta(id);
-  //     const output = await getOutput<RepoMetaResp>(action, dispatch);
-  //     if (output) dispatch(AC.setRepoMeta(output.objects));
-  //   } catch (error) { thunkCatch(error, dispatch); }
-  // },
-
   getRepo: (
-    id: RepoId, resolve?: () => void
+    id: RepoId, errHandler: (err: Error) => void, resolve?: () => void
   ) => async (dispatch: AppThunkDispatch) => {
     try {
+      const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(
         RC.repoGetMeta(id), dispatch
@@ -225,7 +218,7 @@ export const thunks = {
         });
       }
       const commitTree = await new CommitMapParser({
-        id, metas, api, expect: 'commit'
+        id, metas, api, pathname, expect: 'commit'
       })
         .buildCommitTree();
 
@@ -236,25 +229,26 @@ export const thunks = {
         AC.setTreeData(null)
       ]);
       if (resolve) resolve();
-    } catch (error) { thunkCatch(error, dispatch); }
+    } catch (error) { errHandler(error as Error); }
   },
 
   getTree: (
     {
       id, oid, key, resolve
-    }: UpdateProps
+    }: UpdateProps, errHandler: (err: Error) => void
   ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
     try {
+      const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
-        id, metas, api, key
+        id, metas, api, key, pathname
       };
       const updated = await new TreeListParser(
         { ...parserProps, expect: 'tree' }
       ).getTree(oid, tree);
       dispatch(AC.setTreeData(updated));
       if (resolve) resolve();
-    } catch (error) { thunkCatch(error, dispatch); }
+    } catch (error) { errHandler(error as Error); }
   },
 
   createRepos: (resp_name: string) => async (dispatch: AppThunkDispatch) => {
@@ -283,21 +277,23 @@ export const thunks = {
   },
 
   getTextData: (
-    repoId: RepoId, oid: TreeElementOid, resolve?: () => void
+    repoId: RepoId,
+    oid: TreeElementOid,
+    errHandler: (err: Error) => void,
+    resolve?: () => void
   ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
     try {
-      // const action = RC.getData(repoId, oid);
+      const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {
-        id: repoId, metas, api
+        id: repoId, metas, api, pathname
       };
-      // const output = await getOutput<ObjectDataResp>(action, dispatch);
       const output = await new TreeBlobParser(
         { ...parserProps, expect: 'blob' }
       ).parseBlob(oid);
       if (output) dispatch(AC.addFileToMap([oid, output]));
       if (resolve) resolve();
-    } catch (error) { thunkCatch(error, dispatch); }
+    } catch (error) { errHandler(error as Error); }
   },
 
   getWalletStatus: () => async (dispatch: AppThunkDispatch) => {
