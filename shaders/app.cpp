@@ -534,7 +534,18 @@ namespace
             auto *value = reinterpret_cast<GitObject::Data *>(buf.get());
             mygit2::git_tree tree{};
             if (tree_parse(&tree, value->data, valueLen) == 0) {
-                AddTree(tree);
+                Env::DocGroup tree_obj("tree");
+                char oid_buffer[GIT_OID_HEXSZ + 1];
+                oid_buffer[GIT_OID_HEXSZ] = '\0';
+                Env::DocArray entries("entries");
+                for (size_t i = 0; i < tree.entries.size; ++i) {
+                    Env::DocGroup entry("");
+                    Env::DocAddText("filename", tree.entries.ptr[i].filename);
+                    git_oid_fmt(oid_buffer, tree.entries.ptr[i].oid);
+                    Env::DocAddNum("attributes", static_cast<uint32_t>(tree.entries.ptr[i].attr));
+                    Env::DocAddText("oid", oid_buffer);
+                }
+                Env::Heap_Free(tree.entries.ptr);
             } else {
                 On_error("no tree in data");
             }
