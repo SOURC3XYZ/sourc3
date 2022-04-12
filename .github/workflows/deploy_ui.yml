@@ -1,0 +1,19 @@
+name: Deploying the UI
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Push to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.INSTANCE_IP_STG }}
+          username: ${{ secrets.INSTANCE_USERNAME }}
+          key: ${{ secrets.INSTANCE_KEY }}
+          passphrase: ${{ secrets.INSTANCE_PASSPHRASE }} 
+          script: ${{ secrets.PROJECT_PATH_STG }} && ${{ secrets.GIT_REPO_STG }} && sudo docker build -t sourc3-ui:latest . && sudo docker rm -f sourc3-ui || true && sudo docker run -d -p 80:80 --name  sourc3-ui sourc3-ui:latest
