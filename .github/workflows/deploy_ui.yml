@@ -16,4 +16,4 @@ jobs:
           username: ${{ secrets.INSTANCE_USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
           passphrase: ${{ secrets.INSTANCE_PASSPHRASE }} 
-          script: ${{ secrets.PROJECT_PATH_STG }} && ${{ secrets.GIT_REPO_STG }} && sudo docker build -t sourc3-ui:latest . && sudo docker rm -f sourc3-ui || true && sudo docker run -d -p 80:80 --name  sourc3-ui sourc3-ui:latest
+          script: ${{ secrets.PROJECT_PATH_STG }} && ${{ secrets.GIT_REPO_STG }} && docker build -t sourc3-ui:latest . &&  docker rm -f sourc3-ui || true && docker run -d -p 80:80 --name  sourc3-ui sourc3-ui:latest
