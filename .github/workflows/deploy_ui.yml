@@ -12,7 +12,7 @@ jobs:
       - name: Push to server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.INSTANCE_IP_STG }}
+          host: ${{ secrets.INSTANCE_IP_UI }}
           username: ${{ secrets.INSTANCE_USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
           passphrase: ${{ secrets.INSTANCE_PASSPHRASE }} 
