@@ -4,20 +4,20 @@
 #include "../upgradable2/contract.h"
 #include "../upgradable2/app_common_impl.h"
 
-#define Gallery_manager_deploy_version(macro)
-#define Gallery_manager_view(macro)
-#define Gallery_manager_my_admin_key(macro)
-#define Gallery_manager_schedule_upgrade(macro) Upgradable2_schedule_upgrade(macro)
-#define Gallery_manager_explicit_upgrade(macro) macro(ContractID, cid)
-#define Gallery_manager_replace_admin(macro) Upgradable2_replace_admin(macro)
-#define Gallery_manager_set_min_approvers(macro) Upgradable2_set_min_approvers(macro)
+#define Sourc3_manager_deploy_version(macro)
+#define Sourc3_manager_view(macro)
+#define Sourc3_manager_my_admin_key(macro)
+#define Sourc3_manager_schedule_upgrade(macro) Upgradable2_schedule_upgrade(macro)
+#define Sourc3_manager_explicit_upgrade(macro) macro(ContractID, cid)
+#define Sourc3_manager_replace_admin(macro) Upgradable2_replace_admin(macro)
+#define Sourc3_manager_set_min_approvers(macro) Upgradable2_set_min_approvers(macro)
 
-#define Gallery_manager_deploy_contract(macro) \
+#define Sourc3_manager_deploy_contract(macro) \
     Upgradable2_deploy(macro) \
     macro(Amount, voteRewardAmount) \
     macro(AssetID, voteRewardAid)
 
-#define GalleryRole_manager(macro) \
+#define Sourc3Role_manager(macro) \
     macro(manager, deploy_version) \
     macro(manager, view) \
     macro(manager, deploy_contract) \
@@ -27,7 +27,7 @@
     macro(manager, set_min_approvers) \
     macro(manager, my_admin_key) \
 
-#define GalleryRoles_All(macro) \
+#define Sourc3Roles_All(macro) \
     macro(manager)
 
 
@@ -39,10 +39,10 @@ BEAM_EXPORT void Method_0() {
         Env::DocGroup gr("roles");
 
 #define THE_FIELD(type, name) Env::DocAddText(#name, #type);
-#define THE_METHOD(role, name) { Env::DocGroup grMethod(#name);  Gallery_##role##_##name(THE_FIELD) }
-#define THE_ROLE(name) { Env::DocGroup grRole(#name); GalleryRole_##name(THE_METHOD) }
+#define THE_METHOD(role, name) { Env::DocGroup grMethod(#name);  Sourc3_##role##_##name(THE_FIELD) }
+#define THE_ROLE(name) { Env::DocGroup grRole(#name); Sourc3Role_##name(THE_METHOD) }
 
-        GalleryRoles_All(THE_ROLE)
+        Sourc3Roles_All(THE_ROLE)
 #undef THE_ROLE
 #undef THE_METHOD
 #undef THE_FIELD
@@ -50,14 +50,14 @@ BEAM_EXPORT void Method_0() {
 }
 
 #define THE_FIELD(type, name) const type& name,
-#define ON_METHOD(role, name) void On_##role##_##name(Gallery_##role##_##name(THE_FIELD) int unused = 0)
+#define ON_METHOD(role, name) void On_##role##_##name(Sourc3_##role##_##name(THE_FIELD) int unused = 0)
 
 void OnError(const char *sz) {
     Env::DocAddText("error", sz);
 }
 
 namespace KeyMaterial {
-    const char g_szAdmin[] = "Gallery-key-admin";
+    const char g_szAdmin[] = "Sourc3-key-admin";
 
     struct MyAdminKey : public Env::KeyID {
         MyAdminKey() : Env::KeyID(g_szAdmin, sizeof(g_szAdmin) - sizeof(char)) {}
@@ -84,7 +84,7 @@ ON_METHOD(manager, view) {
 }
 
 ON_METHOD(manager, deploy_version) {
-    Env::GenerateKernel(nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, "Deploy Gallery bytecode", 0);
+    Env::GenerateKernel(nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, "Deploy Sourc3 bytecode", 0);
 }
 
 
@@ -108,7 +108,7 @@ ON_METHOD(manager, deploy_contract) {
             Env::Cost::SaveVar_For(sizeof(GitRemoteBeam::State)) +
             Env::Cost::Cycle * 50;
 
-    Env::GenerateKernel(nullptr, 0, &args, sizeof(args), nullptr, 0, nullptr, 0, "Deploy Gallery contract", nCharge);
+    Env::GenerateKernel(nullptr, 0, &args, sizeof(args), nullptr, 0, nullptr, 0, "Deploy Sourc3 contract", nCharge);
 }
 
 ON_METHOD(manager, schedule_upgrade) {
@@ -156,18 +156,18 @@ BEAM_EXPORT void Method_1() {
 
 #define THE_METHOD(role, name) \
         if (!Env::Strcmp(szAction, #name)) { \
-            Gallery_##role##_##name(PAR_READ) \
-            On_##role##_##name(Gallery_##role##_##name(PAR_PASS) 0); \
+            Sourc3_##role##_##name(PAR_READ) \
+            On_##role##_##name(Sourc3_##role##_##name(PAR_PASS) 0); \
             return; \
         }
 
 #define THE_ROLE(name) \
     if (!Env::Strcmp(szRole, #name)) { \
-        GalleryRole_##name(THE_METHOD) \
+        Sourc3Role_##name(THE_METHOD) \
         return OnError("invalid Action"); \
     }
 
-    GalleryRoles_All(THE_ROLE)
+    Sourc3Roles_All(THE_ROLE)
 
 #undef THE_ROLE
 #undef THE_METHOD
