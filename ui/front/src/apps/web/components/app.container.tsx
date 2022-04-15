@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
@@ -23,10 +22,6 @@ type MainProps = {
 const Main = ({
   isApiConnected, connectApi
 }:MainProps) => {
-  useEffect(() => {
-    if (!isApiConnected) connectApi();
-  }, [isApiConnected]);
-
   const routes = [
     {
       path: '/',

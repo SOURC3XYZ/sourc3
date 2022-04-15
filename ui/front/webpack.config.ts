@@ -42,11 +42,11 @@ const build:IConfig = {
     filename: '[name].bundle.js',
     chunkFilename: '[name].js',
     assetModuleFilename: 'assets/[name][ext]',
-    // publicPath: './'
-    publicPath: env === 'production' ? './' : '/'
+    // publicPath: '/',
+    publicPath: env === 'production' && mode === 'desktop' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   optimization: {
     nodeEnv: 'production'
   },

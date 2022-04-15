@@ -65,6 +65,12 @@ export class BeamAPI<T> {
     } return this.eventManager(parsed);
   };
 
+  public loadApiEventManager = (eventManager: any) => {
+    this.eventManager = eventManager;
+  };
+
+  public isApiLoaded = () => Boolean(this.BEAM);
+
   createHeadlessAPI = async (
     apiver:any, apivermin:any, appname:any, apirescback:any
   ): Promise<BeamObject> => {
@@ -168,11 +174,10 @@ export class BeamAPI<T> {
     return /SOURC3-DESKTOP/i.test(ua);
   };
 
-  readonly loadAPI = async (
-    eventManager: any, apiHost?:string
-  ): Promise<BeamAPI<T>> => {
+  public isHeadless = () => this.BEAM?.headless;
+
+  readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
-    this.eventManager = eventManager;
     if (!this.apiHost) {
       this.BEAM = this.isDapps()
         ? { api: await this.connectToApi() }
@@ -186,7 +191,14 @@ export class BeamAPI<T> {
   readonly extensionConnect = async (message: {
     [key: string]: string;
   }) => {
-    this.BEAM = { api: await this.connectToWebWallet(message) };
+    const api = await this.connectToWebWallet(message);
+    if (api && this.isHeadless()) {
+      this.BEAM?.api.delete();
+      await new Promise((resolve) => {
+        this.BEAM?.client.stopWallet(resolve);
+      });
+    }
+    this.BEAM = { api };
   };
 
   readonly initContract = async (

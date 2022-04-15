@@ -57,16 +57,32 @@ async function getOutput<T>(
 export const thunks = {
   connectExtension: () => async (dispatch: AppThunkDispatch) => {
     console.log(messageBeam);
-    await api.extensionConnect(messageBeam);
-    const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
-    if (pKey) dispatch(AC.setPublicKey(pKey.key));
+    try {
+      await api.extensionConnect(messageBeam);
+      if (!api.isHeadless()) {
+        await initContract(wasm);
+        const action = RC.viewContracts();
+        const output = await getOutput<ContractsResp>(action, dispatch);
+        if (output) {
+          const finded = output.contracts.find((el) => el.cid === api.cid);
+          if (!finded) throw new Error(`no specified cid (${api.cid})`);
+          dispatch(AC.setIsConnected(Boolean(finded)));
+        } // TODO: DAnik - double code
+      }
+      api.loadApiEventManager(apiEventManager(dispatch));
+      await callApi(RC.subUnsub()); // subscribe to api events
+      const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
+      if (pKey) dispatch(AC.setPublicKey(pKey.key));
+    } catch (error) { thunkCatch(error, dispatch); }
   },
 
   connectBeamApi:
     (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
       try {
-        await loadAPI(apiEventManager(dispatch), apiHost);
+        if (api.isApiLoaded()) return;
+        await loadAPI(apiHost);
         await initContract(wasm);
+        api.loadApiEventManager(apiEventManager(dispatch));
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
         if (output) {
