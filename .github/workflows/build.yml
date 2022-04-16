@@ -105,7 +105,40 @@ jobs:
         echo "BEAM_SHADER_SDK=$WORKSPACE/shader-sdk" >> $GITHUB_ENV
         echo "WASI_SDK_PREFIX=$WORKSPACE/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
         
+###############################################################################
+# Configure CMake
+###############################################################################
+    - name: Configure CMake [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: |
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+      env:
+        LDFLAGS: -L/usr/local/opt/icu4c/lib
+
+    - name: Configure CMake [ubuntu all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+
+    - name: Configure CMake [windows]
+      if: matrix.os == 'windows-2019'
+      shell: bash
+      run: |
+        cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
+
+    - name: Save version info
+      shell: bash
+      run: |
+        echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
+        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
         
+    - name: Change version for Electron
+      shell: bash
+      run: |
+        sed 's/"version": "1.0.0"/"version": "'${{ env.PACKAGE_VERSION }}'"/g' ui/package.json > ui/package_tmp.json
+        mv ui/package_tmp.json ui/package.json
+ 
     - name: Prepare for electron build [windows-2019]
       shell: bash
       if: matrix.os == 'windows-2019'
@@ -143,39 +176,6 @@ jobs:
         yarn build && yarn bundle
         yarn app:dist
 
-###############################################################################
-# Configure CMake
-###############################################################################
-    - name: Configure CMake [macos-10.15]
-      if: matrix.os == 'macos-10.15'
-      run: |
-        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
-      env:
-        LDFLAGS: -L/usr/local/opt/icu4c/lib
-
-    - name: Configure CMake [ubuntu all]
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
-      run: |
-        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
-
-    - name: Configure CMake [windows]
-      if: matrix.os == 'windows-2019'
-      shell: bash
-      run: |
-        cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
-
-    - name: Save version info
-      shell: bash
-      run: |
-        echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
-        
-    - name: Change version for Electron
-      shell: bash
-      run: |
-        sed 's/"version": "1.0.0"/"version": "'${{ env.PACKAGE_VERSION }}'"/g' ui/package.json > ui/package_tmp.json
-        mv ui/package_tmp.json ui/package.json
 
 ###############################################################################
 # Build
