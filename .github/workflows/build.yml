@@ -151,10 +151,6 @@ jobs:
         cp ./downloads/wasm-client.* ./ui/front/dist/
         cp ./shaders/app.wasm ./ui/front/dist/assets/
         
-        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
-        
-        cp ${{ env.OPENSSL_ROOT_DIR }}/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
-        
         npm install --global yarn
         
     - name: Prepare for electron build [macos-10.15 && ubuntu all]
@@ -169,14 +165,25 @@ jobs:
         cp ./shaders/app.wasm ./ui/front/dist/assets
         sudo npm install --global yarn
           
-    - name: Build electron
+    - name: Install electron dependencies
       shell: bash
       run: |
-        cd ui/front
+      	cd ui/front
         npm i --save-dev --legacy-peer-deps
         NODE_ENV=production npm run build
         cd ..
         npm i --save-dev --legacy-peer-deps
+        
+    - name: Fix rebuilding nodegit [windows-2019]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
+        cp ${{ env.OPENSSL_ROOT_DIR }}/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
+          
+    - name: Build electron
+      shell: bash
+      run: |
         ./node_modules/.bin/electron-rebuild
         yarn build && yarn bundle
         yarn app:dist
