@@ -22,11 +22,12 @@
     "cors": "^2.8.5",
     "dotenv": "^11.0.0",
     "express": "^4.17.2",
-    "nodegit": "^0.28.0-alpha.10",
+    "nodegit": "^0.28.0-alpha.13",
     "request": "^2.88.2",
     "sqlite3": "^5.0.2",
     "typeorm": "^0.2.43",
-    "winston": "^3.4.0"
+    "winston": "^3.4.0",
+    "electron": "16.0.7"
   },
   "devDependencies": {
     "@mapbox/node-pre-gyp": "^1.0.8",
@@ -46,7 +47,6 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^16.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "electron": "16.0.7",
     "electron-builder": "^22.14.13",
     "electron-rebuild": "^3.2.7",
     "jest": "^27.4.7",
