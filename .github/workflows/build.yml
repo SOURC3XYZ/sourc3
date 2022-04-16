@@ -184,6 +184,7 @@ jobs:
     - name: Build electron
       shell: bash
       run: |
+        cd ui
         ./node_modules/.bin/electron-rebuild
         yarn build && yarn bundle
         yarn app:dist
