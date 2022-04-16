@@ -174,17 +174,12 @@ jobs:
         cd ..
         npm i --save-dev --legacy-peer-deps
 
-    - name: Fix rebuilding nodegit [windows-2019]
-      shell: bash
-      if: matrix.os == 'windows-2019'
-      run: |
-        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
-        cp C:/beam-libs/openssl/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
-    
     - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019'
       run: |
         cd ui
+        dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build"
+        npm config set vcvarsall_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
         .\node_modules\.bin\electron-rebuild.cmd
     
     - name: Rebuild modules [ubuntu-all && macos-all]
