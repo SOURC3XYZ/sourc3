@@ -1,3 +1,5 @@
+// @ts-ignore
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { ipcRenderer } = require('electron');
 
@@ -9,7 +11,7 @@ process.once('loaded', () => {
         }
     });
 
-    ipcRenderer.on('ping', (event, message) => {
+    ipcRenderer.on('ping', (_, message) => {
         window.postMessage({
             type: 'select-dirs-answer',
             path: message

@@ -291,15 +291,13 @@ jobs:
     - name: Build electron
       shell: bash
       run: |
-        cd ui/service
-        npm i --save-dev --legacy-peer-deps
-        npm run build
-        npm run bundle:server
-        cd ../front
+        cd ui/front
         npm i --save-dev --legacy-peer-deps
         NODE_ENV=production npm run build
         cd ..
+        npm i --save-dev --legacy-peer-deps
         yarn add electron-builder --dev
+        yarn build && yarn bundle
         yarn app:dist
 
     - name: Sign the electron dmg [macos-10.15]

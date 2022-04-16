@@ -2,11 +2,11 @@ const IgnorePlugin = require('webpack').IgnorePlugin
 const path = require('path');
 
 module.exports = {
-  target: 'node',
-  entry: './dist/server.js',
+  target: 'electron-main',
+  entry: './dist/main.js',
   output: {
     path: path.join(__dirname, 'bundle'),
-    filename: 'bundle.js',
+    filename: 'main.js',
   },
   optimization: {
     minimize: true,

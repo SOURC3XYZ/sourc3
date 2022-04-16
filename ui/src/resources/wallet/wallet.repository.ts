@@ -6,6 +6,7 @@ import fs from 'fs';
 import { getRepository } from 'typeorm';
 import { BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT } from '../../common';
 import { Seed } from '../../entities';
+import { app } from 'electron';
 import {
   cliPath,
   getExecutableFile,
@@ -167,15 +168,10 @@ export function startBeamNode(
         console.log(`Got node error: ${bufferString}`);
       });
 
-      process.on('SIGINT', () => {
-        node.kill('SIGINT');
-      });
-      process.on('close', () => {
-        node.kill('SIGINT');
-      });
-      process.on('exit', () => {
-        node.kill('SIGINT');
-      });
+      app.on('window-all-closed', () => {
+        console.log("Kill node!");
+        node.kill("SIGTERM")
+      })
       return resolve(node);
     }
     return reject(new Error('No node executable'));
@@ -198,7 +194,7 @@ export function restoreExistedWallet(
       'restore',
       '--wallet_path', walletDBPath,
       '--pass', password,
-      '--seed_phrase', seed
+      '--seed_phrase', `"${seed}"`
     ];
 
     const onData = (data: Buffer) => {

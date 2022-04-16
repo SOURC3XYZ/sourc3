@@ -11,28 +11,32 @@ import { beamRouter } from './resources/beam-api';
 import { gitRouter } from './resources/git';
 import { walletRouter } from './resources/wallet';
 
-const app = express();
+const expressApp = express();
 
-app.use(cors());
-app.use(express.json());
+expressApp.use(cors());
+expressApp.use(express.json());
 
-app.use(logerRequests);
-
-app.use('/', (req, res, next) => {
+expressApp.use(logerRequests);
+console.log("Setup logger");
+expressApp.use('/', (req, res, next) => {
   if (req.originalUrl === '/') {
     res.send('Service is running!');
     return;
   }
   next();
 });
+console.log("Setup root");
 
-app.use('/wallet', walletRouter);
+expressApp.use('/wallet', walletRouter);
 
-app.use('/beam', beamRouter);
+console.log("Setup walley");
+expressApp.use('/beam', beamRouter);
 
-app.use('/git', gitRouter);
+console.log("Setup beam");
+expressApp.use('/git', gitRouter);
 
-app.use((err:ErrorHandler, _req:Request, res:Response, next:NextFunction) => {
+console.log("Setup git");
+expressApp.use((err:ErrorHandler, _req:Request, res:Response, next:NextFunction) => {
   handleError(err, res);
   next();
 });
@@ -40,4 +44,4 @@ app.use((err:ErrorHandler, _req:Request, res:Response, next:NextFunction) => {
 process.on('uncaughtException', uncaughtException);
 process.on('unhandledRejection', unhandledRejection);
 
-export default app;
+export { expressApp };

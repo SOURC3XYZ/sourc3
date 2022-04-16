@@ -1,5 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
 
+import { app } from 'electron';
+
 type BufferHandler = (data: Buffer) => undefined | void;
 
 type OnCloseHandler = (code:number | null, signal?: any) => undefined | void;
@@ -49,5 +51,10 @@ export const runSpawnProcess = (
     const bufferString = data.toString('utf-8');
     console.log(`Got process error: ${bufferString}`);
   });
+
+  app.on('window-all-closed', () => {
+    console.log(`Kill ${path}!`);
+    childProcess.kill("SIGTERM");
+  })
 
 };

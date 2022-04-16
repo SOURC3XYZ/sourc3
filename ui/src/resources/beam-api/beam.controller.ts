@@ -7,6 +7,7 @@ const router = express.Router();
 router.route('/').post(
   async (req: Request, res: Response, next): Promise<Response | void> => {
     const data = await callApi(req.body);
+    console.log("In beam-api")
     if (data.isOk) return res.status(201).json(data.res);
     return next(new ErrorHandler(404, data.error as string));
   }

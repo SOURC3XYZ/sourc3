@@ -4,7 +4,7 @@ import { WALLET_API_PORT } from '../../common';
 import { IApiReq } from '../../types';
 
 let socket:Socket;
-// const callIndex = 0;
+let callIndex = 0;
 const calls: { [key:string]: any } = {};
 
 export function killSyncSocket() {
@@ -81,7 +81,7 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
 
 export async function reqTCP(req:IApiReq) {
   await tcpFactory();
-  // req.id = ['call', callIndex++].join('-');
+  req.id = ['call', callIndex++].join('-');
   socket.write(`${JSON.stringify(req)}\n`);
   return new Promise((resolve) => {
     calls[req.id] = resolve;
