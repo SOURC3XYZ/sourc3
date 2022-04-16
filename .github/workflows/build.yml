@@ -179,7 +179,7 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
-        cp ${{ env.OPENSSL_ROOT_DIR }}/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
+        cp ${${{ env.OPENSSL_ROOT_DIR }}//\\//}/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
           
     - name: Build electron
       shell: bash
