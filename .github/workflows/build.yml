@@ -120,7 +120,7 @@ jobs:
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
         echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        echo "BEAM_VERSION=6.3.12612" >> $GITHUB_ENV
+        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
         
     - name: Change version for Electron
       shell: bash
