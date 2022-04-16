@@ -150,6 +150,11 @@ jobs:
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
         cp ./shaders/app.wasm ./ui/front/dist/assets/
+        
+        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
+        
+        cp ${{ env.OPENSSL_ROOT_DIR }}/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
+        
         npm install --global yarn
         
     - name: Prepare for electron build [macos-10.15 && ubuntu all]
