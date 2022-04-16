@@ -105,6 +105,43 @@ jobs:
         echo "BEAM_SHADER_SDK=$WORKSPACE/shader-sdk" >> $GITHUB_ENV
         echo "WASI_SDK_PREFIX=$WORKSPACE/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
         
+        
+    - name: Prepare for electron build [windows-2019]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
+        cp ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/api/
+        cp ./downloads/ipfs-bindings* ./ui/beam-res/api/
+        cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
+        cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
+        cp ./downloads/wasm-client.* ./ui/front/dist/
+        cp ./shaders/app.wasm ./ui/front/dist/assets/
+        npm install --global yarn
+        
+    - name: Prepare for electron build [macos-10.15 && ubuntu all]
+      shell: bash
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
+      run: |
+        mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
+        tar xvf ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/api
+        tar xvf ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/cli
+        tar xvf ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/node
+        cp ./downloads/wasm-client* ./ui/front/dist
+        cp ./shaders/app.wasm ./ui/front/dist/assets
+        sudo npm install --global yarn
+          
+    - name: Build electron
+      shell: bash
+      run: |
+        cd ui/front
+        npm i --save-dev --legacy-peer-deps
+        NODE_ENV=production npm run build
+        cd ..
+        npm i --save-dev --legacy-peer-deps
+        ./node_modules/.bin/electron-rebuild
+        yarn build && yarn bundle
+        yarn app:dist
 
 ###############################################################################
 # Configure CMake
@@ -227,43 +264,7 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
-          
-    - name: Prepare for electron build [windows-2019]
-      shell: bash
-      if: matrix.os == 'windows-2019'
-      run: |
-        mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
-        cp ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/api/
-        cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
-        cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
-        cp ./downloads/wasm-client.* ./ui/front/dist/
-        cp ./shaders/app.wasm ./ui/front/dist/assets/  
-        npm install --global yarn
-        
-    - name: Prepare for electron build [macos-10.15 && ubuntu all]
-      shell: bash
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
-      run: |
-        mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
-        tar xvf ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/api
-        tar xvf ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/cli
-        tar xvf ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/node
-        cp ./downloads/wasm-client* ./ui/front/dist
-        cp ./shaders/app.wasm ./ui/front/dist/assets
-        sudo npm install --global yarn
-          
-    - name: Build electron
-      shell: bash
-      run: |
-        cd ui/front
-        npm i --save-dev --legacy-peer-deps
-        NODE_ENV=production npm run build
-        cd ..
-        npm i --save-dev --legacy-peer-deps
-        yarn add electron-builder --dev
-        ./node_modules/.bin/electron-rebuild
-        yarn build && yarn bundle
-        yarn app:dist
+
 
     - name: Sign the electron dmg [macos-10.15]
       if: matrix.os == 'macos-10.15'
