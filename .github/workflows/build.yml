@@ -173,6 +173,13 @@ jobs:
         NODE_ENV=production npm run build
         cd ..
         npm i --save-dev --legacy-peer-deps
+
+    - name: Fix rebuilding nodegit [windows-2019]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: |
+        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
+        cp C:/beam-libs/openssl/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
     
     - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019'
