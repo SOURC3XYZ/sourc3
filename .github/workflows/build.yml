@@ -164,16 +164,16 @@ jobs:
         cp ./downloads/wasm-client* ./ui/front/dist
         cp ./shaders/app.wasm ./ui/front/dist/assets
         sudo npm install --global yarn
-          
+
     - name: Install electron dependencies
       shell: bash
       run: |
-      	cd ui/front
+        cd ui/front
         npm i --save-dev --legacy-peer-deps
         NODE_ENV=production npm run build
         cd ..
         npm i --save-dev --legacy-peer-deps
-        
+
     - name: Fix rebuilding nodegit [windows-2019]
       shell: bash
       if: matrix.os == 'windows-2019'
