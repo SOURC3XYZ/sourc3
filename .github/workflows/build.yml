@@ -261,6 +261,7 @@ jobs:
         cd ..
         npm i --save-dev --legacy-peer-deps
         yarn add electron-builder --dev
+        ./node_modules/.bin/electron-rebuild
         yarn build && yarn bundle
         yarn app:dist
 
