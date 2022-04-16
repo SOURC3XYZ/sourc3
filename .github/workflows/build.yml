@@ -173,19 +173,23 @@ jobs:
         NODE_ENV=production npm run build
         cd ..
         npm i --save-dev --legacy-peer-deps
-
-    - name: Fix rebuilding nodegit [windows-2019]
-      shell: bash
+    
+    - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019'
       run: |
-        mkdir ./ui/node_modules/nodegit/vendor/libssh2/include/openssl
-        cp C:/beam-libs/openssl/include/openssl/* ./ui/node_modules/nodegit/vendor/libssh2/include/openssl/
-          
+        cd ui
+        .\node_modules\.bin\electron-rebuild.cmd
+    
+    - name: Rebuild modules [ubuntu-all && macos-all]
+      if: matrix.os != 'windows-2019'
+      run: |
+        cd ui
+        ./node_modules/.bin/electron-rebuild
+    
     - name: Build electron
       shell: bash
       run: |
         cd ui
-        ./node_modules/.bin/electron-rebuild
         yarn build && yarn bundle
         yarn app:dist
 
