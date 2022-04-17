@@ -181,7 +181,6 @@ jobs:
         npm config set openssl_dir ${{ env.OPENSSL_ROOT_DIR }}
         .\node_modules\.bin\electron-rebuild.cmd
       env:
-        npm_config_openssl_dir: ${{ env.OPENSSL_ROOT_DIR }}
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
     
     - name: Rebuild modules [ubuntu-all && macos-all]
