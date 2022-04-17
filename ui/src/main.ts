@@ -2,7 +2,6 @@
 
 import { app, BrowserWindow, session, ipcMain, dialog } from 'electron';
 import path from 'path';
-// const { spawn } = require('child_process');
 import cors from 'cors';
 import fs from 'fs';
 import express, { Request, Response, NextFunction } from 'express';

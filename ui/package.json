@@ -7,7 +7,9 @@
     "app:dist": "electron-builder",
     "app:dir": "electron-builder --dir",
     "build": "tsc --project .",
-    "bundle": "webpack"
+    "bundle": "webpack",
+    "electron:bundle": "electron-webpack --config webpack.config.js",
+    "postinstall": "electron-builder install-app-deps"
   },
   "keywords": [
     "BEAM",
@@ -41,14 +43,14 @@
     "@typescript-eslint/eslint-plugin": "^5.9.1",
     "@typescript-eslint/parser": "^5.9.1",
     "copy-webpack-plugin": "^10.2.4",
+    "electron": "16.0.7",
+    "electron-builder": "^22.14.13",
+    "electron-rebuild": "^3.2.7",
     "eslint": "^8.6.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^16.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "electron": "16.0.7",
-    "electron-builder": "^22.14.13",
-    "electron-rebuild": "^3.2.7",
     "jest": "^27.4.7",
     "node-loader": "^2.0.0",
     "nodemon": "^2.0.15",
@@ -65,11 +67,11 @@
       "bundle/*",
       "dist/preload.js",
       "!**/node_modules/**/*",
-      "!**/*.json"
+      "!**/*.json",
+      ".env"
     ],
     "extraResources": [
-      "beam-res/**",
-      ".env"
+      "beam-res/**"
     ]
   }
 }

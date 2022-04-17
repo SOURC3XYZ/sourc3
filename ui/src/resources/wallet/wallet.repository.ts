@@ -194,7 +194,7 @@ export function restoreExistedWallet(
       'restore',
       '--wallet_path', walletDBPath,
       '--pass', password,
-      '--seed_phrase', `"${seed}"`
+      '--seed_phrase', seed
     ];
 
     const onData = (data: Buffer) => {
