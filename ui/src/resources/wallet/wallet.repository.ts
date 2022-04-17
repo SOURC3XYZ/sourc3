@@ -152,7 +152,7 @@ export function startBeamNode(
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--file_log_level=verbose'], {shell: true});
+        '--file_log_level=verbose']);
 
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');

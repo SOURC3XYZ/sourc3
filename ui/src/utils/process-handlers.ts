@@ -22,7 +22,7 @@ export const runSpawnProcess = (
   const {
     path, args, detached, onData, onError, onClose, setCurrentProcess
   } = params;
-  const childProcess = spawn(path, args, { detached: detached, shell: true });
+  const childProcess = spawn(path, args, { detached });
 
   if (onData) childProcess.stdout.on('data', onData);
 
