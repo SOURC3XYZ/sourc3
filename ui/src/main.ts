@@ -1,9 +1,6 @@
-// @ts-ignore
-
 import { app, BrowserWindow, session, ipcMain, dialog } from 'electron';
 import path from 'path';
 import cors from 'cors';
-import fs from 'fs';
 import express, { Request, Response, NextFunction } from 'express';
 import {
   ErrorHandler,
@@ -54,7 +51,7 @@ process.on('unhandledRejection', unhandledRejection);
 
 tryBDConnect(() => {
   expressApp.listen(PORT, () => console.log(
-  `App is running on http://localhost:${5001}`
+  `App is running on http://localhost:${PORT}`
   ));
 });
 
@@ -76,10 +73,6 @@ function createWindow() {
     console.log('directories selected', result.filePaths)
     win.webContents.send('ping', result.filePaths[0])
   })
-
-  if (!fs.existsSync(`${path.join(app.getPath('userData'), '.env')}`)) {
-    fs.copyFileSync(path.join(__dirname, '..', '.env'), `${path.join(app.getPath('userData'), '.env')}`)
-  }
 
   win.setMenu(null);
   win.loadFile('front/dist/index.html')

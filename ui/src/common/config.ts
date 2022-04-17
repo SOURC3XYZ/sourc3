@@ -2,12 +2,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { app } from 'electron';
 
-export const rootPath = path.join(__dirname, '../../');
+export const rootPath = path.join(__dirname, '../');
 
 export const configPath = app.getPath('userData');
 
 dotenv.config({
-  path: path.join(configPath, '.env')
+  path: path.join(rootPath, '.env')
 });
 
 export const {

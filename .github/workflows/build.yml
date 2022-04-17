@@ -14,10 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2019]
+        os: [windows-2019]
         include:
-          - os: ubuntu-18.04
-            PLATFORM_NAME: linux
           - os: windows-2019
             PLATFORM_NAME: win
 
@@ -186,9 +184,6 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         cd ui
-        dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build"
-        npm config set vcvarsall_path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
-        npm config set openssl_dir ${{ env.OPENSSL_ROOT_DIR }}
         .\node_modules\.bin\electron-rebuild.cmd
       env:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
