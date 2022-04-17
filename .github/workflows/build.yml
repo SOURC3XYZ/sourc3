@@ -172,6 +172,16 @@ jobs:
         cd ..
         npm i --save-dev --legacy-peer-deps
 
+    - name: Install wasm [windows-2019]
+      if: matrix.os == 'windows-2019'
+      uses: ilammy/setup-nasm@v1
+      
+    - name: Set up perl [windows-2019]
+      if: matrix.os == 'windows-2019'
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: '5.34'
+
     - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019'
       run: |
