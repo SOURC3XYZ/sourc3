@@ -7,7 +7,8 @@ export interface IAssetMeta {
   OPT_COLOR: string;
 }
 
-export interface BeamApiResult {
+export interface BeamApiResult<T = void> {
+  ipc?: T
   data: number[] | string,
   current_height?: number,
   tip_height?: number,
@@ -24,10 +25,10 @@ export interface BeamApiResult {
   address:string
 }
 
-export interface BeamApiRes {
+export interface BeamApiRes<T = void> {
   id: string;
   jsonrpc: string;
-  result: BeamApiResult;
+  result: BeamApiResult<T>;
   error?: {
     code:number;
     message: string;

@@ -1,58 +1,15 @@
 import { app, BrowserWindow, session, ipcMain, dialog } from 'electron';
 import path from 'path';
-import cors from 'cors';
-import express, { Request, Response, NextFunction } from 'express';
-import {
-  ErrorHandler,
-  handleError,
-  logerRequests,
-  uncaughtException,
-  unhandledRejection
-} from './middlewares';
-import { beamRouter } from './resources/beam-api';
-import { gitRouter } from './resources/git';
-import { walletRouter } from './resources/wallet';
-
-import { PORT } from './common/config';
 import { tryBDConnect } from './utils/typeorm-handler';
-
-const expressApp = express();
-
-expressApp.use(cors());
-expressApp.use(express.json());
-
-expressApp.use(logerRequests);
-console.log("Setup logger");
-expressApp.use('/', (req, res, next) => {
-  if (req.originalUrl === '/') {
-    res.send('Service is running!');
-    return;
-  }
-  next();
-});
-console.log("Setup root");
-
-expressApp.use('/wallet', walletRouter);
-
-console.log("Setup walley");
-expressApp.use('/beam', beamRouter);
-
-console.log("Setup beam");
-expressApp.use('/git', gitRouter);
-
-console.log("Setup git");
-expressApp.use((err:ErrorHandler, _req:Request, res:Response, next:NextFunction) => {
-  handleError(err, res);
-  next();
-});
-
-process.on('uncaughtException', uncaughtException);
-process.on('unhandledRejection', unhandledRejection);
+import { IpcServer } from 'ipc-express';
+import expressApp from './app';
 
 tryBDConnect(() => {
-  expressApp.listen(PORT, () => console.log(
-  `App is running on http://localhost:${PORT}`
-  ));
+  const ipc = new IpcServer(ipcMain);
+  ipc.listen(expressApp);
+  // expressApp.listen(PORT, () => console.log(
+  // `App is running on http://localhost:${5001}`
+  // ));
 });
 
 function createWindow() {
@@ -74,8 +31,13 @@ function createWindow() {
     win.webContents.send('ping', result.filePaths[0])
   })
 
-  win.setMenu(null);
-  win.loadFile('front/dist/index.html')
+  win.webContents.userAgent = 'SOURC3-DESKTOP';
+  // win.setMenu(null);
+  // win.loadFile('front/dist/index.html');
+  win.loadURL('http://localhost:5000');
+  win.webContents.openDevTools()
+
+
 }
 
 app.whenReady().then(() => {

@@ -14,7 +14,8 @@ type LoggedProps = {
   isApiConnected: boolean;
   mountWallet: () => void;
   killWalletApi: () => void;
-  startWalletApi: (password: string, cb: (err?: Error) => void) => void
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void,
+  statusFetcher: (resolve: PromiseArg<{status: number}>) => void,
 };
 
 type FallbackProps = {
@@ -26,7 +27,8 @@ function Auth({
   isApiConnected,
   killWalletApi,
   mountWallet,
-  startWalletApi
+  startWalletApi,
+  statusFetcher
 }: LoggedProps) {
   const isConnected = isWalletConnected && !isApiConnected;
 
@@ -43,7 +45,7 @@ function Auth({
       link: 'sign-up', component: <SignUp />
     },
     {
-      link: 'login', component: <Login startWalletApi={startWalletApi} />
+      link: 'login', component: <Login statusFetcher={statusFetcher} startWalletApi={startWalletApi} />
     },
     {
       link: 'restore', component: <Restore />
@@ -98,7 +100,10 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   killWalletApi: () => dispatch(thunks.killBeamApi()),
   startWalletApi: (
     password: string, cb: (err?:Error) => void
-  ) => dispatch(thunks.startWalletApi(password, cb))
+  ) => dispatch(thunks.startWalletApi(password, cb)),
+  statusFetcher: (
+    resolve: PromiseArg<{status: number}>
+    ) => dispatch(thunks.getSyncStatus(resolve))
 });
 
 export default connect(mapState, mapDispatch)(Auth);

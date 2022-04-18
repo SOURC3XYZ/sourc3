@@ -12,6 +12,15 @@ type CallApiProps<T> = {
   params: T;
 };
 
+
+type MessageType = {
+  type: string;
+  response: BeamApiRes
+};
+
+
+type IpcMethod = 'get' | 'post' | 'put' | 'delete';
+
 const headlessNode = 'eu-node01.masternet.beam.mw:8200';
 
 type BeamApiReqHandlers = {
@@ -51,10 +60,10 @@ export class BeamAPI<T> {
     this.BEAM = null;
     this.contract = null;
     this.callbacks = new Map();
+    window.addEventListener('message', this.responseIPC);
   }
 
-  private readonly onApiResult = (json: string): void => {
-    const parsed = JSON.parse(json) as BeamApiRes;
+  private readonly responseCbackHandler = (parsed: BeamApiRes) => {
     console.log('response', parsed);
     const { id } = parsed;
     const cb = this.callbacks.get(id);
@@ -63,13 +72,18 @@ export class BeamAPI<T> {
       if (parsed.error) return cb.reject(new Error(parsed.error.message));
       return cb.resolve(parsed);
     } return this.eventManager(parsed);
+  }
+
+  private readonly onApiResult = (json: string): void => {
+    const parsed = JSON.parse(json);
+    this.responseCbackHandler(parsed)
   };
 
-  public loadApiEventManager = (eventManager: any) => {
+  public readonly loadApiEventManager = (eventManager: any) => {
     this.eventManager = eventManager;
   };
 
-  public isApiLoaded = () => Boolean(this.BEAM);
+  public readonly isApiLoaded = () => Boolean(this.BEAM);
 
   createHeadlessAPI = async (
     apiver:any, apivermin:any, appname:any, apirescback:any
@@ -224,6 +238,7 @@ export class BeamAPI<T> {
   ): Promise<BeamApiRes> => {
     const id = [callID, this.callIndex++].join('-');
     const modifiedParams = { ...params } as Modified<T>;
+
     if (this.isNoContractMethod(method)) {
       if (this.contract) {
         modifiedParams.contract = this.contract;
@@ -234,6 +249,18 @@ export class BeamAPI<T> {
         );
       }
     }
+    if (this.isElectron()) {
+      const request = {
+        jsonrpc: '2.0',
+        id,
+        method,
+        params: modifiedParams
+      };
+      console.log('request', request);
+      return this.callIPC('/beam', 'post', request, id);
+      
+    }
+
     return new Promise<BeamApiRes>(
       this.callApiHandler(id, method, modifiedParams)
     );
@@ -251,10 +278,6 @@ export class BeamAPI<T> {
       params
     };
     console.log('request', request);
-
-    if (this.apiHost) {
-      return this.fetchApi(resolve, reject, JSON.stringify(request));
-    }
 
     this.callbacks.set(id, { resolve, reject });
 
@@ -309,6 +332,28 @@ export class BeamAPI<T> {
 
     oReq.send();
   };
+
+  public readonly callIPC = (
+      url: string, method: IpcMethod, body: object, callId?:string
+    ):Promise<BeamApiRes> => {
+    return new Promise((resolve, reject) => {
+      const id = callId || [url, this.callIndex++].join('-');
+      window.postMessage({
+        id,
+        type: 'ipc-control-req',
+        url,
+        method,
+        body
+      });
+      this.callbacks.set(id, { resolve, reject });
+    })
+  }
+
+  public readonly responseIPC = (e:MessageEvent<MessageType>) => {
+      if (e.data.type === 'ipc-control-res') {
+        this.responseCbackHandler(e.data.response)
+      }
+  }
 
   private readonly fetchApi = (
     resolve:BeamApiReqHandlers['resolve'],

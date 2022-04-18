@@ -11,7 +11,8 @@ enum STATUS {
 }
 
 type LoginProps = {
-  startWalletApi: (password: string, cb: (err?: Error) => void) => void
+  statusFetcher: (resolve: PromiseArg<{status: number}>) => void,
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void,
 };
 
 type LoginState = {
@@ -21,7 +22,7 @@ type LoginState = {
 
 const initial:LoginState = { pass: '', status: STATUS.LOGIN };
 
-const Login = ({ startWalletApi }: LoginProps) => {
+const Login = ({ startWalletApi, statusFetcher }: LoginProps) => {
   const [{ pass, status }, setState] = useObjectState<LoginState>(initial);
   const throwError = useAsyncError();
 
@@ -58,7 +59,7 @@ const Login = ({ startWalletApi }: LoginProps) => {
         status === STATUS.LOADING
           ? <Preload />
           : status === STATUS.SYNC
-            ? <UpdatingNode errorCatcher={throwError} />
+            ? <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
       }
     </div>

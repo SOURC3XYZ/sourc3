@@ -38,7 +38,10 @@ const peers = [
   'eu-node04.masternet.beam.mw:8100'
 ];
 
-export function getNodeUpdate() { return nodeUpdate; }
+export function getNodeUpdate() { 
+  console.log('nodeUpdate ', nodeUpdate)
+  return nodeUpdate; 
+}
 
 export function checkRunningApi() {
   return !!(currentProcess && !currentProcess.killed);

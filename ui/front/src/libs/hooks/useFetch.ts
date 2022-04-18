@@ -1,20 +1,17 @@
-import axios from 'axios';
 import { useEffect } from 'react';
 import useObjectState from './useObjectState';
 
 function useFetch<T extends object>(
-  url: string, initialState: T, errorCatcher: (e:Error) => void
+  statusFetcher: (arg: PromiseArg<Partial<T>>) => void, initialState: T, errorCatcher: (e:Error) => void
 ) {
   const [status, setStatus] = useObjectState(initialState);
 
   useEffect(() => {
-    setTimeout(() => {
-      axios.get(url)
-        .then((res) => res.data)
-        .then((data) => setStatus(data))
-        .catch((err) => errorCatcher(err));
-    }, 1000);
-  });
+    new Promise((resolve) => {
+      setTimeout(() => statusFetcher(resolve), 1000);
+    }).then((data) => setStatus(data as Partial<T>))
+    .catch((err) => errorCatcher(err));
+  }, [status]);
 
   return status;
 }

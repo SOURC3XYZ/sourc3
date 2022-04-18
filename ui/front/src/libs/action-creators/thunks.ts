@@ -30,8 +30,16 @@ import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
 const api = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
 
+type Thunk<T> = (...args: T[]) => (
+  dispatch: AppThunkDispatch, getState: () => RootState
+  ) => void;
+
+type ThunkObject = {
+  [key: string]: Thunk<any>
+}
+
 const {
-  callApi, initContract, loadAPI
+  callApi, initContract, loadAPI, callIPC
 } = api;
 
 const wallet = new WasmWallet();
@@ -54,9 +62,8 @@ async function getOutput<T>(
   return outputParser<T>(res, dispatch);
 }
 
-export const thunks = {
-  connectExtension: () => async (dispatch: AppThunkDispatch) => {
-    console.log(messageBeam);
+export const thunks:ThunkObject = {
+  connectExtension: () => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);
       if (!api.isHeadless()) {
@@ -77,7 +84,7 @@ export const thunks = {
   },
 
   connectBeamApi:
-    (apiHost?:string) => async (dispatch: AppThunkDispatch) => {
+    (apiHost?:string) => async (dispatch) => {
       try {
         if (api.isApiLoaded()) return;
         await loadAPI(apiHost);
@@ -98,14 +105,24 @@ export const thunks = {
       } catch (error) { thunkCatch(error, dispatch); }
     },
 
-  mountWallet: () => async (dispatch: AppThunkDispatch) => {
+    getSyncStatus: (
+      resolve: PromiseArg<{status: number}>
+      ) => async (dispatch) => {
+      const url = '/wallet/update';
+      try {
+        const data = await callIPC(url, 'get', {}) as BeamApiRes<{status: number}>;
+        return resolve(data.result.ipc);
+      } catch (error) { thunkCatch(error, dispatch); }
+    },
+
+  mountWallet: () => async (dispatch) => {
     await wallet.mount();
     dispatch(AC.setWalletConnection(true));
   },
 
   getLocalRepoBranches: (
     local: string, remote:string
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch) => {
     const url = `${CONTRACT.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
@@ -114,7 +131,7 @@ export const thunks = {
 
   cloneRepo: (
     local: string, remote:string
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch) => {
     const url = `${CONTRACT.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
@@ -123,29 +140,29 @@ export const thunks = {
 
   setCommits: (
     local: string, remote:string
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch) => {
     const url = `${CONTRACT.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
     } catch (error) { thunkCatch(error, dispatch); }
   },
 
-  generateSeed: () => async (dispatch: AppThunkDispatch) => {
+  generateSeed: () => async (dispatch) => {
     dispatch(AC.setGeneratedSeed(wallet.generateSeed()));
   },
 
   sendParams2Service: (
     seed: string[],
-    pass:string,
+    password:string,
     callback: (err?: Error) => void
   ) => async () => {
     const body = {
       seed: `${seed.join(';')};`,
-      password: pass
+      password
     };
-    const url = `${CONTRACT.HOST}/wallet/restore`;
+    const url = '/wallet/restore';
     try {
-      await axios.post(url, body, { headers });
+      await callIPC(url, 'post', body);
       return callback();
     } catch (error) { return cbErrorHandler(error, callback); }
   },
@@ -154,23 +171,20 @@ export const thunks = {
     password: string,
     callback: (err?: Error) => void
   ) => async () => {
-    const url = `${CONTRACT.HOST}/wallet/start`;
+    const url = '/wallet/start';
     try {
-      await axios.post(url, { password }, { headers });
+      await callIPC(url, 'post', { password });
+      // await axios.post(url, { password }, { headers });
       return callback();
     } catch (error) { return cbErrorHandler(error, callback); }
   },
 
-  validateSeed: (seed: string[]) => async (
-    dispatch: AppThunkDispatch
-  ) => {
+  validateSeed: (seed: string[]) => async (dispatch) => {
     const errors = wallet.isAllowedSeed(seed);
     dispatch(AC.setSeed2Validation({ seed, errors }));
   },
 
-  killBeamApi: (resolve?: PromiseArg<string>) => async (
-    dispatch:AppThunkDispatch
-  ) => {
+  killBeamApi: (resolve?: PromiseArg<string>) => async (dispatch) => {
     const url = `${CONTRACT.HOST}/wallet/kill`;
     try {
       await axios.delete(url);
@@ -180,7 +194,7 @@ export const thunks = {
   },
   getAllRepos: (
     type:RepoListType, resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch) => {
     try {
       const action = RC.getAllRepos(type);
       const output = await getOutput<ReposResp>(action, dispatch);
@@ -199,15 +213,13 @@ export const thunks = {
       });
     },
 
-  startTx: () => (dispatch: AppThunkDispatch) => (res: BeamApiRes) => {
+  startTx: () => (dispatch) => (res: BeamApiRes) => {
     dispatch(AC.setTx(res.result.txid));
   },
 
   getTxStatus:
     (txId: string,
-      callback: SetPropertiesType<TxResponse>) => async (
-      dispatch: AppThunkDispatch
-    ) => {
+      callback: SetPropertiesType<TxResponse>) => async (dispatch) => {
       try {
         const res = await callApi(RC.getTxStatus(txId));
         if (res.result) {
@@ -221,7 +233,7 @@ export const thunks = {
 
   getRepo: (
     id: RepoId, errHandler: (err: Error) => void, resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch) => {
+  ) => async (dispatch) => {
     try {
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
@@ -252,7 +264,7 @@ export const thunks = {
     {
       id, oid, key, resolve
     }: UpdateProps, errHandler: (err: Error) => void
-  ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
+  ) => async (dispatch, getState) => {
     try {
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
@@ -267,7 +279,7 @@ export const thunks = {
     } catch (error) { errHandler(error as Error); }
   },
 
-  createRepos: (resp_name: string) => async (dispatch: AppThunkDispatch) => {
+  createRepos: (resp_name: string) => async (dispatch) => {
     try {
       const res = await callApi(RC.createRepos(resp_name));
       if (res.result?.raw_data) {
@@ -279,7 +291,7 @@ export const thunks = {
     } catch (error) { thunkCatch(error, dispatch); }
   },
 
-  deleteRepos: (delete_repo: number) => async (dispatch: AppThunkDispatch) => {
+  deleteRepos: (delete_repo: number) => async (dispatch) => {
     try {
       const res = await callApi(RC.deleteRepos(delete_repo));
       if (res.result?.raw_data) {
@@ -297,7 +309,7 @@ export const thunks = {
     oid: TreeElementOid,
     errHandler: (err: Error) => void,
     resolve?: () => void
-  ) => async (dispatch: AppThunkDispatch, getState: () => RootState) => {
+  ) => async (dispatch, getState) => {
     try {
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
@@ -312,7 +324,7 @@ export const thunks = {
     } catch (error) { errHandler(error as Error); }
   },
 
-  getWalletStatus: () => async (dispatch: AppThunkDispatch) => {
+  getWalletStatus: () => async (dispatch) => {
     try {
       const res = await callApi(RC.getWalletStatus());
       if (res && !res.error) {
@@ -321,7 +333,7 @@ export const thunks = {
     } catch (error) { return thunkCatch(error, dispatch); }
   },
 
-  getWalletAddressList: () => async (dispatch: AppThunkDispatch) => {
+  getWalletAddressList: () => async (dispatch) => {
     try {
       const res = await callApi(
         RC.getWalletAddressList()
@@ -333,9 +345,12 @@ export const thunks = {
     } catch (error) { return thunkCatch(error, dispatch); }
   },
 
-  setWalletSendBeam: (value: number, from: string,
+  setWalletSendBeam: (
+    value: number, 
+    from: string,
     address:string,
-    comment:string) => async (dispatch: AppThunkDispatch) => {
+    comment:string
+    ) => async (dispatch) => {
     try {
       const res = await callApi(
         RC.setWalletSendBeam(parseToGroth(Number(value)), from,
@@ -347,7 +362,7 @@ export const thunks = {
       } throw new Error('failed to send beam');
     } catch (error) { return thunkCatch(error, dispatch); }
   },
-  getPublicKey: () => async (dispatch: AppThunkDispatch) => {
+  getPublicKey: () => async (dispatch) => {
     try {
       const res = await callApi(
         RC.setPublicKey()

@@ -10,14 +10,15 @@ const { Text } = Typography;
 const url = `${CONTRACT.HOST}/wallet/update`;
 
 type UpdatingNodeProps = {
+  statusFetcher: (resolve: PromiseArg<{status: number}>) => void,
   errorCatcher: (e: Error) => void
 };
 
 const initial = { status: 0 }; // need to cycle rerender component
 
-const UpdatingNode = ({ errorCatcher }:UpdatingNodeProps) => {
+const UpdatingNode = ({statusFetcher, errorCatcher }:UpdatingNodeProps) => {
   const navigate = useNavigate();
-  const { status } = useFetch(url, initial, errorCatcher);
+  const { status } = useFetch(statusFetcher, initial, errorCatcher);
   console.log('updating node: ', status);
 
   useEffect(() => {

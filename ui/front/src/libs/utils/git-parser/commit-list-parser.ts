@@ -14,9 +14,6 @@ export default class CommitMapParser extends AbstractParser {
     const res = this.isIpfsHash(oid)
       ? await this.getIpfsData<RepoCommitResp>(oid)
       : await this.call<RepoCommitResp>(RC.repoGetCommit(this.id, oid));
-    if (res.commit.raw_message === 'test folders') {
-      debugger;
-    }
     return res.commit;
   };
 

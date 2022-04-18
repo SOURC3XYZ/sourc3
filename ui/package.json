@@ -4,12 +4,14 @@
   "description": "SOURC3 client for 'masternet'",
   "main": "bundle/main.js",
   "scripts": {
+    "start": "electron --inspect dist/main",
     "app:dist": "electron-builder",
     "app:dir": "electron-builder --dir",
     "build": "tsc --project .",
     "bundle": "webpack",
     "electron:bundle": "electron-webpack --config webpack.config.js",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "watch": "tsc --watch"
   },
   "keywords": [
     "BEAM",
@@ -24,7 +26,8 @@
     "cors": "^2.8.5",
     "dotenv": "^11.0.0",
     "express": "^4.17.2",
-    "nodegit": "^0.28.0-alpha.13",
+    "ipc-express": "^0.3.1",
+    "nodegit": "^0.28.0-alpha.10",
     "request": "^2.88.2",
     "sqlite3": "^5.0.2",
     "typeorm": "^0.2.43",
