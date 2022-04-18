@@ -3,10 +3,13 @@ const path = require('path');
 
 module.exports = {
   target: 'electron-main',
-  entry: './dist/main.js',
+  entry: {
+    "main": path.join(__dirname, 'dist', 'main.js'),
+    "preload": path.join(__dirname, 'dist', 'preload.js')
+  },
   output: {
     path: path.join(__dirname, 'bundle'),
-    filename: 'main.js',
+    filename: '[name].js'
   },
   optimization: {
     minimize: true,

@@ -32,12 +32,10 @@ function createWindow() {
   })
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
-  // win.setMenu(null);
-  // win.loadFile('front/dist/index.html');
-  win.loadURL('http://localhost:5000');
+  win.setMenu(null);
+  win.loadFile('front/dist/index.html');
+  // win.loadURL('http://localhost:5000');
   win.webContents.openDevTools()
-
-
 }
 
 app.whenReady().then(() => {
