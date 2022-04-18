@@ -1,5 +1,3 @@
-# This is a generated file, modify: generate/templates/templates/binding.gyp
-
 {
   "variables": {
     "is_electron%": "<!(node ./utils/isBuildingForElectron.js <(node_root_dir))",
@@ -34,7 +32,6 @@
     ]
   }, {
     "target_name": "nodegit",
-
     "hard_dependencies": [
       "configureLibssh2"
     ],
@@ -309,18 +306,26 @@
       [
         "OS=='linux' or OS.endswith('bsd') or <(is_IBMi) == 1", {
           "cflags": [
-            "-std=c++14 -static"
+            "-std=c++14 -fPIC"
           ],
           "ldflags": [
-            "-static-libstdc++ -static-libgcc"
+            "-static-libstdc++ -static-libgcc -static"
           ]
         }
       ],
       [
         "OS.endswith('bsd') or (<(is_electron) == 1 and OS=='linux') or <(is_IBMi) == 1", {
+          "cflags": [
+            "-std=c++14 -fPIC"
+          ],
+          "ldflags": [
+            "-static-libstdc++ -static-libgcc"
+          ],
           "libraries": [
-            "/usr/lib/x86_64-linux-gnu/libcrypto.a",
-            "/usr/lib/x86_64-linux-gnu/libssl.a"
+          "<(module_root_dir)/libkrb5.a",
+          "<(module_root_dir)/libcom_err.a",
+          "<(module_root_dir)/libk5crypto.a",
+          "<(module_root_dir)/libkrb5support.a"
           ],
         }
       ],
