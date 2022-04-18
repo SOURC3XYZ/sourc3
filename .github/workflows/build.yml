@@ -196,20 +196,19 @@ jobs:
       run: |
         wget http://web.mit.edu/kerberos/dist/krb5/1.19/krb5-1.19.3.tar.gz
         tar -xvf krb5-1.19.3.tar.gz
-        cd krb5-1.19.3
+        cd krb5-1.19.3/src
         ./configure CFLAGS="-fPIC" CXXFLAGS="-fPIC" --enable-static --disable-shared
         make  
     # Prev step more likely failed on make, but it will build all needed static libs
     - name: Copy static libs from krb5 [ubuntu-all && macos-all]
       if: matrix.os != 'windows-2019'
       run: |
-        cd krb5-1.19.3
-        cp ../lib/krb5/libkrb5.a ../ui/node_modules/nodegit/
-        cp ../util/et/libcom_err.a ../ui/node_modules/nodegit/
-        cp ../lib/crypto/libk5crypto.a ../ui/node_modules/nodegit/
-        cp ../util/support/libkrb5support.a ../ui/node_modules/nodegit/
-        cd ..
-        mv binding.gyp.example ui/node_modules/nodegit/binding.gyp
+        cp krb5-1.19.3/src/lib/krb5/libkrb5.a ui/node_modules/nodegit/
+        cp krb5-1.19.3/src/util/et/libcom_err.a ui/node_modules/nodegit/
+        cp krb5-1.19.3/src/lib/crypto/libk5crypto.a ui/node_modules/nodegit/
+        cp krb5-1.19.3/src/util/support/libkrb5support.a ui/node_modules/nodegit/
+        cd ui
+        mv binding.gyp.example node_modules/nodegit/binding.gyp
 
     - name: Rebuild modules [ubuntu-all && macos-all]
       if: matrix.os != 'windows-2019'
