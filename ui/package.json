@@ -69,11 +69,11 @@
       "bundle/*",
       "dist/preload.js",
       "!**/node_modules/**/*",
-      "!**/*.json",
-      ".env"
+      "!**/*.json"
     ],
     "extraResources": [
-      "beam-res/**"
+      "beam-res/**",
+      ".env"
     ]
   }
 }

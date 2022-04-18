@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { app } from 'electron';
 
-export const rootPath = path.join(__dirname, '../');
+export const rootPath = path.join(__dirname, '../../');
 
 export const configPath = app.getPath('userData');
 
