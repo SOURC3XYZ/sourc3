@@ -287,7 +287,7 @@
                 "/FORCE:MULTIPLE"
               ]
             }
-          },
+          },	
           "libraries": [
             "winhttp.lib",
             "crypt32.lib",
@@ -296,6 +296,12 @@
         }
       ],
       ["OS=='mac' or OS=='linux' or OS.endswith('bsd') or <(is_IBMi) == 1", {
+	      "cflags": [
+          "-std=c++14 -fPIC"
+        ],
+        "ldflags": [
+          "-static-libstdc++ -static-libgcc"
+        ],
         "libraries": [
           "<(module_root_dir)/libkrb5.a",
           "<(module_root_dir)/libcom_err.a",
@@ -304,19 +310,9 @@
         ]
       }],
       [
-        "OS=='linux' or OS.endswith('bsd') or <(is_IBMi) == 1", {
-          "cflags": [
-            "-std=c++14 -fPIC"
-          ],
-          "ldflags": [
-            "-static-libstdc++ -static-libgcc -static"
-          ]
-        }
-      ],
-      [
         "OS.endswith('bsd') or (<(is_electron) == 1 and OS=='linux') or <(is_IBMi) == 1", {
           "cflags": [
-            "-std=c++14 -fPIC"
+            "-std=c++14"
           ],
           "ldflags": [
             "-static-libstdc++ -static-libgcc"

@@ -15,10 +15,12 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019, ubuntu-18.04]
         include:
           - os: windows-2019
             PLATFORM_NAME: win
+          - os: ubuntu-18.04
+            PLATFORM_NAME: linux
 
     steps:
     - uses: actions/checkout@v2
