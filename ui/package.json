@@ -10,7 +10,6 @@
     "build": "tsc --project .",
     "bundle": "webpack",
     "electron:bundle": "electron-webpack --config webpack.config.js",
-    "postinstall": "electron-builder install-app-deps",
     "watch": "tsc --watch"
   },
   "keywords": [
