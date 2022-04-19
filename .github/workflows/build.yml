@@ -191,26 +191,6 @@ jobs:
       env:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
     
-    - name: Prepare for rebuild, install krb5 [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019'
-      continue-on-error: true
-      run: |
-        wget http://web.mit.edu/kerberos/dist/krb5/1.19/krb5-1.19.3.tar.gz
-        tar -xvf krb5-1.19.3.tar.gz
-        cd krb5-1.19.3/src
-        ./configure CFLAGS="-fPIC" CXXFLAGS="-fPIC" --enable-static --disable-shared
-        make  
-    # Prev step more likely failed on make, but it will build all needed static libs
-    - name: Copy static libs from krb5 [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019'
-      run: |
-        cp krb5-1.19.3/src/lib/krb5/libkrb5.a ui/node_modules/nodegit/
-        cp krb5-1.19.3/src/util/et/libcom_err.a ui/node_modules/nodegit/
-        cp krb5-1.19.3/src/lib/crypto/libk5crypto.a ui/node_modules/nodegit/
-        cp krb5-1.19.3/src/util/support/libkrb5support.a ui/node_modules/nodegit/
-        cd ui
-        mv binding.gyp.example node_modules/nodegit/binding.gyp
-
     - name: Rebuild modules [ubuntu-all && macos-all]
       if: matrix.os != 'windows-2019'
       run: |
