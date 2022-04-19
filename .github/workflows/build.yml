@@ -208,7 +208,7 @@ jobs:
         cd ui/dist
         wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
         chmod a+x appimagetool-x86_64.AppImage
-        filename=$(ls | grep client-master)
+        filename=$(ls | grep client-master | grep AppImage)
         ./$filename --appimage-extract
         cd squashfs-root/usr/lib
         for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
