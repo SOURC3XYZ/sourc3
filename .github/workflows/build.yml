@@ -15,10 +15,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-18.04]
+        os: [ubuntu-18.04]
         include:
-          - os: windows-2019
-            PLATFORM_NAME: win
           - os: ubuntu-18.04
             PLATFORM_NAME: linux
 
@@ -190,7 +188,7 @@ jobs:
         .\node_modules\.bin\electron-rebuild.cmd
       env:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
-    
+
     - name: Rebuild modules [ubuntu-all && macos-all]
       if: matrix.os != 'windows-2019'
       run: |
@@ -203,6 +201,26 @@ jobs:
         cd ui
         yarn build && yarn bundle
         yarn app:dist
+
+    - name: Repack with libs [ubuntu-all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        cd ui/dist
+        wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+        chmod a+x appimagetool-x86_64.AppImage
+        filename=$(ls | grep client-master)
+        ./$filename --appimage-extract
+        cd squashfs-root/usr/lib
+        for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
+        do
+          lib_file=$(readlink -f /usr/lib/x86_64-linux-gnu/$sym_file)
+          cp $lib_file .
+          local_name=$(echo $lib_file | cut -d '/' -f 5)
+          ln -s $local_name $sym_file
+        done
+        cd ../../..
+        rm $filename
+        ./appimagetool-x86_64.AppImage squashfs-root $filename
 
 
 ###############################################################################
