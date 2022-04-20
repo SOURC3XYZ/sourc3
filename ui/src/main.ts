@@ -3,13 +3,11 @@ import path from 'path';
 import { tryBDConnect } from './utils/typeorm-handler';
 import { IpcServer } from 'ipc-express';
 import expressApp from './app';
+import { addwebContentSender } from './resources/beam-api/beam.repository';
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
   ipc.listen(expressApp);
-  // expressApp.listen(PORT, () => console.log(
-  // `App is running on http://localhost:${5001}`
-  // ));
 });
 
 function createWindow() {
@@ -35,7 +33,9 @@ function createWindow() {
   win.setMenu(null);
   win.loadFile('front/dist/index.html');
   // win.loadURL('http://localhost:5000');
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools();
+  const webContents = win.webContents.send.bind(win.webContents)
+  addwebContentSender(webContents);
 }
 
 app.whenReady().then(() => {

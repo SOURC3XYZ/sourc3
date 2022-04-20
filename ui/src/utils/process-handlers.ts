@@ -24,6 +24,8 @@ export const runSpawnProcess = (
   } = params;
   const childProcess = spawn(path, args, { detached });
 
+  console.log(args)
+
   if (onData) childProcess.stdout.on('data', onData);
 
   if (onError) childProcess.stderr.on('error', onError);

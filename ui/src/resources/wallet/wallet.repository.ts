@@ -39,7 +39,6 @@ const peers = [
 ];
 
 export function getNodeUpdate() { 
-  console.log('nodeUpdate ', nodeUpdate)
   return nodeUpdate; 
 }
 
@@ -156,6 +155,14 @@ export function startBeamNode(
         '--storage', nodeDBPath,
         '--pass', password,
         '--file_log_level=verbose']);
+
+        console.log([
+          `--port=${BEAM_NODE_PORT}`,
+          `--peer=${peers.join(',')}`,
+          '--owner_key', ownerKey,
+          '--storage', nodeDBPath,
+          '--pass', password,
+          '--file_log_level=verbose'])
 
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');

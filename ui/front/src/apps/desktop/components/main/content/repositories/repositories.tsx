@@ -2,12 +2,10 @@ import { AllRepos, NavButton } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { useObjectState } from '@libs/hooks';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { loadingData } from '@libs/utils';
 import { RepoListType, RepoType } from '@types';
 import { Input } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import Text from 'antd/lib/typography/Text';
-import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styles from './repositories.module.css';
 
@@ -45,10 +43,10 @@ const Repositories = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setState({ inputRepoName: e.target.value });
   };
-  useEffect(() => {
-    loadingData(getAllRepos(type))
-      .then(() => setState({ isLoading: false }));
-  }, []);
+  // useEffect(() => {
+  //   loadingData(getAllRepos(type))
+  //     .then(() => setState({ isLoading: false }));
+  // }, []);
 
   return (
     <>

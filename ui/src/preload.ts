@@ -78,6 +78,13 @@ process.once('loaded', () => {
     });
 
     ipcRenderer.on('ping', (_, message) => {
+      console.log('ping', message);
+      if (message.id?.match(/ev_/i)) {
+        window.postMessage({
+          type: 'api-events',
+          response: message
+      });
+      }
         window.postMessage({
             type: 'select-dirs-answer',
             path: message
