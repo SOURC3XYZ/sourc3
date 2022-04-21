@@ -1,14 +1,8 @@
 @import './fonts.scss';
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Visby;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Visby;
 }
-
-  [id~=root]{
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
