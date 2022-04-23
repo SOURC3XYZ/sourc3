@@ -16,7 +16,6 @@ import styles from './manager.module.css';
 
 type ManagerProps = {
   getWalletStatus: () => void,
-  // getWalletAddressList: ()=> void
   setWalletSendBeam: (
     amountValue: number,
     addressValue:string,
@@ -36,7 +35,6 @@ const initialState = {
 
 const Manager = ({
   getWalletStatus,
-  // getWalletAddressList,
   setWalletSendBeam,
   balance,
   addrList,
@@ -46,13 +44,8 @@ const Manager = ({
   const {
     visible, adress, amount, comment
   } = state;
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  // const [modalText, setModalText] = useState('Content of the modal');
 
-  useEffect(() => {
-    getWalletStatus();
-    // getWalletAddressList();
-  }, []);
+  useEffect(() => getWalletStatus(), []);
 
   const showModal = () => {
     setState({
@@ -63,9 +56,7 @@ const Manager = ({
     });
   };
 
-  const clear = () => {
-    setState({ visible: false });
-  };
+  const clear = () => setState({ visible: false });
 
   const handleOk = () => {
     if (!adress) {
@@ -80,12 +71,10 @@ const Manager = ({
     setState({ visible: false });
   };
 
-  const handleCancel = () => {
-    setState({ visible: false });
-  };
-  const handleAddressValue = (event:any) => {
-    setState({ adress: event?.target.value });
-  };
+  const handleCancel = () => setState({ visible: false });
+
+  const handleAddressValue = (event:any) => setState({ adress: event?.target.value });
+
   const handleAmountValue = (event:any) => {
     const target = event?.target.value;
     const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);

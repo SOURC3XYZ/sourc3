@@ -185,9 +185,9 @@ export const thunks:ThunkObject = {
   },
 
   killBeamApi: (resolve?: PromiseArg<string>) => async (dispatch) => {
-    const url = `${CONTRACT.HOST}/wallet/kill`;
+    const url = '/wallet/kill';
     try {
-      await axios.delete(url);
+      await callIPC(url, 'delete');
       if (resolve) resolve();
       dispatch(AC.setIsConnected(false));
     } catch (error) { thunkCatch(error, dispatch); }

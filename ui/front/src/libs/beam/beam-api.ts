@@ -334,7 +334,7 @@ export class BeamAPI<T> {
   };
 
   public readonly callIPC = (
-      url: string, method: IpcMethod, body: object, callId?:string
+      url: string, method: IpcMethod, body = {}, callId?:string
     ):Promise<BeamApiRes> => {
     return new Promise((resolve, reject) => {
       const id = callId || [url, this.callIndex++].join('-');
