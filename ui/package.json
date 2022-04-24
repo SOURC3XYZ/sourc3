@@ -4,7 +4,7 @@
   "description": "SOURC3 client for 'masternet'",
   "main": "bundle/main.js",
   "scripts": {
-    "start": "electron --inspect dist/main",
+    "start": "export NODE_ENV=dev; electron --inspect dist/main",
     "app:dist": "electron-builder",
     "app:dir": "electron-builder --dir",
     "build": "tsc --project .",

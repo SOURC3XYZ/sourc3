@@ -67,10 +67,13 @@ function createWindow() {
   });
   CopyIfNotExists(path.join(__dirname, '..', 'front', 'dist', 'assets', 'app.wasm'), path.join(sourc3Path, 'app.wasm'));
   win.webContents.userAgent = 'SOURC3-DESKTOP';
-  win.setMenu(null);
-  win.loadFile('front/dist/index.html');
-  // win.loadURL('http://localhost:5000');
-  win.webContents.openDevTools();
+  if (process.env['NODE_ENV'] === 'dev') {
+    win.loadURL('http://localhost:5000');
+  } else {
+    win.setMenu(null);
+    win.loadFile('front/dist/index.html');
+    win.webContents.openDevTools();
+  }
   const webContents = win.webContents.send.bind(win.webContents)
   addwebContentSender(webContents);
 }
