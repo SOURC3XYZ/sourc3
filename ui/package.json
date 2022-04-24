@@ -73,7 +73,9 @@
     ],
     "extraResources": [
       "beam-res/**",
-      ".env"
+      ".env",
+      "git-remote-sourc3*",
+      "sourc3-remote.cfg"
     ]
   }
 }
