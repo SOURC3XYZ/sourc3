@@ -116,7 +116,8 @@ jobs:
         if [ -d "./node_modules/nodegit" ]; then
           cd node_modules/nodegit/utils
           perl -0777 -i -pe 's/await execPromise\("make test"(.*?){ pipeOutput: true }\);//igs' acquireOpenSSL.js
-          cat acquireOpenSSL.js | grep "make test"
+          echo "$(cat acquireOpenSSL.js | grep 'make test')"
+          cd ../../..
         fi
         ./node_modules/.bin/electron-rebuild
 
