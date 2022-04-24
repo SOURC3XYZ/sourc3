@@ -90,6 +90,7 @@ jobs:
         NODE_ENV=production npm run build
         cd ..
         npm i --save-dev --legacy-peer-deps
+        npm i dmg-license
 
     - name: Install nasm [windows-2019]
       if: matrix.os == 'windows-2019'
