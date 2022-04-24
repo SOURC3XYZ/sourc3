@@ -124,6 +124,9 @@ jobs:
       run: |
         cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
 
+###############################################################################
+# Save version
+###############################################################################
     - name: Save version info
       shell: bash
       run: |
@@ -137,6 +140,9 @@ jobs:
         sed 's/"version": "1.0.0"/"version": "'${{ env.PACKAGE_VERSION }}'"/g' ui/package.json > ui/package_tmp.json
         mv ui/package_tmp.json ui/package.json
  
+###############################################################################
+# Prepare electron build
+###############################################################################
     - name: Prepare for electron build [windows-2019]
       shell: bash
       if: matrix.os == 'windows-2019'
@@ -195,34 +201,6 @@ jobs:
       run: |
         cd ui
         ./node_modules/.bin/electron-rebuild
-    
-    - name: Build electron
-      shell: bash
-      run: |
-        cd ui
-        yarn build && yarn bundle
-        yarn app:dist
-
-    - name: Repack with libs [ubuntu-all]
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
-      run: |
-        cd ui/dist
-        wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-        chmod a+x appimagetool-x86_64.AppImage
-        filename=$(ls | grep client-master | grep AppImage)
-        ./$filename --appimage-extract
-        cd squashfs-root/usr/lib
-        for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
-        do
-          lib_file=$(readlink -f /usr/lib/x86_64-linux-gnu/$sym_file)
-          cp $lib_file .
-          local_name=$(echo $lib_file | cut -d '/' -f 5)
-          ln -s $local_name $sym_file
-        done
-        cd ../../..
-        rm $filename
-        ./appimagetool-x86_64.AppImage squashfs-root $filename
-        rm appimagetool-x86_64.AppImage
 
 
 ###############################################################################
@@ -261,6 +239,43 @@ jobs:
       continue-on-error: false
       shell: bash
       run: ctest -C $BUILD_CONFIG --verbose
+
+###############################################################################
+# Build desktop
+###############################################################################
+    - name: Copy SOURC3 helper
+      shell: bash
+      run: |
+        cp remote_helper/git-remote-sourc3 ui/git-remote-sourc3
+        cp remote_helper/sourc3-remote.cfg ui/sourc3-remote.cfg
+
+    - name: Build electron
+      shell: bash
+      run: |
+        cd ui
+        yarn build && yarn bundle
+        yarn app:dist
+
+    - name: Repack with libs [ubuntu-all]
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: |
+        cd ui/dist
+        wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+        chmod a+x appimagetool-x86_64.AppImage
+        filename=$(ls | grep client-master | grep AppImage)
+        ./$filename --appimage-extract
+        cd squashfs-root/usr/lib
+        for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
+        do
+          lib_file=$(readlink -f /usr/lib/x86_64-linux-gnu/$sym_file)
+          cp $lib_file .
+          local_name=$(echo $lib_file | cut -d '/' -f 5)
+          ln -s $local_name $sym_file
+        done
+        cd ../../..
+        rm $filename
+        ./appimagetool-x86_64.AppImage squashfs-root $filename
+        rm appimagetool-x86_64.AppImage
 
 ###############################################################################
 # Collect artifacts
