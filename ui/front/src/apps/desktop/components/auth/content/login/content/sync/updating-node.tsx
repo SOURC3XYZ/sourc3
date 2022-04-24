@@ -1,22 +1,19 @@
 import { NavButton } from '@components/shared';
-import { CONTRACT } from '@libs/constants';
-import { useFetch } from '@libs/hooks';
+import useFetch from '@libs/hooks/shared/useFetch';
 import { Progress, Typography } from 'antd';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const { Text } = Typography;
 
-const url = `${CONTRACT.HOST}/wallet/update`;
-
 type UpdatingNodeProps = {
-  statusFetcher: (resolve: PromiseArg<{status: number}>) => void,
+  statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
   errorCatcher: (e: Error) => void
 };
 
 const initial = { status: 0 }; // need to cycle rerender component
 
-const UpdatingNode = ({statusFetcher, errorCatcher }:UpdatingNodeProps) => {
+function UpdatingNode({ statusFetcher, errorCatcher }:UpdatingNodeProps) {
   const navigate = useNavigate();
   const { status } = useFetch(statusFetcher, initial, errorCatcher);
   console.log('updating node: ', status);
@@ -46,6 +43,6 @@ const UpdatingNode = ({statusFetcher, errorCatcher }:UpdatingNodeProps) => {
       </div>
     </>
   );
-};
+}
 
 export default UpdatingNode;

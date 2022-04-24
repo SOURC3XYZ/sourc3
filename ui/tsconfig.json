@@ -27,10 +27,12 @@
   },
   "exclude": [
     "node_modules/",
-    "tests/"
+    "tests/",
+    "front/src"
   ],
   "include": [
     "./.env",
-    "src"
+    "src",
+    "front/src"
   ]
 }

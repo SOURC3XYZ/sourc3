@@ -10,9 +10,9 @@ type FailPageProps = {
   isBtn?: boolean;
 };
 
-const FailPage = ({
+function FailPage({
   title, subTitle, comeBack, isBtn, resetErrState
-}:FailPageProps) => {
+}:FailPageProps) {
   const navigate = useNavigate();
 
   React.useEffect(() => resetErrState);
@@ -31,6 +31,6 @@ const FailPage = ({
       }
     />
   );
-};
+}
 
 export default FailPage;

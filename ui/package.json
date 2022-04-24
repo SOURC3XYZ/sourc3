@@ -21,6 +21,7 @@
   "author": "Beam Privacy",
   "license": "Apache-2.0",
   "dependencies": {
+    "electron": "16.0.7",
     "commander": "^9.0.0",
     "cors": "^2.8.5",
     "dotenv": "^11.0.0",
@@ -45,7 +46,6 @@
     "@typescript-eslint/eslint-plugin": "^5.9.1",
     "@typescript-eslint/parser": "^5.9.1",
     "copy-webpack-plugin": "^10.2.4",
-    "electron": "16.0.7",
     "electron-builder": "^22.14.13",
     "electron-rebuild": "^3.2.7",
     "eslint": "^8.6.0",

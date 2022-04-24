@@ -2,7 +2,7 @@ import { OkPage, Preload } from '@components/shared';
 import { NavButton } from '@components/shared/nav-button';
 import { thunks } from '@libs/action-creators';
 import { WALLET } from '@libs/constants';
-import { useAsyncError } from '@libs/hooks';
+import { useAsyncError } from '@libs/hooks/shared';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { Seed2ValidationType } from '@types';
 import { message } from 'antd';
@@ -30,12 +30,12 @@ type RestorePropsType = {
   ) => void
 };
 
-const Restore = ({
+function Restore({
   seed2Validation,
   validate,
   restoreWallet,
   validatePasted
-}:RestorePropsType) => {
+}:RestorePropsType) {
   const throwError = useAsyncError();
   const [mode, toggleMode] = React.useState<Status>(Status.SEED);
   const { seed, errors } = seed2Validation;
@@ -102,7 +102,7 @@ const Restore = ({
       </div>
     </div>
   );
-};
+}
 
 const mapState = ({
   wallet: { seed2Validation }
@@ -113,9 +113,9 @@ const mapState = ({
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
   validate: (seed: string[]) => dispatch(thunks.validateSeed(seed)),
 
-  restoreWallet: (
-    seed: string[], pass: string, callback: (err?:Error) => void
-  ) => dispatch(thunks.sendParams2Service(seed, pass, callback)),
+  restoreWallet: (seed: string[], pass: string, callback: (err?:Error) => void) => dispatch(
+    thunks.sendParams2Service(seed, pass, callback)
+  ),
 
   validatePasted: (seedArr: string[]) => dispatch(thunks.validateSeed(seedArr))
 });

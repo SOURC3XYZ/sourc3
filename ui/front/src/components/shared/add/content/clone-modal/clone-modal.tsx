@@ -1,5 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { useObjectState } from '@libs/hooks';
+import { useObjectState } from '@libs/hooks/shared';
 import {
   Button, Col, Input, Modal, Row
 } from 'antd';
@@ -21,7 +21,7 @@ const initial = {
   remote: ''
 };
 
-const CloneModal = ({ handleOk, handleCancel, cloneRepo }: CloneModalProps) => {
+function CloneModal({ handleOk, handleCancel, cloneRepo }: CloneModalProps) {
   const [{ local, remote }, setState] = useObjectState(initial);
 
   const onClick = () => {
@@ -84,6 +84,6 @@ const CloneModal = ({ handleOk, handleCancel, cloneRepo }: CloneModalProps) => {
       </Row>
     </Modal>
   );
-};
+}
 
 export default CloneModal;

@@ -11,6 +11,7 @@ import {
   FailPage
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { useCallback } from 'react';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -19,9 +20,9 @@ type MainProps = {
   isApiConnected: boolean
 };
 
-const Main = ({
+function Main({
   isApiConnected, connectApi
-}:MainProps) => {
+}:MainProps) {
   const routes = [
     {
       path: '/',
@@ -46,7 +47,7 @@ const Main = ({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const RoutesView = () => (
+  const RoutesView = useCallback(() => (
     <Routes>
       {
         routes
@@ -69,7 +70,7 @@ const Main = ({
       }
 
     </Routes>
-  );
+  ), [isApiConnected]);
 
   return (
     <>
@@ -80,7 +81,7 @@ const Main = ({
       </div>
     </>
   );
-};
+}
 
 const mapState = ({
   app: { isApiConnected, balance, pkey }

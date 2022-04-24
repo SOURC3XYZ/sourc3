@@ -3,9 +3,9 @@ import img from '@assets/img/source-logo.svg';
 import { useNavigate } from 'react-router-dom';
 import styles from './lendos.module.scss';
 
-const Lendos = () => {
+function Lendos() {
   const navigate = useNavigate();
-  const onClick = () => navigate('/repos/all/1');
+  const onClick = () => navigate('/repos/all/1', { replace: false });
 
   console.log(img);
   return (
@@ -27,6 +27,6 @@ const Lendos = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Lendos;

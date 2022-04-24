@@ -1,6 +1,6 @@
 import React from 'react';
 import { Preload } from '@components/shared';
-import { useAsyncError, useObjectState } from '@libs/hooks';
+import { useAsyncError, useObjectState } from '@libs/hooks/shared';
 import styles from './login.module.css';
 import { Password, UpdatingNode } from './content';
 
@@ -11,7 +11,7 @@ enum STATUS {
 }
 
 type LoginProps = {
-  statusFetcher: (resolve: PromiseArg<{status: number}>) => void,
+  statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
   startWalletApi: (password: string, cb: (err?: Error) => void) => void,
 };
 
@@ -22,7 +22,7 @@ type LoginState = {
 
 const initial:LoginState = { pass: '', status: STATUS.LOGIN };
 
-const Login = ({ startWalletApi, statusFetcher }: LoginProps) => {
+function Login({ startWalletApi, statusFetcher }: LoginProps) {
   const [{ pass, status }, setState] = useObjectState<LoginState>(initial);
   const throwError = useAsyncError();
 
@@ -40,19 +40,6 @@ const Login = ({ startWalletApi, statusFetcher }: LoginProps) => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => setState({ pass: e.target.value });
 
-  // const View = () => {
-  //   switch (status) {
-  //     case STATUS.LOADING:
-  //       return <Preload />;
-
-  //     case STATUS.SYNC:
-  //       return <UpdatingNode errorCatcher={throwError} />;
-
-  //     default:
-  //       return <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />;
-  //   }
-  // };
-
   return (
     <div className={styles.wrapper}>
       {
@@ -64,6 +51,6 @@ const Login = ({ startWalletApi, statusFetcher }: LoginProps) => {
       }
     </div>
   );
-};
+}
 
 export default Login;

@@ -29,9 +29,9 @@ const initialState = {
   inputRepoName: ''
 };
 
-const Header = ({
+function Header({
   balance, pkey, searchText, setInputText, connectToExtention, createRepos
-}:HeaderPropsType) => {
+}:HeaderPropsType) {
   const isPkey = Boolean(pkey);
   const setInputTextWrap = (text: string) => setInputText(text);
   const navigate = useNavigate();
@@ -163,7 +163,7 @@ const Header = ({
       </Modal>
     </div>
   );
-};
+}
 
 const mapState = (
   { app: { pkey, balance }, repos: { searchText } }: RootState

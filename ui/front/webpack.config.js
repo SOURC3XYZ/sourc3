@@ -1,26 +1,18 @@
-/* eslint-disable global-require */
-/* eslint-disable max-len */
-import path from 'path';
-import fs from 'fs';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+const path = require('path');
+const fs = require('fs');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // import CompressionPlugin from 'compression-webpack-plugin';
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 // import MomentTimezoneDataPlugin from 'moment-timezone-data-webpack-plugin';
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import * as webpack from 'webpack';
-import { Configuration } from 'webpack';
-
-const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').default;
-
-type ModeType = 'production' | 'development';
-
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const webpack = require('webpack');
+const { Configuration } = webpack;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-interface IConfig extends Configuration {
-  devServer: { [key:string]: any }
-}
+
+const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').default;
 
 const lessToJs = require('less-vars-to-js');
 
@@ -28,13 +20,11 @@ const themeVariables = lessToJs(
   fs.readFileSync(path.join(__dirname, './ant-theme-vars.less'), 'utf8')
 );
 
-const env:ModeType = <ModeType>process.env.NODE_ENV || 'production';
+const env = process.env.NODE_ENV || 'production';
 
 const mode = process.env.WEB ? 'web' : 'desktop';
 
-console.log('env', env);
-
-const build:IConfig = {
+const build = {
   entry: `./src/apps/${mode}/index.tsx`,
   // bail: true,
   output: {
@@ -151,6 +141,12 @@ const build:IConfig = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          from: path.join(__dirname, 'public'),
+          globOptions: {
+            ignore: [path.join(__dirname, 'public', 'index.html')]
+          }
+        },
+        {
           from: path.join(
             __dirname, './node_modules/beam-wasm-client-masternet/'
           ),
@@ -174,7 +170,7 @@ const build:IConfig = {
     //   matchZones: /^America\//
     // }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'public', 'index.html')
+      template: path.join(__dirname, 'public', 'index.html')
     }),
     // new MiniCssExtractPlugin({
     //   filename: 'styles/[name].css',
@@ -191,4 +187,4 @@ const build:IConfig = {
     // })
   ]
 };
-export default build;
+module.exports = build;
