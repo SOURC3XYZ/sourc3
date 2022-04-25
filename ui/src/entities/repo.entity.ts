@@ -10,17 +10,17 @@ import { Seed } from '.';
 @Entity()
 export class Repo {
   @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id!: string;
 
   @Column('varchar', { length: 200 })
-    local: string;
+    local!: string;
 
   @Column('varchar')
-    remote: string;
+    remote!: string;
 
   @Column('varchar')
-    name: string;
+    name!: string;
 
   @ManyToOne(() => Seed, (seed) => seed.repos)
-    seedId: Seed;
+    seedId!: Seed;
 }

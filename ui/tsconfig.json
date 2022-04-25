@@ -20,19 +20,23 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "strictPropertyInitialization": false
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
   },
   "parserOptions": {
     "project": "./webpack.config.js"
   },
   "exclude": [
     "node_modules/",
-    "tests/",
-    "front/src"
+    "tests/"
   ],
   "include": [
     "./.env",
-    "src",
-    "front/src"
+    "src"
   ]
 }

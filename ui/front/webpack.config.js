@@ -141,10 +141,10 @@ const build = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.join(__dirname, 'public'),
-          globOptions: {
-            ignore: [path.join(__dirname, 'public', 'index.html')]
-          }
+          from: path.join(__dirname, './public/_redirects')
+        },
+        {
+          from: path.join(__dirname, './public/netlify.toml')
         },
         {
           from: path.join(

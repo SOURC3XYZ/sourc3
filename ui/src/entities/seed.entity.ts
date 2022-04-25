@@ -8,11 +8,11 @@ import { Repo } from '.';
 @Entity({ name: 'seeds' })
 export class Seed {
   @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id!: string;
 
   @Column('varchar', { length: 40 })
-    seed: string;
+    seed!: string;
 
   @OneToMany(() => Repo, (repo) => repo.seedId)
-    repos: Repo[];
+    repos!: Repo[];
 }

@@ -16,7 +16,10 @@
         "@typescript-eslint"
     ],
     "parserOptions": {
-        "project": "tsconfig.json"
+        "project": [
+            "tsconfig.json",
+            "./front/tsconfig.json"
+        ]
     },
     "ignorePatterns": [
         "*.js"
