@@ -251,7 +251,8 @@ export function runWalletApi(
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
       '--tcp_max_line=128000',
-      `--ipfs_repo=${ipfsPath}`
+      `--ipfs_repo=${ipfsPath}`,
+      '--ipfs_bootstrap=/ip4/3.209.99.179/tcp/8100/p2p/12D3KooWMvQRyfF7y7pUvgPXXyEWeGofU2sWDBWt3LDzs79v9dCR'
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);

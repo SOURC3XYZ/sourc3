@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import {
   app, BrowserWindow, session, ipcMain, dialog
 } from 'electron';
