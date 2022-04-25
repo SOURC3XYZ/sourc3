@@ -323,6 +323,15 @@ jobs:
     - name: Sign the electron dmg [macos-10.15]
       if: matrix.os == 'macos-10.15'
       run: |
+        export TZ=GMT-3
+        sudo systemsetup -gettimezone
+        security create-keychain -p github macos-build.keychain
+        security default-keychain -s macos-build.keychain
+        security unlock-keychain -p github macos-build.keychain
+        security set-keychain-settings -t 3600 -l ~/Library/Keychains/macos-build.keychain
+        echo "${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}" | base64 --decode > certificate.p12
+        security import certificate.p12 -k macos-build.keychain -P ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }} -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k github macos-build.keychain 
         codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg
 
     - name: Notarize [macos-10.15]
