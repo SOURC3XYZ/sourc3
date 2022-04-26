@@ -36,14 +36,11 @@
         "import/no-extraneous-dependencies": [
             "error",
             {
-                "packageDir": [
-                    "./node_modules/electron"
-                ],
                 "devDependencies": [
                     "**/test/*.test.ts",
                     "**/test/*.spec.ts",
                     "webpack.config.ts",
-                    "electron"
+                    "./src/main.ts"
                 ]
             }
         ],

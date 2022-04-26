@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -7,10 +8,11 @@ export const rootPath = path.join(__dirname, '../../');
 
 export const configPath = app.getPath('userData');
 
-const envPath = fs.existsSync(path.join(rootPath, '.env')) 
-? path.join(rootPath, '.env')
-: path.join(rootPath, '../.env');
+export const IPFS_BOOTSRAP = '12D3KooWMvQRyfF7y7pUvgPXXyEWeGofU2sWDBWt3LDzs79v9dCR';
 
+const envPath = fs.existsSync(path.join(rootPath, '.env'))
+  ? path.join(rootPath, '.env')
+  : path.join(rootPath, '../.env');
 
 dotenv.config({
   path: envPath

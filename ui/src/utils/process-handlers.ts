@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { spawn, ChildProcess } from 'child_process';
 
 import { app } from 'electron';
@@ -24,7 +25,7 @@ export const runSpawnProcess = (
   } = params;
   const childProcess = spawn(path, args, { detached });
 
-  console.log(args)
+  console.log(args);
 
   if (onData) childProcess.stdout.on('data', onData);
 
@@ -56,7 +57,6 @@ export const runSpawnProcess = (
 
   app.on('window-all-closed', () => {
     console.log(`Kill ${path}!`);
-    childProcess.kill("SIGTERM");
-  })
-
+    childProcess.kill('SIGTERM');
+  });
 };
