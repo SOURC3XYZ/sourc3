@@ -169,19 +169,23 @@ jobs:
         cp ./shaders/app.wasm ./ui/front/dist/assets
         sudo npm install --global yarn
 
-    - name: Cache front node modules
+    - name: Cache node modules
       uses: actions/cache@v3
-      id: cache-front-modules
+      id: cache-electron-modules
       env:
-        cache-name: front-node-modules
+        cache-name: electron-node-modules
       with:
-        path: ui/front/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/front/package-lock.json') }}
+        path: |
+          ui/front/node_modules
+          ui/node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
 
     - name: Install front dependencies
-      if: steps.cache-front-modules.outputs.cache-hit != 'true'
+      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       shell: bash
       run: |
         cd ui/front
@@ -193,36 +197,25 @@ jobs:
         cd ui/front
         NODE_ENV=production npm run build
 
-    - name: Cache UI node modules
-      uses: actions/cache@v3
-      id: cache-ui-modules
-      env:
-        cache-name: ui-node-modules
-      with:
-        path: ui/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-
     - name: Install electron dependencies
       shell: bash
-      if: steps.cache-ui-modules.outputs.cache-hit != 'true'
+      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
         npm i --legacy-peer-deps
 
     - name: Install wasm [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-ui-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: ilammy/setup-nasm@v1
       
     - name: Set up perl [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-ui-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: '5.34'
 
     - name: Rebuild modules [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-ui-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
         .\node_modules\.bin\electron-rebuild.cmd
@@ -230,7 +223,7 @@ jobs:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
 
     - name: Rebuild modules [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019' && steps.cache-ui-modules.outputs.cache-hit != 'true'
+      if: matrix.os != 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
         ./node_modules/.bin/electron-rebuild
