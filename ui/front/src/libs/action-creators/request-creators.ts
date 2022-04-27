@@ -236,8 +236,7 @@ export const RC = {
     }
   } as const),
 
-  setPublicKey: (
-  ) => ({
+  setPublicKey: () => ({
     callID: 'set_public_key',
     method: 'invoke_contract',
     params: {

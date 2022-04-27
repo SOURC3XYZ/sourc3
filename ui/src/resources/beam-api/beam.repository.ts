@@ -7,6 +7,8 @@ let socket:Socket;
 let callIndex = 0;
 const calls: { [key:string]: any } = {};
 
+let webContentSender: (channel: string, ...args: any[]) => void;
+
 export function killSyncSocket() {
   if (socket) {
     socket.destroy();
@@ -34,9 +36,7 @@ export const onResponce = (response: string):void => {
   try {
     const answer = JSON.parse(response);
 
-    const nocback = () => {
-      // TODO: comming soon
-    };
+    const nocback = (answer:any) => webContentSender('ping', answer);
 
     const { id } = answer;
     const cback = calls[id] || nocback;
@@ -86,4 +86,10 @@ export async function reqTCP(req:IApiReq) {
   return new Promise((resolve) => {
     calls[req.id] = resolve;
   });
+}
+
+export const addwebContentSender = (
+  func: (channel: string, ...args: any[]) => void
+  ) => {
+    webContentSender = func;
 }

@@ -10,13 +10,12 @@ import {
 import { thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { useObjectState } from '@libs/hooks';
 import { Link } from 'react-router-dom';
+import { useObjectState } from '@libs/hooks/shared';
 import styles from './manager.module.css';
 
 type ManagerProps = {
   getWalletStatus: () => void,
-  // getWalletAddressList: ()=> void
   setWalletSendBeam: (
     amountValue: number,
     addressValue:string,
@@ -34,25 +33,19 @@ const initialState = {
   comment: ''
 };
 
-const Manager = ({
+function Manager({
   getWalletStatus,
-  // getWalletAddressList,
   setWalletSendBeam,
   balance,
   addrList,
   isDesk
-}: ManagerProps) => {
+}: ManagerProps) {
   const [state, setState] = useObjectState(initialState);
   const {
     visible, adress, amount, comment
   } = state;
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  // const [modalText, setModalText] = useState('Content of the modal');
 
-  useEffect(() => {
-    getWalletStatus();
-    // getWalletAddressList();
-  }, []);
+  useEffect(() => getWalletStatus(), []);
 
   const showModal = () => {
     setState({
@@ -63,9 +56,7 @@ const Manager = ({
     });
   };
 
-  const clear = () => {
-    setState({ visible: false });
-  };
+  const clear = () => setState({ visible: false });
 
   const handleOk = () => {
     if (!adress) {
@@ -80,15 +71,13 @@ const Manager = ({
     setState({ visible: false });
   };
 
-  const handleCancel = () => {
-    setState({ visible: false });
-  };
-  const handleAddressValue = (event:any) => {
-    setState({ adress: event?.target.value });
-  };
+  const handleCancel = () => setState({ visible: false });
+
+  const handleAddressValue = (event:any) => setState({ adress: event?.target.value });
+
   const handleAmountValue = (event:any) => {
     const target = event?.target.value;
-    const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);
+    const regExp = /^-?\d+(\.\d*)?$/g;
     const value = target.match(regExp);
     setState({ amount: value });
   };
@@ -100,7 +89,7 @@ const Manager = ({
   return (
     <>
       {
-        isDesk ? (<Link to="/main">Back</Link>) : (<></>)
+        isDesk && (<Link to="/main">Back</Link>)
       }
       <div className={styles.info}>
         <Card
@@ -203,7 +192,7 @@ const Manager = ({
       </Modal>
     </>
   );
-};
+}
 
 const mapState = ({ app: { balance, addrList } }: RootState) => ({
   balance,
@@ -219,12 +208,18 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
     // dispatch(thunks.getWalletAddressList());
   },
   setWalletSendBeam: (
-    amountValue: number, fromValue:string, addressValue:string,
+    amountValue: number,
+    fromValue:string,
+    addressValue:string,
     commentValue:string
   ) => {
     console.log(fromValue);
-    dispatch(thunks.setWalletSendBeam(amountValue, fromValue, addressValue,
-      commentValue));
+    dispatch(thunks.setWalletSendBeam(
+      amountValue,
+      fromValue,
+      addressValue,
+      commentValue
+    ));
   }
 });
 export default connect(mapState, mapDispatch)(Manager);

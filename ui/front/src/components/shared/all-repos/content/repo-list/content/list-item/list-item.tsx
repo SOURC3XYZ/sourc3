@@ -17,10 +17,12 @@ type ListItemProps = {
   deleteRepos: (repo_id: number) => void;
 };
 
-const ListItem = ({
+function ListItem({
   item, path, searchText, deleteRepos
-}:ListItemProps) => {
-  const { repo_id, repo_name } = item;
+}:ListItemProps) {
+  const { repo_id, repo_name, repo_owner } = item;
+
+  const repoLink = `sourc3://${repo_owner}/${repo_name}`;
 
   const iteractionItems = [
     {
@@ -37,7 +39,9 @@ const ListItem = ({
     }
   ];
 
-  const deleteRepo = () => deleteRepos(repo_id);
+  const handleCloneRepo = () => navigator.clipboard.writeText(repoLink);
+
+  const handleDeleteRepo = () => deleteRepos(repo_id);
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
     <div>
@@ -54,10 +58,12 @@ const ListItem = ({
 
   const menuRender = (
     <Menu onClick={onClick}>
-      <Menu.Item onClick={deleteRepo} key="Unable to delete">
+      <Menu.Item onClick={handleDeleteRepo} key="Unable to delete">
         Delete repo
       </Menu.Item>
-      <Menu.Item key="Copied!">Clone Repo</Menu.Item>
+      <Menu.Item onClick={handleCloneRepo} key={`${repoLink} copied to clipboard!`}>
+        Clone Repo
+      </Menu.Item>
     </Menu>
   );
 
@@ -98,6 +104,6 @@ const ListItem = ({
       />
     </List.Item>
   );
-};
+}
 
 export default ListItem;

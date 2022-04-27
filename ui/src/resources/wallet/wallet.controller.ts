@@ -15,7 +15,6 @@ router.route('/').get(
 router.route('/update').get(
   async (_: Request, res: Response): Promise<Response | void> => {
     const status = getNodeUpdateService();
-    console.log(status)
     return res.status(201).send({ status });
   }
 );

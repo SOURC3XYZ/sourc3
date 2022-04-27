@@ -1,10 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { thunks } from '@libs/action-creators';
-import { useObjectState } from '@libs/hooks';
+import { useObjectState } from '@libs/hooks/shared';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
   Button, Menu, Dropdown
 } from 'antd';
+import { useCallback } from 'react';
 import { connect } from 'react-redux';
 import styles from './add.module.css';
 import { CloneModal } from './content';
@@ -22,7 +23,7 @@ const initialState = {
   modal: MODAL.NONE
 };
 
-const AddButton = ({ createRepo, cloneRepo }:AddButtonPropsType) => {
+function AddButton({ createRepo, cloneRepo }:AddButtonPropsType) {
   const [state, setState] = useObjectState(initialState);
   const { modal } = state;
 
@@ -40,7 +41,7 @@ const AddButton = ({ createRepo, cloneRepo }:AddButtonPropsType) => {
     { title: 'Add existing repository', mode: MODAL.ADD }
   ];
 
-  const ModalView = ():JSX.Element | null => {
+  const ModalView = useCallback(():JSX.Element | null => {
     switch (modal) {
       case MODAL.CLONE:
         return (
@@ -61,7 +62,7 @@ const AddButton = ({ createRepo, cloneRepo }:AddButtonPropsType) => {
       default:
         return null;
     }
-  };
+  }, [modal]);
 
   const menu = (
     <Menu>
@@ -89,7 +90,7 @@ const AddButton = ({ createRepo, cloneRepo }:AddButtonPropsType) => {
       </div>
     </>
   );
-};
+}
 
 const mapState = ({
   app: { isApiConnected }

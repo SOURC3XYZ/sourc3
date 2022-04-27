@@ -7,12 +7,12 @@ type PeloadProps = {
   children: ReactElement<any, any>;
 };
 
-const PreloadComponent = ({
+function PreloadComponent({
   isLoaded, callback, Fallback, children
-}:PeloadProps) => {
+}:PeloadProps) {
   useEffect(() => { if (!isLoaded) callback(); }, [isLoaded]);
   if (isLoaded) return children;
   return <Fallback />;
-};
+}
 
 export default PreloadComponent;

@@ -14,9 +14,9 @@ type ListRenderProps = {
   searchText: string;
 };
 
-const RepoList = ({
+function RepoList({
   page = 1, type = 'repos', elements, searchText, path, deleteRepos
-}:ListRenderProps) => {
+}:ListRenderProps) {
   const navigate = useNavigate();
   const textCash = useRef(searchText);
 
@@ -25,7 +25,7 @@ const RepoList = ({
   useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      navigate(`${path}repos/${type}/${1}`);
+      navigate(`${path}repos/${type}/${1}`, { replace: true });
     }
   }, [searchText]);
 
@@ -52,6 +52,6 @@ const RepoList = ({
       )}
     />
   );
-};
+}
 
 export default RepoList;

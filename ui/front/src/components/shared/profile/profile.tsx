@@ -44,9 +44,7 @@ const Profile = ({ pKey }:profileType) => {
         <Button type="link">Support</Button>
       </Menu.Item>
       <Menu.Item>
-        <Link type="link" to="/auth">
-          Log out
-        </Link>
+        <Link type="link" to="/auth">Log out</Link>
       </Menu.Item>
     </Menu>
   );

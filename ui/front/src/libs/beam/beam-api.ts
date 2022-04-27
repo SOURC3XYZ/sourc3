@@ -334,7 +334,7 @@ export class BeamAPI<T> {
   };
 
   public readonly callIPC = (
-      url: string, method: IpcMethod, body: object, callId?:string
+      url: string, method: IpcMethod, body = {}, callId?:string
     ):Promise<BeamApiRes> => {
     return new Promise((resolve, reject) => {
       const id = callId || [url, this.callIndex++].join('-');
@@ -350,29 +350,14 @@ export class BeamAPI<T> {
   }
 
   public readonly responseIPC = (e:MessageEvent<MessageType>) => {
-      if (e.data.type === 'ipc-control-res') {
-        this.responseCbackHandler(e.data.response)
+      switch (e.data.type) {
+        case 'ipc-control-res':
+        case 'api-events':
+        return this.responseCbackHandler(e.data.response); 
+        default:
+          return;
       }
   }
-
-  private readonly fetchApi = (
-    resolve:BeamApiReqHandlers['resolve'],
-    reject:BeamApiReqHandlers['reject'],
-    json: string
-  ) => {
-    if (this.apiHost) {
-      fetch(this.apiHost, {
-        method: 'POST',
-        body: json,
-        headers: { 'Content-Type': 'application/json' }
-      }).then((response) => response.json())
-        .then((data) => {
-          console.log('response', data);
-          resolve(data);
-        })
-        .catch((err) => reject(new Error(err)));
-    }
-  };
 
   private readonly argsStringify = (
     args: { [key:string]: string | number }

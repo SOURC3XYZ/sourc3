@@ -6,7 +6,7 @@ import {
 import { batch, connect } from 'react-redux';
 import { FailPage, Preload } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useUserRepos } from '@libs/hooks';
+import { useUserRepos } from '@libs/hooks/talons/user-repos';
 import { RepoContent } from './content';
 import styles from './repo.module.css';
 
@@ -29,7 +29,7 @@ type RepoProps = {
   ) => void;
 };
 
-const UserRepos = ({
+function UserRepos({
   currentId,
   repoMap,
   filesMap,
@@ -39,7 +39,7 @@ const UserRepos = ({
   updateTree,
   killTree,
   getFileData
-}:RepoProps) => {
+}:RepoProps) {
   const talonProps = useUserRepos({ currentId, getRepoData, updateTree });
 
   const { isLoaded, loadingHandler } = talonProps;
@@ -68,12 +68,11 @@ const UserRepos = ({
           Fallback={Preload}
         >
           <RepoContent {...props} />
-
         </PreloadComponent>
       </ErrorBoundary>
     </div>
   );
-};
+}
 
 const mapState = ({
   repo: {
@@ -89,9 +88,7 @@ const mapState = ({
 });
 
 const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getRepoData: (
-    id:RepoId, errHandler: ErrorHandler
-  ) => (resolve: () => void) => {
+  getRepoData: (id:RepoId, errHandler: ErrorHandler) => (resolve: () => void) => {
     dispatch(thunks.getRepo(id, errHandler, resolve));
   },
   killTree: () => {
@@ -100,14 +97,10 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
       dispatch(AC.setTreeData(null));
     });
   },
-  updateTree: (
-    id: RepoId, errHandler: ErrorHandler
-  ) => (props: Omit<UpdateProps, 'id'>) => {
+  updateTree: (id: RepoId, errHandler: ErrorHandler) => (props: Omit<UpdateProps, 'id'>) => {
     dispatch(thunks.getTree({ ...props, id }, errHandler));
   },
-  getFileData: (
-    repoId: RepoId, oid: TreeElementOid, errHandler: ErrorHandler
-  ) => {
+  getFileData: (repoId: RepoId, oid: TreeElementOid, errHandler: ErrorHandler) => {
     dispatch(thunks.getTextData(repoId, oid, errHandler));
   }
 });

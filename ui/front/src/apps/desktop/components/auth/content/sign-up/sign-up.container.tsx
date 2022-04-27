@@ -6,7 +6,7 @@ import { OkPage, Preload } from '@components/shared';
 import NavButton from '@components/shared/nav-button/nav-button';
 import { message } from 'antd';
 import { WALLET } from '@libs/constants';
-import { useAsyncError } from '@libs/hooks';
+import { useAsyncError } from '@libs/hooks/shared';
 import { SeedGenerate } from './container/seed-generate';
 import { PasswordRestore } from '../restore/container';
 import styles from './sign-up.module.css';
@@ -26,12 +26,12 @@ type SignUpProps = {
 
 enum MODE { SEED, CONFIRM, PASS, OK, LOADING }
 
-const SignUp = ({
+function SignUp({
   generateSeed,
   seedPhrase,
   restoreWallet,
   clearSeed2Validation
-}: SignUpProps) => {
+}: SignUpProps) {
   const seed:string[] = seedPhrase ? seedPhrase?.split(' ') : [];
   const clearSeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
   const clearErrors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
@@ -96,7 +96,7 @@ const SignUp = ({
       </div>
     </div>
   );
-};
+}
 const mapState = ({ wallet: { seedPhrase } }: RootState) => ({
   seedPhrase
 });
@@ -109,15 +109,11 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   generateSeed: () => {
     dispatch(thunks.generateSeed());
   },
-  restoreWallet: (
-    seed: string[], pass: string, callback: (err?: Error) => void
-  ) => {
+  restoreWallet: (seed: string[], pass: string, callback: (err?: Error) => void) => {
     console.log('validate', seed, pass);
     dispatch(thunks.sendParams2Service(seed, pass, callback));
   },
-  clearSeed2Validation: (
-    seed: string[], errors: boolean[]
-  ) => {
+  clearSeed2Validation: (seed: string[], errors: boolean[]) => {
     dispatch(AC.setSeed2Validation({ seed, errors }));
   }
 });

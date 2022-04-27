@@ -40,4 +40,4 @@ app.use((err:ErrorHandler, _req:Request, res:Response, next:NextFunction) => {
 process.on('uncaughtException', uncaughtException);
 process.on('unhandledRejection', unhandledRejection);
 
-export default app ;
+export default app;
