@@ -3,9 +3,9 @@ import request from 'request';
 import { WALLET_API_PORT } from '../../common';
 import { IApiReq } from '../../types';
 
-let socket:Socket;
+let socket: Socket;
 let callIndex = 0;
-const calls: { [key:string]: any } = {};
+const calls: { [key: string]: any } = {};
 
 let webContentSender: (channel: string, ...args: any[]) => void;
 
@@ -32,11 +32,12 @@ export const reqHTTP = async (
   );
 });
 
-export const onResponce = (response: string):void => {
+export const onResponce = (response: string) => {
   try {
     const answer = JSON.parse(response);
 
-    const nocback = (answer:any) => webContentSender('ping', answer);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const nocback = (answer: any) => webContentSender('ping', answer);
 
     const { id } = answer;
     const cback = calls[id] || nocback;
@@ -45,7 +46,7 @@ export const onResponce = (response: string):void => {
     return cback(answer);
   } catch (err) {
     console.log(`Failed to parse Wallet API response\n\t${response}\n\t${err}`);
-    return undefined;
+    return null;
   }
 };
 
@@ -62,6 +63,12 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
     socket.on('close', () => {
       console.log('tcp connection closed');
     });
+
+    socket.on('error', (data: Buffer) => {
+      const str = data.toString('utf-8');
+      console.log('socket error: ', str);
+    });
+
     socket.on('data', (data) => {
       acc += data.toString();
 
@@ -79,17 +86,21 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
   });
 });
 
-export async function reqTCP(req:IApiReq) {
+export async function reqTCP(req: IApiReq) {
+  const message = 'socket was closed';
   await tcpFactory();
-  req.id = ['call', callIndex++].join('-');
-  socket.write(`${JSON.stringify(req)}\n`);
-  return new Promise((resolve) => {
-    calls[req.id] = resolve;
-  });
+  if (!socket.destroyed) {
+    req.id = ['call', callIndex++].join('-');
+    socket.write(`${JSON.stringify(req)}\n`);
+    return new Promise((resolve) => {
+      calls[req.id] = resolve;
+    });
+  } console.log(message);
+  throw new Error(message);
 }
 
 export const addwebContentSender = (
   func: (channel: string, ...args: any[]) => void
-  ) => {
-    webContentSender = func;
-}
+) => {
+  webContentSender = func;
+};

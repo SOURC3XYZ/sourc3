@@ -96,7 +96,7 @@ export function setCurrentProcess(process?: ChildProcess) {
     currentProcess.kill('SIGTERM');
     currentProcess.on('close', (code: number) => {
       console.log(`child process exited with code ${code}`);
-      if (process)setCurrentProcess(process);
+      if (process) setCurrentProcess(process);
     });
   } else currentProcess = process;
 }
@@ -159,7 +159,7 @@ export function startBeamNode(
         '--pass', password,
         '--file_log_level=verbose']);
 
-      node.stdout.on('data', (data:Buffer) => {
+      node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
         console.log(`Got node output: ${bufferString}`);
         if (bufferString.match(nodeUpdatingReq)) {
@@ -168,7 +168,7 @@ export function startBeamNode(
         }
       });
 
-      node.stderr.on('data', (data:Buffer) => {
+      node.stderr.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
         console.log(`Got node error: ${bufferString}`);
       });

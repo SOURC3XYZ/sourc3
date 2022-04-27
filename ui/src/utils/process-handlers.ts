@@ -5,7 +5,7 @@ import { app } from 'electron';
 
 type BufferHandler = (data: Buffer) => undefined | void;
 
-type OnCloseHandler = (code:number | null, signal?: any) => undefined | void;
+type OnCloseHandler = (code: number | null, signal?: any) => undefined | void;
 
 type SpawnProcessParams = {
   path: string;
@@ -25,8 +25,6 @@ export const runSpawnProcess = (
   } = params;
   const childProcess = spawn(path, args, { detached });
 
-  console.log(args);
-
   if (onData) childProcess.stdout.on('data', onData);
 
   if (onError) childProcess.stderr.on('error', onError);
@@ -45,12 +43,12 @@ export const runSpawnProcess = (
     childProcess.kill('SIGINT');
   });
 
-  childProcess.stdout.on('data', (data:Buffer) => {
+  childProcess.stdout.on('data', (data: Buffer) => {
     const bufferString = data.toString('utf-8');
     console.log(`Got process output: ${bufferString}`);
   });
 
-  childProcess.stderr.on('data', (data:Buffer) => {
+  childProcess.stderr.on('data', (data: Buffer) => {
     const bufferString = data.toString('utf-8');
     console.log(`Got process error: ${bufferString}`);
   });

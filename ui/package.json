@@ -5,6 +5,7 @@
   "main": "bundle/main.js",
   "scripts": {
     "start": "export NODE_ENV=dev; electron --inspect dist/main",
+    "start:win": "set NODE_ENV=dev&&electron --inspect dist/main",
     "app:dist": "electron-builder",
     "app:dir": "electron-builder --dir",
     "build": "tsc --project .",
