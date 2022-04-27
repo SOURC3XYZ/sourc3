@@ -1,6 +1,6 @@
 import { ErrorBoundary } from '@components/hoc';
 import { FailPage } from '@components/shared';
-import { useAsyncError } from '@libs/hooks';
+import { useAsyncError } from '@libs/hooks/shared';
 import { setBranchAndCommit } from '@libs/utils';
 import {
   BranchCommit,
@@ -41,9 +41,7 @@ const splitUrl = (routes: string[], fullUrl: string) => {
   };
 };
 
-const setBranchCommit = (
-  repoMap:Map<BranchName, BranchCommit[]>, tree:string
-) => {
+const setBranchCommit = (repoMap:Map<BranchName, BranchCommit[]>, tree:string) => {
   const [branch, commit] = tree.split('/');
   if (branch && commit) {
     return setBranchAndCommit(repoMap, branch, commit);
@@ -57,7 +55,7 @@ const setBranchCommit = (
   };
 };
 
-const RepoContent = ({
+function RepoContent({
   id,
   repoMap,
   filesMap,
@@ -66,7 +64,7 @@ const RepoContent = ({
   killTree,
   updateTree,
   getFileData
-}: UpperMenuProps) => {
+}: UpperMenuProps) {
   const setError = useAsyncError();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -137,6 +135,6 @@ const RepoContent = ({
       </Routes>
     </>
   );
-};
+}
 
 export default RepoContent;

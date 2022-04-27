@@ -1,8 +1,8 @@
+import { useAsyncError } from '@libs/hooks/shared';
 import { loadingData } from '@libs/utils';
 import { RepoId, UpdateProps } from '@types';
 import { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import useAsyncError from './useAsyncError';
 
 type LocationState = {
   repoParams:string;

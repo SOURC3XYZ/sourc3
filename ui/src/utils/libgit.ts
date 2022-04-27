@@ -25,9 +25,9 @@ export class GitHandler {
 
   private asyncInitParams: AsyncInitParams;
 
-  private repo: Repository;
+  private repo!: Repository;
 
-  private _id: string;
+  private _id!: string;
 
   public constructor(
     url: string,

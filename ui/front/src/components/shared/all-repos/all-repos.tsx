@@ -4,10 +4,10 @@ import {
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
-import React, { ChangeEvent, useCallback } from 'react';
+import { useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
-import { useAllRepos, useObjectState } from '@libs/hooks';
+import { useAllRepos } from '@libs/hooks/talons/all-repos';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
@@ -21,13 +21,7 @@ type AllReposProps = {
   setPrevHref: (href: string) => void
 };
 
-const initialState = {
-  isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
-};
-
-const AllRepos = ({
+function AllRepos({
   pkey,
   repos,
   searchText,
@@ -35,34 +29,29 @@ const AllRepos = ({
   deleteRepos,
   setInputText,
   setPrevHref
-}:AllReposProps) => {
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isModalVisible, inputRepoName } = state;
-
+}:AllReposProps) {
   const talonProps = useAllRepos({
-    pkey, repos, searchText, setPrevHref
+    pkey,
+    repos,
+    searchText,
+    setPrevHref,
+    createRepos
   });
 
-  const { type, path } = talonProps;
+  const {
+    state,
+    repoListProps,
+    isModalVisible,
+    inputRepoName,
+    showModal,
+    handleOk,
+    handleCancel,
+    handleChange
+  } = talonProps;
 
-  const showModal = () => {
-    setState({ isModalVisible: true });
-  };
+  const { type, path } = repoListProps;
 
-  const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
-  };
-
-  const handleCancel = () => {
-    setState({ isModalVisible: false });
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setState({ inputRepoName: e.target.value });
-  };
-
-  const RepoManager = (inputText: string) => (
+  const RepoManager = useCallback((inputText: string) => (
     <div className={styles.repoHeader}>
 
       <Nav type={type} path={path} />
@@ -96,25 +85,19 @@ const AllRepos = ({
         />
       </Modal>
     </div>
-  );
-
-  const RepoManagerView = useCallback((props:{ text:string }) => (
-    <>
-      {pkey && RepoManager(props.text)}
-    </>
-  ), [pkey, state]);
+  ), [searchText, state]);
 
   return (
     <div className={styles.content}>
-      <RepoManagerView text={searchText} />
+      {pkey && RepoManager(searchText)}
       <RepoList
-        {...talonProps}
+        {...repoListProps}
         searchText={searchText}
         deleteRepos={deleteRepos}
       />
     </div>
   );
-};
+}
 
 const mapState = ({
   app: { isApiConnected, pkey },

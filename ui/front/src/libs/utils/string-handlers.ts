@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-properties */
 import { BeamAmmount } from '@libs/constants';
 import { ObjectData, BeamReqAction } from '@types';
 
@@ -68,7 +67,7 @@ export const parseToBeam = (groth: number):string => {
 
 export const handleString = (next:string):boolean => {
   let result = true;
-  const regex = new RegExp(/^-?\d+(\.\d*)?$/g);
+  const regex = /^-?\d+(\.\d*)?$/g;
   const floatValue = parseFloat(next);
   const afterDot = next.indexOf('.') > 0
     ? next.substring(next.indexOf('.') + 1)
@@ -93,10 +92,6 @@ export const handleString = (next:string):boolean => {
   return result;
 };
 
-export const fullBranchName = (
-  clippedName:string, base: 'refs/heads/'
-) => `${base}${clippedName}`;
+export const fullBranchName = (clippedName:string, base: 'refs/heads/') => `${base}${clippedName}`;
 
-export const clipString = (
-  fullName:string, cut = 'refs/heads/'
-) => fullName.replace(cut, '');
+export const clipString = (fullName:string, cut = 'refs/heads/') => fullName.replace(cut, '');

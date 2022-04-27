@@ -6,14 +6,16 @@ type HeaderPropsType = {
   balance: number,
 };
 
-const Header = ({ balance, pKey }:HeaderPropsType) => (
-  <div className={styles.wrapper}>
-    <div className={styles.nav}>
-      <Balance current={balance} />
-      <AddButton />
-      <Profile pKey={pKey} />
+function Header({ balance, pKey }:HeaderPropsType) {
+  return (
+    <div className={styles.wrapper}>
+      <div className={styles.nav}>
+        <Balance current={balance} />
+        <AddButton />
+        <Profile pKey={pKey} />
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default Header;

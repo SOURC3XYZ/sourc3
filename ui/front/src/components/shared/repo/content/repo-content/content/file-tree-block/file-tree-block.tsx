@@ -8,7 +8,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
-import { useAsyncError } from '@libs/hooks';
+import { useAsyncError } from '@libs/hooks/shared';
 import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
@@ -54,9 +54,9 @@ const leafCreator = (url:string, node: DataNode) => {
   );
 };
 
-const FileTreeBlock = ({
+function FileTreeBlock({
   id, tree, pathname, pathArray, updateTree
-}:FileTreeBlockProps) => {
+}:FileTreeBlockProps) {
   const setError = useAsyncError();
 
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
@@ -69,21 +69,18 @@ const FileTreeBlock = ({
     updateTreeDecor
   );
   return (
-    <>
-      {
-        treeList
-          ? (
-            <List
-              className={styles.tree}
-              bordered
-              size="small"
-              dataSource={treeList}
-              renderItem={(item) => leafCreator(pathname, item)}
-            />
-          ) : <Preload />
-      }
-    </>
+    treeList
+      ? (
+        <List
+          className={styles.tree}
+          bordered
+          size="small"
+          dataSource={treeList}
+          renderItem={(item) => leafCreator(pathname, item)}
+        />
+      ) : <Preload />
+
   );
-};
+}
 
 export default React.memo(FileTreeBlock);

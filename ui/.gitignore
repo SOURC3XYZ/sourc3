@@ -1,3 +1,4 @@
 *.log
 beam-res
 logs
+package-lock.json

@@ -1,12 +1,15 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable consistent-return */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-restricted-syntax */
 import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs';
 import { getRepository } from 'typeorm';
-import { BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT } from '../../common';
-import { Seed } from '../../entities';
 import { app } from 'electron';
+import {
+  BEAM_NODE_PORT, HTTP_MODE, IPFS_BOOTSRAP, WALLET_API_PORT
+} from '../../common';
+import { Seed } from '../../entities';
 import {
   cliPath,
   getExecutableFile,
@@ -38,8 +41,8 @@ const peers = [
   'eu-node04.masternet.beam.mw:8100'
 ];
 
-export function getNodeUpdate() { 
-  return nodeUpdate; 
+export function getNodeUpdate() {
+  return nodeUpdate;
 }
 
 export function checkRunningApi() {
@@ -82,7 +85,7 @@ export function killApiServer(): Promise<string> {
           console.log(`child process exited with code ${code}`);
           resolve(`child process exited with code ${code}`);
         });
-        currentProcess.kill('SIGKILL');
+        currentProcess.kill('SIGTERM');
       } else resolve('child process not active');
     }
   );
@@ -90,7 +93,7 @@ export function killApiServer(): Promise<string> {
 
 export function setCurrentProcess(process?: ChildProcess) {
   if (currentProcess && !currentProcess.killed) {
-    currentProcess.kill('SIGKILL');
+    currentProcess.kill('SIGTERM');
     currentProcess.on('close', (code: number) => {
       console.log(`child process exited with code ${code}`);
       if (process)setCurrentProcess(process);
@@ -156,14 +159,6 @@ export function startBeamNode(
         '--pass', password,
         '--file_log_level=verbose']);
 
-        console.log([
-          `--port=${BEAM_NODE_PORT}`,
-          `--peer=${peers.join(',')}`,
-          '--owner_key', ownerKey,
-          '--storage', nodeDBPath,
-          '--pass', password,
-          '--file_log_level=verbose'])
-
       node.stdout.on('data', (data:Buffer) => {
         const bufferString = data.toString('utf-8');
         console.log(`Got node output: ${bufferString}`);
@@ -179,9 +174,9 @@ export function startBeamNode(
       });
 
       app.on('window-all-closed', () => {
-        console.log("Kill node!");
-        node.kill("SIGTERM")
-      })
+        console.log('Kill node!');
+        node.kill('SIGTERM');
+      });
       return resolve(node);
     }
     return reject(new Error('No node executable'));
@@ -251,7 +246,8 @@ export function runWalletApi(
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
       '--tcp_max_line=128000',
-      `--ipfs_repo=${ipfsPath}`
+      `--ipfs_repo=${ipfsPath}`,
+      `--ipfs_bootstrap=/ip4/3.209.99.179/tcp/8100/p2p/${IPFS_BOOTSRAP}`
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
@@ -266,7 +262,7 @@ export function runWalletApi(
     };
 
     const onClose = () => {
-      nodeProcess.kill('SIGKILL');
+      nodeProcess.kill('SIGTERM');
     };
 
     runSpawnProcess({

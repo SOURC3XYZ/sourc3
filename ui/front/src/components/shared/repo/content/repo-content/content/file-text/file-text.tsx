@@ -1,5 +1,5 @@
 import { Preload } from '@components/shared';
-import { useAsyncError } from '@libs/hooks';
+import { useAsyncError } from '@libs/hooks/shared';
 import { getTree } from '@libs/utils';
 import {
   DataNode, ErrorHandler, IDataNodeCustom, MetaHash, RepoId, UpdateProps
@@ -20,9 +20,9 @@ type FileTextProps = {
   updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void
 };
 
-const FileText = ({
+function FileText({
   id, tree, filesMap, pathArray, getFileData, updateTree
-}: FileTextProps) => {
+}: FileTextProps) {
   const setError = useAsyncError();
   const [ext, setExt] = useState('');
   const [text, setText] = useState<string | null>(null);
@@ -33,9 +33,7 @@ const FileText = ({
 
   const fileChecker = () => {
     const fileName = pathArray.pop();
-    const currentFileList = tree && getTree(
-      tree, pathArray, updateTreeDecor
-    );
+    const currentFileList = tree && getTree(tree, pathArray, updateTreeDecor);
     if (currentFileList) {
       const file = currentFileList.find(
         (el) => el.title === fileName
@@ -54,21 +52,20 @@ const FileText = ({
   useEffect(fileChecker, [tree, filesMap]);
 
   return (
-    <>
-      {text === null
-        ? <Preload />
-        : (
-          <SyntaxHighlighter
-            language={ext}
-            wrapLongLine
-            showLineNumbers
-            style={vs}
-          >
-            {text}
-          </SyntaxHighlighter>
-        ) }
-    </>
+    text === null
+      ? <Preload />
+      : (
+        <SyntaxHighlighter
+          language={ext}
+          wrapLongLine
+          showLineNumbers
+          style={vs}
+        >
+          {text}
+        </SyntaxHighlighter>
+      )
+
   );
-};
+}
 
 export default FileText;
