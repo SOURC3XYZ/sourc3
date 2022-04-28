@@ -70,7 +70,7 @@ function createWindow() {
       if (err) return console.log(err);
       const result = data.replace(
         '# app-shader-file="app.wasm"',
-        `app-shader-file="${path.join(sourc3Path, 'app.wasm')}"`
+        `app-shader-file=${path.join(sourc3Path, 'app.wasm')}`
       );
 
       return fs.writeFile(configPath, result, 'utf8', (error) => {
