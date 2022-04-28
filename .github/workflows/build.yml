@@ -14,8 +14,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15]
+        os: [windows-2019, ubuntu-18.04, macos-10.15]
         include:
+          - os: windows-2019
+            PLATFORM_NAME: win
+          - os: ubuntu-18.04
+            PLATFORM_NAME: linux
           - os: macos-10.15
             PLATFORM_NAME: mac
 
@@ -89,47 +93,6 @@ jobs:
         echo "OPENSSL_ROOT_DIR=c:\beam-libs\openssl" >> $GITHUB_ENV
         git clone https://github.com/BeamMW/boost_prebuild_${{matrix.os}}.git c:/boost_prebuild
         echo "BOOST_ROOT=c:\boost_prebuild" >> $GITHUB_ENV
-
-    
-    - name: Install electron dependencies
-      shell: bash
-      run: |
-        cd ui/front
-        npm i --save-dev --legacy-peer-deps
-        NODE_ENV=production npm run build
-        cd ..
-        npm i --save-dev --legacy-peer-deps
-        npm i dmg-license
-
-    - name: Install nasm [windows-2019]
-      if: matrix.os == 'windows-2019'
-      uses: ilammy/setup-nasm@v1
-      
-    - name: Set up perl [windows-2019]
-      if: matrix.os == 'windows-2019'
-      uses: shogo82148/actions-setup-perl@v1
-      with:
-        perl-version: '5.34'
-
-    - name: Rebuild modules [windows-2019]
-      if: matrix.os == 'windows-2019'
-      run: |
-        cd ui
-        .\node_modules\.bin\electron-rebuild.cmd
-      env:
-        npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
-
-    - name: Rebuild modules [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019'
-      run: |
-        cd ui
-        if [ -d "./node_modules/nodegit" ]; then
-          cd node_modules/nodegit/utils
-          perl -0777 -i -pe 's/await execPromise\("make test"(.*?){ pipeOutput: true }\);//igs' acquireOpenSSL.js
-          echo "$(cat acquireOpenSSL.js | grep 'make test')"
-          cd ../../..
-        fi
-        ./node_modules/.bin/electron-rebuild
 
     - name: Download boost [ubuntu && macos]
       if: matrix.os != 'windows-2019'
@@ -251,6 +214,7 @@ jobs:
       run: |
         cd ui
         npm i --legacy-peer-deps
+        npm i dmg-license
 
     - name: Install wasm [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
@@ -274,6 +238,14 @@ jobs:
       if: matrix.os != 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
+
+        if [ -d "./node_modules/nodegit" ]; then
+          cd node_modules/nodegit/utils
+          perl -0777 -i -pe 's/await execPromise\("make test"(.*?){ pipeOutput: true }\);//igs' acquireOpenSSL.js
+          echo "$(cat acquireOpenSSL.js | grep 'make test')"
+          cd ../../..
+        fi
+
         ./node_modules/.bin/electron-rebuild
 
 
