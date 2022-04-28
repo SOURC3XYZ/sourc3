@@ -2,9 +2,9 @@ import {
   Select, Form, Button, Tabs
 } from 'antd';
 
-import styles from './local-rep.module.css';
+import styles from './local-rep.module.scss';
 
-const LocalRepos = () => {
+function LocalRepos() {
   const [form] = Form.useForm();
   const { Option } = Select;
 
@@ -91,6 +91,6 @@ const LocalRepos = () => {
       </div>
     </div>
   );
-};
+}
 
 export default LocalRepos;

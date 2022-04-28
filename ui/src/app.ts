@@ -16,14 +16,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use(logerRequests);
+// app.use(logerRequests);
 
 app.use('/', (req, res, next) => {
   if (req.originalUrl === '/') {
     res.send('Service is running!');
     return;
   }
-  next();
+  logerRequests(req, res, next);
 });
 
 app.use('/wallet', walletRouter);

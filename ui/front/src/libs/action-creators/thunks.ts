@@ -154,9 +154,12 @@ export const thunks:ThunkObject = {
       seed: `${seed.join(';')};`,
       password
     };
-    const url = '/wallet/restore';
+    const restoreUrl = '/wallet/restore';
+    const startUrl = '/wallet/start';
+
     try {
-      await callIPC(url, 'post', body);
+      await callIPC(restoreUrl, 'post', body);
+      await callIPC(startUrl, 'post', { password });
       return callback();
     } catch (error) { return cbErrorHandler(error, callback); }
   },
@@ -168,7 +171,6 @@ export const thunks:ThunkObject = {
     const url = '/wallet/start';
     try {
       await callIPC(url, 'post', { password });
-      // await axios.post(url, { password }, { headers });
       return callback();
     } catch (error) { return cbErrorHandler(error, callback); }
   },

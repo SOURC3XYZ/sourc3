@@ -4,17 +4,17 @@ import { connect } from 'react-redux';
 import Text from 'antd/lib/typography/Text';
 import { NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
-import styles from '../../sign-up.module.css';
+import styles from '../../sign-up.module.scss';
 
 type SignUpProps = {
   seed: string[],
   next: ()=>void
 };
 
-const SignUp = ({
+function SignUp({
   seed,
   next
-}: SignUpProps) => {
+}: SignUpProps) {
   const errors = new Array(WALLET.SEED_PHRASE_COUNT).fill(true);
   return (
     <>
@@ -40,7 +40,7 @@ const SignUp = ({
 
     </>
   );
-};
+}
 const mapState = ({ wallet: { seedPhrase } }: RootState) => ({
   seedPhrase
 });
