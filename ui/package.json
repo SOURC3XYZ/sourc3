@@ -80,6 +80,15 @@
       ".env",
       "git-remote-sourc3*",
       "sourc3-remote.cfg"
-    ]
+    ],
+    "mac": {
+      "hardenedRuntime": true,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "sign": false
+    }
   }
 }

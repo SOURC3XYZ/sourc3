@@ -14,12 +14,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-18.04]
+        os: [macos-10.15]
         include:
-          - os: windows-2019
-            PLATFORM_NAME: win
-          - os: ubuntu-18.04
-            PLATFORM_NAME: linux
+          - os: macos-10.15
+            PLATFORM_NAME: mac
 
     steps:
     - uses: actions/checkout@v2
@@ -54,6 +52,15 @@ jobs:
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
         brew install boost
         brew install krb5
+        export TZ=GMT-3
+        sudo systemsetup -gettimezone
+        security create-keychain -p github macos-build.keychain
+        security default-keychain -s macos-build.keychain
+        security unlock-keychain -p github macos-build.keychain
+        security set-keychain-settings -t 3600 -l ~/Library/Keychains/macos-build.keychain
+        echo "${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}" | base64 --decode > certificate.p12
+        security import certificate.p12 -k macos-build.keychain -P ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }} -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k github macos-build.keychain 
 
     - name: Create Build Environment [ubuntu all]
       shell: bash
@@ -82,6 +89,47 @@ jobs:
         echo "OPENSSL_ROOT_DIR=c:\beam-libs\openssl" >> $GITHUB_ENV
         git clone https://github.com/BeamMW/boost_prebuild_${{matrix.os}}.git c:/boost_prebuild
         echo "BOOST_ROOT=c:\boost_prebuild" >> $GITHUB_ENV
+
+    
+    - name: Install electron dependencies
+      shell: bash
+      run: |
+        cd ui/front
+        npm i --save-dev --legacy-peer-deps
+        NODE_ENV=production npm run build
+        cd ..
+        npm i --save-dev --legacy-peer-deps
+        npm i dmg-license
+
+    - name: Install nasm [windows-2019]
+      if: matrix.os == 'windows-2019'
+      uses: ilammy/setup-nasm@v1
+      
+    - name: Set up perl [windows-2019]
+      if: matrix.os == 'windows-2019'
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: '5.34'
+
+    - name: Rebuild modules [windows-2019]
+      if: matrix.os == 'windows-2019'
+      run: |
+        cd ui
+        .\node_modules\.bin\electron-rebuild.cmd
+      env:
+        npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
+
+    - name: Rebuild modules [ubuntu-all && macos-all]
+      if: matrix.os != 'windows-2019'
+      run: |
+        cd ui
+        if [ -d "./node_modules/nodegit" ]; then
+          cd node_modules/nodegit/utils
+          perl -0777 -i -pe 's/await execPromise\("make test"(.*?){ pipeOutput: true }\);//igs' acquireOpenSSL.js
+          echo "$(cat acquireOpenSSL.js | grep 'make test')"
+          cd ../../..
+        fi
+        ./node_modules/.bin/electron-rebuild
 
     - name: Download boost [ubuntu && macos]
       if: matrix.os != 'windows-2019'
@@ -361,12 +409,6 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
-
-
-    - name: Sign the electron dmg [macos-10.15]
-      if: matrix.os == 'macos-10.15'
-      run: |
-        codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp ui/dist/*.dmg
 
     - name: Notarize [macos-10.15]
       shell: bash
