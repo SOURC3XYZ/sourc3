@@ -43,7 +43,7 @@ namespace sourc3
 
     bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func)
     {
-        if (m_transactions.empty())
+        if (transactions_.empty())
             return true; // ok
 
         SubUnsubEvents(true);
@@ -51,7 +51,7 @@ namespace sourc3
             SubUnsubEvents(false);
         };
         size_t done = 0;
-        while(!m_transactions.empty())
+        while(!transactions_.empty())
         {
             auto response = ReadAPI();
             auto r = json::parse(response);
@@ -62,8 +62,8 @@ namespace sourc3
             {
                 auto& tx = val.as_object();
                 std::string txID = tx["txId"].as_string().c_str();
-                auto it = m_transactions.find(txID);
-                if (it == m_transactions.end())
+                auto it = transactions_.find(txID);
+                if (it == transactions_.end())
                 {
                     continue;
                 }
@@ -82,7 +82,7 @@ namespace sourc3
                 else if (status == 3)
                 {
                     func(++done, "");
-                    m_transactions.erase(txID);
+                    transactions_.erase(txID);
                 }
             }
         }
@@ -107,14 +107,15 @@ namespace sourc3
 
     void SimpleWalletClient::EnsureConnected()
     {
-        if (m_connected)
+        if (connected_)
             return;
 
-        auto const results = m_resolver.resolve(m_options.apiHost, m_options.apiPort);
+        auto const results =
+            resolver_.resolve(options_.apiHost, options_.apiPort);
 
         // Make the connection on the IP address we get from a lookup
-        m_stream.connect(results);
-        m_connected = true;
+        stream_.connect(results);
+        connected_ = true;
     }
 
     std::string SimpleWalletClient::ExtractResult(const std::string& response)
@@ -124,7 +125,7 @@ namespace sourc3
         {
             if (!std::all_of(txid->as_string().begin(), txid->as_string().end(), [](auto c) {return c == '0'; }))
             {
-                m_transactions.insert(txid->as_string().c_str());
+              transactions_.insert(txid->as_string().c_str());
             }
         }
         return r.as_object()["result"].as_object()["output"].as_string().c_str();
@@ -140,7 +141,7 @@ namespace sourc3
             {"method", "invoke_contract"},
             {"params",
                 {
-                    {"contract_file", m_options.appPath},
+                    {"contract_file", options_.appPath},
                     {"args", args}
                 }
             }
@@ -151,7 +152,7 @@ namespace sourc3
 
     const std::string& SimpleWalletClient::GetCID()
     {
-        if (m_cid.empty())
+        if (cid_.empty())
         {
             auto root = json::parse(InvokeShader("role=manager,action=view_contracts"));
 
@@ -159,20 +160,20 @@ namespace sourc3
             auto& contracts = root.as_object()["contracts"];
             if (contracts.is_array() && !contracts.as_array().empty())
             {
-                m_cid = contracts.as_array()[0].as_object()["cid"].as_string().c_str();
+              cid_ = contracts.as_array()[0].as_object()["cid"].as_string().c_str();
             }
         }
-        return m_cid;
+        return cid_;
     }
 
     const std::string& SimpleWalletClient::GetRepoID()
     {
-        if (m_repoID.empty())
+        if (repo_id_.empty())
         {
             std::string request = "role=user,action=repo_id_by_name,repo_name=";
-            request.append(m_options.repoName)
+            request.append(options_.repoName)
                 .append(",repo_owner=")
-                .append(m_options.repoOwner)
+                .append(options_.repoOwner)
                 .append(",cid=")
                 .append(GetCID());
 
@@ -181,10 +182,10 @@ namespace sourc3
             if (auto it = root.as_object().find("repo_id"); it != root.as_object().end())
             {
                 auto& id = *it;
-                m_repoID = std::to_string(id.value().to_number<uint32_t>());
+                repo_id_ = std::to_string(id.value().to_number<uint32_t>());
             }
         }
-        return m_repoID;
+        return repo_id_;
     }
 
     std::string SimpleWalletClient::CallAPI(std::string&& request)
@@ -192,7 +193,7 @@ namespace sourc3
         EnsureConnected();
         request.push_back('\n');
         size_t s = request.size();
-        size_t transferred = boost::asio::write(m_stream, boost::asio::buffer(request));
+        size_t transferred = boost::asio::write(stream_, boost::asio::buffer(request));
         if (s != transferred)
         {
             return "";
@@ -202,9 +203,10 @@ namespace sourc3
 
     std::string SimpleWalletClient::ReadAPI()
     {
-        auto n = boost::asio::read_until(m_stream, boost::asio::dynamic_buffer(m_data), '\n');
-        auto line = m_data.substr(0, n);
-        m_data.erase(0, n);
+        auto n = boost::asio::read_until(
+          stream_, boost::asio::dynamic_buffer(data_), '\n');
+        auto line = data_.substr(0, n);
+        data_.erase(0, n);
         return line;
     }
 }
