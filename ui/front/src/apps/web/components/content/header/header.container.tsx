@@ -11,7 +11,7 @@ import img from '@assets/img/source-header-logo.svg';
 import iconAvatar from '@assets/img/icon-avatar.svg';
 import iconButtonArrowDown from '@assets/img/icon-arrow-button-down.svg';
 import Modal from 'antd/lib/modal/Modal';
-import { useObjectState } from '@libs/hooks';
+import { useObjectState } from '@libs/hooks/shared';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {

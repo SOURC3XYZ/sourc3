@@ -111,14 +111,6 @@ function Manager({
                 >
                   SEND
                 </Button>
-                {/* <Button
-              type="primary"
-              shape="round"
-              size="small"
-              onClick={showModal}
-            >
-              RECIEVE
-            </Button> */}
               </div>
             </Col>
           </Row>

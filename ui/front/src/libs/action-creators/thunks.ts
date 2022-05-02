@@ -11,6 +11,7 @@ import {
   ContractsResp,
   MetaHash,
   PKeyRes,
+  PromiseArg,
   RepoId, RepoListType,
   RepoMeta,
   RepoMetaResp,
@@ -324,6 +325,20 @@ export const thunks:ThunkObject = {
       if (res && !res.error) {
         return dispatch(AC.setWalletStatus(parseToBeam(res.result.available)));
       } throw new Error('unable to get wallet status');
+    } catch (error) { return thunkCatch(error, dispatch); }
+  },
+
+  createAddress: (
+    message: string,
+    resolve: PromiseArg<{ address: string }>
+  ) => async (dispatch) => {
+    try {
+      const res = await callApi(
+        RC.createAddress(message)
+      ) as unknown as { error: any, result: string };
+      if (res && !res.error && res.result) {
+        return resolve({ address: res.result });
+      } throw new Error('unable to ');
     } catch (error) { return thunkCatch(error, dispatch); }
   },
 

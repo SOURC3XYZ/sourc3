@@ -246,6 +246,18 @@ export const RC = {
       },
       create_tx: false
     }
+  } as const),
+
+  createAddress: (comment: string) => ({
+    callID: 'create_adress',
+    method: 'create_address',
+    params:
+    {
+      comment,
+      type: 'regular',
+      expiration: 'auto',
+      new_style_regular: true
+    }
   } as const)
 
 };

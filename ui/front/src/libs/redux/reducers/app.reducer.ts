@@ -20,9 +20,7 @@ const initialState:IApp = {
   pkey: ''
 };
 
-const reducer = (
-  state:IApp = initialState, action: ActionCreators
-):IApp => {
+const reducer = (state:IApp = initialState, action: ActionCreators = {} as ActionCreators):IApp => {
   const newState = {
     ...state,
     txs: new Set(state.txs),

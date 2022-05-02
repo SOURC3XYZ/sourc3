@@ -9,11 +9,11 @@ import {
 const CODE = 500;
 
 export class ErrorHandler extends Error {
-  statusCode: number;
+  code: number;
 
   constructor(statusCode: number, message?: string) {
     super();
-    this.statusCode = statusCode || CODE;
+    this.code = statusCode || CODE;
     if (message) {
       this.message = message;
     }
@@ -21,11 +21,11 @@ export class ErrorHandler extends Error {
 }
 
 export const handleError = (err: ErrorHandler, res: Response): void => {
-  const { statusCode, message } = err;
-  loggerErrors(statusCode, message);
-  res.status(statusCode).json({
+  const { code, message } = err;
+  loggerErrors(code, message);
+  res.status(code).json({
     status: 'error',
-    statusCode,
+    code,
     message
   });
 };

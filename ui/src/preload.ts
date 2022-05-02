@@ -52,6 +52,11 @@ export interface BeamApiResponse {
     statusCode: number,
   };
 
+  type IpcError = {
+    statusCode: number;
+    data: string;
+  };
+
 process.once('loaded', () => {
   const sendToRenderProcess = (message: MessageType) => {
     window.postMessage(message);
@@ -62,17 +67,20 @@ process.once('loaded', () => {
       ipcRenderer.send('select-dirs');
     }
     if (evt.data.type === IPCTypes.CONTROL_REQ) {
-      const res = await ipc[evt.data.method](evt.data.url, evt.data.body) as IpcResponse;
-      console.log(res);
       const response = {
         id: evt.data.id,
         jsonrpc: '2.0'
       } as BeamApiResponse;
-      if (res.statusCode === 201) {
+      try {
+        const res = await ipc[evt.data.method](evt.data.url, evt.data.body) as IpcResponse;
+        console.log(res);
         response.result = res.data.id ? res.data.result : { ipc: res.data };
         if (res.data.method) response.method = res.data.method;
-      } else response.error = { code: res.statusCode, message: JSON.stringify(res) };
-
+      } catch (error) {
+        const err = error as IpcError;
+        console.log('preload error: ', error);
+        response.error = { code: err.statusCode, message: err.data };
+      }
       return sendToRenderProcess({ type: IPCTypes.CONTROL_RES, response });
     } return null;
   });

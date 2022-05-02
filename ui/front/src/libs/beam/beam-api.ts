@@ -12,12 +12,10 @@ type CallApiProps<T> = {
   params: T;
 };
 
-
 type MessageType = {
   type: string;
   response: BeamApiRes
 };
-
 
 type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 
@@ -72,11 +70,11 @@ export class BeamAPI<T> {
       if (parsed.error) return cb.reject(new Error(parsed.error.message));
       return cb.resolve(parsed);
     } return this.eventManager(parsed);
-  }
+  };
 
   private readonly onApiResult = (json: string): void => {
     const parsed = JSON.parse(json);
-    this.responseCbackHandler(parsed)
+    this.responseCbackHandler(parsed);
   };
 
   public readonly loadApiEventManager = (eventManager: any) => {
@@ -86,7 +84,10 @@ export class BeamAPI<T> {
   public readonly isApiLoaded = () => Boolean(this.BEAM);
 
   createHeadlessAPI = async (
-    apiver:any, apivermin:any, appname:any, apirescback:any
+    apiver:any,
+    apivermin:any,
+    appname:any,
+    apirescback:any
   ): Promise<BeamObject> => {
     await this.injectScript('/wasm-client.js');
     const WasmModule = await window.BeamModule();
@@ -110,23 +111,21 @@ export class BeamAPI<T> {
       const appid = WasmWalletClient
         .GenerateAppID(appname, window.location.href);
 
-      client.createAppAPI(
-        apiver, apivermin, appid, appname, (err:any, api:any) => {
-          if (err) {
-            reject(err);
-          }
-
-          api.setHandler(apirescback);
-          resolve({
-            headless: true,
-            module: WasmModule,
-            factory: WasmWalletClient,
-            client,
-            appid,
-            api: api as QObject
-          });
+      client.createAppAPI(apiver, apivermin, appid, appname, (err:any, api:any) => {
+        if (err) {
+          reject(err);
         }
-      );
+
+        api.setHandler(apirescback);
+        resolve({
+          headless: true,
+          module: WasmModule,
+          factory: WasmWalletClient,
+          client,
+          appid,
+          api: api as QObject
+        });
+      });
     });
   };
 
@@ -151,18 +150,17 @@ export class BeamAPI<T> {
   });
 
   readonly connectHeadless = async () => {
-    this.BEAM = await this.createHeadlessAPI(
-      'current', '', 'bla', this.onApiResult
-    );
+    this.BEAM = await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
     return this;
   };
 
   readonly connectToApi = async (): Promise<QObject> => {
     const { qt } = window;
     const api = await new Promise<QObject>(
-      (resolve) => new QWebChannel(qt.webChannelTransport, (channel) => {
-        resolve(channel.objects.BEAM.api);
-      })
+      (resolve) => new QWebChannel(
+        qt.webChannelTransport,
+        (channel) => resolve(channel.objects.BEAM.api)
+      )
     );
     (<ApiResult>api.callWalletApiResult).connect(this.onApiResult);
     return api;
@@ -195,9 +193,7 @@ export class BeamAPI<T> {
     if (!this.apiHost) {
       this.BEAM = this.isDapps()
         ? { api: await this.connectToApi() }
-        : await this.createHeadlessAPI(
-          'current', '', 'bla', this.onApiResult
-        );
+        : await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
     }
     return this;
   };
@@ -258,7 +254,6 @@ export class BeamAPI<T> {
       };
       console.log('request', request);
       return this.callIPC('/beam', 'post', request, id);
-      
     }
 
     return new Promise<BeamApiRes>(
@@ -267,9 +262,12 @@ export class BeamAPI<T> {
   };
 
   private readonly callApiHandler = (
-    id:string, method:string, params: Modified<T>
+    id:string,
+    method:string,
+    params: Modified<T>
   ) => (
-    resolve:BeamApiReqHandlers['resolve'], reject:BeamApiReqHandlers['reject']
+    resolve:BeamApiReqHandlers['resolve'],
+    reject:BeamApiReqHandlers['reject']
   ) => {
     const request = {
       jsonrpc: '2.0',
@@ -286,9 +284,7 @@ export class BeamAPI<T> {
       if (request.method === 'ipfs_get' && request.params.hash) {
         return this.fetchIpfs(resolve, reject, request.params.hash);
       }
-      return window.BeamApi.callWalletApi(
-        id, method, { ...params }
-      );
+      return window.BeamApi.callWalletApi(id, method, { ...params });
     }
 
     // headless
@@ -334,30 +330,31 @@ export class BeamAPI<T> {
   };
 
   public readonly callIPC = (
-      url: string, method: IpcMethod, body = {}, callId?:string
-    ):Promise<BeamApiRes> => {
-    return new Promise((resolve, reject) => {
-      const id = callId || [url, this.callIndex++].join('-');
-      window.postMessage({
-        id,
-        type: 'ipc-control-req',
-        url,
-        method,
-        body
-      });
-      this.callbacks.set(id, { resolve, reject });
-    })
-  }
+    url: string,
+    method: IpcMethod,
+    body = {},
+    callId?:string
+  ):Promise<BeamApiRes> => new Promise((resolve, reject) => {
+    const id = callId || [url, this.callIndex++].join('-');
+    window.postMessage({
+      id,
+      type: 'ipc-control-req',
+      url,
+      method,
+      body
+    });
+    this.callbacks.set(id, { resolve, reject });
+  });
 
   public readonly responseIPC = (e:MessageEvent<MessageType>) => {
-      switch (e.data.type) {
-        case 'ipc-control-res':
-        case 'api-events':
-        return this.responseCbackHandler(e.data.response); 
-        default:
-          return;
-      }
-  }
+    switch (e.data.type) {
+      case 'ipc-control-res':
+      case 'api-events':
+        return this.responseCbackHandler(e.data.response);
+      default:
+        return null;
+    }
+  };
 
   private readonly argsStringify = (
     args: { [key:string]: string | number }

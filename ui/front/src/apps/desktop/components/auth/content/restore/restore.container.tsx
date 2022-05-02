@@ -4,7 +4,7 @@ import { thunks } from '@libs/action-creators';
 import { WALLET } from '@libs/constants';
 import { useAsyncError } from '@libs/hooks/shared';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { Seed2ValidationType } from '@types';
+import { PromiseArg, Seed2ValidationType } from '@types';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
