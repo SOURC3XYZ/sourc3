@@ -99,13 +99,11 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   setWalletSendBeam: (
     amountValue: number,
-    fromValue:string,
     addressValue:string,
     commentValue:string
   ) => {
     dispatch(thunks.setWalletSendBeam(
       amountValue,
-      fromValue,
       addressValue,
       commentValue
     ));

@@ -37,9 +37,9 @@ const build = {
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: 'eval-source-map',
-  optimization: {
-    nodeEnv: 'production'
-  },
+  // optimization: {
+  //   nodeEnv: 'production'
+  // },
   resolve: {
     extensions: ['.ts', '.js', '.tsx', '.scss'],
     plugins: [new TsconfigPathsPlugin()],

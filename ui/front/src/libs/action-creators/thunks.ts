@@ -9,6 +9,7 @@ import {
   BeamApiRes,
   CallApiProps,
   ContractsResp,
+  IPCResult,
   MetaHash,
   PKeyRes,
   PromiseArg,
@@ -18,18 +19,20 @@ import {
   ReposResp,
   SetPropertiesType,
   TreeElementOid,
+  TxInfo,
   TxResponse,
+  TxResult,
   UpdateProps
 } from '@types';
 import axios from 'axios';
 import { AC } from './action-creators';
 import batcher from './batcher';
 import { apiEventManager } from './repo-response-handlers';
-import { RC, RequestCreators } from './request-creators';
+import { RC, RequestSchema } from './request-schemas';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
 
-const api = new BeamAPI<RequestCreators['params']>(CONTRACT.CID);
+const api = new BeamAPI<RequestSchema['params']>(CONTRACT.CID);
 
 type Thunk<T> = (...args: T[]) => (
   dispatch: AppThunkDispatch, getState: () => RootState
@@ -56,7 +59,7 @@ const messageBeam = {
 const headers = { 'Content-Type': 'application/json' };
 
 async function getOutput<T>(
-  props: CallApiProps<RequestCreators['params']>,
+  props: CallApiProps<RequestSchema['params']>,
   dispatch: AppThunkDispatch
 ) {
   const res = await callApi(props);
@@ -111,7 +114,7 @@ export const thunks:ThunkObject = {
   ) => async (dispatch) => {
     const url = '/wallet/update';
     try {
-      const data = await callIPC(url, 'get', {}) as BeamApiRes<{ status: number }>;
+      const data = await callIPC(url, 'get', {}) as BeamApiRes<IPCResult<{ status: number }>>;
       return resolve(data.result.ipc);
     } catch (error) { return thunkCatch(error, dispatch); }
   },
@@ -200,7 +203,7 @@ export const thunks:ThunkObject = {
 
   checkTxStatus:
     (callback: SetPropertiesType<TxResponse>) => () => (
-      { result: { comment, status_string } }: BeamApiRes
+      { result: { comment, status_string } }: BeamApiRes<TxResult>
     ) => {
       callback({
         message: comment,
@@ -208,7 +211,7 @@ export const thunks:ThunkObject = {
       });
     },
 
-  startTx: () => (dispatch) => (res: BeamApiRes) => {
+  startTx: () => (dispatch) => (res: BeamApiRes<TxResult>) => {
     dispatch(AC.setTx(res.result.txid));
   },
 
@@ -356,17 +359,17 @@ export const thunks:ThunkObject = {
 
   setWalletSendBeam: (
     value: number,
-    from: string,
     address:string,
-    comment:string
+    comment:string,
+    offline: boolean
   ) => async (dispatch) => {
     try {
       const res = await callApi(
         RC.setWalletSendBeam(
           parseToGroth(Number(value)),
-          from,
           address,
-          comment
+          comment,
+          offline
         )
       );
       if (res.result?.txId && !res.error) {
@@ -384,6 +387,15 @@ export const thunks:ThunkObject = {
           JSON.parse(res.result.output).key
         ));
       } throw new Error('Failed to get public key');
+    } catch (error) { return thunkCatch(error, dispatch); }
+  },
+
+  getTxList: () => async (dispatch) => {
+    try {
+      const res = await callApi(RC.getTxList()) as BeamApiRes<TxInfo[]>;
+      if (!res.error) {
+        return dispatch(AC.setTxList(res.result));
+      } throw new Error('failed to send beam');
     } catch (error) { return thunkCatch(error, dispatch); }
   }
 };

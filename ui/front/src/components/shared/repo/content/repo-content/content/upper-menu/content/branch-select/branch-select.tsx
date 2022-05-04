@@ -12,19 +12,17 @@ type BranchSelectProps = {
 };
 
 const selectOptionMap = (el: BranchName, i:number) => (
-  <>
-    <Select.Option
-      value={el}
-      key={i}
-    >
-      {el}
-    </Select.Option>
-  </>
+  <Select.Option
+    value={el}
+    key={`branch-select-${i}`}
+  >
+    {el}
+  </Select.Option>
 );
 
-const BranchSelect = ({
+function BranchSelect({
   keys, value, commit, onChange
-}:BranchSelectProps) => {
+}:BranchSelectProps) {
   const onChangeDecor = (branch: string) => onChange(commit, branch);
 
   return (
@@ -45,6 +43,6 @@ const BranchSelect = ({
       </div>
     </div>
   );
-};
+}
 
 export default BranchSelect;

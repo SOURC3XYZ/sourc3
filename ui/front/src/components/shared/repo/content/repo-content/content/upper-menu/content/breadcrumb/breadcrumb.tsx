@@ -17,11 +17,9 @@ type ArrayPath = {
   path: string;
 };
 
-const elementsCreator = (
-  baseUrl: string, urlElements: ArrayPath[]
-) => urlElements
+const elementsCreator = (baseUrl: string, urlElements: ArrayPath[]) => urlElements
   .map((el, i, arr) => (
-    <Breadcrumb.Item>
+    <Breadcrumb.Item key={`breadcrumb-item-${i}`}>
       {
         i !== arr.length - 1
           ? <Link to={`${baseUrl}${el.path}`}>{el.name}</Link>
@@ -30,9 +28,7 @@ const elementsCreator = (
     </Breadcrumb.Item>
   ));
 
-const hrefCreator = (
-  path: string[], elements: ArrayPath[] = []
-):ArrayPath[] => {
+const hrefCreator = (path: string[], elements: ArrayPath[] = []):ArrayPath[] => {
   if (!path.length) return elements;
   const newPath = [...path];
   const name = newPath.shift() as typeof path[number];
@@ -43,9 +39,9 @@ const hrefCreator = (
   return hrefCreator(newPath, [...elements, element]);
 };
 
-const BreadCrumbMenu = ({
+function BreadCrumbMenu({
   prevReposHref, pathname, baseUrl, branch, commit
-}:BreadCrumbMenuProps) => {
+}:BreadCrumbMenuProps) {
   const root = `${baseUrl}/${branch}/${commit}`;
 
   let treePath = clipString(pathname, `${root}/`);
@@ -69,6 +65,6 @@ const BreadCrumbMenu = ({
       {elementsCreator(replacedRoot, pathElements)}
     </Breadcrumb>
   );
-};
+}
 
 export default BreadCrumbMenu;

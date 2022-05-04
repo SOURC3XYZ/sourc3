@@ -53,7 +53,7 @@ function App({
   ];
 
   const routes = data.map(
-    ({ path, element }) => <Route path={path} element={element} />
+    ({ path, element }) => <Route key={path} path={path} element={element} />
   );
 
   const View = useMemo(() => {

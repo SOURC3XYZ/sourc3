@@ -14,7 +14,8 @@ import {
   Seed2ValidationType,
   LocalRepoBranch,
   LocalRepoName,
-  MetaHash
+  MetaHash,
+  TxInfo
 } from '@types';
 
 export const AC = {
@@ -153,6 +154,11 @@ export const AC = {
 
   setPublicKey: (payload: any) => ({
     type: ACTIONS.SET_PUBLIC_KEY,
+    payload
+  } as const),
+
+  setTxList: (payload: TxInfo[]) => ({
+    type: ACTIONS.SET_TX_LIST,
     payload
   } as const)
 

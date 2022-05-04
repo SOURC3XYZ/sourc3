@@ -65,7 +65,7 @@ function Main({
                   </ErrorBoundary>
                 </PreloadComponent>
               );
-            return <Route path={path} element={route} />;
+            return <Route key={`route-${path}`} path={path} element={route} />;
           })
       }
 

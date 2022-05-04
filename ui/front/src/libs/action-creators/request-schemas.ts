@@ -1,8 +1,16 @@
+import { CONTRACT } from '@libs/constants';
 import {
   CommitHash, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
 
 export const RC = {
+
+  getTxList: () => ({
+    callID: 'tx_list',
+    method: 'tx_list',
+    params: {}
+  }),
+
   getIpfsData: (ipfsHash: string) => ({
     callID: 'ipfs_get',
     method: 'ipfs_get',
@@ -218,9 +226,9 @@ export const RC = {
 
   setWalletSendBeam: (
     value: number,
-    from: string,
     address:string,
-    comment:string
+    comment:string,
+    offline: boolean
   ) => ({
     callID: 'set_wallet_send_Beam',
     method: 'tx_send',
@@ -228,11 +236,10 @@ export const RC = {
     {
       value,
       fee: 100000,
-      from,
       address,
       comment,
-      asset_id: 0,
-      offline: false
+      offline,
+      asset_id: CONTRACT.ASSET_ID
     }
   } as const),
 
@@ -261,4 +268,4 @@ export const RC = {
   } as const)
 
 };
-export type RequestCreators = ReturnType<PropertiesType<typeof RC>>;
+export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

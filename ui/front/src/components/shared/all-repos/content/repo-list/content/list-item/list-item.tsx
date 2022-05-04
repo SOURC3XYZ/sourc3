@@ -44,7 +44,7 @@ function ListItem({
   const handleDeleteRepo = () => deleteRepos(repo_id);
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
-    <div>
+    <div key={`list-item-${alt}`}>
       <img alt={alt} src={src} />
       <span>10</span>
     </div>

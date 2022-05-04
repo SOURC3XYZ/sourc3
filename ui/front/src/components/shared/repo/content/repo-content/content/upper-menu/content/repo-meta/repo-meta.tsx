@@ -7,7 +7,7 @@ type RepoMetaProps = {
   commit: BranchCommit;
 };
 
-const RepoMeta = ({ commit }: RepoMetaProps) => {
+function RepoMeta({ commit }: RepoMetaProps) {
   const data = [
     {
       title: 'Author: ',
@@ -27,7 +27,7 @@ const RepoMeta = ({ commit }: RepoMetaProps) => {
   ];
 
   const dataRender = data.map(({ title, message, link }, i) => (
-    <Col offset={i && 1}>
+    <Col key={`repo-meta-${title}`} offset={i && 1}>
       <Info title={title} message={message} link={link} />
     </Col>
   ));
@@ -36,6 +36,6 @@ const RepoMeta = ({ commit }: RepoMetaProps) => {
       {dataRender}
     </div>
   );
-};
+}
 
 export default RepoMeta;

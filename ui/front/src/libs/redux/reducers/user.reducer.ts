@@ -1,26 +1,31 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
-import { BeamError, TxItem } from '@types';
+import { BeamError, TxItem, TxInfo } from '@types';
 
-interface IApp {
+interface IUser {
   isApiConnected: boolean;
   txs: Set<TxItem>
   error: BeamError | null,
   balance: number,
   addrList: string
-  pkey: string
+  pkey: string,
+  txList: TxInfo[]
 }
 
-const initialState:IApp = {
+const initialState:IUser = {
   isApiConnected: false,
   txs: new Set(),
   error: null,
   balance: 0,
   addrList: '',
-  pkey: ''
+  pkey: '',
+  txList: []
 };
 
-const reducer = (state:IApp = initialState, action: ActionCreators = {} as ActionCreators):IApp => {
+const reducer = (
+  state:IUser = initialState,
+  action: ActionCreators = {} as ActionCreators
+):IUser => {
   const newState = {
     ...state,
     txs: new Set(state.txs),
@@ -28,11 +33,11 @@ const reducer = (state:IApp = initialState, action: ActionCreators = {} as Actio
   };
   switch (action.type) {
     case ACTIONS.ERROR: {
-      newState.error = action.payload as IApp['error'];
+      newState.error = action.payload as IUser['error'];
       return newState;
     }
     case ACTIONS.CONNECTION: {
-      newState.isApiConnected = action.payload as IApp['isApiConnected'];
+      newState.isApiConnected = action.payload as IUser['isApiConnected'];
       return newState;
     }
     case ACTIONS.SET_TX:
@@ -64,6 +69,10 @@ const reducer = (state:IApp = initialState, action: ActionCreators = {} as Actio
 
     case ACTIONS.SET_PUBLIC_KEY:
       newState.pkey = action.payload as string;
+      return newState;
+
+    case ACTIONS.SET_TX_LIST:
+      newState.txList = action.payload as IUser['txList'];
       return newState;
 
     default:

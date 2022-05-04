@@ -73,7 +73,7 @@ function Header({
   };
 
   const headerElements = (text:string, color:string) => [
-    <div className={styles.navWrapper}>
+    <div key="header1" className={styles.navWrapper}>
       <Link to="/">
         <img className={styles.logo} alt="source" src={img} />
       </Link>
@@ -94,7 +94,7 @@ function Header({
     // isPkey && <AddButton />,
     // isPkey && <Profile pKey={pkey} />,
     isPkey && (
-      <div className={styles.manage}>
+      <div key="header2" className={styles.manage}>
         <ul className={styles.listManage}>
           <li>
             <BeamButton callback={showModal}>New</BeamButton>
@@ -105,12 +105,10 @@ function Header({
               className={styles.balance}
             >
               {balance || 0}
-              {' '}
               SC3
             </button>
           </li>
           <li>
-            {' '}
             <div className={styles.profile}>
               <img src={iconAvatar} alt="avatar" />
               <span style={{ color }}>Long John Silver</span>
@@ -122,7 +120,7 @@ function Header({
       </div>
     ),
     !isPkey && (
-      <div className={styles.connect}>
+      <div key="header3" className={styles.connect}>
         <Search
           className={color === 'black' ? '' : styles.lendosInput}
           text={text}

@@ -19,7 +19,7 @@ type UpperMenuProps = {
   navigate:NavigateFunction
 };
 
-const UpperMenu = ({
+function UpperMenu({
   branch,
   commit,
   repoMap,
@@ -27,7 +27,7 @@ const UpperMenu = ({
   prevReposHref,
   baseUrl,
   navigate
-}:UpperMenuProps) => {
+}:UpperMenuProps) {
   const { commit_oid } = commit;
   const keys = Array.from(repoMap.keys());
   const commits = repoMap.get(branch) as BranchCommit[];
@@ -37,14 +37,10 @@ const UpperMenu = ({
   let treePath = clipString(pathname, root);
   treePath = pathname !== treePath ? treePath : '';
 
-  const onChange = (
-    selectedCommit:string, selectedBranch = branch
-  ) => {
+  const onChange = (selectedCommit:string, selectedBranch = branch) => {
     const {
       branch: recBranch, commit: recCommit
-    } = setBranchAndCommit(
-      repoMap, selectedBranch, selectedCommit
-    );
+    } = setBranchAndCommit(repoMap, selectedBranch, selectedCommit);
     navigate(`${baseUrl}/${recBranch}/${recCommit.commit_oid}${treePath}`);
   };
 
@@ -85,6 +81,6 @@ const UpperMenu = ({
       </Row>
     </>
   );
-};
+}
 
 export default UpperMenu;
