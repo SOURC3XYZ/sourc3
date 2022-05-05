@@ -82,6 +82,41 @@ namespace
         hp >> res;
         return res;
     }
+    
+#pragma pack(push, 1)
+
+    class UserKey {
+    public:
+        UserKey(const ContractID& cid)
+            : m_cid{cid}
+        {
+            Env::DocGetNum32("pid", &m_profile_index);
+        }
+
+        void get(PubKey& key)
+        {
+            if (m_profile_index == 0) {
+                Env::DerivePk(key, &m_cid, sizeof(m_cid));
+            } else {
+                Env::DerivePk(key, this, sizeof(UserKey));
+            }
+        }
+
+        void fill_sig_request(SigRequest& sig)
+        {
+            sig.m_pID = &m_cid;
+            if (m_profile_index == 0) {
+                sig.m_nID = sizeof(m_cid);
+            } else {
+                sig.m_nID = sizeof(UserKey);
+            }
+        }
+
+    private:
+        ContractID m_cid;
+        uint32_t m_profile_index = 0;
+    };
+#pragma pack(pop)
 
     void On_action_create_repo(const ContractID& cid)
     {
@@ -96,7 +131,8 @@ namespace
         auto argsSize = sizeof(CreateRepoParams) + nameLen;
         auto buf = std::make_unique<uint8_t[]>(argsSize);
         auto* request = reinterpret_cast<CreateRepoParams*>(buf.get());
-        Env::DerivePk(request->repo_owner, &cid, sizeof(cid));
+        UserKey user_key(cid);
+        user_key.get(request->repo_owner);
         request->repo_name_length = nameLen;
         Env::Memcpy(request->repo_name, repoName, nameLen);
         auto hash = get_name_hash(request->repo_name, request->repo_name_length);
@@ -133,7 +169,8 @@ namespace
 
         RepoKey key;
         PubKey my_key;
-        Env::DerivePk(my_key, &cid, sizeof(cid));
+        UserKey user_key(cid);
+        user_key.get(my_key);
         Env::DocArray repos("repos");
         uint32_t valueLen = 0, keyLen = sizeof(RepoKey);
         for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
@@ -160,7 +197,8 @@ namespace
 
         RepoKey key;
         PubKey my_key;
-        Env::DerivePk(my_key, &cid, sizeof(cid));
+        UserKey user_key(cid);
+        user_key.get(my_key);
         Env::DocArray repos("repos");
         uint32_t valueLen = 0, keyLen = sizeof(RepoKey);
         for (Env::VarReader reader(start, end); reader.MoveNext(&key, keyLen, nullptr, valueLen, 0);) {
@@ -183,8 +221,8 @@ namespace
 
         GitRemoteBeam::DeleteRepoParams request;
         request.repo_id = repo_id;
-
-        Env::DerivePk(request.user, &cid, sizeof(cid));
+        UserKey user_key(cid);
+        user_key.get(request.user);
 
         SigRequest sig;
         sig.m_pID = &cid;
@@ -199,9 +237,9 @@ namespace
         Env::DocGet("repo_id", request.repo_id);
         Env::DocGet("user", request.user);
 
+        UserKey user_key(cid);
         SigRequest sig;
-        sig.m_pID = &cid;
-        sig.m_nID = sizeof(cid);
+        user_key.fill_sig_request(sig);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::AddUserParams::METHOD, &request, sizeof(request),
             nullptr, 0, &sig, 1, "add user params", 0);
@@ -212,9 +250,9 @@ namespace
         Env::DocGet("repo_id", request.repo_id);
         Env::DocGet("user", request.user);
 
+        UserKey user_key(cid);
         SigRequest sig;
-        sig.m_pID = &cid;
-        sig.m_nID = sizeof(cid);
+        user_key.fill_sig_request(sig);
 
         Env::GenerateKernel(&cid, GitRemoteBeam::RemoveUserParams::METHOD, &request, sizeof(request),
             nullptr, 0, &sig, 1, "remove user params", 0);
@@ -239,9 +277,9 @@ namespace
         }
         Env::DocAddNum("repo_id", params->repo_id);
 
+        UserKey user_key(cid);
         SigRequest sig;
-        sig.m_pID = &cid;
-        sig.m_nID = sizeof(cid);
+        user_key.fill_sig_request(sig);
 
         char refName[GitRef::MAX_NAME_SIZE + 1];
         auto nameLen = Env::DocGetText("ref", refName, _countof(refName));
@@ -271,7 +309,7 @@ namespace
                 Env::DocAddText("name", ref->name);
             }
 
-            Env::DerivePk(refsParams->user, &cid, sizeof(cid));
+            user_key.get(refsParams->user);
             Env::GenerateKernel(&cid, PushRefsParams::METHOD, refsParams, refArgsSize,
                 nullptr, 0, &sig, 1, "Pushing refs", 10000000);
         }
@@ -296,7 +334,7 @@ namespace
             }
         }
 
-        Env::DerivePk(params->user, &cid, sizeof(cid));
+        user_key.get(params->user);
         Env::GenerateKernel(&cid, PushObjectsParams::METHOD, params, argsSize,
             nullptr, 0, &sig, 1, "Pushing objects", 20000000 + 100000*params->objects_number);
     }
@@ -333,8 +371,9 @@ namespace
 
     void On_action_user_get_key(const ContractID& cid)
     {
+        UserKey user_key(cid);
         PubKey pk;
-        Env::DerivePk(pk, &cid, sizeof(cid));
+        user_key.get(pk);
         Env::DocAddBlob_T("key", pk);
     }
 
