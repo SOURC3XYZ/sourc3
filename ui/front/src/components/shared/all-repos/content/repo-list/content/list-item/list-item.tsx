@@ -45,7 +45,7 @@ function ListItem({
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
     <div key={`list-item-${alt}`}>
-      <img alt={alt} src={src} />
+      <img className={styles.dots} alt={alt} src={src} />
       <span>10</span>
     </div>
   ));
@@ -71,7 +71,7 @@ function ListItem({
     <List.Item
       className={styles.listItem}
       key={repo_id}
-      actions={[(<span className={styles.time}>Updated 5 mins ago</span>),
+      actions={[<span className={styles.time}>Updated 5 mins ago</span>,
         (
           <Dropdown overlay={menuRender} placement="bottomRight">
             <img className={styles.dropdownIcon} alt="dots" src={dotsImg} />

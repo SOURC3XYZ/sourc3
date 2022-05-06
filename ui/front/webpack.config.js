@@ -99,13 +99,9 @@ const build = {
             loader: 'css-loader',
             options: {
               modules: {
-                localIdentName: '[name]--[hash:base64:5]'
+                localIdentName: '[name]_[local]-[hash:base64:5]'
               }
             }
-          },
-          {
-            // Loader for webpack to process CSS with PostCSS
-            loader: 'postcss-loader'
           },
           {
             // Loads a SASS/SCSS file and compiles it to CSS

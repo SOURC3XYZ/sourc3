@@ -1,6 +1,6 @@
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { AC, thunks } from '@libs/action-creators';
 import {
   Manager,
@@ -11,7 +11,7 @@ import {
   FailPage
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useCallback } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -23,6 +23,17 @@ type MainProps = {
 function Main({
   isApiConnected, connectApi
 }:MainProps) {
+  const { pathname } = useLocation();
+
+  const isOnLending = pathname === '/';
+
+  useLayoutEffect(() => {
+    if (isOnLending) {
+      document.body.style.backgroundColor = '#000';
+      return;
+    } document.body.style.backgroundColor = '';
+  }, [isOnLending]);
+
   const routes = [
     {
       path: '/',
@@ -47,7 +58,7 @@ function Main({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const RoutesView = useCallback(() => (
+  const RoutesElement = useCallback(() => (
     <Routes>
       {
         routes
@@ -73,13 +84,13 @@ function Main({
   ), [isApiConnected]);
 
   return (
-    <>
-      <Header />
+    <div className={styles.appWrapper}>
+      <Header isOnLending={isOnLending} />
       <div className={styles.main}>
-        <RoutesView />
+        <RoutesElement />
         <Notifications />
       </div>
-    </>
+    </div>
   );
 }
 

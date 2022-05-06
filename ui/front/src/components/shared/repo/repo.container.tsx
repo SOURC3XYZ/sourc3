@@ -6,7 +6,7 @@ import {
 import { batch, connect } from 'react-redux';
 import { FailPage, Preload } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useUserRepos } from '@libs/hooks/talons/user-repos';
+import { useUserRepos } from '@libs/hooks/container/user-repos';
 import { RepoContent } from './content';
 import styles from './repo.module.css';
 

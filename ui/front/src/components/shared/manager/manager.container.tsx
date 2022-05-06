@@ -7,7 +7,7 @@ import {
   WechatOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { useManager } from '@libs/hooks/talons/manager';
+import { useManager } from '@libs/hooks/container/manager';
 import styles from './manager.module.css';
 
 type ManagerProps = {
