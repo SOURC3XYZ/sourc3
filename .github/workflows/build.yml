@@ -214,6 +214,12 @@ jobs:
       run: |
         cd ui
         npm i --legacy-peer-deps
+
+    - name: Install dmg licence [macos-10.15]
+      shell: bash
+      if: matrix.os == 'macos-10.15' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      run: |
+        cd ui
         npm i dmg-license
 
     - name: Install wasm [windows-2019]
