@@ -3,149 +3,122 @@ import {
 } from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { ChangeEvent, useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Input } from 'antd';
 import img from '@assets/img/source-header-logo.svg';
 import iconAvatar from '@assets/img/icon-avatar.svg';
 import iconButtonArrowDown from '@assets/img/icon-arrow-button-down.svg';
 import Modal from 'antd/lib/modal/Modal';
-import { useObjectState } from '@libs/hooks/shared';
+import { useHeader } from '@libs/hooks/container/header';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
   pkey:string
   balance: number,
   searchText:string,
+  isOnLending: boolean,
   setInputText: (inputText: string) => void;
   connectToExtention: () => void;
   createRepos: (repo_name:string) => void,
 };
 
-const initialState = {
-  isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
-};
-
 function Header({
-  balance, pkey, searchText, setInputText, connectToExtention, createRepos
+  balance, pkey, searchText, isOnLending, setInputText, connectToExtention, createRepos
 }:HeaderPropsType) {
-  const isPkey = Boolean(pkey);
-  const setInputTextWrap = (text: string) => setInputText(text);
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
-  const isOnLendos = pathname === '/';
+  const containerProps = useHeader({
+    pkey,
+    searchText,
+    isOnLending,
+    setInputText,
+    connectToExtention,
+    createRepos
+  });
 
-  const textColor = searchText || !isOnLendos ? 'black' : 'white';
+  const {
+    isPkey,
+    isModalVisible,
+    inputRepoName,
+    setInputTextWrap,
+    onConnect,
+    showModal,
+    handleOk,
+    handleCancel,
+    handleChange
+  } = containerProps;
 
-  const bgColor = searchText || !isOnLendos ? 'white' : 'black';
-
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isModalVisible, inputRepoName } = state;
-
-  useEffect(() => {
-    if (searchText.length && isOnLendos) {
-      navigate('repos/all/1');
-    }
-  }, [searchText]);
-
-  const onConnect = () => {
-    connectToExtention();
-  };
-  const showModal = () => {
-    setState({ isModalVisible: true });
-  };
-
-  const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
-  };
-
-  const handleCancel = () => {
-    setState({ isModalVisible: false });
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setState({ inputRepoName: e.target.value });
-  };
-
-  const headerElements = (text:string, color:string) => [
+  const headerElements = (
     <div key="header1" className={styles.navWrapper}>
       <Link to="/">
         <img className={styles.logo} alt="source" src={img} />
       </Link>
-      <ul className={styles.navList} style={{ color }}>
+      <ul className={[styles.navList, textColorClass].join(' ')}>
         <li>
-          <Link style={{ color, textDecoration: 'none' }} to="/repos/all/1">
+          <Link className={textColorClass} to="/repos/all/1">
             Repositiories
           </Link>
         </li>
         <li>
-          <Link style={{ color, textDecoration: 'none' }} to="/repos/all/1">
+          <Link className={textColorClass} to="/repos/all/1">
             Explore
           </Link>
         </li>
       </ul>
-    </div>,
-    // isPkey && <Balance current={balance} />,
-    // isPkey && <AddButton />,
-    // isPkey && <Profile pKey={pkey} />,
-    isPkey && (
-      <div key="header2" className={styles.manage}>
-        <ul className={styles.listManage}>
-          <li>
-            <BeamButton callback={showModal}>New</BeamButton>
-          </li>
-          <li>
-            <button
-              type="button"
-              className={styles.balance}
-            >
-              {balance || 0}
-              SC3
-            </button>
-          </li>
-          <li>
-            <div className={styles.profile}>
-              <img src={iconAvatar} alt="avatar" />
-              <span style={{ color }}>Long John Silver</span>
-              <img src={iconButtonArrowDown} alt="down" />
-            </div>
-
-          </li>
-        </ul>
-      </div>
-    ),
-    !isPkey && (
-      <div key="header3" className={styles.connect}>
-        <Search
-          className={color === 'black' ? '' : styles.lendosInput}
-          text={text}
-          placeholder="Search"
-          setInputText={setInputTextWrap}
-        />
-        <BeamButton callback={onConnect}>
-          connect
-        </BeamButton>
-      </div>
-    )
-  ];
-
-  const View = useCallback(({ text, color }: { [key:string]: any }) => (
-    <div className={styles.nav}>
-      {headerElements(text, color)}
     </div>
-  ), [pkey]);
+  );
+
+  const manageElement = isPkey && (
+    <div key="header2" className={styles.manage}>
+      <ul className={styles.listManage}>
+        <li>
+          <BeamButton callback={showModal}>New</BeamButton>
+        </li>
+        <li>
+          <button
+            type="button"
+            className={styles.balance}
+          >
+            {balance || 0}
+            SC3
+          </button>
+        </li>
+        <li>
+          <div className={styles.profile}>
+            <img src={iconAvatar} alt="avatar" />
+            <span className={textColorClass}>Long John Silver</span>
+            <img src={iconButtonArrowDown} alt="down" />
+          </div>
+
+        </li>
+      </ul>
+    </div>
+  );
+
+  const searchElement = !isPkey && (
+    <div key="header3" className={styles.connect}>
+      <Search
+        className={isOnLending ? styles.lendosInput : ''}
+        text={searchText}
+        placeholder="Search"
+        setInputText={setInputTextWrap}
+      />
+      <BeamButton callback={onConnect}>
+        connect
+      </BeamButton>
+    </div>
+  );
 
   return (
     <div
       className={styles.wrapper}
-      style={{ background: bgColor }}
     >
-      <View text={searchText} color={textColor} />
+      <div className={styles.nav}>
+        {headerElements}
+        {manageElement}
+        {searchElement}
+      </div>
       <Modal
         visible={isModalVisible}
         onOk={handleOk}

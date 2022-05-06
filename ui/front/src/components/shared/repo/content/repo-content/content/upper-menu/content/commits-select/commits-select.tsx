@@ -20,9 +20,9 @@ type CommitSelectProps = {
   // updateTree: (props: Omit<UpdateProps, 'id'>) => void;
 };
 
-const CommitsSelect = ({
+function CommitsSelect({
   keys, value, onChange
-}:CommitSelectProps) => {
+}:CommitSelectProps) {
   const onChangeDecor = (commit:string) => onChange(commit);
   return (
     <div className={styles.branchSelect}>
@@ -42,6 +42,6 @@ const CommitsSelect = ({
       </div>
     </div> // TODO: make shared <select> component
   );
-};
+}
 
 export default CommitsSelect;

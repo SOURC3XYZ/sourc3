@@ -7,7 +7,7 @@ import { RepoId, RepoListType, RepoType } from '@types';
 import { useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
-import { useAllRepos } from '@libs/hooks/talons/all-repos';
+import { useAllRepos } from '@libs/hooks/container/all-repos';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
