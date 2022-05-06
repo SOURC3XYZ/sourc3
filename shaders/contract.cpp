@@ -17,14 +17,14 @@ Hash256 GetNameHash(const char* name, size_t len) {
   return res;
 }
 
-void CheckPermissions(const PubKey& user, RepoInfo::ID repo_id, Permissions p) {
+void CheckPermissions(const PubKey& user, RepoInfo::Id repo_id, Permissions p) {
   RepoUser::Key key_user(user, repo_id);
   UserInfo user_info;
   Env::Halt_if(!Env::LoadVar_T(key_user, user_info));
   Env::Halt_if((user_info.permissions & p) == 0);
 }
 
-std::unique_ptr<RepoInfo> LoadRepo(const RepoInfo::ID& repo_id) {
+std::unique_ptr<RepoInfo> LoadRepo(const RepoInfo::Id& repo_id) {
   RepoInfo::Key key_repo(repo_id);
   size_t repo_size =
       Env::LoadVar(&key_repo, sizeof(key_repo), nullptr, 0, KeyTag::Internal);
@@ -84,7 +84,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params) {  // NOLINT
   Env::Memcpy(repo_info->name, params.repo_name, repo_info->name_length);
 
   RepoUser::Key key_user(params.repo_owner, repo_info->repo_id);
-  Env::SaveVar_T(key_user, UserInfo{.permissions = ALL});
+  Env::SaveVar_T(key_user, UserInfo{.permissions = kAll});
 
   SaveRepo(repo_info);
 
@@ -94,7 +94,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params) {  // NOLINT
 BEAM_EXPORT void Method_3(const DeleteRepoParams& params) {  // NOLINT
   std::unique_ptr<RepoInfo> repo_info = LoadRepo(params.repo_id);
 
-  CheckPermissions(params.user, repo_info->repo_id, DELETE_REPO);
+  CheckPermissions(params.user, repo_info->repo_id, kDeleteRepo);
 
   Env::AddSig(params.user);
 
@@ -109,7 +109,7 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params) {  // NOLINT
 BEAM_EXPORT void Method_4(const AddUserParams& params) {  // NOLINT
   std::unique_ptr<RepoInfo> repo_info = LoadRepo(params.repo_id);
 
-  CheckPermissions(params.initiator, repo_info->repo_id, ADD_USER);
+  CheckPermissions(params.initiator, repo_info->repo_id, kAddUser);
 
   RepoUser::Key key_user(params.user, repo_info->repo_id);
   Env::SaveVar_T(key_user, UserInfo{.permissions = params.permissions});
@@ -120,7 +120,7 @@ BEAM_EXPORT void Method_4(const AddUserParams& params) {  // NOLINT
 BEAM_EXPORT void Method_5(const RemoveUserParams& params) {  // NOLINT
   std::unique_ptr<RepoInfo> repo_info = LoadRepo(params.repo_id);
 
-  CheckPermissions(params.initiator, repo_info->repo_id, REMOVE_USER);
+  CheckPermissions(params.initiator, repo_info->repo_id, kRemoveUser);
 
   RepoUser::Key key_user(params.user, repo_info->repo_id);
   UserInfo user_info;
@@ -134,7 +134,7 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params) {  // NOLINT
 BEAM_EXPORT void Method_6(const PushObjectsParams& params) {  // NOLINT
   std::unique_ptr<RepoInfo> repo_info = LoadRepo(params.repo_id);
 
-  CheckPermissions(params.user, repo_info->repo_id, PUSH);
+  CheckPermissions(params.user, repo_info->repo_id, kPush);
 
   auto* obj =
       reinterpret_cast<const PushObjectsParams::PackedObject*>(&params + 1);
@@ -168,7 +168,7 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params) {  // NOLINT
 BEAM_EXPORT void Method_7(const PushRefsParams& params) {  // NOLINT
   std::unique_ptr<RepoInfo> repo_info = LoadRepo(params.repo_id);
 
-  CheckPermissions(params.user, repo_info->repo_id, PUSH);
+  CheckPermissions(params.user, repo_info->repo_id, kPush);
 
   auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
   for (size_t i = 0; i < params.refs_info.refs_number; ++i) {

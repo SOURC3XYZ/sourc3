@@ -5,29 +5,32 @@
 
 namespace git_remote_beam {
 enum Operations : uint8_t {
-  REPO,
-  OBJECTS,
-  REFS,
+  kRepo,
+  kObjects,
+  kRefs,
 };
-constexpr Operations kAllOperations[] = {REPO, OBJECTS, REFS};
+constexpr Operations kAllOperations[] = {kRepo, kObjects, kRefs};
 
 enum Permissions : uint8_t {
-  DELETE_REPO = 0b0001,
-  ADD_USER = 0b0010,
-  REMOVE_USER = 0b0100,
-  PUSH = 0b1000,
-  ALL = DELETE_REPO | ADD_USER | REMOVE_USER | PUSH,
+  kDeleteRepo = 0b0001,
+  kAddUser = 0b0010,
+  kRemoveUser = 0b0100,
+  kPush = 0b1000,
+  kAll = kDeleteRepo | kAddUser | kRemoveUser | kPush,
 };
 
 #pragma pack(push, 1)
 
-typedef Opaque<20> GitOid;
-typedef Opaque<32> Hash256;
+using GitOid = Opaque<20>;
+using Hash256 = Opaque<32>;
 
 Hash256 GetNameHash(const char* name, size_t len);
 
 struct RepoInfo {
+  using Id = uint64_t;  // big-endinan
+
   static constexpr size_t kMaxNameSize = 256;
+
   struct NameKey {
     PubKey owner;
     Hash256 name_hash;
@@ -35,25 +38,20 @@ struct RepoInfo {
       Env::Memcpy(&name_hash, &h, sizeof(name_hash));
     }
   };
-  using ID = uint64_t;  // big-endinan
   struct BaseKey {
     Operations tag;
-    ID repo_id;
-    BaseKey(Operations t, RepoInfo::ID id)
+    Id repo_id;
+    BaseKey(Operations t, RepoInfo::Id id)
         : tag(t),
-          repo_id(Utils::FromBE(id))  // swap bytes
-    {
-    }
+          repo_id(Utils::FromBE(id)) {}  // swap bytes
   };
   struct Key : BaseKey {
-    explicit Key(RepoInfo::ID id) : BaseKey(REPO, id) {
-    }
-    Key() : Key(0) {
-    }
+    explicit Key(RepoInfo::Id id) : BaseKey(kRepo, id) {}
+    Key() : Key(0) {}
   };
 
   Hash256 name_hash;
-  ID repo_id;
+  Id repo_id;
   size_t cur_objs_number;
   PubKey owner;
   size_t name_length;
@@ -61,23 +59,22 @@ struct RepoInfo {
 };
 
 struct GitObject {
-  using ID = uint64_t;
+  using Id = uint64_t;
 
   struct Meta {
     struct Key : RepoInfo::BaseKey {
-      ID obj_id;
-      Key(RepoInfo::ID rid, const ID& oid)
-          : RepoInfo::BaseKey(OBJECTS, rid), obj_id(oid) {
-      }
+      Id obj_id;
+      Key(RepoInfo::Id rid, const Id& oid)
+          : RepoInfo::BaseKey(kObjects, rid), obj_id(oid) {}
     };
     enum Type : int8_t {
       // excerpt from libgit2
-      GIT_OBJECT_COMMIT = 1, /**< A commit object. */
-      GIT_OBJECT_TREE = 2,   /**< A tree (directory listing) object. */
-      GIT_OBJECT_BLOB = 3,   /**< A file revision object. */
-      GIT_OBJECT_TAG = 4,    /**< An annotated tag object. */
+      kGitObjectCommit = 1, /**< A commit object. */
+      kGitObjectTree = 2,   /**< A tree (directory listing) object. */
+      kGitObjectBlob = 3,   /**< A file revision object. */
+      kGitObjectTag = 4,    /**< An annotated tag object. */
     } type;
-    ID id;
+    Id id;
     GitOid hash;
     uint32_t data_size;
   } meta;
@@ -85,11 +82,12 @@ struct GitObject {
   struct Data {
     struct Key : RepoInfo::BaseKey {
       GitOid hash;
-      Key(RepoInfo::ID rid, const GitOid& oid)
-          : RepoInfo::BaseKey(OBJECTS, rid) {
+      Key(RepoInfo::Id rid, const GitOid& oid)
+          : RepoInfo::BaseKey(kObjects, rid) {
         Env::Memcpy(&hash, &oid, sizeof(oid));
       }
     };
+
     char data[];
   } data;
 
@@ -109,17 +107,15 @@ struct GitRef {
   static constexpr size_t kMaxNameSize = 256;
   struct Key : RepoInfo::BaseKey {
     Hash256 name_hash;
-    Key(RepoInfo::ID rid, const Hash256& nh)
-        : RepoInfo::BaseKey(REFS, rid), name_hash(nh) {
+    Key(RepoInfo::Id rid, const Hash256& nh)
+        : RepoInfo::BaseKey(kRefs, rid), name_hash(nh) {
       Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
     }
 
-    Key(RepoInfo::ID rid, const char* name, size_t len)
-        : RepoInfo::BaseKey(REFS, rid), name_hash(GetNameHash(name, len)) {
-    }
+    Key(RepoInfo::Id rid, const char* name, size_t len)
+        : RepoInfo::BaseKey(kRefs, rid), name_hash(GetNameHash(name, len)) {}
 
-    Key() : RepoInfo::BaseKey(REFS, 0) {
-    }
+    Key() : RepoInfo::BaseKey(kRefs, 0) {}
   };
 
   GitOid commit_hash;
@@ -147,9 +143,8 @@ struct RefsInfo {
 struct RepoUser {
   struct Key {
     PubKey user;
-    RepoInfo::ID repo_id;
-    Key(const PubKey& u, RepoInfo::ID id) : user(u), repo_id(id) {
-    }
+    RepoInfo::Id repo_id;
+    Key(const PubKey& u, RepoInfo::Id id) : user(u), repo_id(id) {}
   };
 };
 

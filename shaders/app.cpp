@@ -307,7 +307,7 @@ void OnActionListRefs(const ContractID& cid) {
   using namespace GitRemoteBeam;
   using Key = Env::Key_T<GitRef::Key>;
   Key start, end;
-  RepoInfo::ID repo_id = 0;
+  RepoInfo::Id repo_id = 0;
   if (!Env::DocGet("repo_id", repo_id)) {
     return OnError("failed to read 'repo_id'");
   }
@@ -355,7 +355,7 @@ void OnActionUserGetRepo(const ContractID& cid) {
   RepoKey key(my_key, name_hash);
   Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
   reader_key.m_Prefix.m_Cid = cid;
-  RepoInfo::ID repo_id = 0;
+  RepoInfo::Id repo_id = 0;
   if (!Env::VarReader::Read_T(reader_key, repo_id)) {
     return OnError("Failed to read repo ids");
   }
@@ -370,11 +370,11 @@ std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
   using GitRemoteBeam::GitObject;
   using GitRemoteBeam::RepoInfo;
 
-  RepoInfo::ID repo_id;
+  RepoInfo::Id repo_id;
   Env::DocGet("repo_id", repo_id);
   MetaKey start{.m_KeyInContract = {repo_id, 0}};
   MetaKey end{
-      .m_KeyInContract = {repo_id, std::numeric_limits<GitObject::ID>::max()}};
+      .m_KeyInContract = {repo_id, std::numeric_limits<GitObject::Id>::max()}};
   start.m_Prefix.m_Cid = cid;
   end.m_Prefix.m_Cid = cid;
   MetaKey key{
@@ -400,7 +400,7 @@ void OnActionGetRepoData(const ContractID& cid) {
   using GitRemoteBeam::git_oid;
   using GitRemoteBeam::GitObject;
   using GitRemoteBeam::RepoInfo;
-  RepoInfo::ID repo_id;
+  RepoInfo::Id repo_id;
   git_oid hash;
   Env::DocGet("repo_id", repo_id);
   Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -496,7 +496,7 @@ void OnActionGetCommit(const ContractID& cid) {
   using GitRemoteBeam::git_oid;
   using GitRemoteBeam::GitObject;
   using GitRemoteBeam::RepoInfo;
-  RepoInfo::ID repo_id;
+  RepoInfo::Id repo_id;
   git_oid hash;
   Env::DocGet("repo_id", repo_id);
   Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -533,7 +533,7 @@ void OnActionGetTree(const ContractID& cid) {
   using GitRemoteBeam::git_oid;
   using GitRemoteBeam::GitObject;
   using GitRemoteBeam::RepoInfo;
-  RepoInfo::ID repo_id;
+  RepoInfo::Id repo_id;
   git_oid hash;
   Env::DocGet("repo_id", repo_id);
   Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -600,11 +600,11 @@ void GetObjects(const ContractID& cid,
 }
 
 void OnActionGetCommits(const ContractID& cid) {
-  GetObjects(cid, GitRemoteBeam::GitObject::Meta::GIT_OBJECT_COMMIT);
+  GetObjects(cid, GitRemoteBeam::GitObject::Meta::kGitObjectCommit);
 }
 
 void OnActionGetTrees(const ContractID& cid) {
-  GetObjects(cid, GitRemoteBeam::GitObject::Meta::GIT_OBJECT_TREE);
+  GetObjects(cid, GitRemoteBeam::GitObject::Meta::kGitObjectTree);
 }
 }  // namespace
 
