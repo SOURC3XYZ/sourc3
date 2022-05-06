@@ -659,31 +659,37 @@ BEAM_EXPORT void Method_0() {
                 Env::DocGroup grMethod("create_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("my_repos");
                 Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("all_repos");
                 Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("delete_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("add_user_params");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("remove_user_params");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("push_objects");
@@ -692,15 +698,18 @@ BEAM_EXPORT void Method_0() {
                 Env::DocAddText("data", "Push objects");
                 Env::DocAddText("ref", "Objects ref");
                 Env::DocAddText("ref_target", "Objects ref target");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("list_refs");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("get_key");
                 Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup grMethod("repo_id_by_name");
