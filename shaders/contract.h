@@ -4,12 +4,17 @@
 #include "Shaders/common.h"
 
 namespace git_remote_beam {
-enum Operations : uint8_t {
+enum Tag : uint8_t {
   kRepo,
   kObjects,
   kRefs,
+  kOrganization,
+  kProject,
+  kOrganizationMember,
+  kProjectMember,
+  kProjectRepo,
 };
-constexpr Operations kAllOperations[] = {kRepo, kObjects, kRefs};
+constexpr Tag kAllTags[] = {kRepo, kObjects, kRefs, kOrganization};
 
 enum Permissions : uint8_t {
   kDeleteRepo = 0b0001,
@@ -39,9 +44,9 @@ struct RepoInfo {
     }
   };
   struct BaseKey {
-    Operations tag;
+    Tag tag;
     Id repo_id;
-    BaseKey(Operations t, RepoInfo::Id id)
+    BaseKey(Tag t, RepoInfo::Id id)
         : tag(t),
           repo_id(Utils::FromBE(id)) {}  // swap bytes
   };
@@ -156,24 +161,97 @@ struct ContractState {
   uint64_t last_repo_id;
 };
 
-struct InitialParams {
+struct Organization {
+  using Id = uint64_t;
+  struct Key {
+    Tag tag = Tag::kOrganization;
+    Id id;
+  };
+  enum Permission : uint8_t {
+    kAddProject =     0b000001,
+    kAddMember =      0b000010,
+    kRemoveProject =  0b000100,
+    kRemoveMember =   0b001000,
+    kModifyMember =   0b010000,
+    kModifyProject =  0b100000,
+    kAll = kAddProject | kAddMember | kRemoveProject | kRemoveMember |
+      kModifyProject | kModifyMember,
+  };
+  PubKey creator;
+  size_t name_len;
+  //name of variable length
+  static const size_t kMaxNameLen = 256;
+};
+
+struct Project {
+  using Id = uint64_t;
+  struct Key {
+    Tag tag = Tag::kProject;
+    Id id;
+  };
+  enum Permission : uint8_t {
+    kAddRepo =      0b000001,
+    kAddMember =    0b000010,
+    kRemoveRepo =   0b000100,
+    kRemoveMember = 0b001000,
+    kModifyMember = 0b010000,
+    kModifyRepo =   0b100000,
+    kAll = kAddRepo | kAddMember | kRemoveRepo | kRemoveMember |
+      kModifyRepo | kModifyMember,
+  };
+  Organization::Id organization_id;
+  PubKey creator;
+  size_t name_len;
+  // name of variable length
+  static const size_t kMaxNameLen = 256;
+};
+
+struct OrganizationMember {
+  struct Key {
+    Tag tag = Tag::kOrganizationMember;
+    Organization::Id organization_id;
+    PubKey member_id;
+  };
+  uint8_t permissions;
+};
+
+struct ProjectMember {
+  struct Key {
+    Tag tag = Tag::kProjectMember;
+    Project::Id project_id;
+    PubKey member_id;
+  };
+  uint8_t permissions;
+};
+
+struct ProjectRepo {
+  struct Key {
+    Tag tag = Tag::kProjectRepo;
+    Project::Id project_id;
+    RepoInfo::Id repo_id;
+  };
+};
+
+namespace method {
+
+struct Initial {
   static const uint32_t kMethod = 0;
 };
 
-struct CreateRepoParams {
+struct CreateRepo {
   static const uint32_t kMethod = 2;
   PubKey repo_owner;
   size_t repo_name_length;
   char repo_name[];
 };
 
-struct DeleteRepoParams {
+struct DeleteRepo {
   static const uint32_t kMethod = 3;
   uint64_t repo_id;
   PubKey user;
 };
 
-struct AddUserParams {
+struct AddUser {
   static const uint32_t kMethod = 4;
   uint64_t repo_id;
   PubKey initiator;
@@ -181,14 +259,14 @@ struct AddUserParams {
   uint8_t permissions;
 };
 
-struct RemoveUserParams {
+struct RemoveUser {
   static const uint32_t kMethod = 5;
   uint64_t repo_id;
   PubKey user;
   PubKey initiator;
 };
 
-struct PushObjectsParams {
+struct PushObjects {
   static const uint32_t kMethod = 6;
   struct PackedObject {
     int8_t type;
@@ -202,12 +280,62 @@ struct PushObjectsParams {
   // packed objects after this
 };
 
-struct PushRefsParams {
+struct PushRefs {
   static const uint32_t kMethod = 7;
   uint64_t repo_id;
   PubKey user;
   RefsInfo refs_info;
 };
 
+struct CreateProject {
+  static const uint32_t kMethod = 8;
+  Organization::Id organization_id;
+  PubKey creator;
+  size_t name_len;
+  // followed by project name
+};
+
+struct CreateOrganization {
+  static const uint32_t kMethod = 9;
+  PubKey creator;
+  size_t name_len;
+  // followed by organization name
+};
+
+struct SetProjectRepo {
+  static const uint32_t kMethod = 10;
+  enum class Request { kAdd, kRemove } request;
+  Project::Id project_id;
+  RepoInfo::Id repo_id;
+  PubKey caller;
+};
+
+struct SetOrganizationProject {
+  static const uint32_t kMethod = 11;
+  enum class Request { kAdd, kRemove } request;
+  Organization::Id organization_id;
+  Project::Id project_id;
+  PubKey caller;
+};
+
+struct SetProjectMember {
+  static const uint32_t kMethod = 12;
+  enum class Request { kAdd, kModify, kRemove } request;
+  Project::Id project_id;
+  PubKey member;
+  uint8_t permissions;
+  PubKey caller;
+};
+
+struct SetOrganizationMember {
+  static const uint32_t kMethod = 13;
+  enum class Request { kAdd, kModify, kRemove } request;
+  Organization::Id organization_id;
+  PubKey member;
+  uint8_t permissions;
+  PubKey caller;
+};
+
 #pragma pack(pop)
+}  // namespace method
 }  // namespace git_remote_beam
