@@ -10,33 +10,33 @@
 namespace sourc3 {
 template <typename T, void(D)(T*)>
 class Holder {
- public:
-  Holder() = default;
+public:
+    Holder() = default;
 
-  explicit Holder(T* ptr) : obj_(ptr) {
-    assert(ptr != nullptr);
-  }
+    explicit Holder(T* ptr) : obj_(ptr) {
+        assert(ptr != nullptr);
+    }
 
-  Holder(const T&) = delete;
+    Holder(const T&) = delete;
 
-  ~Holder() {
-    D(obj_);
-  }
+    ~Holder() {
+        D(obj_);
+    }
 
-  T** Addr() noexcept {
-    return &obj_;
-  }
+    T** Addr() noexcept {
+        return &obj_;
+    }
 
-  explicit operator bool() const noexcept {
-    return obj_;
-  }
+    explicit operator bool() const noexcept {
+        return obj_;
+    }
 
-  T* operator*() const noexcept {
-    return obj_;
-  }
+    T* operator*() const noexcept {
+        return obj_;
+    }
 
- private:
-  T* obj_ = nullptr;
+private:
+    T* obj_ = nullptr;
 };
 
 namespace git {
@@ -52,15 +52,15 @@ using ObjectDB = Holder<git_odb, git_odb_free>;
 using Reference = Holder<git_reference, git_reference_free>;
 
 struct Init {
-  Init() noexcept;
-  ~Init() noexcept;
+    Init() noexcept;
+    ~Init() noexcept;
 };
 
 struct RepoAccessor {
-  explicit RepoAccessor(std::string_view dir);
+    explicit RepoAccessor(std::string_view dir);
 
-  Repository m_repo;
-  ObjectDB m_odb;
+    Repository m_repo;
+    ObjectDB m_odb;
 };
 
 }  // namespace git
