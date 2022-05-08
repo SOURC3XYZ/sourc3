@@ -1,4 +1,4 @@
-.wrapper {
+.header {
   margin: 0 auto;
   flex-shrink: 0;
   display: flex;
@@ -19,6 +19,25 @@
       line-height: 20px;
       font-style: normal;
     }
+  }
+
+  .textColor {
+    color: #fff;
+    text-decoration: none;
+  }
+}
+
+.headerActive {
+  composes: header;
+  background-color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+  .textColor {
+    text-decoration: none;
+    color: #000;
   }
 }
 
@@ -54,6 +73,10 @@
   input {
     margin-right: 5px;
   }
+
+  button {
+    margin-left: auto;
+  }
 }
 
 .lendosInput {
@@ -61,7 +84,13 @@
   opacity: 0.5;
   border: 1px solid #FFFFFF;
   background: rgba(255, 255, 255, 0.1);
+
+  input {
+    color: #FFFFFF;
+
+  }
 }
+
 
 .manage {
   display: flex;
@@ -107,14 +136,4 @@
       letter-spacing: 0.1px;
     }
   }
-}
-
-.textColor {
-  color: #fff;
-  text-decoration: none;
-}
-
-.textColorActive {
-  text-decoration: none;
-  color: #000;
 }

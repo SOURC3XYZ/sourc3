@@ -1,6 +1,6 @@
 import { CONTRACT } from '@libs/constants';
 import {
-  QObject, BeamApiRes, ApiResultWeb, ApiResult, CallApiDesktop, BeamApiResult
+  QObject, ApiResultWeb, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
 import { QWebChannel } from 'qwebchannel';
 
@@ -14,7 +14,7 @@ type CallApiProps<T> = {
 
 type MessageType = {
   type: string;
-  response: BeamApiRes
+  response: ResultObject
 };
 
 type IpcMethod = 'get' | 'post' | 'put' | 'delete';
@@ -22,7 +22,7 @@ type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 const headlessNode = 'eu-node01.masternet.beam.mw:8200';
 
 type BeamApiReqHandlers = {
-  resolve: (value: BeamApiRes) => void,
+  resolve: (value: ResultObject) => void,
   reject: (reason?: any) => void
 };
 
@@ -40,6 +40,10 @@ type Modified<T> = T & {
 
 export class BeamAPI<T> {
   public readonly cid: string;
+
+  private isHeadlessOnConnect = false;
+
+  private isWebOnConnect = false;
 
   private callIndex: number = 0;
 
@@ -61,7 +65,7 @@ export class BeamAPI<T> {
     window.addEventListener('message', this.responseIPC);
   }
 
-  private readonly responseCbackHandler = (parsed: BeamApiRes) => {
+  private readonly responseCbackHandler = (parsed: ResultObject) => {
     console.log('response', parsed);
     const { id } = parsed;
     const cb = this.callbacks.get(id);
@@ -70,6 +74,11 @@ export class BeamAPI<T> {
       if (parsed.error) return cb.reject(new Error(parsed.error.message));
       return cb.resolve(parsed);
     } return this.eventManager(parsed);
+  };
+
+  public readonly headlessConnectedEvent = () => {
+    this.isHeadlessOnConnect = false;
+    document.dispatchEvent(new CustomEvent('headlessConnected'));
   };
 
   private readonly onApiResult = (json: string): void => {
@@ -150,8 +159,10 @@ export class BeamAPI<T> {
   });
 
   readonly connectHeadless = async () => {
-    this.BEAM = await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
-    return this;
+    this.isHeadlessOnConnect = true;
+    const beam = await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
+    // this.headlessConnectedEvent();
+    return beam;
   };
 
   readonly connectToApi = async (): Promise<QObject> => {
@@ -190,15 +201,37 @@ export class BeamAPI<T> {
 
   readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
+    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
     if (!this.apiHost) {
       this.BEAM = this.isDapps()
         ? { api: await this.connectToApi() }
-        : await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
+        : await this.connectHeadless();
     }
     return this;
   };
 
   readonly extensionConnect = async (message: {
+    [key: string]: string;
+  }) => {
+    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
+    this.isWebOnConnect = true;
+
+    if (this.isHeadlessOnConnect) {
+      return new Promise((resolve) => {
+        document.addEventListener(
+          'headlessConnected',
+          async () => {
+            const api = await this.extensionConnectHandler(message);
+            resolve(api);
+          },
+          { once: true }
+        );
+      });
+    }
+    return this.extensionConnectHandler(message);
+  };
+
+  readonly extensionConnectHandler = async (message: {
     [key: string]: string;
   }) => {
     const api = await this.connectToWebWallet(message);
@@ -208,6 +241,7 @@ export class BeamAPI<T> {
         this.BEAM?.client.stopWallet(resolve);
       });
     }
+    this.isWebOnConnect = false;
     this.BEAM = { api };
   };
 
@@ -231,7 +265,7 @@ export class BeamAPI<T> {
 
   readonly callApi = (
     { callID, method, params }: CallApiProps<T>
-  ): Promise<BeamApiRes> => {
+  ): Promise<ResultObject> => {
     const id = [callID, this.callIndex++].join('-');
     const modifiedParams = { ...params } as Modified<T>;
 
@@ -256,7 +290,7 @@ export class BeamAPI<T> {
       return this.callIPC('/beam', 'post', request, id);
     }
 
-    return new Promise<BeamApiRes>(
+    return new Promise<ResultObject>(
       this.callApiHandler(id, method, modifiedParams)
     );
   };
@@ -315,7 +349,7 @@ export class BeamAPI<T> {
     oReq.onload = async function () {
       const blob = oReq.response as Blob;
       const buffer = await blob.arrayBuffer();
-      const result = {} as BeamApiResult;
+      const result = {} as ResultObject;
       result.data = Array.from(new Uint8Array(buffer));
       resolve(
         {
@@ -334,7 +368,7 @@ export class BeamAPI<T> {
     method: IpcMethod,
     body = {},
     callId?:string
-  ):Promise<BeamApiRes> => new Promise((resolve, reject) => {
+  ):Promise<ResultObject> => new Promise((resolve, reject) => {
     const id = callId || [url, this.callIndex++].join('-');
     window.postMessage({
       id,

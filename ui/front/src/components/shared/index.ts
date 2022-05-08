@@ -17,3 +17,4 @@ export * from './notifications';
 export * from './all-repos';
 export * from './manager';
 export * from './search';
+export * from './excretion';

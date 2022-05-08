@@ -1,5 +1,6 @@
 import { equalKeyIndex } from '@libs/utils';
 import { Typography } from 'antd';
+import styles from './excretion.module.scss';
 
 type ExcretionProps = {
   name: string;
@@ -11,7 +12,7 @@ function Excretion({ name, inputText }:ExcretionProps) {
   return (countryIndex !== -1 ? (
     <>
       {name.slice(0, countryIndex)}
-      <Typography.Text mark>
+      <Typography.Text className={styles.selected} mark>
         {name.slice(countryIndex, countryIndex + inputText.length)}
       </Typography.Text>
       {name.slice(countryIndex + inputText.length)}

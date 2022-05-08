@@ -1,4 +1,3 @@
-import Excretion from '@components/shared/excretion';
 import { RepoType } from '@types';
 import {
   Menu, Dropdown, List, message
@@ -8,6 +7,7 @@ import forkImg from '@assets/img/fork.svg';
 import shareImg from '@assets/img/share.svg';
 import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
+import { Excretion } from '@components/shared';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {

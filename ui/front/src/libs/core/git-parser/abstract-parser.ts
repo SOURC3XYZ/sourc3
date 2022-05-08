@@ -1,11 +1,11 @@
-import { RC, RequestCreators } from '@libs/action-creators';
-import { BeamAPI } from '@libs/beam';
+import { RC, RequestSchema } from '@libs/action-creators';
+import { BeamAPI } from '@libs/core';
 import {
-  RepoId, MetaHash, RepoMeta, DataResp, BeamApiResult
+  RepoId, MetaHash, RepoMeta, DataResp, IpfsResult
 } from '@types';
 import { arrayBufferToString, buf2hex, hexParser } from '@libs/utils';
 
-type TypedBeamApi = BeamAPI<RequestCreators['params']>;
+type TypedBeamApi = BeamAPI<RequestSchema['params']>;
 
 type IpfsRequestType = 'commit' | 'tree' | 'blob';
 
@@ -50,7 +50,7 @@ export default abstract class AbstractParser {
     this.pathname = pathname;
   }
 
-  protected readonly call = async <T>(req: RequestCreators):Promise<T> => {
+  protected readonly call = async <T>(req: RequestSchema):Promise<T> => {
     if (
       this.pathname !== window.location.pathname
     ) throw new Error('url has changed');
@@ -80,7 +80,7 @@ export default abstract class AbstractParser {
   protected readonly getIpfsHash = async <T>(
     ipfsHash: string, gitHash: string
   ) => {
-    const { data } = await this.call<BeamApiResult>(RC.getIpfsData(ipfsHash));
+    const { data } = await this.call<IpfsResult>(RC.getIpfsData(ipfsHash));
     if (this.expect === 'blob') {
       return arrayBufferToString(data as number[]) as unknown as T;
     }

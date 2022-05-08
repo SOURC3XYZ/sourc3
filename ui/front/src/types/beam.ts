@@ -64,7 +64,7 @@ export type ContractResult = {
 
 export type ResultObject<T = any> = IPCResult<T>
 | ContractResult
-| ContractResult
+| IpfsResult
 | EventResult
 | TxResult
 | TxInfo[]

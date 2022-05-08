@@ -11,7 +11,9 @@ import {
   FailPage
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useCallback, useLayoutEffect } from 'react';
+import {
+  useCallback, useEffect, useLayoutEffect, useMemo
+} from 'react';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -27,6 +29,10 @@ function Main({
 
   const isOnLending = pathname === '/';
 
+  useEffect(() => {
+    connectApi();
+  }, []);
+
   useLayoutEffect(() => {
     if (isOnLending) {
       document.body.style.backgroundColor = '#000';
@@ -34,7 +40,7 @@ function Main({
     } document.body.style.backgroundColor = '';
   }, [isOnLending]);
 
-  const routes = [
+  const routesData = [
     {
       path: '/',
       element: <Lendos />
@@ -58,17 +64,16 @@ function Main({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const RoutesElement = useCallback(() => (
+  const routes = useMemo(() => (
     <Routes>
       {
-        routes
+        routesData
           .map(({ path, element }) => {
             const route = path === '/'
               ? element
               : (
                 <PreloadComponent
                   isLoaded={isApiConnected}
-                  callback={connectApi}
                   Fallback={Preload}
                 >
                   <ErrorBoundary fallback={fallback}>
@@ -87,7 +92,7 @@ function Main({
     <div className={styles.appWrapper}>
       <Header isOnLending={isOnLending} />
       <div className={styles.main}>
-        <RoutesElement />
+        {routes}
         <Notifications />
       </div>
     </div>

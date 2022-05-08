@@ -1,16 +1,20 @@
 import wasm from '@assets/app.wasm';
-import { BeamAPI, WasmWallet } from '@libs/beam';
+import {
+  BeamAPI,
+  WasmWallet,
+  CommitMapParser,
+  TreeBlobParser,
+  TreeListParser
+} from '@libs/core';
 import { CONTRACT } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import {
-  CommitMapParser, TreeBlobParser, TreeListParser
-} from '@libs/utils';
 import {
   BeamApiRes,
   CallApiProps,
   ContractsResp,
   IPCResult,
   MetaHash,
+  NotificationPlacement,
   PKeyRes,
   PromiseArg,
   RepoId, RepoListType,
@@ -25,6 +29,7 @@ import {
   UpdateProps
 } from '@types';
 import axios from 'axios';
+import { notification } from 'antd';
 import { AC } from './action-creators';
 import batcher from './batcher';
 import { apiEventManager } from './repo-response-handlers';
@@ -50,7 +55,6 @@ const wallet = new WasmWallet();
 
 const messageBeam = {
   type: 'create_sourc3_api',
-  // type: 'create_beam_api',
   apiver: 'current',
   apivermin: '',
   appname: 'SOURC3'
@@ -105,7 +109,14 @@ export const thunks:ThunkObject = {
         if (api.isDapps() || api.isElectron()) {
           const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
           if (pKey) dispatch(AC.setPublicKey(pKey.key));
+        } else {
+          notification.open({
+            message: 'headless wallet connected!',
+            placement: 'bottomRight' as NotificationPlacement,
+            style: { fontWeight: 600 }
+          });
         }
+        api.headlessConnectedEvent();
       } catch (error) { thunkCatch(error, dispatch); }
     },
 

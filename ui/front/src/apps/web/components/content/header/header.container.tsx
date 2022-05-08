@@ -1,38 +1,33 @@
 import {
-  BeamButton, Search
+  AutocompeteSearch,
+  BeamButton
 } from '@components/shared';
-import { AC, thunks } from '@libs/action-creators';
+import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Input } from 'antd';
 import img from '@assets/img/source-header-logo.svg';
-import iconAvatar from '@assets/img/icon-avatar.svg';
-import iconButtonArrowDown from '@assets/img/icon-arrow-button-down.svg';
 import Modal from 'antd/lib/modal/Modal';
 import { useHeader } from '@libs/hooks/container/header';
+import { useMemo } from 'react';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
   pkey:string
-  balance: number,
-  searchText:string,
   isOnLending: boolean,
-  setInputText: (inputText: string) => void;
   connectToExtention: () => void;
   createRepos: (repo_name:string) => void,
 };
 
 function Header({
-  balance, pkey, searchText, isOnLending, setInputText, connectToExtention, createRepos
+  pkey, isOnLending, connectToExtention, createRepos
 }:HeaderPropsType) {
-  const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
+  // const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
   const containerProps = useHeader({
     pkey,
-    searchText,
     isOnLending,
-    setInputText,
     connectToExtention,
     createRepos
   });
@@ -41,27 +36,29 @@ function Header({
     isPkey,
     isModalVisible,
     inputRepoName,
-    setInputTextWrap,
     onConnect,
-    showModal,
     handleOk,
     handleCancel,
     handleChange
   } = containerProps;
 
+  const autoCompleteClassName = isOnLending ? styles.lendosInput : '';
+
+  const headerClassName = isOnLending ? styles.header : styles.headerActive;
+
   const headerElements = (
-    <div key="header1" className={styles.navWrapper}>
+    <div className={styles.navWrapper}>
       <Link to="/">
         <img className={styles.logo} alt="source" src={img} />
       </Link>
-      <ul className={[styles.navList, textColorClass].join(' ')}>
+      <ul className={[styles.navList, styles.textColor].join(' ')}>
         <li>
-          <Link className={textColorClass} to="/repos/all/1">
+          <Link className={styles.textColor} to="/repos/all/1">
             Repositiories
           </Link>
         </li>
         <li>
-          <Link className={textColorClass} to="/repos/all/1">
+          <Link className={styles.textColor} to="/repos/all/1">
             Explore
           </Link>
         </li>
@@ -69,54 +66,24 @@ function Header({
     </div>
   );
 
-  const manageElement = isPkey && (
-    <div key="header2" className={styles.manage}>
-      <ul className={styles.listManage}>
-        <li>
-          <BeamButton callback={showModal}>New</BeamButton>
-        </li>
-        <li>
-          <button
-            type="button"
-            className={styles.balance}
-          >
-            {balance || 0}
-            SC3
-          </button>
-        </li>
-        <li>
-          <div className={styles.profile}>
-            <img src={iconAvatar} alt="avatar" />
-            <span className={textColorClass}>Long John Silver</span>
-            <img src={iconButtonArrowDown} alt="down" />
-          </div>
-
-        </li>
-      </ul>
-    </div>
-  );
-
-  const searchElement = !isPkey && (
-    <div key="header3" className={styles.connect}>
-      <Search
-        className={isOnLending ? styles.lendosInput : ''}
-        text={searchText}
-        placeholder="Search"
-        setInputText={setInputTextWrap}
-      />
+  const searchElement = useMemo(() => (
+    <div className={styles.connect}>
+      {isOnLending && (
+        <AutocompeteSearch
+          className={autoCompleteClassName}
+          placeholder="Search"
+        />
+      )}
       <BeamButton callback={onConnect}>
-        connect
+        {isPkey ? 'wallet' : 'connect' }
       </BeamButton>
     </div>
-  );
+  ), [isOnLending]);
 
   return (
-    <div
-      className={styles.wrapper}
-    >
+    <header className={headerClassName}>
       <div className={styles.nav}>
         {headerElements}
-        {manageElement}
         {searchElement}
       </div>
       <Modal
@@ -132,20 +99,18 @@ function Header({
           onPressEnter={handleOk}
         />
       </Modal>
-    </div>
+    </header>
   );
 }
 
 const mapState = (
-  { app: { pkey, balance }, repos: { searchText } }: RootState
+  { app: { pkey, balance } }: RootState
 ) => ({
-  searchText,
   pkey,
   balance
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
-  setInputText: (text: string) => dispatch(AC.setSearch(text)),
   connectToExtention: () => dispatch(thunks.connectExtension()),
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;
