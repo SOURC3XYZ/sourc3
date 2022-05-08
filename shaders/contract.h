@@ -21,7 +21,7 @@ enum Permissions : uint8_t {
   kAddUser = 0b0010,
   kRemoveUser = 0b0100,
   kPush = 0b1000,
-  kAll = kDeleteRepo | kAddUser | kRemoveUser | kPush,
+  kAllPermissions = kDeleteRepo | kAddUser | kRemoveUser | kPush,
 };
 
 #pragma pack(push, 1)
@@ -292,6 +292,7 @@ struct CreateProject {
   Organization::Id organization_id;
   PubKey creator;
   size_t name_len;
+  char name[];
   // followed by project name
 };
 
@@ -299,6 +300,7 @@ struct CreateOrganization {
   static const uint32_t kMethod = 9;
   PubKey creator;
   size_t name_len;
+  char name[];
   // followed by organization name
 };
 

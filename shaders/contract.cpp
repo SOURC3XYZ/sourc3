@@ -84,7 +84,7 @@ BEAM_EXPORT void Method_2(const method::CreateRepo& params) {  // NOLINT
   Env::Memcpy(repo_info->name, params.repo_name, repo_info->name_length);
 
   RepoUser::Key key_user(params.repo_owner, repo_info->repo_id);
-  Env::SaveVar_T(key_user, UserInfo{.permissions = kAll});
+  Env::SaveVar_T(key_user, UserInfo{.permissions = kAllPermissions});
 
   SaveRepo(repo_info);
 
