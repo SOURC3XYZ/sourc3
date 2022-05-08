@@ -1,13 +1,11 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
-#include "../upgradable2/contract.h"
-#include "../upgradable2/app_common_impl.h"
+#include "contract.h"
+#include "../upgradable3/app_common_impl.h"
 
 namespace Env {
 #include "bvm2_cost.h"
 } // namespace Env
-
-#include "contract.h"
 
 #include <algorithm>
 #include <vector>

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include "Shaders/common.h"
+#include "../upgradable3/contract.h"
 
 namespace GitRemoteBeam
 {
@@ -219,7 +220,7 @@ namespace GitRemoteBeam
 
 	struct CreateRepoParams
 	{
-		static const uint32_t METHOD = 2;
+		static const uint32_t METHOD = 3;
 		PubKey repo_owner;
 		size_t repo_name_length;
 		char repo_name[];
@@ -227,14 +228,14 @@ namespace GitRemoteBeam
 
 	struct DeleteRepoParams
 	{
-		static const uint32_t METHOD = 3;
+		static const uint32_t METHOD = 4;
 		uint64_t repo_id;
 		PubKey user;
 	};
 
 	struct AddUserParams
 	{
-		static const uint32_t METHOD = 4;
+		static const uint32_t METHOD = 5;
 		uint64_t repo_id;
 		PubKey initiator;
 		PubKey user;
@@ -243,7 +244,7 @@ namespace GitRemoteBeam
 
 	struct RemoveUserParams
 	{
-		static const uint32_t METHOD = 5;
+		static const uint32_t METHOD = 6;
 		uint64_t repo_id;
 		PubKey user;
 		PubKey initiator;
@@ -251,7 +252,7 @@ namespace GitRemoteBeam
 
 	struct PushObjectsParams
 	{
-		static const uint32_t METHOD = 6;
+		static const uint32_t METHOD = 7;
 		struct PackedObject
 		{
 			int8_t type;
@@ -267,7 +268,7 @@ namespace GitRemoteBeam
 
 	struct PushRefsParams
 	{
-		static const uint32_t METHOD = 7;
+		static const uint32_t METHOD = 8;
 		uint64_t repo_id;
 		PubKey user;
 		RefsInfo refs_info;

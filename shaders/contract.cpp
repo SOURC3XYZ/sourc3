@@ -60,7 +60,7 @@ BEAM_EXPORT void Dtor(void*)
 	Env::DelVar_T(0);
 }
 
-BEAM_EXPORT void Method_2(const CreateRepoParams& params)
+BEAM_EXPORT void Method_3(const CreateRepoParams& params)
 {
 	auto repo_name_hash = get_name_hash(params.repo_name, params.repo_name_length);
 
@@ -94,7 +94,7 @@ BEAM_EXPORT void Method_2(const CreateRepoParams& params)
 	Env::AddSig(repo_info->owner);
 }
 
-BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
+BEAM_EXPORT void Method_4(const DeleteRepoParams& params)
 {
 	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
@@ -110,7 +110,7 @@ BEAM_EXPORT void Method_3(const DeleteRepoParams& params)
 	}
 }
 
-BEAM_EXPORT void Method_4(const AddUserParams& params)
+BEAM_EXPORT void Method_5(const AddUserParams& params)
 {
 	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
@@ -122,7 +122,7 @@ BEAM_EXPORT void Method_4(const AddUserParams& params)
 	Env::AddSig(params.initiator);
 }
 
-BEAM_EXPORT void Method_5(const RemoveUserParams& params)
+BEAM_EXPORT void Method_6(const RemoveUserParams& params)
 {
 	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 	
@@ -137,7 +137,7 @@ BEAM_EXPORT void Method_5(const RemoveUserParams& params)
 	Env::AddSig(params.initiator);
 }
 
-BEAM_EXPORT void Method_6(const PushObjectsParams& params)
+BEAM_EXPORT void Method_7(const PushObjectsParams& params)
 {
 	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
@@ -166,7 +166,7 @@ BEAM_EXPORT void Method_6(const PushObjectsParams& params)
 	Env::AddSig(params.user);
 }
 
-BEAM_EXPORT void Method_7(const PushRefsParams& params)
+BEAM_EXPORT void Method_8(const PushRefsParams& params)
 {
 	std::unique_ptr<RepoInfo> repo_info = load_repo(params.repo_id);
 
