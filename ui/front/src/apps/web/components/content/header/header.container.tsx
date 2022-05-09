@@ -1,6 +1,6 @@
 import {
   AutocompeteSearch,
-  BeamButton
+  ConnectBtn
 } from '@components/shared';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
@@ -11,12 +11,16 @@ import img from '@assets/img/source-header-logo.svg';
 import Modal from 'antd/lib/modal/Modal';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
+import { PromiseArg } from '@types';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
   pkey:string
   isOnLending: boolean,
-  connectToExtention: () => void;
+  connectToExtention: (
+    resolve: PromiseArg<void>,
+    reject?: PromiseArg<Error>
+  ) => void;
   createRepos: (repo_name:string) => void,
 };
 
@@ -74,11 +78,9 @@ function Header({
           placeholder="Search"
         />
       )}
-      <BeamButton callback={onConnect}>
-        {isPkey ? 'wallet' : 'connect' }
-      </BeamButton>
+      <ConnectBtn isLogined={isPkey} onConnect={onConnect} />
     </div>
-  ), [isOnLending]);
+  ), [isOnLending, isPkey]);
 
   return (
     <header className={headerClassName}>
@@ -111,7 +113,10 @@ const mapState = (
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
-  connectToExtention: () => dispatch(thunks.connectExtension()),
+  connectToExtention: (
+    resolve: PromiseArg<void>,
+    reject?: PromiseArg<Error>
+  ) => dispatch(thunks.connectExtension(resolve, reject)),
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;
     dispatch(thunks.createRepos(repo_name));

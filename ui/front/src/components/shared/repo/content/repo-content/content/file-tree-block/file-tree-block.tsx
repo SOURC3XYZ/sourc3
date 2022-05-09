@@ -4,11 +4,13 @@ import {
   DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
 import { List } from 'antd';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
 import { useAsyncError } from '@libs/hooks/shared';
+import { PreloadComponent } from '@components/hoc';
+import { LoadingMessages } from '@libs/constants';
 import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
@@ -63,23 +65,31 @@ function FileTreeBlock({
     updateTree({ ...props, id }, setError);
   };
 
+  const TreeListPreloadFallback = useCallback(() => (
+    <Preload
+      message={LoadingMessages.TREE}
+      className={styles.preload}
+    />
+  ), []);
+
   const treeList = tree && getTree(
     tree,
     pathArray,
     updateTreeDecor
   );
   return (
-    treeList
-      ? (
-        <List
-          className={styles.tree}
-          bordered
-          size="small"
-          dataSource={treeList}
-          renderItem={(item) => leafCreator(pathname, item)}
-        />
-      ) : <Preload />
-
+    <PreloadComponent
+      isLoaded={!!treeList}
+      Fallback={TreeListPreloadFallback}
+    >
+      <List
+        className={styles.tree}
+        bordered
+        size="small"
+        dataSource={treeList || undefined}
+        renderItem={(item) => leafCreator(pathname, item)}
+      />
+    </PreloadComponent>
   );
 }
 

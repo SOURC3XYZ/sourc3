@@ -1,10 +1,11 @@
 import { useObjectState } from '@libs/hooks/shared';
+import { PromiseArg } from '@types';
 import { ChangeEvent } from 'react';
 
 type UseHeaderProps = {
   pkey:string;
   isOnLending: boolean;
-  connectToExtention: () => void;
+  connectToExtention: (resolve: PromiseArg<void>, reject?: PromiseArg<Error>) => void;
   createRepos: (repo_name:string) => void;
 };
 
@@ -24,7 +25,7 @@ const useHeader = ({
   const [state, setState] = useObjectState<typeof initialState>(initialState);
   const { isModalVisible, inputRepoName } = state;
 
-  const onConnect = () => connectToExtention();
+  const onConnect = connectToExtention;
 
   const showModal = () => setState({ isModalVisible: true });
 

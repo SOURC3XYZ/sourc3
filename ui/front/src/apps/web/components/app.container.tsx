@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { AC, thunks } from '@libs/action-creators';
 import {
-  Manager,
   Notifications,
   AllRepos,
   Preload,
@@ -12,8 +11,10 @@ import {
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import {
-  useCallback, useEffect, useLayoutEffect, useMemo
+  useCallback, useLayoutEffect, useMemo
 } from 'react';
+import { Footer } from 'antd/lib/layout/layout';
+import { LoadingMessages } from '@libs/constants';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -29,9 +30,7 @@ function Main({
 
   const isOnLending = pathname === '/';
 
-  useEffect(() => {
-    connectApi();
-  }, []);
+  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
 
   useLayoutEffect(() => {
     if (isOnLending) {
@@ -52,10 +51,6 @@ function Main({
     {
       path: 'repo/:repoParams/*',
       element: <Repo />
-    },
-    {
-      path: 'manager',
-      element: <Manager />
     }
   ];
 
@@ -64,38 +59,46 @@ function Main({
     return <FailPage {...updatedProps} isBtn />;
   };
 
+  const HeadlessPreloadFallback = useCallback(() => (
+    <Preload
+      isOnLendos={isOnLending}
+      message={LoadingMessages.HEADLESS}
+    />
+  ), []);
+
   const routes = useMemo(() => (
     <Routes>
       {
         routesData
-          .map(({ path, element }) => {
-            const route = path === '/'
-              ? element
-              : (
-                <PreloadComponent
-                  isLoaded={isApiConnected}
-                  Fallback={Preload}
-                >
-                  <ErrorBoundary fallback={fallback}>
-                    {element}
-                  </ErrorBoundary>
-                </PreloadComponent>
-              );
-            return <Route key={`route-${path}`} path={path} element={route} />;
-          })
+          .map(({ path, element }) => <Route key={`route-${path}`} path={path} element={element} />)
       }
 
     </Routes>
   ), [isApiConnected]);
 
   return (
-    <div className={styles.appWrapper}>
-      <Header isOnLending={isOnLending} />
-      <div className={styles.main}>
-        {routes}
-        <Notifications />
-      </div>
-    </div>
+    <PreloadComponent
+      Fallback={HeadlessPreloadFallback}
+      callback={connectApi}
+      isLoaded={isApiConnected}
+    >
+      <ErrorBoundary fallback={fallback}>
+        <>
+          <div className={styles.appWrapper}>
+            <Header isOnLending={isOnLending} />
+            <div className={styles.main}>
+              {routes}
+              <Notifications />
+            </div>
+          </div>
+          <Footer className={footerClassname}>
+            © 2022 by SOURC3
+          </Footer>
+        </>
+      </ErrorBoundary>
+
+    </PreloadComponent>
+
   );
 }
 

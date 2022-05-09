@@ -1,13 +1,16 @@
+import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared';
 import { useAsyncError } from '@libs/hooks/shared';
 import { getTree } from '@libs/utils';
 import {
   DataNode, ErrorHandler, IDataNodeCustom, MetaHash, RepoId, UpdateProps
 } from '@types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { LoadingMessages } from '@libs/constants';
 import { syntax } from './syntax';
+import styles from './file-text.module.scss';
 
 syntax.forEach((el) => SyntaxHighlighter.registerLanguage(el.ext, el.data));
 
@@ -51,20 +54,27 @@ function FileText({
 
   useEffect(fileChecker, [tree, filesMap]);
 
-  return (
-    text === null
-      ? <Preload />
-      : (
-        <SyntaxHighlighter
-          language={ext}
-          wrapLongLine
-          showLineNumbers
-          style={vs}
-        >
-          {text}
-        </SyntaxHighlighter>
-      )
+  const FilePreloadFallback = useCallback(() => (
+    <Preload
+      className={styles.preload}
+      message={LoadingMessages.FILE}
+    />
+  ), []);
 
+  return (
+    <PreloadComponent
+      isLoaded={text !== null}
+      Fallback={FilePreloadFallback}
+    >
+      <SyntaxHighlighter
+        language={ext}
+        wrapLongLine
+        showLineNumbers
+        style={vs}
+      >
+        {text}
+      </SyntaxHighlighter>
+    </PreloadComponent>
   );
 }
 

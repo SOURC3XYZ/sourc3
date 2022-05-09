@@ -7,8 +7,10 @@ import { batch, connect } from 'react-redux';
 import { FailPage, Preload } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import { useUserRepos } from '@libs/hooks/container/user-repos';
+import { useCallback } from 'react';
+import { LoadingMessages } from '@libs/constants';
 import { RepoContent } from './content';
-import styles from './repo.module.css';
+import styles from './repo.module.scss';
 
 type RepoProps = {
   currentId: RepoId | null;
@@ -49,6 +51,13 @@ function UserRepos({
     return <FailPage {...updatedProps} isBtn />;
   };
 
+  const RefsPreloadFallback = useCallback(() => (
+    <Preload
+      className={styles.preload}
+      message={LoadingMessages.COMMITS}
+    />
+  ), []);
+
   const props = {
     ...talonProps,
     repoMap: repoMap as NonNullable<typeof repoMap>,
@@ -65,7 +74,7 @@ function UserRepos({
         <PreloadComponent
           isLoaded={isLoaded}
           callback={loadingHandler}
-          Fallback={Preload}
+          Fallback={RefsPreloadFallback}
         >
           <RepoContent {...props} />
         </PreloadComponent>

@@ -1,6 +1,7 @@
-import { Button, Result } from 'antd';
+import { Result } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BeamButton } from '@components/shared';
 
 type FailPageProps = {
   subTitle: string;
@@ -27,7 +28,7 @@ function FailPage({
       title={title}
       subTitle={subTitle}
       extra={
-        !!isBtn && <Button onClick={back} type="primary">Back Home</Button>
+        !!isBtn && <BeamButton callback={back}>Back Home</BeamButton>
       }
     />
   );

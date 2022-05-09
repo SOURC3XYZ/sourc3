@@ -4,11 +4,15 @@ import style from './beam-btn.module.scss';
 type BeamButtonProps = {
   callback: () => void;
   children: ReactNode;
+  classes?: string;
 };
 
-const BeamButton = ({ children, callback }:BeamButtonProps) => (
-  <button className={style.button} type="button" onClick={callback}>
-    {children}
-  </button>
-);
+function BeamButton({ children, classes = '', callback }:BeamButtonProps) {
+  const className = [classes, style.button].join(' ');
+  return (
+    <button className={className} type="button" onClick={callback}>
+      {children}
+    </button>
+  );
+}
 export default BeamButton;

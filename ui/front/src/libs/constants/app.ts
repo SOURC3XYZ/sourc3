@@ -49,3 +49,10 @@ export enum Routes {
   AUTH = 'auth',
   MAIN = 'main'
 }
+
+export enum LoadingMessages {
+  COMMITS = 'Building commit tree...',
+  TREE = 'Loading file tree...',
+  FILE = 'Loading file...',
+  HEADLESS = 'Connecting headless wallet...'
+}

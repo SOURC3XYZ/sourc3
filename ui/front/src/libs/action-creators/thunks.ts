@@ -71,7 +71,7 @@ async function getOutput<T>(
 }
 
 export const thunks:ThunkObject = {
-  connectExtension: () => async (dispatch) => {
+  connectExtension: (resolve, reject) => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);
       if (!api.isHeadless()) {
@@ -88,14 +88,18 @@ export const thunks:ThunkObject = {
       await callApi(RC.subUnsub()); // subscribe to api events
       const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
       if (pKey) dispatch(AC.setPublicKey(pKey.key));
-    } catch (error) { thunkCatch(error, dispatch); }
+      resolve();
+    } catch (error) {
+      reject(error);
+      thunkCatch(error, dispatch);
+    }
   },
 
   connectBeamApi:
-    (apiHost?:string) => async (dispatch) => {
+    () => async (dispatch) => {
       try {
         if (api.isApiLoaded()) return;
-        await loadAPI(apiHost);
+        await loadAPI();
         await initContract(wasm);
         api.loadApiEventManager(apiEventManager(dispatch));
         const action = RC.viewContracts();
@@ -115,8 +119,8 @@ export const thunks:ThunkObject = {
             placement: 'bottomRight' as NotificationPlacement,
             style: { fontWeight: 600 }
           });
+          api.headlessConnectedEvent();
         }
-        api.headlessConnectedEvent();
       } catch (error) { thunkCatch(error, dispatch); }
     },
 

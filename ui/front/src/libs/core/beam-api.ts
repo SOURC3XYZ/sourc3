@@ -221,6 +221,7 @@ export class BeamAPI<T> {
         document.addEventListener(
           'headlessConnected',
           async () => {
+            debugger;
             const api = await this.extensionConnectHandler(message);
             resolve(api);
           },
