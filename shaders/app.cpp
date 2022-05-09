@@ -164,6 +164,80 @@ void OnActionCreateProject(const ContractID& cid) {
                       /*nCharge=*/10000000);
 }
 
+void OnActionListProjects(const ContractID& cid) {
+  using git_remote_beam::Project;
+  using ProjectKey = Env::Key_T<Project::Key>;
+
+  ProjectKey start, end;
+  start.m_Prefix.m_Cid = cid;
+  start.m_KeyInContract.id = 0;
+  end = start;
+  end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+
+  ProjectKey key;
+  Env::DocArray projects("projects");
+  uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+  for (Env::VarReader reader(start, end);
+       reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+    auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+    reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+    auto* value = reinterpret_cast<Project*>(buf.get());
+    Env::DocGroup project_object("");
+    Env::DocAddNum("project_tag", (uint32_t) key.m_KeyInContract.tag);
+    Env::DocAddNum("project_id", key.m_KeyInContract.id);
+    Env::DocAddNum("organization_id", value->organization_id);
+    Env::DocAddText("project_name", value->name);
+    Env::DocAddBlob_T("project_creator", value->creator);
+    value_len = 0;
+  }
+}
+
+void OnActionListProjectMembers(const ContractID& cid) {
+  using git_remote_beam::ProjectMember;
+  using MemberKey = Env::Key_T<ProjectMember::Key>;
+
+  MemberKey start, end;
+  start.m_Prefix.m_Cid = cid;
+  if (!Env::DocGet("project_id", start.m_KeyInContract.project_id)) {
+    return OnError("no 'project_id'");
+  }
+  _POD_(start.m_KeyInContract.member_id).SetZero();
+  end = start;
+  _POD_(end.m_KeyInContract.member_id).SetObject(0xFF);
+
+  MemberKey key;
+  Env::DocArray projects("members");
+  ProjectMember member;
+  for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
+    Env::DocGroup member_object("");
+    Env::DocAddBlob_T("member", key.m_KeyInContract.member_id);
+    Env::DocAddNum("permissions", (uint32_t) member.permissions);
+  }
+}
+
+void OnActionListProjectRepos(const ContractID& cid) {
+  using git_remote_beam::RepoInfo;
+  using git_remote_beam::ProjectRepo;
+  using Key = Env::Key_T<ProjectRepo::Key>;
+
+  Key start, end;
+  start.m_Prefix.m_Cid = cid;
+  if (!Env::DocGet("project_id", start.m_KeyInContract.project_id)) {
+    return OnError("no 'project_id'");
+  }
+  start.m_KeyInContract.repo_id = 0;
+  end = start;
+  end.m_KeyInContract.repo_id = std::numeric_limits<RepoInfo::Id>::max();
+
+  Key key;
+  Env::DocArray projects("repos");
+  uint32_t value;
+  for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+    Env::DocGroup repo_object("");
+    Env::DocAddBlob_T("repo_id", key.m_KeyInContract.repo_id);
+  }
+}
+
 void OnActionCreateOrganization(const ContractID& cid) {
   using git_remote_beam::Organization;
   using git_remote_beam::method::CreateOrganization;
@@ -197,10 +271,96 @@ void OnActionCreateOrganization(const ContractID& cid) {
                       /*nCharge=*/10000000);
 }
 
+void OnActionListOrganizations(const ContractID& cid) {
+  using git_remote_beam::Organization;
+  using OrganizationKey = Env::Key_T<Organization::Key>;
+
+  OrganizationKey start, end;
+  start.m_Prefix.m_Cid = cid;
+  start.m_KeyInContract.id = 0;
+  end = start;
+  end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+
+  OrganizationKey key;
+  Env::DocArray organizations("organizations");
+  uint32_t value_len = 0, key_len = sizeof(OrganizationKey);
+  for (Env::VarReader reader(start, end);
+       reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+    auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+    reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+    auto* value = reinterpret_cast<Organization*>(buf.get());
+    Env::DocGroup org_object("");
+    Env::DocAddNum("organization_tag", (uint32_t) key.m_KeyInContract.tag);
+    Env::DocAddNum("organization_id", key.m_KeyInContract.id);
+    Env::DocAddText("organization_name", value->name);
+    Env::DocAddBlob_T("organization_creator", value->creator);
+    value_len = 0;
+  }
+}
+
+void OnActionListOrganizationProjects(const ContractID& cid) {
+  using git_remote_beam::Project;
+  using git_remote_beam::Organization;
+  using ProjectKey = Env::Key_T<Project::Key>;
+
+  ProjectKey start, end;
+  start.m_Prefix.m_Cid = cid;
+  start.m_KeyInContract.id = 0;
+  end = start;
+  end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+
+  Organization::Id org_id;
+  if (!Env::DocGet("organization_id", org_id)) {
+    return OnError("no 'organization_id'");
+  }
+
+  ProjectKey key;
+  Env::DocArray projects("projects");
+  uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+  for (Env::VarReader reader(start, end);
+       reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+    auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+    reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+    auto* value = reinterpret_cast<Project*>(buf.get());
+    if (value->organization_id == org_id) {
+      Env::DocGroup project_object("");
+      Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
+      Env::DocAddNum("project_id", key.m_KeyInContract.id);
+      Env::DocAddNum("organization_id", value->organization_id);
+      Env::DocAddText("project_name", value->name);
+      Env::DocAddBlob_T("project_creator", value->creator);
+    }
+    value_len = 0;
+  }
+}
+
+void OnActionListOrganizationMembers(const ContractID& cid) {
+  using git_remote_beam::OrganizationMember;
+  using MemberKey = Env::Key_T<OrganizationMember::Key>;
+
+  MemberKey start, end;
+  start.m_Prefix.m_Cid = cid;
+  if (!Env::DocGet("organization_id", start.m_KeyInContract.organization_id)) {
+    return OnError("no 'organization_id'");
+  }
+  _POD_(start.m_KeyInContract.member_id).SetZero();
+  end = start;
+  _POD_(end.m_KeyInContract.member_id).SetObject(0xFF);
+
+  MemberKey key;
+  Env::DocArray members("members");
+  OrganizationMember member;
+  for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
+    Env::DocGroup member_object("");
+    Env::DocAddBlob_T("member", key.m_KeyInContract.member_id);
+    Env::DocAddNum("permissions", (uint32_t) member.permissions);
+  }
+}
+
 void OnActionSetProjectRepo(const ContractID& cid) {
-  using git_remote_beam::method::SetProjectRepo;
   using git_remote_beam::Project;
   using git_remote_beam::RepoInfo;
+  using git_remote_beam::method::SetProjectRepo;
 
   SetProjectRepo request{};
   if (!Env::DocGet("repo_id", request.repo_id)) {
@@ -234,9 +394,9 @@ void OnActionSetProjectRepo(const ContractID& cid) {
 }
 
 void OnActionSetOrganizationProject(const ContractID& cid) {
-  using git_remote_beam::method::SetOrganizationProject;
-  using git_remote_beam::Project;
   using git_remote_beam::Organization;
+  using git_remote_beam::Project;
+  using git_remote_beam::method::SetOrganizationProject;
 
   SetOrganizationProject request{};
   if (!Env::DocGet("project_id", request.project_id)) {
@@ -271,9 +431,9 @@ void OnActionSetOrganizationProject(const ContractID& cid) {
 }
 
 void OnActionSetProjectMember(const ContractID& cid) {
-  using git_remote_beam::method::SetProjectMember;
-  using git_remote_beam::ProjectMember;
   using git_remote_beam::Project;
+  using git_remote_beam::ProjectMember;
+  using git_remote_beam::method::SetProjectMember;
 
   SetProjectMember request{};
   if (!Env::DocGet("project_id", request.project_id)) {
@@ -316,9 +476,9 @@ void OnActionSetProjectMember(const ContractID& cid) {
 }
 
 void OnActionSetOrganizationMember(const ContractID& cid) {
-  using git_remote_beam::method::SetOrganizationMember;
-  using git_remote_beam::OrganizationMember;
   using git_remote_beam::Organization;
+  using git_remote_beam::OrganizationMember;
+  using git_remote_beam::method::SetOrganizationMember;
 
   SetOrganizationMember request{};
   if (!Env::DocGet("organization_id", request.organization_id)) {
@@ -1024,6 +1184,8 @@ BEAM_EXPORT void Method_1() {  // NOLINT
   Env::DocGroup root("");
   ActionsMap valid_user_actions = {
       {"create_repo", OnActionCreateRepo},
+      {"create_project", OnActionCreateProject},
+      {"create_organization", OnActionCreateOrganization},
       {"my_repos", OnActionMyRepos},
       {"all_repos", OnActionAllRepos},
       {"delete_repo", OnActionDeleteRepo},
@@ -1040,7 +1202,17 @@ BEAM_EXPORT void Method_1() {  // NOLINT
       {"repo_get_tree", OnActionGetTree},
       {"repo_get_tree_from_data", OnActionGetTreeFromData},
       {"list_commits", OnActionGetCommits},
-      {"list_trees", OnActionGetTrees}};
+      {"list_trees", OnActionGetTrees},
+      {"list_projects", OnActionListProjects},
+      {"list_project_repos", OnActionListProjectRepos},
+      {"list_project_members", OnActionListProjectMembers},
+      {"list_organizations", OnActionListOrganizations},
+      {"list_organization_projects", OnActionListOrganizationProjects},
+      {"list_organization_members", OnActionListOrganizationMembers},
+      {"set_project_repo", OnActionSetProjectRepo},
+      {"set_organization_project", OnActionSetOrganizationProject},
+      {"set_project_member", OnActionSetProjectMember},
+      {"set_organization_member", OnActionSetOrganizationMember}};
 
   ActionsMap valid_manager_actions = {
       {"create_contract", OnActionCreateContract},

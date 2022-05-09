@@ -179,6 +179,7 @@ struct Organization {
   };
   PubKey creator;
   size_t name_len;
+  char name[];
   //name of variable length
   static const size_t kMaxNameLen = 256;
 };
@@ -202,6 +203,7 @@ struct Project {
   Organization::Id organization_id;
   PubKey creator;
   size_t name_len;
+  char name[];
   // name of variable length
   static const size_t kMaxNameLen = 256;
 };
