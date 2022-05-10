@@ -6,8 +6,6 @@ add_executable(app app.cpp)
 target_link_libraries(contract PRIVATE Beam::shader-lib)
 target_link_libraries(app PRIVATE Beam::shader-lib)
 
-#set_target_properties(app PROPERTIES CXX_CLANG_TIDY "clang-tidy;--fix-errors")
-
 generate_sid(contract)
 add_dependencies(app contract_header)
 copy_shader(contract)

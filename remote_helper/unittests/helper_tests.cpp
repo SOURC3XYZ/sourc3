@@ -33,16 +33,16 @@ void GenerateTestRepo(std::string_view root) {
         BOOST_TEST_CHECK(
             git_index_add_all(*index, &paths, 0, nullptr, nullptr) >= 0);
         BOOST_TEST_CHECK(git_index_write(*index) >= 0);
-        git_oid treeID;
+        git_oid tree_id;
         Tree tree;
-        BOOST_TEST_CHECK(git_index_write_tree(&treeID, *index) >= 0);
-        BOOST_TEST_CHECK(git_tree_lookup(tree.Addr(), *repo, &treeID) >= 0);
+        BOOST_TEST_CHECK(git_index_write_tree(&tree_id, *index) >= 0);
+        BOOST_TEST_CHECK(git_tree_lookup(tree.Addr(), *repo, &tree_id) >= 0);
 
-        git_oid commitID;
-        BOOST_TEST_CHECK(git_commit_create_v(&commitID, *repo, "HEAD", *sig,
+        git_oid commit_id;
+        BOOST_TEST_CHECK(git_commit_create_v(&commit_id, *repo, "HEAD", *sig,
                                              *sig, nullptr, comment, *tree,
                                              commit ? 1 : 0, *commit) >= 0);
-        BOOST_TEST_CHECK(git_commit_lookup(commit.Addr(), *repo, &commitID) >=
+        BOOST_TEST_CHECK(git_commit_lookup(commit.Addr(), *repo, &commit_id) >=
                          0);
     };
     f("*.cpp", "Initial");

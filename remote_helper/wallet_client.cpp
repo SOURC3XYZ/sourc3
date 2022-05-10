@@ -79,8 +79,9 @@ std::string SimpleWalletClient::SubUnsubEvents(bool sub) {
 }
 
 void SimpleWalletClient::EnsureConnected() {
-    if (connected_)
+    if (connected_) {
         return;
+    }
 
     auto const results = resolver_.resolve(options_.apiHost, options_.apiPort);
 

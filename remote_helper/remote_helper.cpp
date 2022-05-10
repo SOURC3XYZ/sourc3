@@ -585,7 +585,7 @@ int main(int argc, char* argv[]) {
             "Use IPFS to store large blobs");
         po::variables_map vm;
 #ifdef WIN32
-        const auto* homeDir = std::getenv("USERPROFILE");
+        const auto* home_dir = std::getenv("USERPROFILE");
 #else
         const auto* home_dir = std::getenv("HOME");
 #endif
