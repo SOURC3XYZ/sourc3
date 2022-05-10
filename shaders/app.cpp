@@ -1084,6 +1084,16 @@ BEAM_EXPORT void Method_0() {  // NOLINT
         Env::DocAddText("repo_name", "Name of repo");
       }
       {
+        Env::DocGroup gr_method("create_project");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("repo_name", "Name of repo");
+      }
+      {
+        Env::DocGroup gr_method("create_organization");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("repo_name", "Name of repo");
+      }
+      {
         Env::DocGroup gr_method("my_repos");
         Env::DocAddText("cid", "ContractID");
       }
@@ -1175,6 +1185,64 @@ BEAM_EXPORT void Method_0() {  // NOLINT
         Env::DocGroup gr_method("list_trees");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_id", "Repo ID");
+      }
+      {
+        Env::DocGroup gr_method("list_projects");
+        Env::DocAddText("cid", "ContractID");
+      }
+      {
+        Env::DocGroup gr_method("list_project_repos");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("project_id", "Project ID");
+      }
+      {
+        Env::DocGroup gr_method("list_project_members");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("project_id", "Project ID");
+      }
+      {
+        Env::DocGroup gr_method("list_organizations");
+        Env::DocAddText("cid", "ContractID");
+      }
+      {
+        Env::DocGroup gr_method("list_organization_projects");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("organization_id", "Organization ID");
+      }
+      {
+        Env::DocGroup gr_method("list_organization_members");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("organization_id", "Organization ID");
+      }
+      {
+        Env::DocGroup gr_method("set_project_repo");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("project_id", "Project ID");
+        Env::DocAddText("repo_id", "Repo ID");
+        Env::DocAddText("action", "Action: 0 - add, 1 - remove");
+      }
+      {
+        Env::DocGroup gr_method("set_organization_project");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("organization_id", "Organization ID");
+        Env::DocAddText("project_id", "Project ID");
+        Env::DocAddText("action", "Action: 0 - add, 1 - remove");
+      }
+      {
+        Env::DocGroup gr_method("set_project_member");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("project_id", "Project ID");
+        Env::DocAddText("member", "Member");
+        Env::DocAddText("permissions", "Permissions");
+        Env::DocAddText("action", "Action: 0 - add, 1 - modify, 2 - remove");
+      }
+      {
+        Env::DocGroup gr_method("set_organization_member");
+        Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("organization_id", "Organization ID");
+        Env::DocAddText("member", "Member");
+        Env::DocAddText("permissions", "Permissions");
+        Env::DocAddText("action", "Action: 0 - add, 1 - modify, 2 - remove");
       }
     }
   }
