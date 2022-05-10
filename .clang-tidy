@@ -1,8 +1,8 @@
 ---
 
-Checks: '-*,cppcoreguidelines-avoid-goto,cppcoreguidelines-pro-type-const-cast, google-runtime-int, modernize-use-nullptr, readability-braces-around-statements, readability-container-size-empty, readability-redundant-control-flow, readability-identifier-naming, readability-simplify-boolean-expr, google-build-using-namespace, readability-implicit-bool-conversion, google-explicit-constructor'
+Checks: '-*,cppcoreguidelines-avoid-goto,cppcoreguidelines-pro-type-const-cast, google-runtime-int, modernize-use-nullptr, readability-braces-around-statements, readability-container-size-empty, readability-redundant-control-flow, readability-identifier-naming, readability-simplify-boolean-expr, readability-implicit-bool-conversion, google-explicit-constructor'
 
-HeaderFilterRegex: '\.h$'
+HeaderFilterRegex: '^(?!try-to-add-libgit2).*\.h$'
 
 WarningsAsErrors: '*'
 

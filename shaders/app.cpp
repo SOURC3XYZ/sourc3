@@ -90,30 +90,30 @@ git_remote_beam::Hash256 GetNameHash(const char* name, size_t len) {
 
 class UserKey {
 public:
-    UserKey(const ContractID& cid) : m_cid{cid} {
-        Env::DocGetNum32("pid", &m_profile_index);
+    explicit UserKey(const ContractID& cid) : cid_{cid} {
+        Env::DocGetNum32("pid", &profile_index_);
     }
 
-    void get(PubKey& key) {
-        if (m_profile_index == 0) {
-            Env::DerivePk(key, &m_cid, sizeof(m_cid));
+    void Get(PubKey& key) {
+        if (profile_index_ == 0) {
+            Env::DerivePk(key, &cid_, sizeof(cid_));
         } else {
             Env::DerivePk(key, this, sizeof(UserKey));
         }
     }
 
-    void fill_sig_request(SigRequest& sig) {
-        sig.m_pID = &m_cid;
-        if (m_profile_index == 0) {
-            sig.m_nID = sizeof(m_cid);
+    void FillSigRequest(SigRequest& sig) {
+        sig.m_pID = &cid_;
+        if (profile_index_ == 0) {
+            sig.m_nID = sizeof(cid_);
         } else {
             sig.m_nID = sizeof(UserKey);
         }
     }
 
 private:
-    ContractID m_cid;
-    uint32_t m_profile_index = 0;
+    ContractID cid_;
+    uint32_t profile_index_ = 0;
 };
 #pragma pack(pop)
 
@@ -131,7 +131,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateRepo*>(buf.get());
     UserKey user_key(cid);
-    user_key.get(request->repo_owner);
+    user_key.Get(request->repo_owner);
     request->repo_name_length = name_len;
     Env::Memcpy(/*pDst=*/request->repo_name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
@@ -179,7 +179,7 @@ void OnActionCreateProject(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateProject*>(buf.get());
     UserKey user_key(cid);
-    user_key.get(request->creator);
+    user_key.Get(request->creator);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
     auto hash = GetNameHash(request->name, request->name_len);
@@ -287,7 +287,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateOrganization*>(buf.get());
     UserKey user_key(cid);
-    user_key.get(request->creator);
+    user_key.Get(request->creator);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
     auto hash = GetNameHash(request->name, request->name_len);
@@ -413,10 +413,10 @@ void OnActionSetProjectRepo(const ContractID& cid) {
 
     request.request = static_cast<SetProjectRepo::Request>(action);
     UserKey user_key(cid);
-    user_key.get(request.caller);
+    user_key.Get(request.caller);
 
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/SetProjectRepo::kMethod,
@@ -450,10 +450,10 @@ void OnActionSetOrganizationProject(const ContractID& cid) {
 
     request.request = static_cast<SetOrganizationProject::Request>(action);
     UserKey user_key(cid);
-    user_key.get(request.caller);
+    user_key.Get(request.caller);
 
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/SetOrganizationProject::kMethod,
@@ -495,10 +495,10 @@ void OnActionSetProjectMember(const ContractID& cid) {
     request.request = static_cast<SetProjectMember::Request>(action);
     request.permissions = permissions;
     UserKey user_key(cid);
-    user_key.get(request.caller);
+    user_key.Get(request.caller);
 
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/SetProjectMember::kMethod,
@@ -540,10 +540,10 @@ void OnActionSetOrganizationMember(const ContractID& cid) {
     request.request = static_cast<SetOrganizationMember::Request>(action);
     request.permissions = permissions;
     UserKey user_key(cid);
-    user_key.get(request.caller);
+    user_key.Get(request.caller);
 
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/SetOrganizationMember::kMethod,
@@ -568,7 +568,7 @@ void OnActionMyRepos(const ContractID& cid) {
     RepoKey key;
     PubKey my_key;
     UserKey user_key(cid);
-    user_key.get(my_key);
+    user_key.Get(my_key);
     Env::DocArray repos("repos");
     uint32_t value_len = 0, key_len = sizeof(RepoKey);
     for (Env::VarReader reader(start, end);
@@ -596,7 +596,7 @@ void OnActionAllRepos(const ContractID& cid) {
     RepoKey key;
     PubKey my_key;
     UserKey user_key(cid);
-    user_key.get(my_key);
+    user_key.Get(my_key);
     Env::DocArray repos("repos");
     uint32_t value_len = 0, key_len = sizeof(RepoKey);
     for (Env::VarReader reader(start, end);
@@ -622,7 +622,7 @@ void OnActionDeleteRepo(const ContractID& cid) {
     DeleteRepo request;
     request.repo_id = repo_id;
     UserKey user_key(cid);
-    user_key.get(request.user);
+    user_key.Get(request.user);
 
     SigRequest sig;
     sig.m_pID = &cid;
@@ -658,7 +658,7 @@ void OnActionAddUserParams(const ContractID& cid) {
 
     UserKey user_key(cid);
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/AddUser::kMethod,
@@ -680,7 +680,7 @@ void OnActionRemoveUserParams(const ContractID& cid) {
 
     UserKey user_key(cid);
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveUser::kMethod,
@@ -717,7 +717,7 @@ void OnActionPushObjects(const ContractID& cid) {
 
     UserKey user_key(cid);
     SigRequest sig;
-    user_key.fill_sig_request(sig);
+    user_key.FillSigRequest(sig);
 
     char ref_name[GitRef::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("ref", ref_name, _countof(ref_name));
@@ -748,7 +748,7 @@ void OnActionPushObjects(const ContractID& cid) {
             Env::DocAddText("name", ref->name);
         }
 
-        user_key.get(refs_params->user);
+        user_key.Get(refs_params->user);
         Env::GenerateKernel(/*pCid=*/&cid,
                             /*iMethod=*/PushRefs::kMethod,
                             /*pArgs=*/refs_params,
@@ -782,7 +782,7 @@ void OnActionPushObjects(const ContractID& cid) {
         }
     }
 
-    user_key.get(params->user);
+    user_key.Get(params->user);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/PushObjects::kMethod,
                         /*pArgs=*/params,
@@ -830,7 +830,7 @@ void OnActionListRefs(const ContractID& cid) {
 void OnActionUserGetKey(const ContractID& cid) {
     UserKey user_key(cid);
     PubKey pk;
-    user_key.get(pk);
+    user_key.Get(pk);
     Env::DocAddBlob_T("key", pk);
 }
 
