@@ -19,75 +19,76 @@ namespace net = boost::asio;     // from <boost/asio.hpp>
 using tcp = net::ip::tcp;        // from <boost/asio/ip/tcp.hpp>
 
 class SimpleWalletClient {
- public:
-  struct Options {
-    std::string apiHost;
-    std::string apiPort;
-    std::string apiTarget;
-    std::string appPath;
-    std::string repoOwner;
-    std::string repoName;
-    std::string repoPath = ".";
-    bool useIPFS = true;
-  };
+public:
+    struct Options {
+        std::string apiHost;
+        std::string apiPort;
+        std::string apiTarget;
+        std::string appPath;
+        std::string repoOwner;
+        std::string repoName;
+        std::string repoPath = ".";
+        bool useIPFS = true;
+    };
 
-  SimpleWalletClient(const Options& options)
-      : resolver_(ioc_), stream_(ioc_), options_(options) {
-  }
-
-  ~SimpleWalletClient() {
-    // Gracefully close the socket
-    if (connected_) {
-      beast::error_code ec;
-      stream_.socket().shutdown(tcp::socket::shutdown_both, ec);
-
-      if (ec && ec != beast::errc::not_connected) {
-        // doesn't throw, simply report
-        std::cerr << "Error: " << beast::system_error{ec}.what() << std::endl;
-      }
+    SimpleWalletClient(const Options& options)
+        : resolver_(ioc_), stream_(ioc_), options_(options) {
     }
-  }
 
-  std::string InvokeWallet(std::string args) {
-    args.append(",repo_id=")
-        .append(GetRepoID())
-        .append(",cid=")
-        .append(GetCID());
-    return InvokeShader(std::move(args));
-  }
+    ~SimpleWalletClient() {
+        // Gracefully close the socket
+        if (connected_) {
+            beast::error_code ec;
+            stream_.socket().shutdown(tcp::socket::shutdown_both, ec);
 
-  const std::string& GetRepoDir() const {
-    return options_.repoPath;
-  }
+            if (ec && ec != beast::errc::not_connected) {
+                // doesn't throw, simply report
+                std::cerr << "Error: " << beast::system_error{ec}.what()
+                          << std::endl;
+            }
+        }
+    }
 
-  std::string LoadObjectFromIPFS(std::string&& hash);
-  std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
+    std::string InvokeWallet(std::string args) {
+        args.append(",repo_id=")
+            .append(GetRepoID())
+            .append(",cid=")
+            .append(GetCID());
+        return InvokeShader(std::move(args));
+    }
 
-  using WaitFunc = std::function<void(size_t, const std::string&)>;
-  bool WaitForCompletion(WaitFunc&&);
-  size_t GetTransactionCount() const {
-    return transactions_.size();
-  }
+    const std::string& GetRepoDir() const {
+        return options_.repoPath;
+    }
 
- private:
-  std::string SubUnsubEvents(bool sub);
-  void EnsureConnected();
-  std::string ExtractResult(const std::string& response);
-  std::string InvokeShader(const std::string& args);
-  const std::string& GetCID();
-  const std::string& GetRepoID();
-  std::string CallAPI(std::string&& request);
-  std::string ReadAPI();
+    std::string LoadObjectFromIPFS(std::string&& hash);
+    std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
- private:
-  net::io_context ioc_;
-  tcp::resolver resolver_;
-  beast::tcp_stream stream_;
-  bool connected_ = false;
-  const Options& options_;
-  std::string repo_id_;
-  std::string cid_;
-  std::set<std::string> transactions_;
-  std::string data_;
+    using WaitFunc = std::function<void(size_t, const std::string&)>;
+    bool WaitForCompletion(WaitFunc&&);
+    size_t GetTransactionCount() const {
+        return transactions_.size();
+    }
+
+private:
+    std::string SubUnsubEvents(bool sub);
+    void EnsureConnected();
+    std::string ExtractResult(const std::string& response);
+    std::string InvokeShader(const std::string& args);
+    const std::string& GetCID();
+    const std::string& GetRepoID();
+    std::string CallAPI(std::string&& request);
+    std::string ReadAPI();
+
+private:
+    net::io_context ioc_;
+    tcp::resolver resolver_;
+    beast::tcp_stream stream_;
+    bool connected_ = false;
+    const Options& options_;
+    std::string repo_id_;
+    std::string cid_;
+    std::set<std::string> transactions_;
+    std::string data_;
 };
 }  // namespace sourc3
