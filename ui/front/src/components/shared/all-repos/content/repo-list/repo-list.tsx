@@ -37,6 +37,7 @@ function RepoList({
   };
 
   const pagination:PaginationConfig = {
+    className: styles.pagination,
     size: 'small',
     current: page,
     pageSizeOptions: ['4', '8', '16', '32', '64', '128'],

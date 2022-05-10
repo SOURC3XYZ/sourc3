@@ -125,6 +125,7 @@ function RepoContent({
                 id={id}
                 filesMap={filesMap}
                 tree={tree}
+                pathname={pathname}
                 pathArray={pathArray}
                 getFileData={getFileData}
                 updateTree={updateTree}

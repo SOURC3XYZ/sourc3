@@ -47,7 +47,7 @@ function UserRepos({
   const { isLoaded, loadingHandler } = talonProps;
 
   const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
+    const updatedProps = { ...props, subTitle: 'no data' };
     return <FailPage {...updatedProps} isBtn />;
   };
 

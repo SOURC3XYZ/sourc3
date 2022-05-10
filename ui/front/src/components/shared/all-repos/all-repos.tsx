@@ -64,11 +64,13 @@ function AllRepos({
             placeholder="Search by repo name or ID"
           />
         </div>
-        <div className={styles.buttonWrapper}>
-          <BeamButton callback={showModal}>
-            Add new
-          </BeamButton>
-        </div>
+        {pkey && (
+          <div className={styles.buttonWrapper}>
+            <BeamButton callback={showModal}>
+              Add new
+            </BeamButton>
+          </div>
+        )}
       </div>
 
       <Modal

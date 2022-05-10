@@ -19,3 +19,4 @@ export * from './manager';
 export * from './search';
 export * from './excretion';
 export * from './connect-btn';
+export * from './select';
