@@ -75,9 +75,13 @@ function AllRepos({
 
       <Modal
         visible={isModalVisible}
-        onOk={handleOk}
         onCancel={handleCancel}
         closable={false}
+        footer={[
+          <BeamButton callback={handleOk}>
+            Add
+          </BeamButton>
+        ]}
       >
         <Input
           placeholder="Enter name repository"

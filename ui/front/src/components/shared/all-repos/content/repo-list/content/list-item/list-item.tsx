@@ -8,6 +8,7 @@ import shareImg from '@assets/img/share.svg';
 import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
+import { useSelector } from '@libs/redux';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -20,6 +21,7 @@ type ListItemProps = {
 function ListItem({
   item, path, searchText, deleteRepos
 }:ListItemProps) {
+  const pkey = useSelector((state) => state.app.pkey);
   const { repo_id, repo_name, repo_owner } = item;
 
   const repoLink = `sourc3://${repo_owner}/${repo_name}`;
@@ -58,9 +60,11 @@ function ListItem({
 
   const menuRender = (
     <Menu onClick={onClick}>
-      <Menu.Item onClick={handleDeleteRepo} key="Unable to delete">
-        Delete repo
-      </Menu.Item>
+      {pkey && (
+        <Menu.Item onClick={handleDeleteRepo} key="Unable to delete">
+          Delete repo
+        </Menu.Item>
+      )}
       <Menu.Item onClick={handleCloneRepo} key={`${repoLink} copied to clipboard!`}>
         Clone Repo
       </Menu.Item>

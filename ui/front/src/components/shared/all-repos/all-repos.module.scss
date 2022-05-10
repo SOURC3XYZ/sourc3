@@ -18,10 +18,4 @@
 
 .buttonWrapper {
   margin-left: 1rem;
-  visibility: hidden;
-}
-
-.buttonWrapperActive {
-  composes: buttonWrapper;
-  visibility: visible;
 }
