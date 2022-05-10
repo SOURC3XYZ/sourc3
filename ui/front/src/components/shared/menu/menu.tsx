@@ -3,7 +3,7 @@ import { ContainerOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import styles from './menu.module.css';
 
-const NavMenu = () => {
+function NavMenu() {
   const style = {
     display: 'flex',
     maxWidth: '74rem',
@@ -30,6 +30,6 @@ const NavMenu = () => {
       </Menu>
     </div>
   );
-};
+}
 
 export default NavMenu;

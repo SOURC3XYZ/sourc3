@@ -1,13 +1,13 @@
+import { CustomAntdSelect } from '@components/shared/select';
 import { clipString, setBranchAndCommit } from '@libs/utils';
 import { BranchCommit } from '@types';
-import { Row, Col } from 'antd';
+import { Row, Col, Select } from 'antd';
 import { NavigateFunction } from 'react-router-dom';
 import {
-  BranchSelect,
   BreadCrumbMenu,
-  CommitsSelect,
   RepoMeta
 } from './content';
+import styles from './upper-menu.module.scss';
 
 type UpperMenuProps = {
   branch: string,
@@ -19,7 +19,25 @@ type UpperMenuProps = {
   navigate:NavigateFunction
 };
 
-const UpperMenu = ({
+const selectBranchOptionMap = (el: string, i:number) => (
+  <Select.Option
+    value={el}
+    key={`${el}-select-${i}`}
+  >
+    {el}
+  </Select.Option>
+);
+
+const selectCommitOptionMap = (el: BranchCommit) => (
+  <Select.Option
+    value={el.commit_oid}
+    key={el.commit_oid}
+  >
+    {el.raw_message}
+  </Select.Option>
+);
+
+function UpperMenu({
   branch,
   commit,
   repoMap,
@@ -27,7 +45,7 @@ const UpperMenu = ({
   prevReposHref,
   baseUrl,
   navigate
-}:UpperMenuProps) => {
+}:UpperMenuProps) {
   const { commit_oid } = commit;
   const keys = Array.from(repoMap.keys());
   const commits = repoMap.get(branch) as BranchCommit[];
@@ -37,16 +55,16 @@ const UpperMenu = ({
   let treePath = clipString(pathname, root);
   treePath = pathname !== treePath ? treePath : '';
 
-  const onChange = (
-    selectedCommit:string, selectedBranch = branch
-  ) => {
+  const onChange = (selectedCommit:string, selectedBranch = branch) => {
     const {
       branch: recBranch, commit: recCommit
-    } = setBranchAndCommit(
-      repoMap, selectedBranch, selectedCommit
-    );
+    } = setBranchAndCommit(repoMap, selectedBranch, selectedCommit);
     navigate(`${baseUrl}/${recBranch}/${recCommit.commit_oid}${treePath}`);
   };
+
+  const onBranchChange = (selectedBranch: string) => onChange(commit_oid, selectedBranch);
+
+  const onCommitChange = (selectedCommit:string) => onChange(selectedCommit);
 
   return (
     <>
@@ -61,20 +79,27 @@ const UpperMenu = ({
       </Row>
       <Row align="middle" style={{ marginTop: '40px' }}>
         <Col span={7}>
-          <BranchSelect
-            keys={keys}
+          <CustomAntdSelect
+            defaultValue={keys[keys.length - 1]}
+            className={styles.branch}
             value={branch}
-            onChange={onChange}
-            commit={commit_oid}
-          />
+            onChange={onBranchChange}
+            title="Branch"
+          >
+            {keys.map(selectBranchOptionMap)}
+          </CustomAntdSelect>
         </Col>
 
         <Col span={8}>
-          <CommitsSelect
+          <CustomAntdSelect
+            title="Commits"
             value={commit_oid}
-            keys={commits}
-            onChange={onChange}
-          />
+            className={styles.commits}
+            defaultValue={commits[commits.length - 1]?.commit_oid}
+            onChange={onCommitChange}
+          >
+            {commits.map(selectCommitOptionMap)}
+          </CustomAntdSelect>
         </Col>
       </Row>
 
@@ -85,6 +110,6 @@ const UpperMenu = ({
       </Row>
     </>
   );
-};
+}
 
 export default UpperMenu;

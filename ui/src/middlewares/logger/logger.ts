@@ -30,6 +30,10 @@ export const logerRequests = (
   const body = JSON.stringify(req.body);
   const query = JSON.stringify(req.query);
   const start = Date.now();
+  logger.info(
+    // eslint-disable-next-line max-len
+    `\n METHOD: ${method}\n URL: ${url}\n QUERY: ${query} \n BODY: ${limitStr(body, 300)}`
+  );
   next();
 
   finished(req, () => {

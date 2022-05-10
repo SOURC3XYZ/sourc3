@@ -4,10 +4,10 @@ import {
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
-import { useCallback } from 'react';
+import { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
-import { useAllRepos } from '@libs/hooks/talons/all-repos';
+import { useAllRepos } from '@libs/hooks/container/all-repos';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
@@ -51,24 +51,26 @@ function AllRepos({
 
   const { type, path } = repoListProps;
 
-  const RepoManager = useCallback((inputText: string) => (
+  const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
-      <Nav type={type} path={path} />
+      {pkey && <Nav type={type} path={path} />}
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>
           <Search
-            text={inputText}
+            text={searchText}
             setInputText={setInputText}
             placeholder="Search by repo name or ID"
           />
         </div>
-        <div className={styles.buttonWrapper}>
-          <BeamButton callback={showModal}>
-            Add new
-          </BeamButton>
-        </div>
+        {pkey && (
+          <div className={styles.buttonWrapper}>
+            <BeamButton callback={showModal}>
+              Add new
+            </BeamButton>
+          </div>
+        )}
       </div>
 
       <Modal
@@ -85,11 +87,11 @@ function AllRepos({
         />
       </Modal>
     </div>
-  ), [searchText, state]);
+  ), [searchText, state, pkey]);
 
   return (
     <div className={styles.content}>
-      {pkey && RepoManager(searchText)}
+      {repoManager}
       <RepoList
         {...repoListProps}
         searchText={searchText}

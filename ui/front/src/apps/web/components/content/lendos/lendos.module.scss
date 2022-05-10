@@ -1,96 +1,106 @@
 .bg {
     position: relative;
-    background: black;
-    width:100%;
+    width: 100%;
     height: 100%;
-    .wrapper{
+
+    .wrapper {
         position: relative;
         right: 100px;
         width: max-content;
         margin: 0 auto;
         font-family: visby;
         color: white;
-        .logo{
+
+        .logo {
             position: relative;
+
             img {
                 display: block;
                 margin-top: 130px;
             }
-    }
-    .logo::after{
-        position: absolute;
-        content: '';
-        top: -86px;
-        right: -198px;
-        background: url('@assets/img/rect-half.png');
-        width: 86px;
-        height: 86px;
-        display: block;
-    }
-    .intro::before{
-        position: absolute;
-        content: '';
-        left: -91px;
-        background: url('@assets/img/left-half-ring.png');
-        width: 60px;
-        height: 146px;
-        display: block;
-    }
-    .intro{
-        position: relative;
-        width: max-content;
-        margin: 117px auto;
-        h1{
-            color: white;
-            font-size: 80px;
-            font-weight: 900;
-            line-height: 90px;
-            max-width: 511px;
-            height: 180px;
-            margin-bottom: 16px;
         }
-        p{
-            position: relative;
-            max-width: 669px;
-            height: 64px;
-            font-weight: 600;
-            margin-bottom: 40px;
-            font-size: 24px;
-            line-height: 32px;
-        }
-        p:after{
+
+        .logo::after {
             position: absolute;
             content: '';
-            bottom: -105px;
-            right: -105px;
-            background: url('@assets/img/right-half-ring.png');
-            width: 121px;
-            height: 292px;
+            top: -86px;
+            right: -198px;
+            background: url('@assets/img/rect-half.png');
+            width: 86px;
+            height: 86px;
             display: block;
         }
-        button{
-            width: 154px;
-            height: 52px;
-            background: #FF791F;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            box-sizing: border-box;
-            border-radius: 8px;
-            color: black;
-            font-family: visby;
-            font-size: 20px;
-            line-height: 20px;
-            font-weight: 600;
+
+        .intro::before {
+            position: absolute;
+            content: '';
+            left: -91px;
+            background: url('@assets/img/left-half-ring.png');
+            width: 60px;
+            height: 146px;
+            display: block;
+        }
+
+        .intro {
+            position: relative;
+            width: max-content;
+            margin: 117px auto;
+
+            h1 {
+                color: white;
+                font-size: 80px;
+                font-weight: 900;
+                line-height: 90px;
+                max-width: 511px;
+                height: 180px;
+                margin-bottom: 16px;
+            }
+
+            p {
+                position: relative;
+                max-width: 669px;
+                height: 64px;
+                font-weight: 600;
+                margin-bottom: 40px;
+                font-size: 24px;
+                line-height: 32px;
+            }
+
+            p:after {
+                position: absolute;
+                content: '';
+                bottom: -105px;
+                right: -105px;
+                background: url('@assets/img/right-half-ring.png');
+                width: 121px;
+                height: 292px;
+                display: block;
+            }
+
+            button {
+                width: 154px;
+                height: 52px;
+                background: #FF791F;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+                box-sizing: border-box;
+                border-radius: 8px;
+                color: black;
+                font-family: visby;
+                font-size: 20px;
+                line-height: 20px;
+                font-weight: 600;
+            }
         }
     }
-}   
-.wrapper::before{
-    background: url('@assets/img/rect.png');
-    position: absolute;
-    content: '';
-    bottom: -165px;
-    left: -42px;
-    width: 84px;
-    height: 84px;
-    display: block;
-}
+
+    .wrapper::before {
+        background: url('@assets/img/rect.png');
+        position: absolute;
+        content: '';
+        bottom: -165px;
+        left: -42px;
+        width: 84px;
+        height: 84px;
+        display: block;
+    }
 }

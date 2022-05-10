@@ -86,6 +86,41 @@ git_remote_beam::Hash256 GetNameHash(const char* name, size_t len) {
   return res;
 }
 
+#pragma pack(push, 1)
+
+    class UserKey {
+    public:
+        UserKey(const ContractID& cid)
+            : m_cid{cid}
+        {
+            Env::DocGetNum32("pid", &m_profile_index);
+        }
+
+        void get(PubKey& key)
+        {
+            if (m_profile_index == 0) {
+                Env::DerivePk(key, &m_cid, sizeof(m_cid));
+            } else {
+                Env::DerivePk(key, this, sizeof(UserKey));
+            }
+        }
+
+        void fill_sig_request(SigRequest& sig)
+        {
+            sig.m_pID = &m_cid;
+            if (m_profile_index == 0) {
+                sig.m_nID = sizeof(m_cid);
+            } else {
+                sig.m_nID = sizeof(UserKey);
+            }
+        }
+
+    private:
+        ContractID m_cid;
+        uint32_t m_profile_index = 0;
+    };
+#pragma pack(pop)
+
 void OnActionCreateRepo(const ContractID& cid) {
   using git_remote_beam::RepoInfo;
   using git_remote_beam::method::CreateRepo;
@@ -99,7 +134,8 @@ void OnActionCreateRepo(const ContractID& cid) {
   auto args_size = sizeof(CreateRepo) + name_len;
   auto buf = std::make_unique<uint8_t[]>(args_size);
   auto* request = reinterpret_cast<CreateRepo*>(buf.get());
-  Env::DerivePk(request->repo_owner, &cid, sizeof(cid));
+  UserKey user_key(cid);
+  user_key.get(request->repo_owner);
   request->repo_name_length = name_len;
   Env::Memcpy(/*pDst=*/request->repo_name, /*pSrc=*/repo_name, /*n=*/name_len);
   auto hash = GetNameHash(request->repo_name, request->repo_name_length);
@@ -530,7 +566,8 @@ void OnActionMyRepos(const ContractID& cid) {
 
   RepoKey key;
   PubKey my_key;
-  Env::DerivePk(my_key, &cid, sizeof(cid));
+  UserKey user_key(cid);
+  User_key.get(my_key);
   Env::DocArray repos("repos");
   uint32_t value_len = 0, key_len = sizeof(RepoKey);
   for (Env::VarReader reader(start, end);
@@ -557,7 +594,8 @@ void OnActionAllRepos(const ContractID& cid) {
 
   RepoKey key;
   PubKey my_key;
-  Env::DerivePk(my_key, &cid, sizeof(cid));
+  UserKey user_key(cid);
+  user_key.get(my_key);
   Env::DocArray repos("repos");
   uint32_t value_len = 0, key_len = sizeof(RepoKey);
   for (Env::VarReader reader(start, end);
@@ -582,8 +620,8 @@ void OnActionDeleteRepo(const ContractID& cid) {
 
   DeleteRepo request;
   request.repo_id = repo_id;
-
-  Env::DerivePk(request.user, &cid, sizeof(cid));
+  UserKey user_key(cid);
+  user_key.get(request.user);
 
   SigRequest sig;
   sig.m_pID = &cid;
@@ -617,9 +655,9 @@ void OnActionAddUserParams(const ContractID& cid) {
   }
   request.permissions = permissions;
 
+  UserKey user_key(cid);
   SigRequest sig;
-  sig.m_pID = &cid;
-  sig.m_nID = sizeof(cid);
+  user_key.fill_sig_request(sig);
 
   Env::GenerateKernel(/*pCid=*/&cid,
                       /*iMethod=*/AddUser::kMethod,
@@ -639,9 +677,9 @@ void OnActionRemoveUserParams(const ContractID& cid) {
   Env::DocGet("repo_id", request.repo_id);
   Env::DocGet("user", request.user);
 
+  UserKey user_key(cid);
   SigRequest sig;
-  sig.m_pID = &cid;
-  sig.m_nID = sizeof(cid);
+  user_key.fill_sig_request(sig);
 
   Env::GenerateKernel(/*pCid=*/&cid,
                       /*iMethod=*/RemoveUser::kMethod,
@@ -676,9 +714,9 @@ void OnActionPushObjects(const ContractID& cid) {
   }
   Env::DocAddNum("repo_id", params->repo_id);
 
+  UserKey user_key(cid);
   SigRequest sig;
-  sig.m_pID = &cid;
-  sig.m_nID = sizeof(cid);
+  user_key.fill_sig_request(sig);
 
   char ref_name[GitRef::kMaxNameSize + 1];
   auto name_len = Env::DocGetText("ref", ref_name, _countof(ref_name));
@@ -709,6 +747,7 @@ void OnActionPushObjects(const ContractID& cid) {
       Env::DocAddText("name", ref->name);
     }
 
+    user_key.get(refsParams->user);
     Env::DerivePk(refs_params->user, &cid, sizeof(cid));
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/PushRefs::kMethod,
@@ -742,7 +781,7 @@ void OnActionPushObjects(const ContractID& cid) {
     }
   }
 
-  Env::DerivePk(params->user, &cid, sizeof(cid));
+  user_key.get(params->user);
   Env::GenerateKernel(/*pCid=*/&cid,
                       /*iMethod=*/PushObjects::kMethod,
                       /*pArgs=*/params,
@@ -788,8 +827,9 @@ void OnActionListRefs(const ContractID& cid) {
 }
 
 void OnActionUserGetKey(const ContractID& cid) {
+  UserKey user_key(cid);
   PubKey pk;
-  Env::DerivePk(pk, &cid, sizeof(cid));
+  user_key.get(pk);
   Env::DocAddBlob_T("key", pk);
 }
 
@@ -1092,31 +1132,37 @@ BEAM_EXPORT void Method_0() {  // NOLINT
         Env::DocGroup gr_method("create_organization");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_name", "Name of repo");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("my_repos");
         Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("all_repos");
         Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("delete_repo");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_id", "Repo ID");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("add_user_params");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_id", "Repo ID");
         Env::DocAddText("user", "User PubKey");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("remove_user_params");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_id", "Repo ID");
         Env::DocAddText("user", "User PubKey");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("push_objects");
@@ -1125,15 +1171,18 @@ BEAM_EXPORT void Method_0() {  // NOLINT
         Env::DocAddText("data", "Push objects");
         Env::DocAddText("ref", "Objects ref");
         Env::DocAddText("ref_target", "Objects ref target");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("list_refs");
         Env::DocAddText("cid", "ContractID");
         Env::DocAddText("repo_id", "Repo ID");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("get_key");
         Env::DocAddText("cid", "ContractID");
+        Env::DocAddText("pid", "uint32_t");
       }
       {
         Env::DocGroup gr_method("repo_id_by_name");

@@ -10,8 +10,8 @@
     "testbuild": "export NODE_ENV=production; webpack",
     "start": "export NODE_ENV=development; webpack serve --mode development",
     "start:win": "set NODE_ENV=developmen&&webpack serve --mode development",
-    "web": "export WEB=1; export NODE_ENV=development; webpack serve --mode production",
-    "build:web": "export WEB=1; webpack",
+    "web": "export WEB=1; export NODE_ENV=development; webpack serve --mode development",
+    "build:web": "export WEB=1; webpack --mode production",
     "electron": "electron ."
   },
   "homepage": "./",

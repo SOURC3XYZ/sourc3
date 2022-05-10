@@ -1,4 +1,3 @@
-import Excretion from '@components/shared/excretion';
 import { RepoType } from '@types';
 import {
   Menu, Dropdown, List, message
@@ -8,6 +7,7 @@ import forkImg from '@assets/img/fork.svg';
 import shareImg from '@assets/img/share.svg';
 import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
+import { Excretion } from '@components/shared';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -44,8 +44,8 @@ function ListItem({
   const handleDeleteRepo = () => deleteRepos(repo_id);
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
-    <div>
-      <img alt={alt} src={src} />
+    <div key={`list-item-${alt}`}>
+      <img className={styles.dots} alt={alt} src={src} />
       <span>10</span>
     </div>
   ));
@@ -71,7 +71,7 @@ function ListItem({
     <List.Item
       className={styles.listItem}
       key={repo_id}
-      actions={[(<span className={styles.time}>Updated 5 mins ago</span>),
+      actions={[<span className={styles.time}>Updated 5 mins ago</span>,
         (
           <Dropdown overlay={menuRender} placement="bottomRight">
             <img className={styles.dropdownIcon} alt="dots" src={dotsImg} />

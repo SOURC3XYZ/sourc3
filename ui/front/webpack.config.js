@@ -37,9 +37,9 @@ const build = {
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   devtool: 'eval-source-map',
-  optimization: {
-    nodeEnv: 'production'
-  },
+  // optimization: {
+  //   nodeEnv: 'production'
+  // },
   resolve: {
     extensions: ['.ts', '.js', '.tsx', '.scss'],
     plugins: [new TsconfigPathsPlugin()],
@@ -99,13 +99,9 @@ const build = {
             loader: 'css-loader',
             options: {
               modules: {
-                localIdentName: '[name]--[hash:base64:5]'
+                localIdentName: '[name]_[local]-[hash:base64:5]'
               }
             }
-          },
-          {
-            // Loader for webpack to process CSS with PostCSS
-            loader: 'postcss-loader'
           },
           {
             // Loads a SASS/SCSS file and compiles it to CSS

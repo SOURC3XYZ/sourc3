@@ -6,9 +6,11 @@ import {
 import { batch, connect } from 'react-redux';
 import { FailPage, Preload } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useUserRepos } from '@libs/hooks/talons/user-repos';
+import { useUserRepos } from '@libs/hooks/container/user-repos';
+import { useCallback } from 'react';
+import { LoadingMessages } from '@libs/constants';
 import { RepoContent } from './content';
-import styles from './repo.module.css';
+import styles from './repo.module.scss';
 
 type RepoProps = {
   currentId: RepoId | null;
@@ -45,9 +47,16 @@ function UserRepos({
   const { isLoaded, loadingHandler } = talonProps;
 
   const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
+    const updatedProps = { ...props, subTitle: 'no data' };
     return <FailPage {...updatedProps} isBtn />;
   };
+
+  const RefsPreloadFallback = useCallback(() => (
+    <Preload
+      className={styles.preload}
+      message={LoadingMessages.COMMITS}
+    />
+  ), []);
 
   const props = {
     ...talonProps,
@@ -65,7 +74,7 @@ function UserRepos({
         <PreloadComponent
           isLoaded={isLoaded}
           callback={loadingHandler}
-          Fallback={Preload}
+          Fallback={RefsPreloadFallback}
         >
           <RepoContent {...props} />
         </PreloadComponent>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Preload } from '@components/shared';
 import { useAsyncError, useObjectState } from '@libs/hooks/shared';
-import styles from './login.module.css';
-import { Password, UpdatingNode } from './content';
+import styles from './login.module.scss';
+import { Password } from './content';
+import { UpdatingNode } from '../update-node';
 
 enum STATUS {
   LOGIN,
@@ -46,7 +47,7 @@ function Login({ startWalletApi, statusFetcher }: LoginProps) {
         status === STATUS.LOADING
           ? <Preload />
           : status === STATUS.SYNC
-            ? <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
+            ? <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
       }
     </div>

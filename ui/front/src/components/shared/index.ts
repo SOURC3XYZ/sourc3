@@ -1,5 +1,5 @@
 export * from './info';
-export { default as FailPage } from './fail-page';
+export * from './fail-page';
 export { default as OkPage } from './ok-page';
 export { default as ErrorAlert } from './error-alert';
 export * from './preload';
@@ -17,3 +17,6 @@ export * from './notifications';
 export * from './all-repos';
 export * from './manager';
 export * from './search';
+export * from './excretion';
+export * from './connect-btn';
+export * from './select';

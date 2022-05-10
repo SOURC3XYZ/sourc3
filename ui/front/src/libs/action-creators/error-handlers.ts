@@ -3,9 +3,7 @@ import { BeamApiRes, ContractResp, ErrorObj } from '@types';
 import { AxiosError } from 'axios';
 import { AC } from './action-creators';
 
-export const errorHandler = (
-  errorObj: ErrorObj, dispatch: AppThunkDispatch
-) => {
+export const errorHandler = (errorObj: ErrorObj, dispatch: AppThunkDispatch) => {
   dispatch(AC.setError({
     ...errorObj
   }));
@@ -17,9 +15,7 @@ export const thunkCatch = (err: unknown, dispatch: AppThunkDispatch) => {
   errorHandler({ message }, dispatch);
 };
 
-export function outputParser<T extends ContractResp>(
-  res: BeamApiRes, dispatch: AppThunkDispatch
-) {
+export function outputParser<T extends ContractResp>(res: BeamApiRes, dispatch: AppThunkDispatch) {
   try {
     if (res.error) return errorHandler(res.error, dispatch);
     if (res.result.output) {
@@ -40,10 +36,9 @@ export const isAxiosError = (
   x: any
 ): x is AxiosError => typeof x.response === 'object';
 
-export const cbErrorHandler = (
-  error: unknown, callback: (err?: Error) => void
-) => {
+export const cbErrorHandler = (error: unknown, callback: (err?: Error) => void) => {
   if (isAxiosError(error)) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const { message } = error.response?.data;
     return callback(new Error(message));
   } return callback(error as Error);

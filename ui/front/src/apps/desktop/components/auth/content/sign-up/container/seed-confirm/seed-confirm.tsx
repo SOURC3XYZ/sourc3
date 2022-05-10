@@ -1,14 +1,14 @@
 import { NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
 import React, { useEffect, useState } from 'react';
-import styles from '../../sign-up.module.css';
+import styles from '../../sign-up.module.scss';
 
 type SeedConfirmType = {
   seedGenerated: string[],
   next: () => void
 };
 
-const SeedConfirm = ({ seedGenerated, next }:SeedConfirmType) => {
+function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
   const emptyErrors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
   const emptySeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
 
@@ -79,6 +79,6 @@ const SeedConfirm = ({ seedGenerated, next }:SeedConfirmType) => {
       </div>
     </div>
   );
-};
+}
 
 export default SeedConfirm;

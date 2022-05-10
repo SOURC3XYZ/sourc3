@@ -5,21 +5,24 @@ import { useEffect, useState } from 'react';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { connect } from 'react-redux';
+import { PromiseArg } from '@types';
 
   type ReceivePropsType = {
     isVisible:boolean;
     onClose: () => void;
-    // getWalletAddressList: ()=> void
-    addrList: string,
+    createAddressList: (resolve: PromiseArg<{ address: string }>) => void;
   };
 
-const Receive = ({
+function Receive({
   isVisible,
-  addrList,
-  onClose
+  onClose,
+  createAddressList
   // getWalletAddressList
-}:ReceivePropsType) => {
+}:ReceivePropsType) {
   const [visible, setVisible] = useState(false);
+
+  const [newAddress, setNewAddress] = useState<string | null>(null);
+
   const showModal = () => {
     setVisible(true);
   };
@@ -28,46 +31,55 @@ const Receive = ({
     setVisible(false);
     onClose();
   };
+
+  const createAddressPromise = () => new Promise(
+    (resolve:PromiseArg<{
+      address: string;
+    }>) => {
+      setNewAddress(null);
+      createAddressList(resolve);
+    }
+  );
+
   useEffect(() => {
     // getWalletAddressList();
     if (isVisible) {
       showModal();
+      createAddressPromise()
+        .then((data) => setNewAddress(data?.address || 'error'));
     } else {
       handleCancel();
     }
   }, [isVisible]);
 
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  // const [modalText, setModalText] = useState('Content of the modal');
-
   const handleOk = () => {
     handleCancel();
   };
 
-  return (
-    <>
-      <Modal
-        title="RECEIVE PIT"
-        visible={visible}
-        onCancel={handleCancel}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleOk}>
-            OK
-          </Button>
-        ]}
-      >
-        <Typography.Text
-          copyable={{ text: addrList }}
-        >
-          {addrList}
-        </Typography.Text>
-      </Modal>
-    </>
+  const content = (
+    <Typography.Text copyable={newAddress ? { text: newAddress } : false}>
+      {newAddress || 'loading...'}
+    </Typography.Text>
   );
-};
+
+  return (
+    <Modal
+      title="RECEIVE PIT"
+      visible={visible}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="back" onClick={handleCancel}>
+          Cancel
+        </Button>,
+        <Button key="submit" type="primary" onClick={handleOk}>
+          OK
+        </Button>
+      ]}
+    >
+      {content}
+    </Modal>
+  );
+}
 const mapState = ({ app: { balance, addrList } }: RootState) => ({
   balance,
   addrList
@@ -79,13 +91,22 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   getWalletAddressList: () => {
     dispatch(thunks.getWalletAddressList());
   },
+  createAddressList: (
+    resolve: PromiseArg<{ address: string }>,
+    message:string = 'john smith'
+  ) => {
+    dispatch(thunks.createAddress(message, resolve));
+  },
   setWalletSendBeam: (
-    amountValue: number, fromValue:string, addressValue:string,
+    amountValue: number,
+    addressValue:string,
     commentValue:string
   ) => {
-    console.log(fromValue);
-    dispatch(thunks.setWalletSendBeam(amountValue, fromValue, addressValue,
-      commentValue));
+    dispatch(thunks.setWalletSendBeam(
+      amountValue,
+      addressValue,
+      commentValue
+    ));
   }
 });
 

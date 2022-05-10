@@ -7,7 +7,7 @@ import { Input } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import Text from 'antd/lib/typography/Text';
 import { connect } from 'react-redux';
-import styles from './repositories.module.css';
+import styles from './repositories.module.scss';
 
 type EmptyPropsType = {
   createRepos: (repo_name:string) => void,

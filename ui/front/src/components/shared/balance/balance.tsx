@@ -11,7 +11,7 @@ type BalancePropsType = {
   current:number;
 };
 
-const Balance = ({ current }:BalancePropsType) => {
+function Balance({ current }:BalancePropsType) {
   const [isVisible, setIsVisible] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -78,6 +78,6 @@ const Balance = ({ current }:BalancePropsType) => {
       />
     </div>
   );
-};
+}
 
 export default Balance;

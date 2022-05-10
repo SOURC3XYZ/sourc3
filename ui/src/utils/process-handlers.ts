@@ -57,4 +57,6 @@ export const runSpawnProcess = (
     console.log(`Kill ${path}!`);
     childProcess.kill('SIGTERM');
   });
+
+  return childProcess;
 };

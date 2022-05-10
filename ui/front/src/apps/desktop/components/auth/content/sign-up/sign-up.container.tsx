@@ -1,16 +1,17 @@
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { AC, thunks } from '@libs/action-creators';
 import { connect } from 'react-redux';
-import React, { useEffect } from 'react';
-import { OkPage, Preload } from '@components/shared';
+import React, { useCallback, useEffect } from 'react';
+import { Preload } from '@components/shared';
 import NavButton from '@components/shared/nav-button/nav-button';
 import { message } from 'antd';
 import { WALLET } from '@libs/constants';
 import { useAsyncError } from '@libs/hooks/shared';
 import { SeedGenerate } from './container/seed-generate';
 import { PasswordRestore } from '../restore/container';
-import styles from './sign-up.module.css';
+import styles from './sign-up.module.scss';
 import { SeedConfirm } from './container';
+import { UpdatingNode } from '../update-node';
 
 type SignUpProps = {
   seedPhrase: string | null,
@@ -21,7 +22,9 @@ type SignUpProps = {
     cb: (err?: Error) => void) => void,
   clearSeed2Validation: (
     seed: string[], errors: boolean[]
-  ) => void
+  ) => void,
+  statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
+
 };
 
 enum MODE { SEED, CONFIRM, PASS, OK, LOADING }
@@ -30,6 +33,7 @@ function SignUp({
   generateSeed,
   seedPhrase,
   restoreWallet,
+  statusFetcher,
   clearSeed2Validation
 }: SignUpProps) {
   const seed:string[] = seedPhrase ? seedPhrase?.split(' ') : [];
@@ -63,7 +67,7 @@ function SignUp({
     return toggleMode(MODE.PASS);
   };
 
-  const currentMode = () => {
+  const CurrentMode = useCallback(() => {
     switch (mode) {
       case MODE.SEED:
         return <SeedGenerate seed={seed} next={setNextMode} />;
@@ -75,7 +79,11 @@ function SignUp({
         return <PasswordRestore onClick={endOfVerification} isCreate />;
 
       case MODE.OK:
-        return <OkPage subTitle="wallet restored" />;
+        return (
+          <div className={styles.syncStatusWrapper}>
+            <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
+          </div>
+        );
         // TODO: DANIK: make a generalized component
 
       case MODE.LOADING:
@@ -84,10 +92,11 @@ function SignUp({
         break;
     }
     return <>no data</>;
-  };
+  }, [mode, seed]);
+
   return (
     <div className={styles.wrapper}>
-      {currentMode()}
+      <CurrentMode />
       <div className={styles.btnNav}>
         <NavButton
           name="Back"
@@ -115,6 +124,9 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   },
   clearSeed2Validation: (seed: string[], errors: boolean[]) => {
     dispatch(AC.setSeed2Validation({ seed, errors }));
-  }
+  },
+  statusFetcher: (
+    resolve: PromiseArg<{ status: number }>
+  ) => dispatch(thunks.getSyncStatus(resolve))
 });
 export default connect(mapState, mapDispatch)(SignUp);

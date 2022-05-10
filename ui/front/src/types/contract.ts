@@ -102,7 +102,7 @@ export interface RepoTreeResp extends ContractResp {
   }
 }
 
-export interface IDataNodeCustom extends DataNode{
+export interface IDataNodeCustom extends DataNode {
   dataRef: TreeElement
 }
 

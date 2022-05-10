@@ -1,9 +1,8 @@
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { connect } from 'react-redux';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { AC, thunks } from '@libs/action-creators';
 import {
-  Manager,
   Notifications,
   AllRepos,
   Preload,
@@ -11,7 +10,11 @@ import {
   FailPage
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useCallback } from 'react';
+import {
+  useCallback, useLayoutEffect, useMemo
+} from 'react';
+import { Footer } from 'antd/lib/layout/layout';
+import { LoadingMessages } from '@libs/constants';
 import styles from './app.module.scss';
 import { Header, Lendos } from './content';
 
@@ -23,7 +26,20 @@ type MainProps = {
 function Main({
   isApiConnected, connectApi
 }:MainProps) {
-  const routes = [
+  const { pathname } = useLocation();
+
+  const isOnLending = pathname === '/';
+
+  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
+
+  useLayoutEffect(() => {
+    if (isOnLending) {
+      document.body.style.backgroundColor = '#000';
+      return;
+    } document.body.style.backgroundColor = '';
+  }, [isOnLending]);
+
+  const routesData = [
     {
       path: '/',
       element: <Lendos />
@@ -35,10 +51,6 @@ function Main({
     {
       path: 'repo/:repoParams/*',
       element: <Repo />
-    },
-    {
-      path: 'manager',
-      element: <Manager />
     }
   ];
 
@@ -47,39 +59,46 @@ function Main({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const RoutesView = useCallback(() => (
+  const HeadlessPreloadFallback = useCallback(() => (
+    <Preload
+      isOnLendos={isOnLending}
+      message={LoadingMessages.HEADLESS}
+    />
+  ), []);
+
+  const routes = useMemo(() => (
     <Routes>
       {
-        routes
-          .map(({ path, element }) => {
-            const route = path === '/'
-              ? element
-              : (
-                <PreloadComponent
-                  isLoaded={isApiConnected}
-                  callback={connectApi}
-                  Fallback={Preload}
-                >
-                  <ErrorBoundary fallback={fallback}>
-                    {element}
-                  </ErrorBoundary>
-                </PreloadComponent>
-              );
-            return <Route path={path} element={route} />;
-          })
+        routesData
+          .map(({ path, element }) => <Route key={`route-${path}`} path={path} element={element} />)
       }
 
     </Routes>
   ), [isApiConnected]);
 
   return (
-    <>
-      <Header />
-      <div className={styles.main}>
-        <RoutesView />
-        <Notifications />
-      </div>
-    </>
+    <PreloadComponent
+      Fallback={HeadlessPreloadFallback}
+      callback={connectApi}
+      isLoaded={isApiConnected}
+    >
+      <ErrorBoundary fallback={fallback}>
+        <>
+          <div className={styles.appWrapper}>
+            <Header isOnLending={isOnLending} />
+            <div className={styles.main}>
+              {routes}
+              <Notifications />
+            </div>
+          </div>
+          <Footer className={footerClassname}>
+            © 2022 by SOURC3
+          </Footer>
+        </>
+      </ErrorBoundary>
+
+    </PreloadComponent>
+
   );
 }
 

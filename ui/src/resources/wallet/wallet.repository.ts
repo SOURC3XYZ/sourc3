@@ -26,7 +26,7 @@ let currentProcess: ChildProcess | undefined;
 
 let nodeUpdate = 0;
 
-const successReg = /Start server on/i;
+const successReg = /server/i;
 const errorReg = /Please check your password/i;
 const ownerKeyReg = /Owner Viewer key/i;
 const walletRestoreSuccessReg = /generated:/i;

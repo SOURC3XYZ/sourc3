@@ -13,9 +13,9 @@ type NotificationProps = {
   setNotifiedTrue: (txItem: TxItem) => void
 };
 
-const Notifications = ({
+function Notifications({
   txs, checkTxStatus, removeTx, setNotifiedTrue
-}: NotificationProps) => {
+}: NotificationProps) {
   const maped = txs.map(
     (el) => (
       <NotificationElement
@@ -28,7 +28,7 @@ const Notifications = ({
     )
   );
   return <>{maped}</>;
-};
+}
 
 const MapState = ({ app: { txs } }: RootState) => ({
   txs: Array.from(txs)

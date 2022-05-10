@@ -11,6 +11,7 @@ import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { connect } from 'react-redux';
 import { useObjectState } from '@libs/hooks/shared';
+import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 type SendPropsType = {
   current:number;
@@ -20,33 +21,34 @@ type SendPropsType = {
   setWalletSendBeam: (
     amountValue: number,
     addressValue:string,
-    fromValue:string,
-    commentValue:string)=> void
-  addrList: string,
+    commentValue:string,
+    offline: boolean)=> void;
 };
 
 function Send({
-  current, isVisible,
-  addrList,
+  current,
+  isVisible,
   onClose,
   // getWalletAddressList,
   setWalletSendBeam
 }:SendPropsType) {
   const initialState = {
     visible: false,
-    adress: '',
+    address: '',
     amount: 0,
-    comment: ''
+    comment: '',
+    offline: false
   };
 
   const [state, setState] = useObjectState(initialState);
 
   const showModal = () => {
     setState({
-      adress: '',
+      address: '',
       amount: 0,
       comment: '',
-      visible: true
+      visible: true,
+      offline: false
     });
   };
 
@@ -55,7 +57,6 @@ function Send({
     onClose();
   };
   useEffect(() => {
-    // getWalletAddressList();
     if (isVisible) {
       showModal();
     } else {
@@ -64,13 +65,11 @@ function Send({
   }, [isVisible]);
 
   const {
-    visible, adress, amount, comment
+    visible, address, amount, comment, offline
   } = state;
-    // const [confirmLoading, setConfirmLoading] = useState(false);
-    // const [modalText, setModalText] = useState('Content of the modal');
 
   const handleOk = () => {
-    if (!adress) {
+    if (!address) {
       message.error('Field address not be full');
       return;
     }
@@ -78,12 +77,12 @@ function Send({
       message.error('Field amount not be full');
       return;
     }
-    setWalletSendBeam(amount, addrList, adress, comment);
+    setWalletSendBeam(amount, address, comment, offline);
     setState({ visible: false });
   };
 
   const handleAddressValue = (event:any) => {
-    setState({ adress: event?.target.value });
+    setState({ address: event?.target.value });
   };
   const handleAmountValue = (event:any) => {
     const target = event?.target.value;
@@ -94,6 +93,10 @@ function Send({
 
   const handleCommentValue = (event:any) => {
     setState({ comment: event?.target.value });
+  };
+
+  const handleOffline = (e:CheckboxChangeEvent) => {
+    setState({ offline: e.target.checked });
   };
 
   return (
@@ -117,7 +120,7 @@ function Send({
           prefix={<UserOutlined className="site-form-item-icon" />}
           placeholder="Past recipient address here"
           onChange={handleAddressValue}
-          value={adress}
+          value={address}
           name="address"
           suffix={(
             <Tooltip title="Extra information">
@@ -161,6 +164,9 @@ function Send({
         />
 
       </label>
+      <Checkbox checked={offline} onChange={handleOffline}>
+        Offline
+      </Checkbox>
     </Modal>
   );
 }
@@ -178,13 +184,13 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   setWalletSendBeam: (
     amountValue: number,
     fromValue:string,
-    addressValue:string,
-    commentValue:string
+    commentValue:string,
+    offline: boolean
   ) => dispatch(thunks.setWalletSendBeam(
     amountValue,
     fromValue,
-    addressValue,
-    commentValue
+    commentValue,
+    offline
   ))
 });
 

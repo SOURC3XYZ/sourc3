@@ -1,0 +1,11 @@
+.connectBtn {
+    width: 102px;
+    text-align: center;
+    line-height: 16px;
+    height: 36px;
+}
+
+.connectBtnOnConnect {
+    composes: connectBtn;
+    padding: 2px 24px;
+}

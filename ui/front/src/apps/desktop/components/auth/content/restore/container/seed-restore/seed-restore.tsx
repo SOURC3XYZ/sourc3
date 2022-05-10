@@ -11,9 +11,9 @@ type SeedRestoreProps = {
   next: () => void;
 };
 
-const SeedRestore = ({
+function SeedRestore({
   seed, errors, validate, validatePasted, next
-}:SeedRestoreProps) => {
+}:SeedRestoreProps) {
   const [isDisabled, setIsDisabled] = useState(true);
 
   useEffect(() => {
@@ -60,6 +60,6 @@ const SeedRestore = ({
       </div>
     </div>
   );
-};
+}
 
 export default SeedRestore;
