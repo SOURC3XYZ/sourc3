@@ -13,7 +13,6 @@ enum Tag : uint8_t {
     kRepoMember,
     kOrganizationMember,
     kProjectMember,
-    kProjectRepo,
 };
 constexpr Tag kAllTags[] = {kRepo, kObjects, kRefs, kOrganization};
 
@@ -28,12 +27,12 @@ struct Repo {
     using Id = uint64_t;  // big-endinan
 
     enum Permissions : uint8_t {
-        kDeleteRepo = 0b00001,
+        kModifyRepo = 0b00001,
         kAddMember = 0b00010,
         kRemoveMember = 0b00100,
         kPush = 0b01000,
         kModifyMember = 0b10000,
-        kAll = kDeleteRepo | kAddMember | kRemoveMember | kPush | kModifyMember,
+        kAll = kModifyRepo | kAddMember | kRemoveMember | kPush | kModifyMember,
     };
 
     static constexpr size_t kMaxNameSize = 256;
@@ -208,14 +207,6 @@ struct Project {
     size_t name_len;
     char name[];
     static const size_t kMaxNameLen = 256;
-};
-
-struct ProjectRepo {
-    struct Key {
-        Tag tag = Tag::kProjectRepo;
-        Project::Id project_id;
-        Repo::Id repo_id;
-    };
 };
 
 template <Tag TG, class T>

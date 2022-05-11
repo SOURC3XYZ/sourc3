@@ -163,8 +163,9 @@ BEAM_EXPORT void Method_4(const method::SetOrganization& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_5(const method::SetRepo& params) {  // NOLINT
-    // TODO: check permissions
     if (params.request == method::SetRepo::Request::kAdd) {
+        CheckPermissions<Tag::kProjectMember, Project>(
+            params.caller, params.project_id, Project::Permissions::kAddRepo);
         auto repo_name_hash = GetNameHash(params.name, params.name_len);
 
         Repo::NameKey key1(params.caller, repo_name_hash);
@@ -208,11 +209,13 @@ BEAM_EXPORT void Method_5(const method::SetRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_6(const method::SetProject& params) {  // NOLINT
-    // TODO: check permissions
     std::unique_ptr<Project> project(static_cast<Project*>(
         ::operator new(sizeof(Project) + params.name_len)));
 
     if (params.request == method::SetProject::Request::kAdd) {
+        CheckPermissions<Tag::kOrganizationMember, Organization>(
+            params.caller, params.organization_id,
+            Organization::Permissions::kAddProject);
         project->creator = params.caller;
         project->name_len = params.name_len;
         Env::Memcpy(project->name, params.name, params.name_len);
