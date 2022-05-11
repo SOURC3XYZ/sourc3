@@ -256,7 +256,9 @@ BEAM_EXPORT void Method_7(const method::SetRepoMember& params) {  // NOLINT
                                                  Repo::Permissions::kAddMember);
         Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
     } else if (params.request == method::SetRepoMember::Request::kModify) {
-        // TODO: check if member exists
+        Members<Tag::kRepoMember, Repo>::Key key(params.member, params.repo_id);
+        Env::Halt_if(
+            !Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal));
         CheckPermissions<Tag::kRepoMember, Repo>(
             params.caller, params.repo_id, Repo::Permissions::kModifyMember);
         Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
@@ -277,7 +279,10 @@ BEAM_EXPORT void Method_8(const method::SetProjectMember& params) {  // NOLINT
             params.caller, params.project_id, Project::Permissions::kAddMember);
         Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
     } else if (params.request == method::SetProjectMember::Request::kModify) {
-        // TODO: check if member exists
+        Members<Tag::kProjectMember, Project>::Key key(params.member,
+                                                       params.project_id);
+        Env::Halt_if(
+            !Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal));
         CheckPermissions<Tag::kProjectMember, Project>(
             params.caller, params.project_id,
             Project::Permissions::kModifyMember);
@@ -303,7 +308,10 @@ BEAM_EXPORT void Method_9(
         Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
     } else if (params.request ==
                method::SetOrganizationMember::Request::kModify) {
-        // TODO: check if member exists
+        Members<Tag::kOrganizationMember, Organization>::Key key(
+            params.member, params.organization_id);
+        Env::Halt_if(
+            !Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal));
         CheckPermissions<Tag::kOrganizationMember, Organization>(
             params.caller, params.organization_id,
             Organization::Permissions::kModifyMember);
