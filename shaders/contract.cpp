@@ -44,6 +44,12 @@ void SaveNamedObject(const typename T::Key& key,
     Env::SaveVar(&key, sizeof(key), object.get(), sizeof(T) + object->name_len,
                  KeyTag::Internal);
 }
+
+template <class T>
+bool ObjectExists(const typename T::Id& id) {
+    typename T::Key key(id);
+    return Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
+}
 }  // namespace git_remote_beam
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
@@ -242,7 +248,7 @@ BEAM_EXPORT void Method_6(const method::SetProject& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_7(const method::SetRepoMember& params) {  // NOLINT
-    // TODO: check if repo with params.repo_id exists
+    Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
     if (params.request == method::SetRepoMember::Request::kAdd) {
@@ -263,7 +269,7 @@ BEAM_EXPORT void Method_7(const method::SetRepoMember& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_8(const method::SetProjectMember& params) {  // NOLINT
-    // TODO: check if project with params.project_id exists
+    Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
     if (params.request == method::SetProjectMember::Request::kAdd) {
@@ -287,7 +293,7 @@ BEAM_EXPORT void Method_8(const method::SetProjectMember& params) {  // NOLINT
 
 BEAM_EXPORT void Method_9(
     const method::SetOrganizationMember& params) {  // NOLINT
-    // TODO: check if organization with params.organization_id exists
+    Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);
     if (params.request == method::SetOrganizationMember::Request::kAdd) {
