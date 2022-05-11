@@ -165,7 +165,7 @@ struct Organization {
     struct Key {
         Tag tag = Tag::kOrganization;
         Id id;
-        Key(const Id& id) : id(id) {
+        explicit Key(const Id& id) : id(id) {
         }
     };
     enum Permissions : uint8_t {
@@ -189,7 +189,7 @@ struct Project {
     struct Key {
         Tag tag = Tag::kProject;
         Id id;
-        Key(const Id& id) : id(id) {
+        explicit Key(const Id& id) : id(id) {
         }
     };
     enum Permissions : uint8_t {
@@ -247,28 +247,59 @@ struct PushRefs {
     RefsInfo refs_info;
 };
 
-struct SetOrganization {
+struct CreateOrganization {
     static const uint32_t kMethod = 4;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
     PubKey caller;
-    Organization::Id id;  // used only for kModify and kRemove requests
-    size_t name_len;      // used only for kAdd and kModify requests
-    char name[];          // used only for kAdd and kModify requests
+    size_t name_len;
+    char name[];
 };
 
-struct SetRepo {
+struct ModifyOrganization {
     static const uint32_t kMethod = 5;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
-    Project::Id project_id;
-    Repo::Id repo_id;
     PubKey caller;
+    Organization::Id id;
     size_t name_len;
     char name[];
 };
 
-struct SetProject {
+struct RemoveOrganization {
     static const uint32_t kMethod = 6;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
+    PubKey caller;
+    Organization::Id id;
+};
+
+struct CreateRepo {
+    static const uint32_t kMethod = 7;
+    Project::Id project_id;
+    PubKey caller;
+    size_t name_len;
+    char name[];
+};
+
+struct ModifyRepo {
+    static const uint32_t kMethod = 8;
+    Repo::Id repo_id;
+    PubKey caller;
+    size_t name_len;
+    char name[];
+};
+
+struct RemoveRepo {
+    static const uint32_t kMethod = 9;
+    PubKey caller;
+    Repo::Id repo_id;
+};
+
+struct CreateProject {
+    static const uint32_t kMethod = 10;
+    Organization::Id organization_id;
+    PubKey caller;
+    size_t name_len;
+    char name[];
+};
+
+struct ModifyProject {
+    static const uint32_t kMethod = 11;
     Organization::Id organization_id;
     Project::Id project_id;
     PubKey caller;
@@ -276,30 +307,78 @@ struct SetProject {
     char name[];
 };
 
-struct SetRepoMember {
-    static const uint32_t kMethod = 7;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
+struct RemoveProject {
+    static const uint32_t kMethod = 12;
+    Project::Id project_id;
+    PubKey caller;
+};
+
+struct AddRepoMember {
+    static const uint32_t kMethod = 13;
     Repo::Id repo_id;
     PubKey member;
     uint8_t permissions;
     PubKey caller;
 };
 
-struct SetProjectMember {
-    static const uint32_t kMethod = 8;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
+struct ModifyRepoMember {
+    static const uint32_t kMethod = 14;
+    Repo::Id repo_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveRepoMember {
+    static const uint32_t kMethod = 15;
+    Repo::Id repo_id;
+    PubKey member;
+    PubKey caller;
+};
+
+struct AddProjectMember {
+    static const uint32_t kMethod = 16;
     Project::Id project_id;
     PubKey member;
     uint8_t permissions;
     PubKey caller;
 };
 
-struct SetOrganizationMember {
-    static const uint32_t kMethod = 9;
-    enum class Request : uint8_t { kAdd, kModify, kRemove } request;
+struct ModifyProjectMember {
+    static const uint32_t kMethod = 17;
+    Project::Id project_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveProjectMember {
+    static const uint32_t kMethod = 18;
+    Project::Id project_id;
+    PubKey member;
+    PubKey caller;
+};
+
+struct AddOrganizationMember {
+    static const uint32_t kMethod = 19;
     Organization::Id organization_id;
     PubKey member;
     uint8_t permissions;
+    PubKey caller;
+};
+
+struct ModifyOrganizationMember {
+    static const uint32_t kMethod = 20;
+    Organization::Id organization_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveOrganizationMember {
+    static const uint32_t kMethod = 21;
+    Organization::Id organization_id;
+    PubKey member;
     PubKey caller;
 };
 
