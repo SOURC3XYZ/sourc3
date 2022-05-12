@@ -25,7 +25,10 @@ export enum ACTIONS {
   SET_WALLET_CONNECTION = 'SET_WALLET_CONNECTION',
   SET_SEED_TO_VALIDATION = 'SET_SEED_TO_VALIDATION',
   SET_PUBLIC_KEY = 'SET_PUBLIC_KEY',
-  SET_LOCAL_MAP = 'SET_LOCAL_MAP'
+  SET_LOCAL_MAP = 'SET_LOCAL_MAP',
+  SET_REPO_METAS = 'SET_REPO_METAS',
+  SET_REPO_FILE = 'SET_REPO_FILE',
+  SET_TX_LIST = 'SET_TX_LIST'
 }
 
 export enum ActionColor {
@@ -42,12 +45,20 @@ export enum ActionColor {
   SMTH_ORANGE = 'rgba(255, 122, 33, 0.2)'
 }
 
-export enum FileCodes {
-  FOLDER = 16384,
-  LEAF = 33188
-}
-
 export enum Routes {
   AUTH = 'auth',
   MAIN = 'main'
+}
+
+export enum LoadingMessages {
+  COMMITS = 'Building commit tree...',
+  TREE = 'Loading file tree...',
+  FILE = 'Loading file...',
+  HEADLESS = 'Loading decentralized application...'
+}
+
+export enum ToastMessages {
+  EXT_ERR_MSG = 'Extension not found',
+  WALLET_CONNECTED = 'Web wallet connected!',
+  HEADLESS_CONNECTED = 'Headless wallet connected!'
 }

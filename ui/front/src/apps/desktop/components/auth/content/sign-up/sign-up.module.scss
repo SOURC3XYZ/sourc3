@@ -1,0 +1,32 @@
+.wrapper {
+  margin: 0 auto;
+  max-width: 315px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.btnNav {
+  /* margin-top: 30px; */
+  max-width: 315px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btnNav>button {
+  margin-top: 10px;
+}
+
+.forgot {
+  color: rgb(2, 123, 236);
+}
+
+.syncStatusWrapper {
+  margin: 0 auto;
+  max-width: 315px;
+  text-align: center;
+  width: 100%;
+  padding-bottom: 30px;
+}

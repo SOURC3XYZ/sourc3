@@ -8,7 +8,7 @@ type PasswordRestoreType = {
   isCreate?: boolean
 };
 
-const PasswordRestore = ({ onClick, isCreate }: PasswordRestoreType) => {
+function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
   const [base, setBase] = React.useState('');
   const [repeat, setRepeat] = React.useState('');
 
@@ -44,5 +44,5 @@ const PasswordRestore = ({ onClick, isCreate }: PasswordRestoreType) => {
       />
     </Space>
   );
-};
+}
 export default PasswordRestore;

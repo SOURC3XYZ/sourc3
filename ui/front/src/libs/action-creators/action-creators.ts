@@ -13,7 +13,9 @@ import {
   RepoId,
   Seed2ValidationType,
   LocalRepoBranch,
-  LocalRepoName
+  LocalRepoName,
+  MetaHash,
+  TxInfo
 } from '@types';
 
 export const AC = {
@@ -59,6 +61,11 @@ export const AC = {
     payload
   } as const),
 
+  addFileToMap: (payload: [MetaHash, string]) => ({
+    type: ACTIONS.SET_REPO_FILE,
+    payload
+  } as const),
+
   setIsConnected: (payload: boolean) => ({
     type: ACTIONS.CONNECTION,
     payload
@@ -75,7 +82,7 @@ export const AC = {
     payload
   } as const),
 
-  setRepoMeta: (payload: RepoMeta[]) => ({
+  setRepoMeta: (payload: Map<MetaHash, RepoMeta>) => ({
     type: ACTIONS.REPO_META,
     payload
   } as const),
@@ -147,6 +154,11 @@ export const AC = {
 
   setPublicKey: (payload: any) => ({
     type: ACTIONS.SET_PUBLIC_KEY,
+    payload
+  } as const),
+
+  setTxList: (payload: TxInfo[]) => ({
+    type: ACTIONS.SET_TX_LIST,
     payload
   } as const)
 

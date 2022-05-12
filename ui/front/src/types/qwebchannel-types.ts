@@ -23,6 +23,7 @@ export type QObject = {
   callApi: (callid: string, method: string, params: {
     [key:string]:string | number | boolean | number[] }) => void;
   initializeShader: (contract: string, name: string) => void;
+  delete: () => void;
 };
 
 export type QBEAM = {

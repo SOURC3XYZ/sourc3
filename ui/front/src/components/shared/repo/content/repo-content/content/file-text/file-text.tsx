@@ -1,68 +1,44 @@
+import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared';
-import { getTree } from '@libs/utils';
-import {
-  DataNode, IDataNodeCustom, RepoId, UpdateProps
-} from '@types';
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { LoadingMessages } from '@libs/constants';
+import { useFileText, FileTextProps } from '@libs/hooks/container/user-repos';
 import { syntax } from './syntax';
+import styles from './file-text.module.scss';
 
 syntax.forEach((el) => SyntaxHighlighter.registerLanguage(el.ext, el.data));
 
-type FileTextProps = {
-  id: RepoId;
-  fileText: string | null;
-  tree: DataNode[] | null;
-  pathArray: string[];
-  getFileData: (repoId: RepoId, oid: string) => void;
-  updateTree: (props: UpdateProps) => void
-};
+function FileText(props: FileTextProps) {
+  const {
+    ext,
+    text,
+    isLoaded
+  } = useFileText(props);
 
-const FileText = ({
-  id, tree, fileText, pathArray, getFileData, updateTree
-}: FileTextProps) => {
-  const [ext, setExt] = useState('');
-
-  const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id });
-  };
-
-  const fileChecker = () => {
-    const fileName = pathArray.pop();
-    const currentFileList = tree && getTree(
-      tree, pathArray, updateTreeDecor
-    );
-    if (currentFileList) {
-      const file = currentFileList.find(
-        (el) => el.title === fileName
-      ) as IDataNodeCustom | undefined;
-      if (file) getFileData(id, file.dataRef.oid);
-      else throw new Error('no file');
-    }
-    if (fileName) {
-      setExt(fileName.slice(fileName.lastIndexOf('.') + 1));
-    }
-  };
-
-  useEffect(fileChecker, [tree]);
+  const FilePreloadFallback = useCallback(() => (
+    <Preload
+      className={styles.preload}
+      message={LoadingMessages.FILE}
+    />
+  ), []);
 
   return (
-    <>
-      {fileText === null
-        ? <Preload />
-        : (
-          <SyntaxHighlighter
-            language={ext}
-            wrapLongLine
-            showLineNumbers
-            style={vs}
-          >
-            {fileText}
-          </SyntaxHighlighter>
-        ) }
-    </>
+    <PreloadComponent
+      isLoaded={isLoaded}
+      Fallback={FilePreloadFallback}
+    >
+      <SyntaxHighlighter
+        language={ext}
+        showLineNumbers
+        style={vs}
+        className={styles.syntax}
+      >
+        {text}
+      </SyntaxHighlighter>
+    </PreloadComponent>
   );
-};
+}
 
 export default FileText;

@@ -7,14 +7,15 @@ import { Route, Routes } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Login, Start, SignUp } from './content';
 import { Restore } from './content/restore';
-import styles from './auth.module.css';
+import styles from './auth.module.scss';
 
 type LoggedProps = {
   isWalletConnected: boolean;
   isApiConnected: boolean;
   mountWallet: () => void;
   killWalletApi: () => void;
-  startWalletApi: (password: string, cb: (err?: Error) => void) => void
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void,
+  statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
 };
 
 type FallbackProps = {
@@ -26,7 +27,8 @@ function Auth({
   isApiConnected,
   killWalletApi,
   mountWallet,
-  startWalletApi
+  startWalletApi,
+  statusFetcher
 }: LoggedProps) {
   const isConnected = isWalletConnected && !isApiConnected;
 
@@ -43,7 +45,11 @@ function Auth({
       link: 'sign-up', component: <SignUp />
     },
     {
-      link: 'login', component: <Login startWalletApi={startWalletApi} />
+      link: 'login',
+      component: <Login
+        statusFetcher={statusFetcher}
+        startWalletApi={startWalletApi}
+      />
     },
     {
       link: 'restore', component: <Restore />
@@ -71,18 +77,15 @@ function Auth({
     />
   ));
 
-  return (
-    <>
-      {isConnected
-        ? (
-          <div className={styles.logged}>
-            <Routes>
-              {routeElements}
-            </Routes>
-          </div>
-        )
-        : <Preload />}
-    </>
+  return (isConnected
+    ? (
+      <div className={styles.logged}>
+        <Routes>
+          {routeElements}
+        </Routes>
+      </div>
+    )
+    : <Preload />
   );
 }
 
@@ -97,8 +100,12 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
   mountWallet: () => dispatch(thunks.mountWallet()),
   killWalletApi: () => dispatch(thunks.killBeamApi()),
   startWalletApi: (
-    password: string, cb: (err?:Error) => void
-  ) => dispatch(thunks.startWalletApi(password, cb))
+    password: string,
+    cb: (err?:Error) => void
+  ) => dispatch(thunks.startWalletApi(password, cb)),
+  statusFetcher: (
+    resolve: PromiseArg<{ status: number }>
+  ) => dispatch(thunks.getSyncStatus(resolve))
 });
 
 export default connect(mapState, mapDispatch)(Auth);

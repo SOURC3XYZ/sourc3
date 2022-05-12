@@ -1,13 +1,16 @@
 import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
-  DataNode, RepoId, UpdateProps
+  DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
 import { List } from 'antd';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
+import { useAsyncError } from '@libs/hooks/shared';
+import { PreloadComponent } from '@components/hoc';
+import { LoadingMessages } from '@libs/constants';
 import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
@@ -15,7 +18,7 @@ type FileTreeBlockProps = {
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
-  updateTree: (props: UpdateProps) => void;
+  updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void;
 };
 
 const leafCreator = (url:string, node: DataNode) => {
@@ -53,35 +56,41 @@ const leafCreator = (url:string, node: DataNode) => {
   );
 };
 
-const FileTreeBlock = ({
+function FileTreeBlock({
   id, tree, pathname, pathArray, updateTree
-}:FileTreeBlockProps) => {
+}:FileTreeBlockProps) {
+  const setError = useAsyncError();
+
   const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id });
+    updateTree({ ...props, id }, setError);
   };
+
+  const TreeListPreloadFallback = useCallback(() => (
+    <Preload
+      message={LoadingMessages.TREE}
+      className={styles.preload}
+    />
+  ), []);
 
   const treeList = tree && getTree(
     tree,
     pathArray,
     updateTreeDecor
   );
-  // .map((el) => leafCreator(pathname, el));
   return (
-    <>
-      {
-        treeList
-          ? (
-            <List
-              className={styles.tree}
-              bordered
-              size="small"
-              dataSource={treeList}
-              renderItem={(item) => leafCreator(pathname, item)}
-            />
-          ) : <Preload />
-      }
-    </>
+    <PreloadComponent
+      isLoaded={!!treeList}
+      Fallback={TreeListPreloadFallback}
+    >
+      <List
+        className={styles.tree}
+        bordered
+        size="small"
+        dataSource={treeList || undefined}
+        renderItem={(item) => leafCreator(pathname, item)}
+      />
+    </PreloadComponent>
   );
-};
+}
 
 export default React.memo(FileTreeBlock);

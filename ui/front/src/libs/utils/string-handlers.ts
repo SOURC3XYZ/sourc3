@@ -7,13 +7,29 @@ export const argsStringify = (args: BeamReqAction): string => Object
   .map((arg) => arg.join('='))
   .join(',');
 
+export function arrayBufferToString(buffer:number[]) {
+  const bytes = new Uint8Array(buffer);
+  return new TextDecoder().decode(bytes);
+}
+
+export const str2bytes = (str: string) => {
+  const utf8Encode = new TextEncoder();
+  return Array.from(utf8Encode.encode(str));
+};
+
 export const hexParser = (str: ObjectData) => {
   const bytes = new Uint8Array(
-    str.match(/.{1,2}/g)
-      ?.map((byte) => parseInt(byte, 16)) as number[]
+    str.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) as number[]
   );
   return new TextDecoder().decode(bytes);
 };
+
+export function buf2hex(buffer: number[] | ArrayBuffer) {
+  // buffer is an ArrayBuffer
+  return [...new Uint8Array(buffer)]
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 export const equalKeyIndex = (key: string, inputText: string) => key
   .toLowerCase()
@@ -29,11 +45,9 @@ export function searchFilter<T>(
       const entries = Object.entries(el) as [keyof T, T[keyof T]][];
       const filtered = entries
         .filter((field) => keysToEqual.find((key) => key === field[0]))
-        .find(
-          (field) => (
-            typeof field[1] === 'string' || typeof field[1] === 'number')
-            && ~(equalKeyIndex(String(field[1]), searchInputTxt))
-        );
+        .find((field) => (
+          typeof field[1] === 'string' || typeof field[1] === 'number')
+            && ~(equalKeyIndex(String(field[1]), searchInputTxt)));
       if (filtered) return el;
       return null;
     });
@@ -53,7 +67,7 @@ export const parseToBeam = (groth: number):string => {
 
 export const handleString = (next:string):boolean => {
   let result = true;
-  const regex = new RegExp(/^-?\d+(\.\d*)?$/g);
+  const regex = /^-?\d+(\.\d*)?$/g;
   const floatValue = parseFloat(next);
   const afterDot = next.indexOf('.') > 0
     ? next.substring(next.indexOf('.') + 1)
@@ -78,10 +92,6 @@ export const handleString = (next:string):boolean => {
   return result;
 };
 
-export const fullBranchName = (
-  clippedName:string, base: 'refs/heads/'
-) => `${base}${clippedName}`;
+export const fullBranchName = (clippedName:string, base: 'refs/heads/') => `${base}${clippedName}`;
 
-export const clipString = (
-  fullName:string, cut = 'refs/heads/'
-) => fullName.replace(cut, '');
+export const clipString = (fullName:string, cut = 'refs/heads/') => fullName.replace(cut, '');

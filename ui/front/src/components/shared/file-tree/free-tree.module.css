@@ -1,8 +1,0 @@
-.customTree [class~=ant-tree-treenode]{
-	width: max-content;
-}
-
-.leaf {
-	text-decoration: none;
-	color: black
-}

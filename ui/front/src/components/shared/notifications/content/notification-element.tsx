@@ -12,12 +12,12 @@ type NotificationElementProps = {
   setNotifiedTrue: (txItem: TxItem) => void
 };
 
-const NotificationElement = ({
+function NotificationElement({
   txItem,
   checkTxStatus,
   removeTx,
   setNotifiedTrue
-}: NotificationElementProps) => {
+}: NotificationElementProps) {
   const [properties, setProperties] = React.useState<TxResponse | null>(null);
   const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -47,6 +47,7 @@ const NotificationElement = ({
         description: txItem.id as React.ReactNode,
         placement: 'bottomRight' as NotificationPlacement
       };
+
       switch (properties.status_string) {
         case STATUS.IN_PROGRESS:
         case STATUS.PENDING:
@@ -83,6 +84,6 @@ const NotificationElement = ({
   React.useEffect(notificationManager, [properties]);
 
   return <></>;
-};
+}
 
 export default NotificationElement;

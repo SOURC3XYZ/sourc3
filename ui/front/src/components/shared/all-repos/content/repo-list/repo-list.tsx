@@ -1,6 +1,7 @@
 import { RepoType } from '@types';
 import { List } from 'antd';
-import { useEffect, useRef } from 'react';
+import { PaginationConfig } from 'antd/lib/pagination';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ListItem } from './content';
 import styles from './repo-list.module.scss';
@@ -14,26 +15,35 @@ type ListRenderProps = {
   searchText: string;
 };
 
-const RepoList = ({
+function RepoList({
   page = 1, type = 'repos', elements, searchText, path, deleteRepos
-}:ListRenderProps) => {
+}:ListRenderProps) {
   const navigate = useNavigate();
   const textCash = useRef(searchText);
+
+  const [pageSize, setPageSize] = useState(4);
 
   const onChange = (next:number) => navigate(`${path}repos/${type}/${next}`);
 
   useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      navigate(`${path}repos/${type}/${1}`);
+      navigate(`${path}repos/${type}/${1}`, { replace: true });
     }
   }, [searchText]);
 
-  const pagination = {
-    hideOnSinglePage: true,
-    pageSize: 3,
+  const onShowSizeChange = (current:number, size:number) => {
+    if (current !== pageSize) setPageSize(size);
+  };
+
+  const pagination:PaginationConfig = {
+    className: styles.pagination,
+    size: 'small',
     current: page,
-    onChange
+    pageSizeOptions: ['4', '8', '16', '32', '64', '128'],
+    pageSize,
+    onChange,
+    onShowSizeChange
   };
   return (
     <List
@@ -52,6 +62,6 @@ const RepoList = ({
       )}
     />
   );
-};
+}
 
 export default RepoList;

@@ -1,106 +1,43 @@
-import { useEffect } from 'react';
 import {
-  Button, Modal, Input, Tooltip, Row, Col, Statistic, message, Card
+  Button, Modal, Input, Tooltip, Row, Col, Statistic, Card, Checkbox
 } from 'antd';
 import {
   InfoCircleOutlined,
   UserOutlined,
   WechatOutlined
 } from '@ant-design/icons';
-import { thunks } from '@libs/action-creators';
-import { connect } from 'react-redux';
-import { AppThunkDispatch, RootState } from '@libs/redux';
-import { useObjectState } from '@libs/hooks';
 import { Link } from 'react-router-dom';
+import { useManager } from '@libs/hooks/container/manager';
 import styles from './manager.module.css';
 
 type ManagerProps = {
-  getWalletStatus: () => void,
-  // getWalletAddressList: ()=> void
-  setWalletSendBeam: (
-    amountValue: number,
-    addressValue:string,
-    fromValue:string,
-    commentValue:string)=> void
-  balance: number,
-  addrList: string,
   isDesk?: boolean
 };
 
-const initialState = {
-  visible: false,
-  adress: '',
-  amount: 0,
-  comment: ''
-};
+function Manager({ isDesk }: ManagerProps) {
+  const talonProps = useManager();
 
-const Manager = ({
-  getWalletStatus,
-  // getWalletAddressList,
-  setWalletSendBeam,
-  balance,
-  addrList,
-  isDesk
-}: ManagerProps) => {
-  const [state, setState] = useObjectState(initialState);
   const {
-    visible, adress, amount, comment
-  } = state;
-  // const [confirmLoading, setConfirmLoading] = useState(false);
-  // const [modalText, setModalText] = useState('Content of the modal');
+    balance,
+    visible,
+    offline,
+    address,
+    comment,
+    amount,
+    clear,
+    showModal,
+    handleOk,
+    handleCommentValue,
+    handleOffline,
+    handleAmountValue,
+    handleCancel,
+    handleAddressValue
+  } = talonProps;
 
-  useEffect(() => {
-    getWalletStatus();
-    // getWalletAddressList();
-  }, []);
-
-  const showModal = () => {
-    setState({
-      adress: '',
-      amount: 0,
-      comment: '',
-      visible: true
-    });
-  };
-
-  const clear = () => {
-    setState({ visible: false });
-  };
-
-  const handleOk = () => {
-    if (!adress) {
-      message.error('Field address not be full');
-      return;
-    }
-    if (!amount) {
-      message.error('Field amount not be full');
-      return;
-    }
-    setWalletSendBeam(amount, addrList, adress, comment);
-    setState({ visible: false });
-  };
-
-  const handleCancel = () => {
-    setState({ visible: false });
-  };
-  const handleAddressValue = (event:any) => {
-    setState({ adress: event?.target.value });
-  };
-  const handleAmountValue = (event:any) => {
-    const target = event?.target.value;
-    const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);
-    const value = target.match(regExp);
-    setState({ amount: value });
-  };
-
-  const handleCommentValue = (event:any) => {
-    setState({ comment: event?.target.value });
-  };
-  console.log(amount);
   return (
     <>
       {
-        isDesk ? (<Link to="/main">Back</Link>) : (<></>)
+        isDesk && (<Link to="/main">Back</Link>)
       }
       <div className={styles.info}>
         <Card
@@ -108,9 +45,6 @@ const Manager = ({
           style={{ width: 300, height: 200, marginLeft: 10 }}
         >
           <Row gutter={16}>
-            {/* <Col span={12}>
-          <Statistic title="Active Users" value={112893} />
-        </Col> */}
             <Col span={25}>
               <Statistic title="Account Balance:" value={`${balance} BEAM`} />
               <div className={styles.balanceBtn}>
@@ -122,14 +56,6 @@ const Manager = ({
                 >
                   SEND
                 </Button>
-                {/* <Button
-              type="primary"
-              shape="round"
-              size="small"
-              onClick={showModal}
-            >
-              RECIEVE
-            </Button> */}
               </div>
             </Col>
           </Row>
@@ -138,7 +64,6 @@ const Manager = ({
       <Modal
         title="SEND BEAM"
         visible={visible}
-        // confirmLoading={confirmLoading}
         onCancel={handleCancel}
         footer={[
           <Button key="back" onClick={clear}>
@@ -156,7 +81,7 @@ const Manager = ({
             prefix={<UserOutlined className="site-form-item-icon" />}
             placeholder="Past recipient address here"
             onChange={handleAddressValue}
-            value={adress}
+            value={address}
             name="address"
             suffix={(
               <Tooltip title="Extra information">
@@ -190,7 +115,6 @@ const Manager = ({
         <br />
         <label htmlFor="comment">
           Comment
-          {' '}
           <Input
             id="comment"
             value={comment}
@@ -198,33 +122,15 @@ const Manager = ({
             placeholder="Comment"
             onChange={handleCommentValue}
           />
-
+        </label>
+        <br />
+        <br />
+        <label htmlFor="offline">
+          <Checkbox checked={offline} onChange={handleOffline}>Offline</Checkbox>
         </label>
       </Modal>
     </>
   );
-};
+}
 
-const mapState = ({ app: { balance, addrList } }: RootState) => ({
-  balance,
-  addrList
-});
-
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getWalletStatus: () => {
-    dispatch(thunks.getWalletStatus());
-  },
-
-  getWalletAddressList: () => {
-    // dispatch(thunks.getWalletAddressList());
-  },
-  setWalletSendBeam: (
-    amountValue: number, fromValue:string, addressValue:string,
-    commentValue:string
-  ) => {
-    console.log(fromValue);
-    dispatch(thunks.setWalletSendBeam(amountValue, fromValue, addressValue,
-      commentValue));
-  }
-});
-export default connect(mapState, mapDispatch)(Manager);
+export default Manager;

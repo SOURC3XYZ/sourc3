@@ -1,42 +1,50 @@
-.nav{
+.nav {
     width: 100%;
-    ul{
+
+    ul {
         border-bottom: none;
     }
+
     a {
         font-family: VisbyBold;
         font-size: 1rem;
         opacity: 0.5;
     }
-    [class~=ant-menu-item-active][class~=ant-menu-item-active][class~=ant-menu-item-active]:after{
+
+    [class~=ant-menu-item-active][class~=ant-menu-item-active][class~=ant-menu-item-active]:after {
         border-bottom: 4px solid #000000;
         opacity: 1;
-        a{
+
+        a {
             color: #000000;
         }
 
     }
-    [class~=ant-menu-item][class~=ant-menu-item]:hover:after{
+
+    [class~=ant-menu-item][class~=ant-menu-item]:hover:after {
         border-bottom: 4px solid transparent;
         opacity: 1;
     }
 
-    [class~=ant-menu-item]:hover{
+    [class~=ant-menu-item]:hover {
+
         // border-bottom: none;
-        a{
+        a {
             color: #000000;
             opacity: 1;
         }
     }
-    
-    [class~=ant-menu-item-selected]{
+
+    [class~=ant-menu-item-selected] {
         border-bottom: 4px solid #000000;
-        a{
+
+        a {
             color: #000000;
             opacity: 1;
         }
     }
-    [class~=ant-menu-item-selected][class~=ant-menu-item-selected]:after{
+
+    [class~=ant-menu-item-selected][class~=ant-menu-item-selected]:after {
         border-bottom: 4px solid transparent;
         opacity: 1;
     }

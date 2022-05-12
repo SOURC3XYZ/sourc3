@@ -4,19 +4,12 @@ import {
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
-import React, { ChangeEvent, useCallback } from 'react';
+import { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
-import { useLocation, useParams } from 'react-router-dom';
-import { searchFilter } from '@libs/utils';
-import { useObjectState } from '@libs/hooks';
+import { useAllRepos } from '@libs/hooks/container/all-repos';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
-
-type LocationState = {
-  page: string,
-  type: RepoListType
-};
 
 type AllReposProps = {
   pkey:string,
@@ -28,13 +21,7 @@ type AllReposProps = {
   setPrevHref: (href: string) => void
 };
 
-const initialState = {
-  isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
-};
-
-const AllRepos = ({
+function AllRepos({
   pkey,
   repos,
   searchText,
@@ -42,67 +29,59 @@ const AllRepos = ({
   deleteRepos,
   setInputText,
   setPrevHref
-}:AllReposProps) => {
-  const { pathname } = useLocation();
-  const { type, page } = useParams<'type' & 'page'>() as LocationState;
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isModalVisible, inputRepoName } = state;
-  const path = pathname.split('repos/')[0];
+}:AllReposProps) {
+  const talonProps = useAllRepos({
+    pkey,
+    repos,
+    searchText,
+    setPrevHref,
+    createRepos
+  });
 
-  const byRouteRepos = pkey && type === 'my'
-    ? repos.filter(({ repo_owner }) => repo_owner === pkey)
-    : repos;
+  const {
+    state,
+    repoListProps,
+    isModalVisible,
+    inputRepoName,
+    showModal,
+    handleOk,
+    handleCancel,
+    handleChange
+  } = talonProps;
 
-  const filteredRepos = React.useMemo(() => searchFilter(
-    searchText, byRouteRepos, ['repo_id', 'repo_name']
-  ), [searchText, repos, type]);
+  const { type, path } = repoListProps;
 
-  React.useEffect(() => {
-    setPrevHref(pathname);
-  }, [page]);
-
-  const showModal = () => {
-    setState({ isModalVisible: true });
-  };
-
-  const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
-  };
-
-  const handleCancel = () => {
-    setState({ isModalVisible: false });
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setState({ inputRepoName: e.target.value });
-  };
-
-  const RepoManager = (inputText: string) => (
+  const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
-      <Nav type={type} path={path} />
+      {pkey && <Nav type={type} path={path} />}
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>
           <Search
-            text={inputText}
+            text={searchText}
             setInputText={setInputText}
             placeholder="Search by repo name or ID"
           />
         </div>
-        <div className={styles.buttonWrapper}>
-          <BeamButton callback={showModal}>
-            Add new
-          </BeamButton>
-        </div>
+        {pkey && (
+          <div className={styles.buttonWrapper}>
+            <BeamButton callback={showModal}>
+              Add new
+            </BeamButton>
+          </div>
+        )}
       </div>
 
       <Modal
         visible={isModalVisible}
-        onOk={handleOk}
         onCancel={handleCancel}
         closable={false}
+        footer={[
+          <BeamButton callback={handleOk}>
+            Add
+          </BeamButton>
+        ]}
       >
         <Input
           placeholder="Enter name repository"
@@ -112,28 +91,19 @@ const AllRepos = ({
         />
       </Modal>
     </div>
-  );
-
-  const RepoManagerView = useCallback((props:{ text:string }) => (
-    <>
-      {pkey && RepoManager(props.text)}
-    </>
-  ), [pkey, state]);
+  ), [searchText, state, pkey]);
 
   return (
     <div className={styles.content}>
-      <RepoManagerView text={searchText} />
+      {repoManager}
       <RepoList
-        path={path}
+        {...repoListProps}
         searchText={searchText}
-        page={+page}
         deleteRepos={deleteRepos}
-        elements={filteredRepos}
-        type={type}
       />
     </div>
   );
-};
+}
 
 const mapState = ({
   app: { isApiConnected, pkey },

@@ -1,21 +1,17 @@
 import { AllRepos, NavButton } from '@components/shared';
 import { thunks } from '@libs/action-creators';
-import { useObjectState } from '@libs/hooks';
+import { useObjectState } from '@libs/hooks/shared';
 import { AppThunkDispatch, RootState } from '@libs/redux';
-import { loadingData } from '@libs/utils';
 import { RepoListType, RepoType } from '@types';
 import { Input } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import Text from 'antd/lib/typography/Text';
-import { useEffect } from 'react';
 import { connect } from 'react-redux';
-import styles from './repositories.module.css';
+import styles from './repositories.module.scss';
 
 type EmptyPropsType = {
   createRepos: (repo_name:string) => void,
-  repos: RepoType[],
-  getAllRepos: (type: RepoListType) => (resolve: () => void) => void,
-
+  repos: RepoType[]
 };
 
 const initialState = {
@@ -23,12 +19,11 @@ const initialState = {
   isModalVisible: false,
   inputRepoName: ''
 };
-const Repositories = ({
-  createRepos, repos, getAllRepos
-}:EmptyPropsType) => {
+function Repositories({
+  createRepos, repos
+}:EmptyPropsType) {
   const [state, setState] = useObjectState(initialState);
   const { isModalVisible, inputRepoName } = state;
-  const type = 'my';
   const showModal = () => {
     setState({ isModalVisible: true });
   };
@@ -45,10 +40,6 @@ const Repositories = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setState({ inputRepoName: e.target.value });
   };
-  useEffect(() => {
-    loadingData(getAllRepos(type))
-      .then(() => setState({ isLoading: false }));
-  }, []);
 
   return (
     <>
@@ -85,7 +76,7 @@ const Repositories = ({
     </>
 
   );
-};
+}
 const mapState = ({
   app: { isApiConnected }, repos: { repos }
 }: RootState) => ({

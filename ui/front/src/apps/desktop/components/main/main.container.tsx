@@ -1,4 +1,5 @@
 import {
+  AllRepos,
   Header,
   Manager, Notifications, Preload, Repo
 } from '@components/shared';
@@ -9,8 +10,8 @@ import React, { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { CONTRACT } from '@libs/constants';
-import styles from './main.module.css';
-import { LocalRepos, Repositories } from './content';
+import styles from './main.module.scss';
+import { LocalRepos } from './content';
 
 type MainDeskProps = {
   connectApi: (host:string) => void,
@@ -21,9 +22,9 @@ type MainDeskProps = {
 
 const beamHost = `${CONTRACT.HOST}/beam`;
 
-const App = ({
+function App({
   isApiConnected, connectApi, balance, pkey
-}: MainDeskProps) => {
+}: MainDeskProps) {
   React.useEffect(() => {
     if (!isApiConnected) connectApi(beamHost);
   }, []);
@@ -31,11 +32,11 @@ const App = ({
   const data = [
     {
       path: '/',
-      element: <Navigate replace to="repos/my/1" />
+      element: <Navigate replace to="repos/all/1" />
     },
     {
       path: 'repos/:type/:page',
-      element: <Repositories />
+      element: <AllRepos />
     },
     {
       path: '/repo/:repoParams/*',
@@ -52,7 +53,7 @@ const App = ({
   ];
 
   const routes = data.map(
-    ({ path, element }) => <Route path={path} element={element} />
+    ({ path, element }) => <Route key={path} path={path} element={element} />
   );
 
   const View = useMemo(() => {
@@ -72,7 +73,7 @@ const App = ({
       </div>
     </>
   );
-};
+}
 const mapState = ({
   app: { isApiConnected, balance, pkey }
 }: RootState) => ({

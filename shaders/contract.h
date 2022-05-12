@@ -4,275 +4,343 @@
 #include "Shaders/common.h"
 #include "../upgradable3/contract.h"
 
-namespace GitRemoteBeam
-{
+namespace git_remote_beam {
+enum Tag : uint8_t {
+  kRepo,
+  kObjects,
+  kRefs,
+  kOrganization,
+  kProject,
+  kOrganizationMember,
+  kProjectMember,
+  kProjectRepo,
+};
+constexpr Tag kAllTags[] = {kRepo, kObjects, kRefs, kOrganization};
 
-#include "contract_sid.i"
-
-    enum Operations : uint8_t {
-        REPO,
-        OBJECTS,
-        REFS,
-    };
-    constexpr Operations ALL_OPERATIONS[] = { REPO, OBJECTS, REFS };
-
-	enum Permissions : uint8_t {
-		DELETE_REPO = 0b0001,
-		ADD_USER = 0b0010,
-		REMOVE_USER = 0b0100,
-		PUSH = 0b1000,
-		ALL = DELETE_REPO | ADD_USER | REMOVE_USER | PUSH,
-	};
+enum Permissions : uint8_t {
+  kDeleteRepo = 0b0001,
+  kAddUser = 0b0010,
+  kRemoveUser = 0b0100,
+  kPush = 0b1000,
+  kAllPermissions = kDeleteRepo | kAddUser | kRemoveUser | kPush,
+};
 
 #pragma pack(push, 1)
 
-	typedef Opaque<20> git_oid;
-	typedef Opaque<32> Hash256;
+using GitOid = Opaque<20>;
+using Hash256 = Opaque<32>;
 
-    struct Config {
-        PubKey m_pkAdmin;
+Hash256 GetNameHash(const char* name, size_t len);
+
+struct RepoInfo {
+  using Id = uint64_t;  // big-endinan
+
+  static constexpr size_t kMaxNameSize = 256;
+
+  struct NameKey {
+    PubKey owner;
+    Hash256 name_hash;
+    NameKey(const PubKey& o, const Hash256& h) : owner(o) {
+      Env::Memcpy(&name_hash, &h, sizeof(name_hash));
+    }
+  };
+  struct BaseKey {
+    Tag tag;
+    Id repo_id;
+    BaseKey(Tag t, RepoInfo::Id id)
+        : tag(t),
+          repo_id(Utils::FromBE(id)) {}  // swap bytes
+  };
+  struct Key : BaseKey {
+    explicit Key(RepoInfo::Id id) : BaseKey(kRepo, id) {}
+    Key() : Key(0) {}
+  };
+
+  Hash256 name_hash;
+  Id repo_id;
+  size_t cur_objs_number;
+  PubKey owner;
+  size_t name_length;
+  char name[];
+};
+
+struct GitObject {
+  using Id = uint64_t;
+
+  struct Meta {
+    struct Key : RepoInfo::BaseKey {
+      Id obj_id;
+      Key(RepoInfo::Id rid, const Id& oid)
+          : RepoInfo::BaseKey(kObjects, rid), obj_id(oid) {}
+    };
+    enum Type : int8_t {
+      // excerpt from libgit2
+      kGitObjectCommit = 1, /**< A commit object. */
+      kGitObjectTree = 2,   /**< A tree (directory listing) object. */
+      kGitObjectBlob = 3,   /**< A file revision object. */
+      kGitObjectTag = 4,    /**< An annotated tag object. */
+    } type;
+    Id id;
+    GitOid hash;
+    uint32_t data_size;
+  } meta;
+
+  struct Data {
+    struct Key : RepoInfo::BaseKey {
+      GitOid hash;
+      Key(RepoInfo::Id rid, const GitOid& oid)
+          : RepoInfo::BaseKey(kObjects, rid) {
+        Env::Memcpy(&hash, &oid, sizeof(oid));
+      }
     };
 
-    struct State {
-        static const uint8_t s_Key = 0;
+    char data[];
+  } data;
 
-        Config m_Config;
-    };
+  /*
+  GitObject& operator=(const GitObject& from)
+  {
+          this->hash = from.hash;
+          this->data_size = from.data_size;
+          this->type = from.type;
+          Env::Memcpy(this->data, from.data, from.data_size);
+          return *this;
+  }
+  */
+};
 
-	Hash256 get_name_hash(const char* name, size_t len);
+struct GitRef {
+  static constexpr size_t kMaxNameSize = 256;
+  struct Key : RepoInfo::BaseKey {
+    Hash256 name_hash;
+    Key(RepoInfo::Id rid, const Hash256& nh)
+        : RepoInfo::BaseKey(kRefs, rid), name_hash(nh) {
+      Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
+    }
 
-	struct RepoInfo
-	{
-		static constexpr size_t MAX_NAME_SIZE = 256;
-		struct NameKey
-		{
-			PubKey	owner;
-			Hash256	name_hash;
-			NameKey(const PubKey& o, const Hash256& h)
-				: owner(o)
-			{
-				Env::Memcpy(&name_hash, &h, sizeof(name_hash));
-			}
-		};
-		using ID = uint64_t; // big-endinan
-		struct BaseKey
-		{
-			Operations	tag;
-			ID			repo_id;
-			BaseKey(Operations t, RepoInfo::ID id)
-				: tag(t)
-				, repo_id(Utils::FromBE(id)) // swap bytes
-			{
+    Key(RepoInfo::Id rid, const char* name, size_t len)
+        : RepoInfo::BaseKey(kRefs, rid), name_hash(GetNameHash(name, len)) {}
 
-			}
-		};
-		struct Key : BaseKey
-		{
-			Key(RepoInfo::ID id)
-				: BaseKey(REPO, id)
-			{
+    Key() : RepoInfo::BaseKey(kRefs, 0) {}
+  };
 
-			}
-			Key() : Key(0)
-			{
+  GitOid commit_hash;
+  size_t name_length;
+  char name[];
 
-			}
-		};
+  GitRef& operator=(const GitRef& from) {
+    this->commit_hash = from.commit_hash;
+    Env::Memcpy(this->name, from.name, from.name_length);
+    return *this;
+  }
+};
 
-		Hash256 name_hash;
-		ID repo_id;
-		size_t cur_objs_number;
-		PubKey owner;
-		size_t name_length;
-		char name[];
-	};
+struct ObjectsInfo {
+  size_t objects_number;
+  // GitObject objects[];
+  //  data
+};
 
-	struct GitObject
-	{
-		using ID = uint64_t;
+struct RefsInfo {
+  size_t refs_number;
+  GitRef refs[];
+};
 
-		struct Meta
-		{
-			struct Key : RepoInfo::BaseKey
-			{
-				ID obj_id;
-				Key(RepoInfo::ID rid, const ID& oid)
-					: RepoInfo::BaseKey(OBJECTS, rid), obj_id(oid)
-				{}
-			};
-			enum Type : int8_t 
-			{
-				// excerpt from libgit2
-				GIT_OBJECT_COMMIT = 1, /**< A commit object. */
-				GIT_OBJECT_TREE = 2, /**< A tree (directory listing) object. */
-				GIT_OBJECT_BLOB = 3, /**< A file revision object. */
-				GIT_OBJECT_TAG = 4, /**< An annotated tag object. */
-			} type;
-			ID id;
-			git_oid hash;
-			uint32_t data_size;
-		} meta;
+struct RepoUser {
+  struct Key {
+    PubKey user;
+    RepoInfo::Id repo_id;
+    Key(const PubKey& u, RepoInfo::Id id) : user(u), repo_id(id) {}
+  };
+};
 
-		struct Data
-		{
-			struct Key : RepoInfo::BaseKey
-			{
-				git_oid	hash;
-				Key(RepoInfo::ID rid, const git_oid& oid)
-					: RepoInfo::BaseKey(OBJECTS, rid)
-				{
-					Env::Memcpy(&hash, &oid, sizeof(oid));
-				}
-			};
-			char data[];
-		} data;
+struct UserInfo {
+  uint8_t permissions;
+};
 
-		/*
-		GitObject& operator=(const GitObject& from)
-		{
-			this->hash = from.hash;
-			this->data_size = from.data_size;
-			this->type = from.type;
-			Env::Memcpy(this->data, from.data, from.data_size);
-			return *this;
-		}
-		*/
-	};
+struct ContractState {
+  uint64_t last_repo_id;
+};
 
-	struct GitRef
-	{
-		static constexpr size_t MAX_NAME_SIZE = 256;
-		struct Key : RepoInfo::BaseKey
-		{
-			Hash256 name_hash;
-			Key(RepoInfo::ID rid, const Hash256& nh)
-				: RepoInfo::BaseKey(REFS, rid)
-				, name_hash(nh)
-			{
-				Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
-			}
+struct Organization {
+  using Id = uint64_t;
+  struct Key {
+    Tag tag = Tag::kOrganization;
+    Id id;
+  };
+  enum Permission : uint8_t {
+    kAddProject =     0b000001,
+    kAddMember =      0b000010,
+    kRemoveProject =  0b000100,
+    kRemoveMember =   0b001000,
+    kModifyMember =   0b010000,
+    kModifyProject =  0b100000,
+    kAll = kAddProject | kAddMember | kRemoveProject | kRemoveMember |
+      kModifyProject | kModifyMember,
+  };
+  PubKey creator;
+  size_t name_len;
+  char name[];
+  //name of variable length
+  static const size_t kMaxNameLen = 256;
+};
 
-			Key(RepoInfo::ID rid, const char* name, size_t len)
-				: RepoInfo::BaseKey(REFS, rid)
-				, name_hash(get_name_hash(name, len))
-			{
-			}
+struct Project {
+  using Id = uint64_t;
+  struct Key {
+    Tag tag = Tag::kProject;
+    Id id;
+  };
+  enum Permission : uint8_t {
+    kAddRepo =      0b000001,
+    kAddMember =    0b000010,
+    kRemoveRepo =   0b000100,
+    kRemoveMember = 0b001000,
+    kModifyMember = 0b010000,
+    kModifyRepo =   0b100000,
+    kAll = kAddRepo | kAddMember | kRemoveRepo | kRemoveMember |
+      kModifyRepo | kModifyMember,
+  };
+  Organization::Id organization_id;
+  PubKey creator;
+  size_t name_len;
+  char name[];
+  // name of variable length
+  static const size_t kMaxNameLen = 256;
+};
 
-			Key() : RepoInfo::BaseKey(REFS, 0)
-			{
+struct OrganizationMember {
+  struct Key {
+    Tag tag = Tag::kOrganizationMember;
+    Organization::Id organization_id;
+    PubKey member_id;
+  };
+  uint8_t permissions;
+};
 
-			}
-		};
+struct ProjectMember {
+  struct Key {
+    Tag tag = Tag::kProjectMember;
+    Project::Id project_id;
+    PubKey member_id;
+  };
+  uint8_t permissions;
+};
 
-		git_oid commit_hash;
-		size_t name_length;
-		char name[];
+struct ProjectRepo {
+  struct Key {
+    Tag tag = Tag::kProjectRepo;
+    Project::Id project_id;
+    RepoInfo::Id repo_id;
+  };
+};
 
-		GitRef& operator=(const GitRef& from)
-		{
-			this->commit_hash = from.commit_hash;
-			Env::Memcpy(this->name, from.name, from.name_length);
-			return *this;
-		}
-	};
+namespace method {
 
-	struct ObjectsInfo 
-	{
-		size_t objects_number;
-		//GitObject objects[];
-		// data
-	};
+struct Initial {
+  static const uint32_t kMethod = 0;
+};
 
-	struct RefsInfo
-	{
-		size_t refs_number;
-		GitRef refs[];
-	};
+struct CreateRepo {
+  static const uint32_t kMethod = 3;
+  PubKey repo_owner;
+  size_t repo_name_length;
+  char repo_name[];
+};
 
-	struct RepoUser
-	{
-		struct Key
-		{
-			PubKey user;
-			RepoInfo::ID repo_id;
-			Key(const PubKey& u, RepoInfo::ID id)
-				: user(u)
-				, repo_id(id)
-			{}
-		};
-	};
+struct DeleteRepo {
+  static const uint32_t kMethod = 4;
+  uint64_t repo_id;
+  PubKey user;
+};
 
-	struct UserInfo
-	{
-		uint8_t permissions;
-	};
+struct AddUser {
+  static const uint32_t kMethod = 5;
+  uint64_t repo_id;
+  PubKey initiator;
+  PubKey user;
+  uint8_t permissions;
+};
 
-	struct ContractState
-	{
-		uint64_t last_repo_id;
-	};
+struct RemoveUser {
+  static const uint32_t kMethod = 6;
+  uint64_t repo_id;
+  PubKey user;
+  PubKey initiator;
+};
 
-	struct InitialParams
-	{
-        Config m_Config;
-		static const uint32_t METHOD = 0;
-	};
+struct PushObjects {
+  static const uint32_t kMethod = 7;
+  struct PackedObject {
+    int8_t type;
+    GitOid hash;
+    uint32_t data_size;
+    // followed by data
+  };
+  uint64_t repo_id;
+  PubKey user;
+  size_t objects_number;
+  // packed objects after this
+};
 
-	struct CreateRepoParams
-	{
-		static const uint32_t METHOD = 3;
-		PubKey repo_owner;
-		size_t repo_name_length;
-		char repo_name[];
-	};
+struct PushRefs {
+  static const uint32_t kMethod = 8;
+  uint64_t repo_id;
+  PubKey user;
+  RefsInfo refs_info;
+};
 
-	struct DeleteRepoParams
-	{
-		static const uint32_t METHOD = 4;
-		uint64_t repo_id;
-		PubKey user;
-	};
+struct CreateProject {
+  static const uint32_t kMethod = 9;
+  Organization::Id organization_id;
+  PubKey creator;
+  size_t name_len;
+  char name[];
+  // followed by project name
+};
 
-	struct AddUserParams
-	{
-		static const uint32_t METHOD = 5;
-		uint64_t repo_id;
-		PubKey initiator;
-		PubKey user;
-		uint8_t permissions;
-	};
+struct CreateOrganization {
+  static const uint32_t kMethod = 10;
+  PubKey creator;
+  size_t name_len;
+  char name[];
+  // followed by organization name
+};
 
-	struct RemoveUserParams
-	{
-		static const uint32_t METHOD = 6;
-		uint64_t repo_id;
-		PubKey user;
-		PubKey initiator;
-	};
+struct SetProjectRepo {
+  static const uint32_t kMethod = 11;
+  enum class Request { kAdd, kRemove } request;
+  Project::Id project_id;
+  RepoInfo::Id repo_id;
+  PubKey caller;
+};
 
-	struct PushObjectsParams
-	{
-		static const uint32_t METHOD = 7;
-		struct PackedObject
-		{
-			int8_t type;
-			git_oid hash;
-			uint32_t data_size;
-			// followed by data
-		};
-		uint64_t repo_id;
-		PubKey user;
-		size_t objects_number;
-		// packed objects after this
-	};
+struct SetOrganizationProject {
+  static const uint32_t kMethod = 12;
+  enum class Request { kAdd, kRemove } request;
+  Organization::Id organization_id;
+  Project::Id project_id;
+  PubKey caller;
+};
 
-	struct PushRefsParams
-	{
-		static const uint32_t METHOD = 8;
-		uint64_t repo_id;
-		PubKey user;
-		RefsInfo refs_info;
-	};
+struct SetProjectMember {
+  static const uint32_t kMethod = 13;
+  enum class Request { kAdd, kModify, kRemove } request;
+  Project::Id project_id;
+  PubKey member;
+  uint8_t permissions;
+  PubKey caller;
+};
+
+struct SetOrganizationMember {
+  static const uint32_t kMethod = 14;
+  enum class Request { kAdd, kModify, kRemove } request;
+  Organization::Id organization_id;
+  PubKey member;
+  uint8_t permissions;
+  PubKey caller;
+};
 
 #pragma pack(pop)
-}
+}  // namespace method
+}  // namespace git_remote_beam

@@ -1,0 +1,29 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+
+    .title {
+        font-family: VisbyBold;
+        font-size: 1rem;
+        font-weight: 400;
+        margin-right: 16px;
+    }
+}
+
+.select {
+    width: 160px;
+    font-family: VisbyBold;
+    font-size: .9rem;
+
+    :global {
+        .ant-select-selector {
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 8px !important;
+            height: 40px !important;
+        }
+
+        .ant-select-selection-item {
+            padding: 8px !important;
+        }
+    }
+}

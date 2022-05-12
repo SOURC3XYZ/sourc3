@@ -1,29 +1,36 @@
 import { Input } from 'antd';
-import { ChangeEvent } from 'react';
+import {
+  ChangeEvent, forwardRef, LegacyRef, ReactNode
+} from 'react';
 import styles from './search.module.scss';
 
 type SearchProps = {
-  text: string;
+  text?: string;
   placeholder: string;
   className?: string;
-  setInputText: (inputText: string) => void
+  setInputText?: (inputText: string) => void;
+  children?: ReactNode;
 };
 
-const Search = ({
-  text, placeholder, className = '', setInputText
-}:SearchProps) => {
+const Search = forwardRef(({
+  text, placeholder, children, className = '', setInputText
+}:SearchProps, ref: LegacyRef<Input>) => {
   const onSearchChange = (
     e:ChangeEvent<HTMLInputElement>
-  ) => setInputText(e.target.value);
+  ) => {
+    if (setInputText) setInputText(e.target.value);
+  };
 
   return (
     <Input
+      ref={ref}
       className={[styles.search, className].join(' ')}
       placeholder={placeholder}
       value={text}
       onChange={onSearchChange}
+      prefix={children}
     />
   );
-};
+});
 
 export default Search;

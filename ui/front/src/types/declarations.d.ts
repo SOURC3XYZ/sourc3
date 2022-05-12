@@ -34,6 +34,7 @@ declare module 'qwebchannel' {
     };
   }
 }
+
 declare interface Window {
   qt: QWebChannelTransport;
   BeamApi: QObject;
@@ -44,5 +45,3 @@ declare interface Window {
 declare interface EventTarget {
   value: string
 }
-
-declare type PromiseArg<T> = (reason?: T) => void;

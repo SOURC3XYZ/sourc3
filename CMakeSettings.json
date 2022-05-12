@@ -44,7 +44,7 @@
       "inheritEnvironments": [],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": " -DCMAKE_SYSTEM_NAME=\"WASI\" -DCMAKE_SYSROOT=${env.WASI_SDK_PREFIX}/share/wasi-sysroot -DWASI_SDK_PREFIX=${env.WASI_SDK_PREFIX} -DCMAKE_CXX_COMPILER_FORCED=True -DCMAKE_C_COMPILER_FORCED=True",
+      "cmakeCommandArgs": "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=\"clang-tidy;--fix-errors\" -DCMAKE_SYSTEM_NAME=\"WASI\" -DCMAKE_SYSROOT=${env.WASI_SDK_PREFIX}/share/wasi-sysroot -DWASI_SDK_PREFIX=${env.WASI_SDK_PREFIX} -DCMAKE_CXX_COMPILER_FORCED=True -DCMAKE_C_COMPILER_FORCED=True",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "cmakeToolchain": "${env.WASI_SDK_PREFIX}/share/cmake/wasi-sdk.cmake"

@@ -7,26 +7,74 @@ export interface IAssetMeta {
   OPT_COLOR: string;
 }
 
-export interface BeamApiResult {
-  current_height?: number,
-  tip_height?: number,
-  is_in_sync?:boolean, // api events props
+export type IPCResult<T> = {
+  ipc: T
+};
+
+export type EventResult = {
+  current_height: number,
+  tip_height: number,
+  is_in_sync:boolean, // api events props
+};
+
+export type TxResult = {
+  data: number[] | string,
   output?: string;
   txid: string;
   txId: string;
-  raw_data: number[];
   comment: string;
   status_string: string;
   failure_reason: string;
-  metadata_pairs: IAssetMeta;
   available: number;
   address:string
-}
+};
 
-export interface BeamApiRes {
+export type Rate = {
+  from: number,
+  rate: number,
+  rate_str: string,
+  to: string
+};
+
+export type TxInfo = {
+  asset_id: number,
+  txId : string,
+  comment: string,
+  fee: number,
+  kernel: string,
+  receiver: string,
+  sender: string,
+  status: number,
+  status_string: string,
+  failure_reason: string,
+  value: number,
+  create_time : number,
+  income : boolean,
+  token: string,
+  rates: Rate[]
+};
+
+export type IpfsResult = {
+  data: number[] | string,
+};
+
+export type ContractResult = {
+  output: string;
+};
+
+export type ResultObject<T = any> = IPCResult<T>
+| ContractResult
+| IpfsResult
+| EventResult
+| TxResult
+| TxInfo[]
+| string
+| any;
+
+export interface BeamApiRes<T extends ResultObject> {
   id: string;
   jsonrpc: string;
-  result: BeamApiResult;
+  result: T;
   error?: {
     code:number;
     message: string;
@@ -55,9 +103,7 @@ export type ErrorObj = {
   message: string
 };
 
-export type SetPropertiesType<T> = React.Dispatch<
-React.SetStateAction<T>
->;
+export type SetPropertiesType<T> = React.Dispatch<React.SetStateAction<T>>;
 
 export interface BeamError extends Error {
   code?: number,

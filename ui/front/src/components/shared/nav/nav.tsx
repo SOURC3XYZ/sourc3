@@ -8,7 +8,7 @@ type NavProps = {
   path:string
 };
 
-const Nav = ({ type, path }:NavProps) => {
+function Nav({ type, path }:NavProps) {
   const items = [
     {
       key: 'all',
@@ -38,6 +38,6 @@ const Nav = ({ type, path }:NavProps) => {
       </Menu>
     </div>
   );
-};
+}
 
 export default Nav;

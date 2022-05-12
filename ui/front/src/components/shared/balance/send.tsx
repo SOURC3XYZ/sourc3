@@ -6,11 +6,12 @@ import {
   UserOutlined,
   WechatOutlined
 } from '@ant-design/icons';
-import { useObjectState } from '@libs/hooks';
 import { useEffect } from 'react';
 import { thunks } from '@libs/action-creators';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { connect } from 'react-redux';
+import { useObjectState } from '@libs/hooks/shared';
+import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 type SendPropsType = {
   current:number;
@@ -20,34 +21,34 @@ type SendPropsType = {
   setWalletSendBeam: (
     amountValue: number,
     addressValue:string,
-    fromValue:string,
-    commentValue:string)=> void
-  addrList: string,
+    commentValue:string,
+    offline: boolean)=> void;
 };
 
-const Send = ({
-  current, isVisible,
-  addrList,
+function Send({
+  current,
+  isVisible,
   onClose,
   // getWalletAddressList,
   setWalletSendBeam
-}:SendPropsType) => {
+}:SendPropsType) {
   const initialState = {
     visible: false,
-    adress: '',
+    address: '',
     amount: 0,
-    comment: ''
+    comment: '',
+    offline: false
   };
 
   const [state, setState] = useObjectState(initialState);
 
   const showModal = () => {
-    console.log(1);
     setState({
-      adress: '',
+      address: '',
       amount: 0,
       comment: '',
-      visible: true
+      visible: true,
+      offline: false
     });
   };
 
@@ -56,7 +57,6 @@ const Send = ({
     onClose();
   };
   useEffect(() => {
-    // getWalletAddressList();
     if (isVisible) {
       showModal();
     } else {
@@ -65,13 +65,11 @@ const Send = ({
   }, [isVisible]);
 
   const {
-    visible, adress, amount, comment
+    visible, address, amount, comment, offline
   } = state;
-    // const [confirmLoading, setConfirmLoading] = useState(false);
-    // const [modalText, setModalText] = useState('Content of the modal');
 
   const handleOk = () => {
-    if (!adress) {
+    if (!address) {
       message.error('Field address not be full');
       return;
     }
@@ -79,16 +77,16 @@ const Send = ({
       message.error('Field amount not be full');
       return;
     }
-    setWalletSendBeam(amount, addrList, adress, comment);
+    setWalletSendBeam(amount, address, comment, offline);
     setState({ visible: false });
   };
 
   const handleAddressValue = (event:any) => {
-    setState({ adress: event?.target.value });
+    setState({ address: event?.target.value });
   };
   const handleAmountValue = (event:any) => {
     const target = event?.target.value;
-    const regExp = new RegExp(/^-?\d+(\.\d*)?$/g);
+    const regExp = /^-?\d+(\.\d*)?$/g;
     const value = target.match(regExp);
     setState({ amount: value });
   };
@@ -97,76 +95,81 @@ const Send = ({
     setState({ comment: event?.target.value });
   };
 
+  const handleOffline = (e:CheckboxChangeEvent) => {
+    setState({ offline: e.target.checked });
+  };
+
   return (
-    <>
-      <Modal
-        title="SEND BEAM"
-        visible={visible}
-        onCancel={handleCancel}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleOk}>
-            SEND
-          </Button>
-        ]}
-      >
-        <label htmlFor="address">
-          SEND TO:
-          <Input
-            id="address"
-            prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Past recipient address here"
-            onChange={handleAddressValue}
-            value={adress}
-            name="address"
-            suffix={(
-              <Tooltip title="Extra information">
+    <Modal
+      title="SEND BEAM"
+      visible={visible}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="back" onClick={handleCancel}>
+          Cancel
+        </Button>,
+        <Button key="submit" type="primary" onClick={handleOk}>
+          SEND
+        </Button>
+      ]}
+    >
+      <label htmlFor="address">
+        SEND TO:
+        <Input
+          id="address"
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="Past recipient address here"
+          onChange={handleAddressValue}
+          value={address}
+          name="address"
+          suffix={(
+            <Tooltip title="Extra information">
+              <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
+            </Tooltip>
+          )}
+        />
+      </label>
+      <br />
+      <br />
+      <label htmlFor="amount">
+        AMOUNT:
+        <Input
+          id="amount"
+          value={amount}
+          // min={0}
+          placeholder="0"
+          suffix={(
+            <>
+              <span className="beam">BEAM</span>
+              <Tooltip title={`Max available:${current} BEAM`}>
                 <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
               </Tooltip>
-            )}
-          />
-        </label>
-        <br />
-        <br />
-        <label htmlFor="amount">
-          AMOUNT:
-          <Input
-            id="amount"
-            value={amount}
-            // min={0}
-            placeholder="0"
-            suffix={(
-              <>
-                <span className="beam">BEAM</span>
-                <Tooltip title={`Max available:${current} BEAM`}>
-                  <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
-                </Tooltip>
 
-              </>
-            )}
-            onChange={handleAmountValue}
-          />
-        </label>
-        <br />
-        <br />
-        <label htmlFor="comment">
-          Comment
-          {' '}
-          <Input
-            id="comment"
-            value={comment}
-            prefix={<WechatOutlined />}
-            placeholder="Comment"
-            onChange={handleCommentValue}
-          />
+            </>
+          )}
+          onChange={handleAmountValue}
+        />
+      </label>
+      <br />
+      <br />
+      <label htmlFor="comment">
+        Comment
+        {' '}
+        <Input
+          id="comment"
+          value={comment}
+          prefix={<WechatOutlined />}
+          placeholder="Comment"
+          onChange={handleCommentValue}
+        />
 
-        </label>
-      </Modal>
-    </>
+      </label>
+      <Checkbox checked={offline} onChange={handleOffline}>
+        Offline
+      </Checkbox>
+    </Modal>
   );
-};
+}
 const mapState = ({ app: { balance, addrList } }: RootState) => ({
   balance,
   addrList
@@ -179,13 +182,16 @@ const mapDispatch = (dispatch: AppThunkDispatch) => ({
     dispatch(thunks.getWalletAddressList());
   },
   setWalletSendBeam: (
-    amountValue: number, fromValue:string, addressValue:string,
-    commentValue:string
-  ) => {
-    console.log(fromValue);
-    dispatch(thunks.setWalletSendBeam(amountValue, fromValue, addressValue,
-      commentValue));
-  }
+    amountValue: number,
+    fromValue:string,
+    commentValue:string,
+    offline: boolean
+  ) => dispatch(thunks.setWalletSendBeam(
+    amountValue,
+    fromValue,
+    commentValue,
+    offline
+  ))
 });
 
 export default connect(mapState, mapDispatch)(Send);

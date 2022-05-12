@@ -1,8 +1,9 @@
 import React from 'react';
 import { Preload } from '@components/shared';
-import { useAsyncError, useObjectState } from '@libs/hooks';
-import styles from './login.module.css';
-import { Password, UpdatingNode } from './content';
+import { useAsyncError, useObjectState } from '@libs/hooks/shared';
+import styles from './login.module.scss';
+import { Password } from './content';
+import { UpdatingNode } from '../update-node';
 
 enum STATUS {
   LOGIN,
@@ -11,7 +12,8 @@ enum STATUS {
 }
 
 type LoginProps = {
-  startWalletApi: (password: string, cb: (err?: Error) => void) => void
+  statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
+  startWalletApi: (password: string, cb: (err?: Error) => void) => void,
 };
 
 type LoginState = {
@@ -21,7 +23,7 @@ type LoginState = {
 
 const initial:LoginState = { pass: '', status: STATUS.LOGIN };
 
-const Login = ({ startWalletApi }: LoginProps) => {
+function Login({ startWalletApi, statusFetcher }: LoginProps) {
   const [{ pass, status }, setState] = useObjectState<LoginState>(initial);
   const throwError = useAsyncError();
 
@@ -39,30 +41,17 @@ const Login = ({ startWalletApi }: LoginProps) => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => setState({ pass: e.target.value });
 
-  // const View = () => {
-  //   switch (status) {
-  //     case STATUS.LOADING:
-  //       return <Preload />;
-
-  //     case STATUS.SYNC:
-  //       return <UpdatingNode errorCatcher={throwError} />;
-
-  //     default:
-  //       return <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />;
-  //   }
-  // };
-
   return (
     <div className={styles.wrapper}>
       {
         status === STATUS.LOADING
           ? <Preload />
           : status === STATUS.SYNC
-            ? <UpdatingNode errorCatcher={throwError} />
+            ? <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
       }
     </div>
   );
-};
+}
 
 export default Login;
