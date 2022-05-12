@@ -1,5 +1,6 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { BeamButton } from '@components/shared';
+import { ToastMessages } from '@libs/constants';
 import { loadingData } from '@libs/utils';
 import { PromiseArg } from '@types';
 import { notification } from 'antd';
@@ -23,12 +24,13 @@ function ConnectBtn({ isLogined, onConnect }:ConnectBtnProps) {
     loadingData(onConnect)
       .then(() => {
         notification.open({
-          message: 'web wallet connected!',
+          message: ToastMessages.WALLET_CONNECTED,
           placement: 'bottomRight' as NotificationPlacement,
           style: { fontWeight: 600 }
         });
       })
       .catch((err:Error) => {
+        setOnConnect(false);
         notification.error({
           message: err.message,
           placement: 'bottomRight' as NotificationPlacement,

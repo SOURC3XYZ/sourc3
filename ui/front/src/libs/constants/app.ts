@@ -54,5 +54,11 @@ export enum LoadingMessages {
   COMMITS = 'Building commit tree...',
   TREE = 'Loading file tree...',
   FILE = 'Loading file...',
-  HEADLESS = 'Connecting headless wallet...'
+  HEADLESS = 'Loading decentralized application...'
+}
+
+export enum ToastMessages {
+  EXT_ERR_MSG = 'Extension not found',
+  WALLET_CONNECTED = 'Web wallet connected!',
+  HEADLESS_CONNECTED = 'Headless wallet connected!'
 }

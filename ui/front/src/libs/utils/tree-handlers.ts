@@ -6,7 +6,8 @@ import {
 } from '@types';
 
 export const onLoadData = (
-  id:RepoId, callback: (args: UpdateProps) => void
+  id:RepoId,
+  callback: (args: UpdateProps) => void
 ) => (props: DataNode) => new Promise<void>((resolve) => {
   const { children, key, dataRef } = props as IDataNodeCustom;
   if (children) {
@@ -54,7 +55,9 @@ export const getTree = (
 };
 
 export const setBranchAndCommit = (
-  repoMap:Map<BranchName, BranchCommit[]>, branch:string, commit:string
+  repoMap:Map<BranchName, BranchCommit[]>,
+  branch:string,
+  commit:string
 ) => {
   const findedBranch = repoMap.get(branch);
   if (!findedBranch) throw Error(`branch ${branch} doesn't exist in this repo`);

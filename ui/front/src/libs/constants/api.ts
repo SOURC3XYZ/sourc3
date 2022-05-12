@@ -10,6 +10,9 @@ export enum CONTRACT {
 // 126c94dad2a409d1af5beb1667972ebcbd165d940159049f4a0ad6b5f4b8e976
 
 export enum WALLET {
+  EXT_DOWNLOAD = 'https://github.com/SOURC3XYZ/Sourc3-Web-Client/actions',
+  EXT_ID = 'kjdmogmgfgjedkpeldbomhgpnhehnnbe',
+  EXT_IMG = 'assets/chrome-extention-icon-16x16.png',
   SEED_PHRASE_COUNT = 12,
   SEED_CONFIRM_PHRASE_COUNT = 6,
   IPFS_TIMEOUT = 2000
