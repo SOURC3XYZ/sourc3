@@ -169,6 +169,7 @@ BEAM_EXPORT void Method_6(const method::RemoveOrganization& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_7(const method::CreateRepo& params) {  // NOLINT
+    Env::Halt_if(!ObjectExists<Project>(params.project_id));
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kAddRepo);
 
@@ -216,6 +217,7 @@ BEAM_EXPORT void Method_9(const method::RemoveRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_10(const method::CreateProject& params) {  // NOLINT
+    Env::Halt_if(!ObjectExists<Project>(params.organization_id));
     std::unique_ptr<Project> project(static_cast<Project*>(
         ::operator new(sizeof(Project) + params.name_len)));
 
