@@ -7,8 +7,6 @@ namespace Env {  // NOLINT
 #include "bvm2_cost.h"
 }  // namespace Env
 
-#include "contract.h"
-
 #include <algorithm>
 #include <vector>
 #include <utility>

@@ -2,6 +2,7 @@
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
+#include "../upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -62,6 +63,13 @@ BEAM_EXPORT void Ctor(const method::Initial& params) {
 
 BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
+}
+
+void git_remote_beam::OnUpgraded(uint32_t /*nPrevVersion*/) {
+}
+
+uint32_t git_remote_beam::get_CurrentVersion() {
+    return 1;
 }
 
 /*
