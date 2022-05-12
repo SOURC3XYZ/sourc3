@@ -19,11 +19,6 @@ namespace Env {  // NOLINT
 
 #include "../try-to-add-libgit2/full_git.h"
 
-namespace
-{
-    using Action_func_t = void (*)(const ContractID&);
-    using Actions_map_t = std::vector<std::pair<std::string_view, Action_func_t>>;
-    using Roles_map_t = std::vector<std::pair<std::string_view, const Actions_map_t&>>;
 namespace git_remote_beam {
 #include "contract_sid.i"
 }
@@ -68,10 +63,9 @@ void OnActionDestroyContract(const ContractID& cid) {
                         "Destroy git_remote_beam contract", 0);
 }
 
-    void On_action_view_contracts(const ContractID& unused)
-    {
-        EnumAndDumpContracts(GitRemoteBeam::s_SID);
-    }
+void OnActionViewContracts(const ContractID& unused) {
+    EnumAndDumpContracts(git_remote_beam::s_SID);
+}
 
 void OnActionViewContractParams(const ContractID& cid) {
     Env::Key_T<int> k;
