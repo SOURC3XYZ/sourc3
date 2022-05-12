@@ -81,7 +81,7 @@ BEAM_EXPORT void Method_3(const method::DeleteRepo& params) {  // NOLINT
 }
 */
 
-BEAM_EXPORT void Method_2(const method::PushObjects& params) {  // NOLINT
+BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
 
     CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
@@ -118,7 +118,7 @@ BEAM_EXPORT void Method_2(const method::PushObjects& params) {  // NOLINT
     Env::AddSig(params.user);
 }
 
-BEAM_EXPORT void Method_3(const method::PushRefs& params) {  // NOLINT
+BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
 
     CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
@@ -138,7 +138,7 @@ BEAM_EXPORT void Method_3(const method::PushRefs& params) {  // NOLINT
     Env::AddSig(params.user);
 }
 
-BEAM_EXPORT void Method_4(const method::CreateOrganization& params) {  // NOLINT
+BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     std::unique_ptr<Organization> org(static_cast<Organization*>(
         ::operator new(sizeof(Organization) + params.name_len)));
 
@@ -160,15 +160,15 @@ BEAM_EXPORT void Method_4(const method::CreateOrganization& params) {  // NOLINT
     Env::AddSig(org->creator);
 }
 
-BEAM_EXPORT void Method_5(const method::ModifyOrganization& params) {  // NOLINT
+BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_6(const method::RemoveOrganization& params) {  // NOLINT
+BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_7(const method::CreateRepo& params) {  // NOLINT
+BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kAddRepo);
@@ -208,15 +208,15 @@ BEAM_EXPORT void Method_7(const method::CreateRepo& params) {  // NOLINT
     Env::AddSig(repo_info->owner);
 }
 
-BEAM_EXPORT void Method_8(const method::ModifyRepo& params) {  // NOLINT
+BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_9(const method::RemoveRepo& params) {  // NOLINT
+BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_10(const method::CreateProject& params) {  // NOLINT
+BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.organization_id));
     std::unique_ptr<Project> project(static_cast<Project*>(
         ::operator new(sizeof(Project) + params.name_len)));
@@ -242,15 +242,15 @@ BEAM_EXPORT void Method_10(const method::CreateProject& params) {  // NOLINT
     Env::AddSig(project->creator);
 }
 
-BEAM_EXPORT void Method_11(const method::ModifyProject& params) {  // NOLINT
+BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_12(const method::RemoveProject& params) {  // NOLINT
+BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
     // TODO
 }
 
-BEAM_EXPORT void Method_13(const method::AddRepoMember& params) {  // NOLINT
+BEAM_EXPORT void Method_14(const method::AddRepoMember& params) {  // NOLINT
     // TODO: do not allow to modify repo owner
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
@@ -261,7 +261,7 @@ BEAM_EXPORT void Method_13(const method::AddRepoMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_14(const method::ModifyRepoMember& params) {  // NOLINT
+BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
@@ -273,7 +273,7 @@ BEAM_EXPORT void Method_14(const method::ModifyRepoMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_15(const method::RemoveRepoMember& params) {  // NOLINT
+BEAM_EXPORT void Method_16(const method::RemoveRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
@@ -283,7 +283,7 @@ BEAM_EXPORT void Method_15(const method::RemoveRepoMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_16(const method::AddProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
     // TODO: do not allow to modify project owner
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
@@ -294,7 +294,7 @@ BEAM_EXPORT void Method_16(const method::AddProjectMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_17(
+BEAM_EXPORT void Method_18(
     const method::ModifyProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
@@ -307,7 +307,7 @@ BEAM_EXPORT void Method_17(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_18(
+BEAM_EXPORT void Method_19(
     const method::RemoveProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
@@ -318,7 +318,7 @@ BEAM_EXPORT void Method_18(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_19(
+BEAM_EXPORT void Method_20(
     const method::AddOrganizationMember& params) {  // NOLINT
     // TODO: do not allow to modify org owner
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
@@ -331,7 +331,7 @@ BEAM_EXPORT void Method_19(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_20(
+BEAM_EXPORT void Method_21(
     const method::ModifyOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
@@ -345,7 +345,7 @@ BEAM_EXPORT void Method_20(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_21(
+BEAM_EXPORT void Method_22(
     const method::RemoveOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(

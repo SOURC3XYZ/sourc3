@@ -229,7 +229,7 @@ struct Initial {
 };
 
 struct PushObjects {
-    static const uint32_t kMethod = 2;
+    static const uint32_t kMethod = 3;
     struct PackedObject {
         int8_t type;
         GitOid hash;
@@ -243,21 +243,21 @@ struct PushObjects {
 };
 
 struct PushRefs {
-    static const uint32_t kMethod = 3;
+    static const uint32_t kMethod = 4;
     uint64_t repo_id;
     PubKey user;
     RefsInfo refs_info;
 };
 
 struct CreateOrganization {
-    static const uint32_t kMethod = 4;
+    static const uint32_t kMethod = 5;
     PubKey caller;
     size_t name_len;
     char name[];
 };
 
 struct ModifyOrganization {
-    static const uint32_t kMethod = 5;
+    static const uint32_t kMethod = 6;
     PubKey caller;
     Organization::Id id;
     size_t name_len;
@@ -265,13 +265,13 @@ struct ModifyOrganization {
 };
 
 struct RemoveOrganization {
-    static const uint32_t kMethod = 6;
+    static const uint32_t kMethod = 7;
     PubKey caller;
     Organization::Id id;
 };
 
 struct CreateRepo {
-    static const uint32_t kMethod = 7;
+    static const uint32_t kMethod = 8;
     Project::Id project_id;
     PubKey caller;
     size_t name_len;
@@ -279,7 +279,7 @@ struct CreateRepo {
 };
 
 struct ModifyRepo {
-    static const uint32_t kMethod = 8;
+    static const uint32_t kMethod = 9;
     Repo::Id repo_id;
     PubKey caller;
     size_t name_len;
@@ -287,13 +287,13 @@ struct ModifyRepo {
 };
 
 struct RemoveRepo {
-    static const uint32_t kMethod = 9;
+    static const uint32_t kMethod = 10;
     PubKey caller;
     Repo::Id repo_id;
 };
 
 struct CreateProject {
-    static const uint32_t kMethod = 10;
+    static const uint32_t kMethod = 11;
     Organization::Id organization_id;
     PubKey caller;
     size_t name_len;
@@ -301,7 +301,7 @@ struct CreateProject {
 };
 
 struct ModifyProject {
-    static const uint32_t kMethod = 11;
+    static const uint32_t kMethod = 12;
     Organization::Id organization_id;
     Project::Id project_id;
     PubKey caller;
@@ -310,20 +310,12 @@ struct ModifyProject {
 };
 
 struct RemoveProject {
-    static const uint32_t kMethod = 12;
+    static const uint32_t kMethod = 13;
     Project::Id project_id;
     PubKey caller;
 };
 
 struct AddRepoMember {
-    static const uint32_t kMethod = 13;
-    Repo::Id repo_id;
-    PubKey member;
-    uint8_t permissions;
-    PubKey caller;
-};
-
-struct ModifyRepoMember {
     static const uint32_t kMethod = 14;
     Repo::Id repo_id;
     PubKey member;
@@ -331,22 +323,22 @@ struct ModifyRepoMember {
     PubKey caller;
 };
 
-struct RemoveRepoMember {
+struct ModifyRepoMember {
     static const uint32_t kMethod = 15;
+    Repo::Id repo_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveRepoMember {
+    static const uint32_t kMethod = 16;
     Repo::Id repo_id;
     PubKey member;
     PubKey caller;
 };
 
 struct AddProjectMember {
-    static const uint32_t kMethod = 16;
-    Project::Id project_id;
-    PubKey member;
-    uint8_t permissions;
-    PubKey caller;
-};
-
-struct ModifyProjectMember {
     static const uint32_t kMethod = 17;
     Project::Id project_id;
     PubKey member;
@@ -354,22 +346,22 @@ struct ModifyProjectMember {
     PubKey caller;
 };
 
-struct RemoveProjectMember {
+struct ModifyProjectMember {
     static const uint32_t kMethod = 18;
+    Project::Id project_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveProjectMember {
+    static const uint32_t kMethod = 19;
     Project::Id project_id;
     PubKey member;
     PubKey caller;
 };
 
 struct AddOrganizationMember {
-    static const uint32_t kMethod = 19;
-    Organization::Id organization_id;
-    PubKey member;
-    uint8_t permissions;
-    PubKey caller;
-};
-
-struct ModifyOrganizationMember {
     static const uint32_t kMethod = 20;
     Organization::Id organization_id;
     PubKey member;
@@ -377,8 +369,16 @@ struct ModifyOrganizationMember {
     PubKey caller;
 };
 
-struct RemoveOrganizationMember {
+struct ModifyOrganizationMember {
     static const uint32_t kMethod = 21;
+    Organization::Id organization_id;
+    PubKey member;
+    uint8_t permissions;
+    PubKey caller;
+};
+
+struct RemoveOrganizationMember {
+    static const uint32_t kMethod = 22;
     Organization::Id organization_id;
     PubKey member;
     PubKey caller;
