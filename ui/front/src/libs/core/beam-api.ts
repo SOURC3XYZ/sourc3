@@ -149,6 +149,8 @@ export class BeamAPI<T> {
             .callWalletApiResult as ApiResultWeb;
           if (ev.data === 'apiInjected') {
             await webApiResult(this.onApiResult);
+            const activeUser = await window.BeamApi.localStorage()
+            console.log(activeUser);
             resolve(window.BeamApi);
           }
         }
