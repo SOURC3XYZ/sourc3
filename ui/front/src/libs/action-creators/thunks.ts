@@ -6,7 +6,7 @@ import {
   TreeBlobParser,
   TreeListParser
 } from '@libs/core';
-import { CONTRACT } from '@libs/constants';
+import { CONTRACT, ToastMessages } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
   BeamApiRes,
@@ -115,7 +115,7 @@ export const thunks:ThunkObject = {
           if (pKey) dispatch(AC.setPublicKey(pKey.key));
         } else {
           notification.open({
-            message: 'headless wallet connected!',
+            message: ToastMessages.HEADLESS_CONNECTED,
             placement: 'bottomRight' as NotificationPlacement,
             style: { fontWeight: 600 }
           });

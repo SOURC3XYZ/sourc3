@@ -1,4 +1,5 @@
-import { CONTRACT } from '@libs/constants';
+import { CONTRACT, ToastMessages, WALLET } from '@libs/constants';
+import { checkExtension } from '@libs/utils';
 import {
   QObject, ApiResultWeb, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
@@ -223,7 +224,6 @@ export class BeamAPI<T> {
         document.addEventListener(
           'headlessConnected',
           async () => {
-            debugger;
             const api = await this.extensionConnectHandler(message);
             resolve(api);
           },
@@ -237,6 +237,14 @@ export class BeamAPI<T> {
   readonly extensionConnectHandler = async (message: {
     [key: string]: string;
   }) => {
+    try {
+      await checkExtension(WALLET.EXT_ID, WALLET.EXT_IMG);
+    } catch (error) {
+      window.open(WALLET.EXT_DOWNLOAD);
+      this.isWebOnConnect = false;
+      throw new Error(ToastMessages.EXT_ERR_MSG);
+    }
+
     const api = await this.connectToWebWallet(message);
     if (api && this.isHeadless()) {
       this.BEAM?.api.delete();
