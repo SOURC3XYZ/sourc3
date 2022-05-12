@@ -195,6 +195,7 @@ BEAM_EXPORT void Method_7(const method::CreateRepo& params) {  // NOLINT
     repo_info->repo_id = repo_id;
     repo_info->name_len = params.name_len;
     repo_info->cur_objs_number = 0;
+    repo_info->project_id = params.project_id;
     Env::Memcpy(repo_info->name, params.name, repo_info->name_len);
 
     Members<Tag::kRepoMember, Repo>::Key key_user(params.caller,

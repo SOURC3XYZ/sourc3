@@ -23,6 +23,61 @@ using Hash256 = Opaque<32>;
 
 Hash256 GetNameHash(const char* name, size_t len);
 
+struct ContractState {
+    uint64_t last_repo_id;
+    uint64_t last_organization_id;
+    uint64_t last_project_id;
+};
+
+struct Organization {
+    using Id = uint64_t;
+    struct Key {
+        Tag tag = Tag::kOrganization;
+        Id id;
+        explicit Key(const Id& id) : id(id) {
+        }
+    };
+    enum Permissions : uint8_t {
+        kAddProject = 0b000001,
+        kAddMember = 0b000010,
+        kRemoveProject = 0b000100,
+        kRemoveMember = 0b001000,
+        kModifyMember = 0b010000,
+        kModifyOrganization = 0b100000,
+        kAll = kAddProject | kAddMember | kRemoveProject | kRemoveMember |
+               kModifyOrganization | kModifyMember,
+    };
+    PubKey creator;
+    size_t name_len;
+    char name[];
+    static const size_t kMaxNameLen = 256;
+};
+
+struct Project {
+    using Id = uint64_t;
+    struct Key {
+        Tag tag = Tag::kProject;
+        Id id;
+        explicit Key(const Id& id) : id(id) {
+        }
+    };
+    enum Permissions : uint8_t {
+        kAddRepo = 0b000001,
+        kAddMember = 0b000010,
+        kRemoveRepo = 0b000100,
+        kRemoveMember = 0b001000,
+        kModifyMember = 0b010000,
+        kModifyProject = 0b100000,
+        kAll = kAddRepo | kAddMember | kRemoveRepo | kRemoveMember |
+               kModifyProject | kModifyMember,
+    };
+    Organization::Id organization_id;
+    PubKey creator;
+    size_t name_len;
+    char name[];
+    static const size_t kMaxNameLen = 256;
+};
+
 struct Repo {
     using Id = uint64_t;  // big-endinan
 
@@ -57,12 +112,24 @@ struct Repo {
         }
     };
 
+    Project::Id project_id;
     Hash256 name_hash;
     Id repo_id;
     size_t cur_objs_number;
     PubKey owner;
     size_t name_len;
     char name[];
+};
+
+template <Tag TG, class T>
+struct Members {
+    struct Key {
+        Tag tag = TG;
+        PubKey user;
+        typename T::Id id;
+        Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
+        }
+    };
 };
 
 struct GitObject {
@@ -152,72 +219,6 @@ struct RefsInfo {
 
 struct UserInfo {
     uint8_t permissions;
-};
-
-struct ContractState {
-    uint64_t last_repo_id;
-    uint64_t last_organization_id;
-    uint64_t last_project_id;
-};
-
-struct Organization {
-    using Id = uint64_t;
-    struct Key {
-        Tag tag = Tag::kOrganization;
-        Id id;
-        explicit Key(const Id& id) : id(id) {
-        }
-    };
-    enum Permissions : uint8_t {
-        kAddProject = 0b000001,
-        kAddMember = 0b000010,
-        kRemoveProject = 0b000100,
-        kRemoveMember = 0b001000,
-        kModifyMember = 0b010000,
-        kModifyOrganization = 0b100000,
-        kAll = kAddProject | kAddMember | kRemoveProject | kRemoveMember |
-               kModifyOrganization | kModifyMember,
-    };
-    PubKey creator;
-    size_t name_len;
-    char name[];
-    static const size_t kMaxNameLen = 256;
-};
-
-struct Project {
-    using Id = uint64_t;
-    struct Key {
-        Tag tag = Tag::kProject;
-        Id id;
-        explicit Key(const Id& id) : id(id) {
-        }
-    };
-    enum Permissions : uint8_t {
-        kAddRepo = 0b000001,
-        kAddMember = 0b000010,
-        kRemoveRepo = 0b000100,
-        kRemoveMember = 0b001000,
-        kModifyMember = 0b010000,
-        kModifyProject = 0b100000,
-        kAll = kAddRepo | kAddMember | kRemoveRepo | kRemoveMember |
-               kModifyProject | kModifyMember,
-    };
-    Organization::Id organization_id;
-    PubKey creator;
-    size_t name_len;
-    char name[];
-    static const size_t kMaxNameLen = 256;
-};
-
-template <Tag TG, class T>
-struct Members {
-    struct Key {
-        Tag tag = TG;
-        PubKey user;
-        typename T::Id id;
-        Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
-        }
-    };
 };
 
 namespace method {
