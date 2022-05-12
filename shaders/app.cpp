@@ -126,27 +126,32 @@ private:
 #pragma pack(pop)
 
 void OnActionCreateRepo(const ContractID& cid) {
-    using git_remote_beam::RepoInfo;
+    using git_remote_beam::Project;
+    using git_remote_beam::Repo;
     using git_remote_beam::method::CreateRepo;
 
-    char repo_name[RepoInfo::kMaxNameSize + 1];
+    char repo_name[Repo::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
     if (name_len <= 1) {
         return OnError("'repo_name' required");
+    }
+    Project::Id project_id;
+    if (!Env::DocGet("project_id", project_id)) {
+        return OnError("'project_id' required");
     }
     --name_len;  // remove 0-term
     auto args_size = sizeof(CreateRepo) + name_len;
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateRepo*>(buf.get());
+    request->project_id = project_id;
     UserKey user_key(cid);
-    user_key.Get(request->repo_owner);
-    request->repo_name_length = name_len;
-    Env::Memcpy(/*pDst=*/request->repo_name, /*pSrc=*/repo_name,
+    user_key.Get(request->caller);
+    request->name_len = name_len;
+    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = GetNameHash(request->repo_name, request->repo_name_length);
+    auto hash = GetNameHash(request->name, request->name_len);
     SigRequest sig;
-    sig.m_pID = &cid;
-    sig.m_nID = sizeof(cid);
+    user_key.FillSigRequest(sig);
 
     // estimate change
     // uint32_t charge =
@@ -157,7 +162,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     //    Env::Cost::SaveVar_For(sizeof(CreateRepoParams)) +
     //    Env::Cost::SaveVar_For(sizeof(uint64_t)) +
     //    Env::Cost::AddSig +
-    //    Env::Cost::MemOpPerByte * (sizeof(RepoInfo) +
+    //    Env::Cost::MemOpPerByte * (sizeof(Repo) +
     //    sizeof(CreateRepoParams))
     //    + Env::Cost::Cycle * 300; // should be enought
 
@@ -171,6 +176,45 @@ void OnActionCreateRepo(const ContractID& cid) {
                         /*nSig=*/1,
                         /*szComment=*/"create repo",
                         /*nCharge=*/10000000);
+}
+
+void OnActionModifyRepo(const ContractID& cid) {
+    using git_remote_beam::Repo;
+    using git_remote_beam::method::ModifyRepo;
+
+    char repo_name[Repo::kMaxNameSize + 1];
+    auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
+    if (name_len <= 1) {
+        return OnError("'repo_name' required");
+    }
+    Repo::Id repo_id;
+    if (!Env::DocGet("repo_id", repo_id)) {
+        return OnError("'repo_id' required");
+    }
+    --name_len;  // remove 0-term
+    auto args_size = sizeof(ModifyRepo) + name_len;
+    auto buf = std::make_unique<uint8_t[]>(args_size);
+    auto* request = reinterpret_cast<ModifyRepo*>(buf.get());
+    request->repo_id = repo_id;
+    UserKey user_key(cid);
+    user_key.Get(request->caller);
+    request->name_len = name_len;
+    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
+                /*n=*/name_len);
+    auto hash = GetNameHash(request->name, request->name_len);
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/ModifyRepo::kMethod,
+                        /*pArgs=*/request,
+                        /*nArgs=*/args_size,
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify repo",
+                        /*nCharge=*/0);
 }
 
 void OnActionCreateProject(const ContractID& cid) {
@@ -187,13 +231,16 @@ void OnActionCreateProject(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateProject*>(buf.get());
     UserKey user_key(cid);
-    user_key.Get(request->creator);
+    user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
     auto hash = GetNameHash(request->name, request->name_len);
+
+    if (!Env::DocGet("organization_id", request->organization_id)) {
+        return OnError("'organization_id' required");
+    }
     SigRequest sig;
-    sig.m_pID = &cid;
-    sig.m_nID = sizeof(cid);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateProject::kMethod,
@@ -211,13 +258,12 @@ void OnActionListProjects(const ContractID& cid) {
     using git_remote_beam::Project;
     using ProjectKey = Env::Key_T<Project::Key>;
 
-    ProjectKey start, end;
-    start.m_Prefix.m_Cid = cid;
-    start.m_KeyInContract.id = 0;
-    end = start;
+    ProjectKey start{.m_Prefix = {.m_Cid = cid},
+                     .m_KeyInContract = Project::Key{0}};
+    ProjectKey end = start;
     end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
 
-    ProjectKey key;
+    ProjectKey key = start;
     Env::DocArray projects("projects");
     uint32_t value_len = 0, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
@@ -235,49 +281,173 @@ void OnActionListProjects(const ContractID& cid) {
     }
 }
 
-void OnActionListProjectMembers(const ContractID& cid) {
-    using git_remote_beam::ProjectMember;
-    using MemberKey = Env::Key_T<ProjectMember::Key>;
+void OnActionProjectByName(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using ProjectKey = Env::Key_T<Project::Key>;
 
-    MemberKey start, end;
-    start.m_Prefix.m_Cid = cid;
-    if (!Env::DocGet("project_id", start.m_KeyInContract.project_id)) {
-        return OnError("no 'project_id'");
+    char name[Project::kMaxNameLen + 1];
+    auto name_len = Env::DocGetText("name", name, sizeof(name));
+    if (name_len <= 1) {
+        return OnError("'name' required");
     }
-    _POD_(start.m_KeyInContract.member_id).SetZero();
-    end = start;
-    _POD_(end.m_KeyInContract.member_id).SetObject(0xFF);
+    PubKey owner;
+    if (!Env::DocGet("owner", owner)) {
+        return OnError("'owner' required");
+    }
 
-    MemberKey key;
-    Env::DocArray projects("members");
-    ProjectMember member;
-    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
-        Env::DocGroup member_object("");
-        Env::DocAddBlob_T("member", key.m_KeyInContract.member_id);
-        Env::DocAddNum("permissions", (uint32_t)member.permissions);
+    ProjectKey start{.m_Prefix = {.m_Cid = cid},
+                     .m_KeyInContract = Project::Key{0}};
+    ProjectKey end = start;
+    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+
+    ProjectKey key = start;
+    Env::DocArray projects("projects");
+    uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+    for (Env::VarReader reader(start, end);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Project*>(buf.get());
+
+        if (Env::Strcmp(value->name, name) == 0 &&
+            _POD_(value->creator) == owner) {  // NOLINT
+            Env::DocGroup project_object("");
+            Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
+            Env::DocAddNum("project_id", key.m_KeyInContract.id);
+            Env::DocAddNum("organization_id", value->organization_id);
+            Env::DocAddText("project_name", value->name);
+            Env::DocAddBlob_T("project_creator", value->creator);
+            return;
+        }
     }
 }
 
-void OnActionListProjectRepos(const ContractID& cid) {
-    using git_remote_beam::ProjectRepo;
-    using git_remote_beam::RepoInfo;
-    using Key = Env::Key_T<ProjectRepo::Key>;
+void OnActionListProjectMembers(const ContractID& cid) {
+    using git_remote_beam::Members;
+    using git_remote_beam::Project;
+    using Member = Members<git_remote_beam::kProjectMember, Project>;
+    using MemberKey = Env::Key_T<Member::Key>;
 
-    Key start, end;
-    start.m_Prefix.m_Cid = cid;
-    if (!Env::DocGet("project_id", start.m_KeyInContract.project_id)) {
+    MemberKey start{.m_Prefix = {.m_Cid = cid},
+                    .m_KeyInContract = Member::Key{PubKey{}, 0}};
+    if (!Env::DocGet("project_id", start.m_KeyInContract.id)) {
         return OnError("no 'project_id'");
     }
-    start.m_KeyInContract.repo_id = 0;
-    end = start;
-    end.m_KeyInContract.repo_id = std::numeric_limits<RepoInfo::Id>::max();
+    _POD_(start.m_KeyInContract.user).SetZero();
+    MemberKey end = start;
+    _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
-    Key key;
-    Env::DocArray projects("repos");
-    uint32_t value;
-    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-        Env::DocGroup repo_object("");
-        Env::DocAddBlob_T("repo_id", key.m_KeyInContract.repo_id);
+    MemberKey key = start;
+    Env::DocArray projects("members");
+    git_remote_beam::UserInfo member;
+    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
+        Env::DocGroup member_object("");
+        Env::DocAddBlob_T("member", key.m_KeyInContract.user);
+        Env::DocAddNum32("permissions", member.permissions);
+    }
+}
+
+void OnActionModifyProject(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using git_remote_beam::method::ModifyProject;
+
+    char name[Project::kMaxNameLen + 1];
+    auto name_len = Env::DocGetText("name", name, sizeof(name));
+    if (name_len <= 1) {
+        return OnError("'name' required");
+    }
+    --name_len;  // remove 0-term
+    auto args_size = sizeof(ModifyProject) + name_len;
+    auto buf = std::make_unique<uint8_t[]>(args_size);
+    auto* request = reinterpret_cast<ModifyProject*>(buf.get());
+    UserKey user_key(cid);
+    user_key.Get(request->caller);
+    request->name_len = name_len;
+    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
+    auto hash = GetNameHash(request->name, request->name_len);
+
+    if (!Env::DocGet("organization_id", request->organization_id)) {
+        return OnError("'organization_id' required");
+    }
+
+    if (!Env::DocGet("project_id", request->project_id)) {
+        return OnError("'project_id' required");
+    }
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/ModifyProject::kMethod,
+                        /*pArgs=*/request,
+                        /*nArgs=*/args_size,
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify project",
+                        /*nCharge=*/0);
+}
+
+void OnActionRemoveProject(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using git_remote_beam::method::RemoveProject;
+
+    RemoveProject request;
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+    if (!Env::DocGet("project_id", request.project_id)) {
+        return OnError("'project_id' required");
+    }
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/RemoveProject::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify project",
+                        /*nCharge=*/0);
+}
+
+void OnActionListProjectRepos(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using git_remote_beam::Repo;
+    using RepoKey = Env::Key_T<Repo::Key>;
+
+    Project::Id project_id;
+    if (!Env::DocGet("project_id", project_id)) {
+        return OnError("'project_id' required");
+    }
+
+    RepoKey start, end;
+    _POD_(start.m_Prefix.m_Cid) = cid;
+    _POD_(end) = start;
+    end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
+
+    RepoKey key;
+    PubKey my_key;
+    UserKey user_key(cid);
+    user_key.Get(my_key);
+    Env::DocArray repos("repos");
+    uint32_t value_len = 0, key_len = sizeof(RepoKey);
+    for (Env::VarReader reader(start, end);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Repo*>(buf.get());
+        if (value->project_id == project_id) {
+            Env::DocGroup repo_object("");
+            Env::DocAddNum("repo_id", value->repo_id);
+            Env::DocAddText("repo_name", value->name);
+            Env::DocAddNum("project_id", value->project_id);
+            Env::DocAddNum64("cur_objects", value->cur_objs_number);
+            Env::DocAddBlob_T("repo_owner", value->owner);
+            value_len = 0;
+        }
     }
 }
 
@@ -295,13 +465,12 @@ void OnActionCreateOrganization(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateOrganization*>(buf.get());
     UserKey user_key(cid);
-    user_key.Get(request->creator);
+    user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
     auto hash = GetNameHash(request->name, request->name_len);
     SigRequest sig;
-    sig.m_pID = &cid;
-    sig.m_nID = sizeof(cid);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateOrganization::kMethod,
@@ -319,13 +488,12 @@ void OnActionListOrganizations(const ContractID& cid) {
     using git_remote_beam::Organization;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
-    OrganizationKey start, end;
-    start.m_Prefix.m_Cid = cid;
-    start.m_KeyInContract.id = 0;
-    end = start;
+    OrganizationKey start{.m_Prefix = {.m_Cid = cid},
+                          .m_KeyInContract = Organization::Key{0}};
+    auto end = start;
     end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
 
-    OrganizationKey key;
+    OrganizationKey key = start;
     Env::DocArray organizations("organizations");
     uint32_t value_len = 0, key_len = sizeof(OrganizationKey);
     for (Env::VarReader reader(start, end);
@@ -342,15 +510,54 @@ void OnActionListOrganizations(const ContractID& cid) {
     }
 }
 
+void OnActionOrganizationByName(const ContractID& cid) {
+    using git_remote_beam::Organization;
+    using OrganizationKey = Env::Key_T<Organization::Key>;
+
+    char name[Organization::kMaxNameLen + 1];
+    auto name_len = Env::DocGetText("name", name, sizeof(name));
+    if (name_len <= 1) {
+        return OnError("'name' required");
+    }
+    PubKey owner;
+    if (!Env::DocGet("owner", owner)) {
+        return OnError("'owner' required");
+    }
+
+    OrganizationKey start{.m_Prefix = {.m_Cid = cid},
+                          .m_KeyInContract = Organization::Key{0}};
+    auto end = start;
+    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+
+    OrganizationKey key = start;
+    Env::DocArray organizations("organizations");
+    uint32_t value_len = 0, key_len = sizeof(OrganizationKey);
+    for (Env::VarReader reader(start, end);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Organization*>(buf.get());
+        if (Env::Strcmp(value->name, name) == 0 &&
+            _POD_(value->creator) == owner) {  // NOLINT
+            Env::DocGroup org_object("");
+            Env::DocAddNum("organization_tag",
+                           (uint32_t)key.m_KeyInContract.tag);
+            Env::DocAddNum("organization_id", key.m_KeyInContract.id);
+            Env::DocAddText("organization_name", value->name);
+            Env::DocAddBlob_T("organization_creator", value->creator);
+            return;
+        }
+    }
+}
+
 void OnActionListOrganizationProjects(const ContractID& cid) {
     using git_remote_beam::Organization;
     using git_remote_beam::Project;
     using ProjectKey = Env::Key_T<Project::Key>;
 
-    ProjectKey start, end;
-    start.m_Prefix.m_Cid = cid;
-    start.m_KeyInContract.id = 0;
-    end = start;
+    ProjectKey start{.m_Prefix = {.m_Cid = cid},
+                     .m_KeyInContract = Project::Key{0}};
+    ProjectKey end = start;
     end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
 
     Organization::Id org_id;
@@ -358,7 +565,7 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
         return OnError("no 'organization_id'");
     }
 
-    ProjectKey key;
+    ProjectKey key = start;
     Env::DocArray projects("projects");
     uint32_t value_len = 0, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
@@ -379,108 +586,98 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 }
 
 void OnActionListOrganizationMembers(const ContractID& cid) {
-    using git_remote_beam::OrganizationMember;
-    using MemberKey = Env::Key_T<OrganizationMember::Key>;
+    using git_remote_beam::Members;
+    using git_remote_beam::Organization;
+    using Member = Members<git_remote_beam::kOrganizationMember, Organization>;
+    using MemberKey = Env::Key_T<Member::Key>;
 
-    MemberKey start, end;
-    start.m_Prefix.m_Cid = cid;
-    if (!Env::DocGet("organization_id",
-                     start.m_KeyInContract.organization_id)) {
+    MemberKey start{.m_Prefix = {.m_Cid = cid},
+                    .m_KeyInContract = Member::Key{PubKey{}, 0}};
+    if (!Env::DocGet("organization_id", start.m_KeyInContract.id)) {
         return OnError("no 'organization_id'");
     }
-    _POD_(start.m_KeyInContract.member_id).SetZero();
-    end = start;
-    _POD_(end.m_KeyInContract.member_id).SetObject(0xFF);
+    _POD_(start.m_KeyInContract.user).SetZero();
+    MemberKey end = start;
+    _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
-    MemberKey key;
+    MemberKey key = start;
     Env::DocArray members("members");
-    OrganizationMember member;
+    git_remote_beam::UserInfo member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
-        Env::DocAddBlob_T("member", key.m_KeyInContract.member_id);
-        Env::DocAddNum("permissions", (uint32_t)member.permissions);
+        Env::DocAddBlob_T("member", key.m_KeyInContract.user);
+        Env::DocAddNum32("permissions", member.permissions);
     }
 }
 
-void OnActionSetProjectRepo(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::RepoInfo;
-    using git_remote_beam::method::SetProjectRepo;
-
-    SetProjectRepo request{};
-    if (!Env::DocGet("repo_id", request.repo_id)) {
-        return OnError("no 'repo_id'");
-    }
-    if (!Env::DocGet("project_id", request.project_id)) {
-        return OnError("no 'project_id'");
-    }
-    uint32_t action;
-    if (!Env::DocGet("set_action", action)) {
-        return OnError("no 'set_action'");
-    }
-
-    request.request = static_cast<SetProjectRepo::Request>(action);
-    UserKey user_key(cid);
-    user_key.Get(request.caller);
-
-    SigRequest sig;
-    user_key.FillSigRequest(sig);
-
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/SetProjectRepo::kMethod,
-                        /*pArgs=*/&request,
-                        /*nArgs=*/sizeof(request),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&sig,
-                        /*nSig=*/1,
-                        /*szComment=*/"set repo to project",
-                        /*nCharge=*/0);
-}
-
-void OnActionSetOrganizationProject(const ContractID& cid) {
+void OnActionModifyOrganization(const ContractID& cid) {
     using git_remote_beam::Organization;
-    using git_remote_beam::Project;
-    using git_remote_beam::method::SetOrganizationProject;
+    using git_remote_beam::method::ModifyOrganization;
 
-    SetOrganizationProject request{};
-    if (!Env::DocGet("project_id", request.project_id)) {
-        return OnError("no 'project_id'");
+    char name[Organization::kMaxNameLen + 1];
+    auto name_len = Env::DocGetText("name", name, sizeof(name));
+    if (name_len <= 1) {
+        return OnError("'name' required");
     }
-    if (!Env::DocGet("organization_id", request.organization_id)) {
-        return OnError("no 'organization_id'");
-    }
-
-    uint32_t action;
-    if (!Env::DocGet("set_action", action)) {
-        return OnError("no 'set_action'");
-    }
-
-    request.request = static_cast<SetOrganizationProject::Request>(action);
+    --name_len;  // remove 0-term
+    auto args_size = sizeof(ModifyOrganization) + name_len;
+    auto buf = std::make_unique<uint8_t[]>(args_size);
+    auto* request = reinterpret_cast<ModifyOrganization*>(buf.get());
     UserKey user_key(cid);
-    user_key.Get(request.caller);
+    user_key.Get(request->caller);
+    request->name_len = name_len;
+    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
+    auto hash = GetNameHash(request->name, request->name_len);
+    if (!Env::DocGet("organization_id", request->id)) {
+        return OnError("'organization_id' required");
+    }
 
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/SetOrganizationProject::kMethod,
+                        /*iMethod=*/ModifyOrganization::kMethod,
+                        /*pArgs=*/request,
+                        /*nArgs=*/args_size,
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify organization",
+                        /*nCharge=*/0);
+}
+
+void OnActionRemoveOrganization(const ContractID& cid) {
+    using git_remote_beam::Organization;
+    using git_remote_beam::method::RemoveOrganization;
+
+    RemoveOrganization request;
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+    if (!Env::DocGet("organization_id", request.id)) {
+        return OnError("'organization_id' required");
+    }
+
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/RemoveOrganization::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
                         /*pSig=*/&sig,
                         /*nSig=*/1,
-                        /*szComment=*/"set project to organization",
+                        /*szComment=*/"modify organization",
                         /*nCharge=*/0);
 }
 
-void OnActionSetProjectMember(const ContractID& cid) {
+void OnActionAddProjectMember(const ContractID& cid) {
     using git_remote_beam::Project;
-    using git_remote_beam::ProjectMember;
-    using git_remote_beam::method::SetProjectMember;
+    using git_remote_beam::method::AddProjectMember;
 
-    SetProjectMember request{};
+    AddProjectMember request{};
     if (!Env::DocGet("project_id", request.project_id)) {
         return OnError("no 'project_id'");
     }
@@ -495,12 +692,7 @@ void OnActionSetProjectMember(const ContractID& cid) {
     if (permissions != read_permissions) {
         return OnError("permission overflow");
     }
-    uint32_t action;
-    if (!Env::DocGet("set_action", action)) {
-        return OnError("no 'set_action'");
-    }
 
-    request.request = static_cast<SetProjectMember::Request>(action);
     request.permissions = permissions;
     UserKey user_key(cid);
     user_key.Get(request.caller);
@@ -509,23 +701,91 @@ void OnActionSetProjectMember(const ContractID& cid) {
     user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/SetProjectMember::kMethod,
+                        /*iMethod=*/AddProjectMember::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
                         /*pSig=*/&sig,
                         /*nSig=*/1,
-                        /*szComment=*/"set project member",
+                        /*szComment=*/"add project member",
                         /*nCharge=*/0);
 }
 
-void OnActionSetOrganizationMember(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::OrganizationMember;
-    using git_remote_beam::method::SetOrganizationMember;
+void OnActionModifyProjectMember(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using git_remote_beam::method::ModifyProjectMember;
 
-    SetOrganizationMember request{};
+    ModifyProjectMember request{};
+    if (!Env::DocGet("project_id", request.project_id)) {
+        return OnError("no 'project_id'");
+    }
+    if (!Env::DocGet("member", request.member)) {
+        return OnError("no 'member'");
+    }
+    uint32_t read_permissions;
+    if (!Env::DocGet("permissions", read_permissions)) {
+        return OnError("no 'permissions'");
+    }
+    auto permissions = static_cast<uint8_t>(read_permissions);
+    if (permissions != read_permissions) {
+        return OnError("permission overflow");
+    }
+
+    request.permissions = permissions;
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/ModifyProjectMember::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify project member",
+                        /*nCharge=*/0);
+}
+
+void OnActionRemoveProjectMember(const ContractID& cid) {
+    using git_remote_beam::Project;
+    using git_remote_beam::method::RemoveProjectMember;
+
+    RemoveProjectMember request{};
+    if (!Env::DocGet("project_id", request.project_id)) {
+        return OnError("no 'project_id'");
+    }
+    if (!Env::DocGet("member", request.member)) {
+        return OnError("no 'member'");
+    }
+
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/RemoveProjectMember::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"remove project member",
+                        /*nCharge=*/0);
+}
+
+void OnActionAddOrganizationMember(const ContractID& cid) {
+    using git_remote_beam::Organization;
+    using git_remote_beam::method::AddOrganizationMember;
+
+    AddOrganizationMember request{};
     if (!Env::DocGet("organization_id", request.organization_id)) {
         return OnError("no 'organization_id'");
     }
@@ -540,12 +800,7 @@ void OnActionSetOrganizationMember(const ContractID& cid) {
     if (permissions != read_permissions) {
         return OnError("permission overflow");
     }
-    uint32_t action;
-    if (!Env::DocGet("set_action", action)) {
-        return OnError("no 'set_action'");
-    }
 
-    request.request = static_cast<SetOrganizationMember::Request>(action);
     request.permissions = permissions;
     UserKey user_key(cid);
     user_key.Get(request.caller);
@@ -554,20 +809,89 @@ void OnActionSetOrganizationMember(const ContractID& cid) {
     user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/SetOrganizationMember::kMethod,
+                        /*iMethod=*/AddOrganizationMember::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
                         /*pSig=*/&sig,
                         /*nSig=*/1,
-                        /*szComment=*/"set organization member",
+                        /*szComment=*/"add organization member",
+                        /*nCharge=*/0);
+}
+
+void OnActionModifyOrganizationMember(const ContractID& cid) {
+    using git_remote_beam::Organization;
+    using git_remote_beam::method::ModifyOrganizationMember;
+
+    ModifyOrganizationMember request{};
+    if (!Env::DocGet("organization_id", request.organization_id)) {
+        return OnError("no 'organization_id'");
+    }
+    if (!Env::DocGet("member", request.member)) {
+        return OnError("no 'member'");
+    }
+    uint32_t read_permissions;
+    if (!Env::DocGet("permissions", read_permissions)) {
+        return OnError("no 'permissions'");
+    }
+    auto permissions = static_cast<uint8_t>(read_permissions);
+    if (permissions != read_permissions) {
+        return OnError("permission overflow");
+    }
+
+    request.permissions = permissions;
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/ModifyOrganizationMember::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify organization member",
+                        /*nCharge=*/0);
+}
+
+void OnActionRemoveOrganizationMember(const ContractID& cid) {
+    using git_remote_beam::Organization;
+    using git_remote_beam::method::RemoveOrganizationMember;
+
+    RemoveOrganizationMember request{};
+    if (!Env::DocGet("organization_id", request.organization_id)) {
+        return OnError("no 'organization_id'");
+    }
+    if (!Env::DocGet("member", request.member)) {
+        return OnError("no 'member'");
+    }
+
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/RemoveOrganizationMember::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"remove organization member",
                         /*nCharge=*/0);
 }
 
 void OnActionMyRepos(const ContractID& cid) {
-    using git_remote_beam::RepoInfo;
-    using RepoKey = Env::Key_T<RepoInfo::Key>;
+    using git_remote_beam::Repo;
+    using RepoKey = Env::Key_T<Repo::Key>;
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(end) = start;
@@ -583,7 +907,7 @@ void OnActionMyRepos(const ContractID& cid) {
          reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
         auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<RepoInfo*>(buf.get());
+        auto* value = reinterpret_cast<Repo*>(buf.get());
         if ((_POD_(value->owner) == my_key) != 0u) {
             Env::DocGroup repo_object("");
             Env::DocAddNum("repo_id", value->repo_id);
@@ -594,8 +918,8 @@ void OnActionMyRepos(const ContractID& cid) {
 }
 
 void OnActionAllRepos(const ContractID& cid) {
-    using git_remote_beam::RepoInfo;
-    using RepoKey = Env::Key_T<RepoInfo::Key>;
+    using git_remote_beam::Repo;
+    using RepoKey = Env::Key_T<Repo::Key>;
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(end) = start;
@@ -611,33 +935,34 @@ void OnActionAllRepos(const ContractID& cid) {
          reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
         auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<RepoInfo*>(buf.get());
+        auto* value = reinterpret_cast<Repo*>(buf.get());
         Env::DocGroup repo_object("");
         Env::DocAddNum("repo_id", value->repo_id);
         Env::DocAddText("repo_name", value->name);
+        Env::DocAddNum("project_id", value->project_id);
+        Env::DocAddNum64("cur_objects", value->cur_objs_number);
         Env::DocAddBlob_T("repo_owner", value->owner);
         value_len = 0;
     }
 }
 
 void OnActionDeleteRepo(const ContractID& cid) {
-    using git_remote_beam::method::DeleteRepo;
+    using git_remote_beam::method::RemoveRepo;
     uint64_t repo_id;
     if (!Env::DocGet("repo_id", repo_id)) {
         return OnError("no repo id for deleting");
     }
 
-    DeleteRepo request;
+    RemoveRepo request;
     request.repo_id = repo_id;
     UserKey user_key(cid);
-    user_key.Get(request.user);
+    user_key.Get(request.caller);
 
     SigRequest sig;
-    sig.m_pID = &cid;
-    sig.m_nID = sizeof(cid);
+    user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/DeleteRepo::kMethod,
+                        /*iMethod=*/RemoveRepo::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
@@ -649,10 +974,10 @@ void OnActionDeleteRepo(const ContractID& cid) {
 }
 
 void OnActionAddUserParams(const ContractID& cid) {
-    using git_remote_beam::method::AddUser;
-    AddUser request;
+    using git_remote_beam::method::AddRepoMember;
+    AddRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
-    Env::DocGet("user", request.user);
+    Env::DocGet("user", request.member);
 
     uint32_t read_permissions;
     if (!Env::DocGet("permissions", read_permissions)) {
@@ -665,11 +990,12 @@ void OnActionAddUserParams(const ContractID& cid) {
     request.permissions = permissions;
 
     UserKey user_key(cid);
+    user_key.Get(request.caller);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/AddUser::kMethod,
+                        /*iMethod=*/AddRepoMember::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
@@ -680,18 +1006,52 @@ void OnActionAddUserParams(const ContractID& cid) {
                         /*nCharge=*/0);
 }
 
-void OnActionRemoveUserParams(const ContractID& cid) {
-    using git_remote_beam::method::RemoveUser;
-    RemoveUser request;
+void OnActionModifyUserParams(const ContractID& cid) {
+    using git_remote_beam::method::ModifyRepoMember;
+    ModifyRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
-    Env::DocGet("user", request.user);
+    Env::DocGet("user", request.member);
+
+    uint32_t read_permissions;
+    if (!Env::DocGet("permissions", read_permissions)) {
+        return OnError("no 'permissions'");
+    }
+    auto permissions = static_cast<uint8_t>(read_permissions);
+    if (permissions != read_permissions) {
+        return OnError("permission overflow");
+    }
+    request.permissions = permissions;
 
     UserKey user_key(cid);
+    user_key.Get(request.caller);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
     Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/RemoveUser::kMethod,
+                        /*iMethod=*/ModifyRepoMember::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify user params",
+                        /*nCharge=*/0);
+}
+
+void OnActionRemoveUserParams(const ContractID& cid) {
+    using git_remote_beam::method::RemoveRepoMember;
+    RemoveRepoMember request;
+    Env::DocGet("repo_id", request.repo_id);
+    Env::DocGet("user", request.member);
+
+    UserKey user_key(cid);
+    user_key.Get(request.caller);
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/RemoveRepoMember::kMethod,
                         /*pArgs=*/&request,
                         /*nArgs=*/sizeof(request),
                         /*pFunds=*/nullptr,
@@ -805,10 +1165,10 @@ void OnActionPushObjects(const ContractID& cid) {
 
 void OnActionListRefs(const ContractID& cid) {
     using git_remote_beam::GitRef;
-    using git_remote_beam::RepoInfo;
+    using git_remote_beam::Repo;
     using Key = Env::Key_T<GitRef::Key>;
     Key start, end;
-    RepoInfo::Id repo_id = 0;
+    Repo::Id repo_id = 0;
     if (!Env::DocGet("repo_id", repo_id)) {
         return OnError("failed to read 'repo_id'");
     }
@@ -843,9 +1203,9 @@ void OnActionUserGetKey(const ContractID& cid) {
 }
 
 void OnActionUserGetRepo(const ContractID& cid) {
-    using RepoKey = git_remote_beam::RepoInfo::NameKey;
-    using git_remote_beam::RepoInfo;
-    char repo_name[RepoInfo::kMaxNameSize + 1];
+    using RepoKey = git_remote_beam::Repo::NameKey;
+    using git_remote_beam::Repo;
+    char repo_name[Repo::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
     if (name_len <= 1) {
         return OnError("'repo_name' required");
@@ -857,7 +1217,7 @@ void OnActionUserGetRepo(const ContractID& cid) {
     RepoKey key(my_key, name_hash);
     Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
     reader_key.m_Prefix.m_Cid = cid;
-    RepoInfo::Id repo_id = 0;
+    Repo::Id repo_id = 0;
     if (!Env::VarReader::Read_T(reader_key, repo_id)) {
         return OnError("Failed to read repo ids");
     }
@@ -869,9 +1229,9 @@ using DataKey = Env::Key_T<git_remote_beam::GitObject::Data::Key>;
 
 std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
     using git_remote_beam::GitObject;
-    using git_remote_beam::RepoInfo;
+    using git_remote_beam::Repo;
 
-    RepoInfo::Id repo_id;
+    Repo::Id repo_id;
     Env::DocGet("repo_id", repo_id);
     MetaKey start{.m_KeyInContract = {repo_id, 0}};
     MetaKey end{.m_KeyInContract = {repo_id,
@@ -900,8 +1260,8 @@ void OnActionGetRepoMeta(const ContractID& cid) {
 void OnActionGetRepoData(const ContractID& cid) {
     using git_remote_beam::GitObject;
     using git_remote_beam::GitOid;
-    using git_remote_beam::RepoInfo;
-    RepoInfo::Id repo_id;
+    using git_remote_beam::Repo;
+    Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -998,8 +1358,8 @@ void ParseObjectData(
 void OnActionGetCommit(const ContractID& cid) {
     using git_remote_beam::GitObject;
     using git_remote_beam::GitOid;
-    using git_remote_beam::RepoInfo;
-    RepoInfo::Id repo_id;
+    using git_remote_beam::Repo;
+    Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -1035,8 +1395,8 @@ void OnActionGetCommitFromData(const ContractID&) {
 void OnActionGetTree(const ContractID& cid) {
     using git_remote_beam::GitObject;
     using git_remote_beam::GitOid;
-    using git_remote_beam::RepoInfo;
-    RepoInfo::Id repo_id;
+    using git_remote_beam::Repo;
+    Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
@@ -1087,7 +1447,7 @@ void OnActionGetTreeFromData(const ContractID&) {
 void GetObjects(const ContractID& cid,
                 git_remote_beam::GitObject::Meta::Type type) {
     using git_remote_beam::GitObject;
-    using git_remote_beam::RepoInfo;
+    using git_remote_beam::Repo;
     auto [start, end, key] = PrepareGetObject(cid);
     GitObject::Meta value;
     Env::DocArray objects_array("objects");
@@ -1134,16 +1494,47 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("create_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup gr_method("create_project");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("name", "Name of project");
+                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("modify_project");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("name", "Name of project");
+                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("remove_project");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup gr_method("create_organization");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("modify_organization");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("remove_organization");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("organization_id", "Organization ID");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1154,6 +1545,12 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("all_repos");
                 Env::DocAddText("cid", "ContractID");
+            }
+            {
+                Env::DocGroup gr_method("modify_repo");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1167,6 +1564,15 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("permissions", "permissions");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("modify_user_params");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("permissions", "permissions");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1201,6 +1607,18 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("repo_owner", "Owner key of repo");
+            }
+            {
+                Env::DocGroup gr_method("project_id_by_name");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("name", "Name of project");
+                Env::DocAddText("owner", "Owner key of project");
+            }
+            {
+                Env::DocGroup gr_method("organization_id_by_name");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("owner", "Owner key of organization");
             }
             {
                 Env::DocGroup gr_method("repo_get_data");
@@ -1276,39 +1694,49 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("organization_id", "Organization ID");
             }
             {
-                Env::DocGroup gr_method("set_project_repo");
-                Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
-                Env::DocAddText("repo_id", "Repo ID");
-                Env::DocAddText("action", "Action: 0 - add, 1 - remove");
-                Env::DocAddText("pid", "uint32_t");
-            }
-            {
-                Env::DocGroup gr_method("set_organization_project");
-                Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
-                Env::DocAddText("project_id", "Project ID");
-                Env::DocAddText("action", "Action: 0 - add, 1 - remove");
-                Env::DocAddText("pid", "uint32_t");
-            }
-            {
-                Env::DocGroup gr_method("set_project_member");
+                Env::DocGroup gr_method("add_project_member");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("project_id", "Project ID");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
-                Env::DocAddText("action",
-                                "Action: 0 - add, 1 - modify, 2 - remove");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
-                Env::DocGroup gr_method("set_organization_member");
+                Env::DocGroup gr_method("modify_project_member");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("member", "Member");
+                Env::DocAddText("permissions", "Permissions");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("remove_project_member");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("member", "Member");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("add_organization_member");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("organization_id", "Organization ID");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
-                Env::DocAddText("action",
-                                "Action: 0 - add, 1 - modify, 2 - remove");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("modify_organization_member");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("member", "Member");
+                Env::DocAddText("permissions", "Permissions");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
+                Env::DocGroup gr_method("remove_organization_member");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("member", "Member");
                 Env::DocAddText("pid", "uint32_t");
             }
         }
@@ -1320,16 +1748,24 @@ BEAM_EXPORT void Method_1() {  // NOLINT
     ActionsMap valid_user_actions = {
         {"create_repo", OnActionCreateRepo},
         {"create_project", OnActionCreateProject},
+        {"modify_project", OnActionModifyProject},
+        {"remove_project", OnActionRemoveProject},
         {"create_organization", OnActionCreateOrganization},
+        {"modify_organization", OnActionModifyOrganization},
+        {"remove_organization", OnActionRemoveOrganization},
         {"my_repos", OnActionMyRepos},
         {"all_repos", OnActionAllRepos},
+        {"modify_repo", OnActionModifyRepo},
         {"delete_repo", OnActionDeleteRepo},
         {"add_user_params", OnActionAddUserParams},
+        {"modify_user_params", OnActionModifyUserParams},
         {"remove_user_params", OnActionRemoveUserParams},
         {"push_objects", OnActionPushObjects},
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},
         {"repo_id_by_name", OnActionUserGetRepo},
+        {"project_id_by_name", OnActionProjectByName},
+        {"organization_id_by_name", OnActionOrganizationByName},
         {"repo_get_data", OnActionGetRepoData},
         {"repo_get_meta", OnActionGetRepoMeta},
         {"repo_get_commit", OnActionGetCommit},
@@ -1344,10 +1780,12 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"list_organizations", OnActionListOrganizations},
         {"list_organization_projects", OnActionListOrganizationProjects},
         {"list_organization_members", OnActionListOrganizationMembers},
-        {"set_project_repo", OnActionSetProjectRepo},
-        {"set_organization_project", OnActionSetOrganizationProject},
-        {"set_project_member", OnActionSetProjectMember},
-        {"set_organization_member", OnActionSetOrganizationMember}};
+        {"add_project_member", OnActionAddProjectMember},
+        {"modify_project_member", OnActionModifyProjectMember},
+        {"remove_project_member", OnActionRemoveProjectMember},
+        {"add_organization_member", OnActionAddOrganizationMember},
+        {"modify_organization_member", OnActionModifyOrganizationMember},
+        {"remove_organization_member", OnActionRemoveOrganizationMember}};
 
     ActionsMap valid_manager_actions = {
         {"create_contract", OnActionCreateContract},
