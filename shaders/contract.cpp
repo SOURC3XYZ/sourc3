@@ -234,6 +234,7 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
         Organization::Permissions::kAddProject);
     project->creator = params.caller;
     project->name_len = params.name_len;
+    project->organization_id = params.organization_id;
     Env::Memcpy(project->name, params.name, params.name_len);
 
     ContractState cs;

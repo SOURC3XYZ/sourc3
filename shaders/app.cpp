@@ -41,19 +41,57 @@ auto FindIfContains(const std::string_view str,
     });
 }
 
-void OnActionCreateContract(const ContractID& unused) {
-    git_remote_beam::method::Initial params;
+const char g_szAdminSeed[] = "sourc3-admin";
 
-    Env::GenerateKernel(/*pCid=*/nullptr,
-                        /*iMethod=*/git_remote_beam::method::Initial::kMethod,
-                        /*args=*/&params,
-                        /*size=*/sizeof(params),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/nullptr,
-                        /*nSig=*/0,
-                        /*szComment=*/"Create git_remote_beam contract",
-                        /*nCharge=*/0);
+struct MyKeyID :public Env::KeyID {
+  MyKeyID() :Env::KeyID(&g_szAdminSeed, sizeof(g_szAdminSeed)) {}
+};
+
+const ShaderID g_pSid[] = {
+        git_remote_beam::s_SID
+};
+
+const git_remote_beam::Manager::VerInfo g_VerInfo = { g_pSid, _countof(g_pSid) };
+
+void OnActionCreateContract(const ContractID& unused) {
+//    git_remote_beam::method::Initial params;
+//
+//    Env::GenerateKernel(/*pCid=*/nullptr,
+//                        /*iMethod=*/git_remote_beam::method::Initial::kMethod,
+//                        /*args=*/&params,
+//                        /*size=*/sizeof(params),
+//                        /*pFunds=*/nullptr,
+//                        /*nFunds=*/0,
+//                        /*pSig=*/nullptr,
+//                        /*nSig=*/0,
+//                        /*szComment=*/"Create git_remote_beam contract",
+//                        /*nCharge=*/0);
+    MyKeyID kid;
+    PubKey pk;
+    kid.get_Pk(pk);
+
+    git_remote_beam::method::Initial arg;
+    if (!g_VerInfo.FillDeployArgs(arg.m_Stgs, &pk))
+        return;
+
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy());
+}
+
+void OnActionScheduleUpgrade(const ContractID& cid) {
+    MyKeyID kid;
+//    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(g_VerInfo, cid, kid, hTarget);
+}
+
+void OnActionExplicitUpgrade(const ContractID& cid) {
+    MyKeyID kid;
+    git_remote_beam::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
+}
+
+void OnActionMyAdminKey(const ContractID& cid) {
+    PubKey pk;
+    MyKeyID kid;
+    kid.get_Pk(pk);
+    Env::DocAddBlob_T("admin_key", pk);
 }
 
 void OnActionDestroyContract(const ContractID& cid) {
@@ -1781,6 +1819,9 @@ BEAM_EXPORT void Method_1() {  // NOLINT
 
     ActionsMap valid_manager_actions = {
         {"create_contract", OnActionCreateContract},
+        {"schedule_upgrade", OnActionScheduleUpgrade},
+        {"explicit_upgrade", OnActionExplicitUpgrade},
+        {"my_admin_key", OnActionMyAdminKey},
         {"destroy_contract", OnActionDestroyContract},
         {"view_contracts", OnActionViewContracts},
         {"view_contract_params", OnActionViewContractParams},
