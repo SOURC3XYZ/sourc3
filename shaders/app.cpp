@@ -41,7 +41,7 @@ auto FindIfContains(const std::string_view str,
     });
 }
 
-const char g_szAdminSeed[] = "sourc3-admin";
+const char g_szAdminSeed[] = "admin-sourc3";
 
 struct MyKeyID :public Env::KeyID {
   MyKeyID() :Env::KeyID(&g_szAdminSeed, sizeof(g_szAdminSeed)) {}
