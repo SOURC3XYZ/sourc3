@@ -2,7 +2,7 @@
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
-#include "../upgradable3/contract_impl.h"
+#include "upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -54,6 +54,8 @@ bool ObjectExists(const typename T::Id& id) {
 }  // namespace git_remote_beam
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
+    params.m_Stgs.TestNumApprovers();
+    params.m_Stgs.Save();
     ContractState cs;
     cs.last_repo_id = 1;
     cs.last_project_id = 1;
@@ -225,7 +227,7 @@ BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
-    Env::Halt_if(!ObjectExists<Project>(params.organization_id));
+    Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     std::unique_ptr<Project> project(static_cast<Project*>(
         ::operator new(sizeof(Project) + params.name_len)));
 

@@ -1,7 +1,7 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
 #include "contract.h"
-#include "../upgradable3/app_common_impl.h"
+#include "upgradable3/app_common_impl.h"
 
 namespace Env {  // NOLINT
 #include "bvm2_cost.h"
@@ -41,7 +41,7 @@ auto FindIfContains(const std::string_view str,
     });
 }
 
-const char g_szAdminSeed[] = "sourc3-admin";
+const char g_szAdminSeed[] = "admin-sourc3";
 
 struct MyKeyID :public Env::KeyID {
   MyKeyID() :Env::KeyID(&g_szAdminSeed, sizeof(g_szAdminSeed)) {}
@@ -74,12 +74,15 @@ void OnActionCreateContract(const ContractID& unused) {
     if (!g_VerInfo.FillDeployArgs(arg.m_Stgs, &pk))
         return;
 
-    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy());
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy()*2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
+    Height hTarget;
+    Env::DocGetNum64("hTarget", &hTarget);
+
     MyKeyID kid;
-//    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(g_VerInfo, cid, kid, hTarget);
+    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(g_VerInfo, cid, kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {

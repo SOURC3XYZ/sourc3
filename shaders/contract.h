@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include "Shaders/common.h"
-#include "../upgradable3/contract.h"
+#include "upgradable3/contract.h"
 
 namespace git_remote_beam {
 enum Tag : uint8_t {
