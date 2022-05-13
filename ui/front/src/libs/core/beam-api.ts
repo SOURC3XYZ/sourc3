@@ -164,15 +164,13 @@ export class BeamAPI<T> {
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
   ) => new Promise<QObject>((resolve) => {
-    if (!this.walletConnectResolve) {
-      this.walletConnectResolve = resolve;
-      window.postMessage(message, window.origin);
-    }
+    this.walletConnectResolve = resolve;
+    window.postMessage(message, window.origin);
   });
 
   readonly connectHeadless = async () => {
     this.isHeadlessOnConnect = true;
-    const beam = await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
+    const beam = await this.createHeadlessAPI('current', '', 'SOURC3', this.onApiResult);
     // this.headlessConnectedEvent();
     return beam;
   };
@@ -250,9 +248,9 @@ export class BeamAPI<T> {
       throw new Error(ToastMessages.EXT_ERR_MSG);
     }
 
-    if (this.walletConnectResolve) {
-      throw new Error(ToastMessages.EXT_ON_CONN_ERR);
-    }
+    // if (this.walletConnectResolve) {
+    //   throw new Error(ToastMessages.EXT_ON_CONN_ERR);
+    // }
 
     const api = await this.connectToWebWallet(message);
     if (api && this.isHeadless()) {
