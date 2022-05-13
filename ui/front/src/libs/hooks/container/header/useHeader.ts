@@ -1,11 +1,10 @@
 import { useObjectState } from '@libs/hooks/shared';
-import { PromiseArg } from '@types';
 import { ChangeEvent } from 'react';
 
 type UseHeaderProps = {
   pkey:string;
   isOnLending: boolean;
-  connectToExtention: (resolve: PromiseArg<void>, reject?: PromiseArg<Error>) => void;
+  connectToExtention: () => void;
   createRepos: (repo_name:string) => void;
 };
 

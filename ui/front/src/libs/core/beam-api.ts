@@ -1,7 +1,6 @@
 import { CONTRACT, ToastMessages, WALLET } from '@libs/constants';
-import { checkExtension } from '@libs/utils';
 import {
-  QObject, ApiResultWeb, ApiResult, CallApiDesktop, ResultObject
+  QObject, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
 import { QWebChannel } from 'qwebchannel';
 
@@ -44,8 +43,6 @@ export class BeamAPI<T> {
 
   private isHeadlessOnConnect = false;
 
-  private isWebOnConnect = false;
-
   private callIndex: number = 0;
 
   private apiHost?: string;
@@ -58,13 +55,28 @@ export class BeamAPI<T> {
 
   private eventManager:any;
 
+  private walletConnectResolve: ((obj: QObject) => void) | null = null;
+
   constructor(cid: string) {
     this.cid = cid;
     this.BEAM = null;
     this.contract = null;
     this.callbacks = new Map();
-    window.addEventListener('message', this.responseIPC);
+    window.addEventListener('message', this.messageResponses);
   }
+
+  public readonly messageResponses = (e:MessageEvent<MessageType>) => {
+    switch (e.data.type) {
+      case 'ipc-control-res':
+      case 'api-events':
+        return this.responseCbackHandler(e.data.response);
+      case 'apiInjected':
+        console.log('injected');
+        return this.afterWalletConnectHandler();
+      default:
+        return null;
+    }
+  };
 
   private readonly responseCbackHandler = (parsed: ResultObject) => {
     console.log('response', parsed);
@@ -139,26 +151,23 @@ export class BeamAPI<T> {
     });
   };
 
+  private afterWalletConnectHandler = async () => {
+    if (window.BeamApi) {
+      await window.BeamApi
+        .callWalletApiResult(this.onApiResult);
+      const activeUser = await window.BeamApi.localStorage();
+      console.log(activeUser);
+      if (this.walletConnectResolve) this.walletConnectResolve(window.BeamApi);
+    }
+  };
+
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
   ) => new Promise<QObject>((resolve) => {
-    window.addEventListener(
-      'message',
-      async (ev) => {
-        if (window.BeamApi) {
-          const webApiResult = window.BeamApi
-            .callWalletApiResult as ApiResultWeb;
-          if (ev.data === 'apiInjected') {
-            await webApiResult(this.onApiResult);
-            const activeUser = await window.BeamApi.localStorage()
-            console.log(activeUser);
-            resolve(window.BeamApi);
-          }
-        }
-      },
-      false
-    );
-    window.postMessage(message, window.origin);
+    if (!this.walletConnectResolve) {
+      this.walletConnectResolve = resolve;
+      window.postMessage(message, window.origin);
+    }
   });
 
   readonly connectHeadless = async () => {
@@ -204,7 +213,6 @@ export class BeamAPI<T> {
 
   readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
-    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
     if (!this.apiHost) {
       this.BEAM = this.isDapps()
         ? { api: await this.connectToApi() }
@@ -213,12 +221,12 @@ export class BeamAPI<T> {
     return this;
   };
 
+  readonly checkExtensionInstalled = () => document
+    .documentElement.getAttribute('sourc3-extension-installed');
+
   readonly extensionConnect = async (message: {
     [key: string]: string;
   }) => {
-    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
-    this.isWebOnConnect = true;
-
     if (this.isHeadlessOnConnect) {
       return new Promise((resolve) => {
         document.addEventListener(
@@ -237,12 +245,13 @@ export class BeamAPI<T> {
   readonly extensionConnectHandler = async (message: {
     [key: string]: string;
   }) => {
-    try {
-      await checkExtension(WALLET.EXT_ID, WALLET.EXT_IMG);
-    } catch (error) {
+    if (!this.checkExtensionInstalled()) {
       window.open(WALLET.EXT_DOWNLOAD);
-      this.isWebOnConnect = false;
       throw new Error(ToastMessages.EXT_ERR_MSG);
+    }
+
+    if (this.walletConnectResolve) {
+      throw new Error(ToastMessages.EXT_ON_CONN_ERR);
     }
 
     const api = await this.connectToWebWallet(message);
@@ -252,7 +261,6 @@ export class BeamAPI<T> {
         this.BEAM?.client.stopWallet(resolve);
       });
     }
-    this.isWebOnConnect = false;
     this.BEAM = { api };
   };
 
@@ -390,16 +398,6 @@ export class BeamAPI<T> {
     });
     this.callbacks.set(id, { resolve, reject });
   });
-
-  public readonly responseIPC = (e:MessageEvent<MessageType>) => {
-    switch (e.data.type) {
-      case 'ipc-control-res':
-      case 'api-events':
-        return this.responseCbackHandler(e.data.response);
-      default:
-        return null;
-    }
-  };
 
   private readonly argsStringify = (
     args: { [key:string]: string | number }

@@ -11,16 +11,12 @@ import img from '@assets/img/source-header-logo.svg';
 import Modal from 'antd/lib/modal/Modal';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
-import { PromiseArg } from '@types';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
   pkey:string
   isOnLending: boolean,
-  connectToExtention: (
-    resolve: PromiseArg<void>,
-    reject?: PromiseArg<Error>
-  ) => void;
+  connectToExtention: () => void;
   createRepos: (repo_name:string) => void,
 };
 
@@ -113,10 +109,7 @@ const mapState = (
 });
 
 const mapDispatch = (dispatch:AppThunkDispatch) => ({
-  connectToExtention: (
-    resolve: PromiseArg<void>,
-    reject?: PromiseArg<Error>
-  ) => dispatch(thunks.connectExtension(resolve, reject)),
+  connectToExtention: () => dispatch(thunks.connectExtension()),
   createRepos: (repo_name:string) => {
     if (repo_name === null) return;
     dispatch(thunks.createRepos(repo_name));

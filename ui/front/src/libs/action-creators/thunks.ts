@@ -71,7 +71,7 @@ async function getOutput<T>(
 }
 
 export const thunks:ThunkObject = {
-  connectExtension: (resolve, reject) => async (dispatch) => {
+  connectExtension: () => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);
       if (!api.isHeadless()) {
@@ -88,9 +88,11 @@ export const thunks:ThunkObject = {
       await callApi(RC.subUnsub()); // subscribe to api events
       const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
       if (pKey) dispatch(AC.setPublicKey(pKey.key));
-      resolve();
-    } catch (error) {
-      reject(error);
+    } catch (error:any) {
+      notification.error({
+        message: error.message,
+        placement: 'bottomRight' as NotificationPlacement
+      });
       thunkCatch(error, dispatch);
     }
   },
