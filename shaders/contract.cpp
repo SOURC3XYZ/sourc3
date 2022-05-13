@@ -54,6 +54,8 @@ bool ObjectExists(const typename T::Id& id) {
 }  // namespace git_remote_beam
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
+    params.m_Stgs.TestNumApprovers();
+    params.m_Stgs.Save();
     ContractState cs;
     cs.last_repo_id = 1;
     cs.last_project_id = 1;
