@@ -58,7 +58,8 @@ export enum LoadingMessages {
 }
 
 export enum ToastMessages {
-  EXT_ERR_MSG = 'Extension not found',
+  EXT_ON_CONN_ERR = 'Web wallet is trying to connect at the moment',
+  EXT_ERR_MSG = 'Extension not found. Please, install the extension from the website and reload the Sourc3',
   WALLET_CONNECTED = 'Web wallet connected!',
   HEADLESS_CONNECTED = 'Headless wallet connected!'
 }
