@@ -225,7 +225,7 @@ BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
-    Env::Halt_if(!ObjectExists<Project>(params.organization_id));
+    Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     std::unique_ptr<Project> project(static_cast<Project*>(
         ::operator new(sizeof(Project) + params.name_len)));
 
