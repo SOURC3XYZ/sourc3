@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include "Shaders/common.h"
+#include "../upgradable3/contract.h"
 
 namespace git_remote_beam {
 enum Tag : uint8_t {
@@ -225,6 +226,7 @@ namespace method {
 
 struct Initial {
     static const uint32_t kMethod = 0;
+    Settings m_Stgs;
 };
 
 struct PushObjects {
