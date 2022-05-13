@@ -1,7 +1,7 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
 #include "contract.h"
-#include "../upgradable3/app_common_impl.h"
+#include "upgradable3/app_common_impl.h"
 
 namespace Env {  // NOLINT
 #include "bvm2_cost.h"

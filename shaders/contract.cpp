@@ -2,7 +2,7 @@
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
-#include "../upgradable3/contract_impl.h"
+#include "upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
