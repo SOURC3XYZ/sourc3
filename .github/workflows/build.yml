@@ -1,6 +1,6 @@
 name: Build
 
-on: [workflow_dispatch]
+on: [workflow_dispatch, push]
 
 env:
   BUILD_TYPE: Release
@@ -164,7 +164,6 @@ jobs:
         cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
-        cp ./shaders/app.wasm ./ui/front/dist/assets/
         
         npm install --global yarn
         
@@ -177,7 +176,6 @@ jobs:
         tar xvf ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/cli
         tar xvf ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/node
         cp ./downloads/wasm-client* ./ui/front/dist
-        cp ./shaders/app.wasm ./ui/front/dist/assets
         sudo npm install --global yarn
 
     - name: Cache node modules
@@ -207,6 +205,11 @@ jobs:
       run: |
         cd ui/front
         NODE_ENV=production npm run build
+
+    - name: Copy app
+      shell: bash
+      run: |
+        cp ./shaders/app.wasm ./ui/front/dist/assets
 
     - name: Install electron dependencies
       shell: bash
