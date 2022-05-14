@@ -27,9 +27,7 @@ export class WasmWallet {
     document.getElementsByTagName('body')[0].appendChild(js);
   });
 
-  isAllowedWord = (
-    word: string, callback?: () => void
-  ): boolean => {
+  isAllowedWord = (word: string, callback?: () => void): boolean => {
     if (this.WalletClient) {
       if (callback) callback();
       return this.WalletClient.IsAllowedWord(word);

@@ -175,7 +175,6 @@ export class BeamAPI<T> {
   readonly connectHeadless = async () => {
     this.isHeadlessOnConnect = true;
     const beam = await this.createHeadlessAPI('current', '', 'SOURC3', this.onApiResult);
-    // this.headlessConnectedEvent();
     return beam;
   };
 

@@ -95,3 +95,20 @@ export const handleString = (next:string):boolean => {
 export const fullBranchName = (clippedName:string, base: 'refs/heads/') => `${base}${clippedName}`;
 
 export const clipString = (fullName:string, cut = 'refs/heads/') => fullName.replace(cut, '');
+
+export function textEllipsis(
+  str:string,
+  maxLength:number,
+  { side = 'end', ellipsis = '...' } = {}
+) {
+  if (str.length > maxLength) {
+    switch (side) {
+      case 'start':
+        return ellipsis + str.slice(-(maxLength - ellipsis.length));
+      case 'end':
+      default:
+        return str.slice(0, maxLength - ellipsis.length) + ellipsis;
+    }
+  }
+  return str;
+}

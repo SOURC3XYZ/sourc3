@@ -8,7 +8,8 @@ import {
   Preload,
   Repo,
   FailPage,
-  Organizations
+  Organizations,
+  Projects
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import {
@@ -56,6 +57,10 @@ function Main({
     {
       path: 'organizations/:type/:page',
       element: <Organizations />
+    },
+    {
+      path: 'projects/:orgId/:type/:page',
+      element: <Projects />
     }
   ];
 

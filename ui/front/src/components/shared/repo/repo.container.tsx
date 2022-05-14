@@ -9,6 +9,7 @@ import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import { useUserRepos } from '@libs/hooks/container/user-repos';
 import { useCallback } from 'react';
 import { LoadingMessages } from '@libs/constants';
+import Title from 'antd/lib/typography/Title';
 import { RepoContent } from './content';
 import styles from './repo.module.scss';
 
@@ -44,7 +45,7 @@ function UserRepos({
 }:RepoProps) {
   const talonProps = useUserRepos({ currentId, getRepoData, updateTree });
 
-  const { isLoaded, loadingHandler } = talonProps;
+  const { isLoaded, loadingHandler, repoName } = talonProps;
 
   const fallback = (props:any) => {
     const updatedProps = { ...props, subTitle: 'no data' };
@@ -70,6 +71,7 @@ function UserRepos({
 
   return (
     <div className={styles.wrapper}>
+      <Title level={3}>{repoName}</Title>
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
           isLoaded={isLoaded}

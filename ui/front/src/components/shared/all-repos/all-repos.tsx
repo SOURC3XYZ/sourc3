@@ -8,6 +8,7 @@ import { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Modal, Input } from 'antd';
 import { useAllRepos } from '@libs/hooks/container/all-repos';
+import Title from 'antd/lib/typography/Title';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
@@ -51,10 +52,23 @@ function AllRepos({
 
   const { type, path } = repoListProps;
 
+  const navItems = [
+    {
+      key: 'all',
+      to: `${path}repos/all/1`,
+      text: 'All Repository'
+    },
+    {
+      key: 'my',
+      to: `${path}repos/my/1`,
+      text: 'My Repository'
+    }
+  ];
+
   const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
-      {pkey && <Nav type={type} path={path} />}
+      {pkey && <Nav type={type} items={navItems} />}
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>
@@ -78,7 +92,7 @@ function AllRepos({
         onCancel={handleCancel}
         closable={false}
         footer={[
-          <BeamButton callback={handleOk}>
+          <BeamButton key="all-repos-addBtn" callback={handleOk}>
             Add
           </BeamButton>
         ]}
@@ -95,6 +109,7 @@ function AllRepos({
 
   return (
     <div className={styles.content}>
+      <Title level={3}>Repositories</Title>
       {repoManager}
       <RepoList
         {...repoListProps}

@@ -1,33 +1,41 @@
-import {
-  BeamButton, Nav, Search
-} from '@components/shared';
+import { useProject } from '@libs/hooks/container/organization';
+import { Modal } from 'antd';
+import Title from 'antd/lib/typography/Title';
 import { useMemo } from 'react';
-import { Modal, Typography } from 'antd';
-import { useOrganization } from '@libs/hooks/container/organization';
-import styles from './organizations.module.scss';
-import { OrgList } from './list';
+import { Nav, Search } from '@components/shared';
+import { BeamButton } from '../beam-button';
+import styles from './projects.module.scss';
+import { ProjectList } from './projectList';
 
-const { Title } = Typography;
-
-function Organizations() {
+function Projects() {
   const {
-    items, searchText, type, path, pkey, isModal, showModal, closeModal, setInputText
-  } = useOrganization();
+    orgName,
+    path,
+    type,
+    pkey,
+    searchText,
+    isModal,
+    orgId,
+    items,
+    setInputText,
+    showModal,
+    closeModal
+  } = useProject();
 
   const navItems = [
     {
       key: 'all',
-      to: `${path}organizations/all/1`,
-      text: 'All Organizations'
+      to: `${path}projects/${orgId}/all/1`,
+      text: 'All Projects'
     },
     {
       key: 'my',
-      to: `${path}organizations/my/1`,
-      text: 'My Organizations'
+      to: `${path}projects/${orgId}/my/1`,
+      text: 'My Projects'
     }
   ];
 
-  const repoManager = useMemo(() => (
+  const projectManager = useMemo(() => (
     <div className={styles.repoHeader}>
       {pkey && <Nav type={type} items={navItems} />}
 
@@ -55,12 +63,12 @@ function Organizations() {
       />
     </div>
   ), [searchText, pkey]);
-
   return (
     <div className={styles.content}>
-      <Title level={3}>Organizations</Title>
-      {repoManager}
-      <OrgList
+      <Title level={3}>{`${orgName} projects`}</Title>
+      {projectManager}
+      <ProjectList
+        orgId={orgId}
         items={items}
         searchText={searchText}
         path={path}
@@ -71,4 +79,4 @@ function Organizations() {
   );
 }
 
-export default Organizations;
+export default Projects;
