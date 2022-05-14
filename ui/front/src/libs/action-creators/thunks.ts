@@ -15,7 +15,9 @@ import {
   IPCResult,
   MetaHash,
   NotificationPlacement,
+  OrganizationsResp,
   PKeyRes,
+  ProjectsResp,
   PromiseArg,
   RepoId, RepoListType,
   RepoMeta,
@@ -414,5 +416,18 @@ export const thunks:ThunkObject = {
         return dispatch(AC.setTxList(res.result));
       } throw new Error('failed to send beam');
     } catch (error) { return thunkCatch(error, dispatch); }
+  },
+  getOrganizations: () => async (dispatch) => {
+    try {
+      const output = await getOutput<OrganizationsResp>(RC.getOrganizations(), dispatch);
+      if (output) dispatch(AC.setOrganizationsList(output.organizations));
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
+  getProjects: () => async (dispatch) => {
+    try {
+      const output = await getOutput<ProjectsResp>(RC.getProjects(), dispatch);
+      if (output) dispatch(AC.setProjectsList(output.projects));
+    } catch (error) { thunkCatch(error, dispatch); }
   }
 };

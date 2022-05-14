@@ -10,6 +10,8 @@ export function apiEventManager(dispatch: AppThunkDispatch) {
     // we're not in sync, wait
 
     dispatch(thunks.getAllRepos('all'));
+    dispatch(thunks.getOrganizations());
+    dispatch(thunks.getProjects());
     dispatch(thunks.getWalletStatus());
     dispatch(thunks.getTxList());
   };

@@ -107,7 +107,7 @@ function AllRepos({
 
 const mapState = ({
   app: { isApiConnected, pkey },
-  repos: { repos, searchText }
+  entities: { repos, searchText }
 }: RootState) => ({
   pkey,
   isApiConnected,

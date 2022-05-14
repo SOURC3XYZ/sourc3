@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from '@libs/redux';
 
 const useAutoComplete = () => {
   const dispatch = useDispatch();
-  const searchText = useSelector((state) => state.repos.searchText);
-  const repoList = useSelector((state) => state.repos.repos);
+  const searchText = useSelector((state) => state.entities.searchText);
+  const repoList = useSelector((state) => state.entities.repos);
   const isApiConnected = useSelector((state) => state.app.isApiConnected);
 
   const isOnLoad = !isApiConnected && searchText;

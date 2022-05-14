@@ -102,6 +102,17 @@ export interface RepoTreeResp extends ContractResp {
   }
 }
 
+export type Organization = {
+  organization_tag: number,
+  organization_id: number,
+  organization_name: string,
+  organization_creator: string
+};
+
+export interface OrganizationsResp extends ContractResp {
+  organizations: Organization[]
+}
+
 export interface IDataNodeCustom extends DataNode {
   dataRef: TreeElement
 }
@@ -113,6 +124,18 @@ export type UpdateProps = {
   key?: React.Key,
   resolve?: () => void
 };
+
+export type Project = {
+  project_tag:number;
+  project_id:number;
+  organization_id:number;
+  project_name:string;
+  project_creator:string;
+};
+
+export interface ProjectsResp extends ContractResp {
+  projects : Project[]
+}
 
 export interface ObjectDataResp extends ContractResp {
   object_data: ObjectData

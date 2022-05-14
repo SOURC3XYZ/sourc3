@@ -58,8 +58,8 @@ function Header({
           </Link>
         </li>
         <li>
-          <Link className={styles.textColor} to="/repos/all/1">
-            Explore
+          <Link className={styles.textColor} to="/organizations/all/1">
+            Organizations
           </Link>
         </li>
       </ul>

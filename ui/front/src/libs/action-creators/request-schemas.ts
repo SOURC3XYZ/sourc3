@@ -265,7 +265,30 @@ export const RC = {
       expiration: 'auto',
       new_style_regular: true
     }
-  } as const)
+  } as const),
 
+  getOrganizations: () => ({
+    callID: 'list_organizations',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_organizations'
+      }
+    }
+  }),
+
+  getProjects: () => ({
+    callID: 'list_projects',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_projects'
+      }
+    }
+  })
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;
