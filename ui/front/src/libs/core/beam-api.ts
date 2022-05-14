@@ -111,7 +111,11 @@ export class BeamAPI<T> {
     appname:any,
     apirescback:any
   ): Promise<BeamObject> => {
-    await this.injectScript('/wasm-client.js');
+    if (this.isElectron()) {
+      await this.injectScript('./wasm-client.js');
+    } else {
+      await this.injectScript('/wasm-client.js');
+    }
     const WasmModule = await window.BeamModule();
     const { WasmWalletClient } = WasmModule;
     const client = new WasmWalletClient(headlessNode);
