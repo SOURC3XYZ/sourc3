@@ -9,7 +9,8 @@ import {
   Repo,
   FailPage,
   Organizations,
-  Projects
+  Projects,
+  ProjectRepos
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import {
@@ -61,6 +62,10 @@ function Main({
     {
       path: 'projects/:orgId/:type/:page',
       element: <Projects />
+    },
+    {
+      path: 'project/:projId/:type/:page',
+      element: <ProjectRepos />
     }
   ];
 

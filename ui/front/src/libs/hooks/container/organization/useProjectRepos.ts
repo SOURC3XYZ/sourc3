@@ -3,38 +3,36 @@ import { useDispatch, useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
 import { useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { getOrgName, getProjectsByOrgId } from './selectors';
+import { getOrgName, getReposByProject } from './selectors';
 
 type LocationState = {
-  orgId: number,
+  projId: string,
   type: OwnerListType,
   page: number
 };
 
 // orgId/:type/:page
 
-const useProject = () => {
+const useProjectRepos = () => {
   const { pathname } = useLocation();
-  const { type, page, orgId } = useParams<'type' & 'page' & 'orgId'>() as LocationState;
-  const path = pathname.split('projects/')[0];
+  const { type, page, projId } = useParams<'type' & 'page' & 'projId'>() as LocationState;
+  const path = pathname.split('project/')[0];
 
-  const orgIdNum = useMemo(() => +orgId, [orgId]);
+  const id = useMemo(() => +projId, [projId]);
 
   const dispatch = useDispatch();
   const pkey = useSelector((state) => state.app.pkey);
   const searchText = useSelector((state) => state.entities.searchText);
-  const projects = useSelector(
-    (state) => getProjectsByOrgId(orgIdNum, state.entities.projects, type, pkey)
+  const repos = useSelector(
+    (state) => getReposByProject(id, state.entities.repos, type, pkey)
   );
   const orgName = useSelector(
-    (state) => getOrgName(orgIdNum, state.entities.organizations) || 'NO_NAME'
+    (state) => getOrgName(id, state.entities.organizations) || 'NO_NAME'
   );
 
   const [isModal, setIsModal] = useState(false);
 
-  const setInputText = (txt: string) => {
-    dispatch(AC.setSearch(txt));
-  };
+  const setInputText = (txt: string) => dispatch(AC.setSearch(txt));
 
   const showModal = () => {
     setIsModal(true);
@@ -42,8 +40,10 @@ const useProject = () => {
   const closeModal = () => {
     setIsModal(false);
   };
+
+  const deleteRepos = () => {};
   return {
-    items: projects,
+    items: repos,
     orgName,
     path,
     pkey,
@@ -51,11 +51,12 @@ const useProject = () => {
     page,
     searchText,
     isModal,
-    orgId: orgIdNum,
+    id,
     setInputText,
     showModal,
-    closeModal
+    closeModal,
+    deleteRepos
   };
 };
 
-export default useProject;
+export default useProjectRepos;

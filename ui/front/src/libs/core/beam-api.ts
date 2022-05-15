@@ -163,8 +163,9 @@ export class BeamAPI<T> {
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
   ) => new Promise<QObject>((resolve) => {
+    const updMessage = { ...message, is_reconnect: !!window.BeamApi };
     this.walletConnectResolve = resolve;
-    window.postMessage(message, window.origin);
+    window.postMessage(updMessage, window.origin);
   });
 
   readonly connectHeadless = async () => {

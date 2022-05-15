@@ -26,6 +26,8 @@ export type RepoType = {
   repo_name: RepoName;
   repo_id: RepoId;
   repo_owner: string;
+  project_id: number;
+  cur_objects: number;
 };
 
 export interface ReposResp extends ContractResp {

@@ -245,7 +245,7 @@ export function runWalletApi(
       `--use_http=${HTTP_MODE}`,
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
-      '--tcp_max_line=256000',
+      '--tcp_max_line=1256000',
       `--ipfs_repo=${ipfsPath}`,
       `--ipfs_bootstrap=/ip4/3.209.99.179/tcp/8100/p2p/${IPFS_BOOTSRAP}`
     ];
