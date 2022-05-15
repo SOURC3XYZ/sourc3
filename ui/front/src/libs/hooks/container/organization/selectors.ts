@@ -12,7 +12,6 @@ export const getProjectsByOrgId = (
   pkey?:string
 ) => {
   const orgProjects = items.filter((el) => el.organization_id === orgId);
-  if (items.length) { debugger; }
   if (pkey && type === 'my') {
     return items.filter((el) => el.project_creator === pkey);
   } return orgProjects;

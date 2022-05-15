@@ -60,12 +60,12 @@ function createWindow() {
         path.join(__dirname, '..', '..', 'git-remote-sourc3.exe'),
         path.join(__dirname, '..', '..', '..', 'git-remote-sourc3.exe')
       );
-    } else if (process.platform === "darwin") {
-      console.log(app.getPath("exe"));
-      let dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3')
-      let src = path.join(__dirname, '..', '..', '..', 'git-remote-sourc3')
+    } else if (process.platform === 'darwin') {
+      console.log(app.getPath('exe'));
+      const dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
+      const src = path.join(__dirname, '..', '..', '..', 'git-remote-sourc3');
       if (!fs.existsSync(dst)) {
-        fs.symlinkSync(src, dst)
+        fs.symlinkSync(src, dst);
       }
     }
     if (!fs.existsSync(sourc3Path)) {

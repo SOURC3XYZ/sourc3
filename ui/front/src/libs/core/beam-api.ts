@@ -89,11 +89,6 @@ export class BeamAPI<T> {
     } return this.eventManager(parsed);
   };
 
-  public readonly headlessConnectedEvent = () => {
-    this.isHeadlessOnConnect = false;
-    document.dispatchEvent(new CustomEvent('headlessConnected'));
-  };
-
   private readonly onApiResult = (json: string): void => {
     const parsed = JSON.parse(json);
     this.responseCbackHandler(parsed);
@@ -227,21 +222,7 @@ export class BeamAPI<T> {
 
   readonly extensionConnect = async (message: {
     [key: string]: string;
-  }) => {
-    if (this.isHeadlessOnConnect) {
-      return new Promise((resolve) => {
-        document.addEventListener(
-          'headlessConnected',
-          async () => {
-            const api = await this.extensionConnectHandler(message);
-            resolve(api);
-          },
-          { once: true }
-        );
-      });
-    }
-    return this.extensionConnectHandler(message);
-  };
+  }) => this.extensionConnectHandler(message);
 
   readonly extensionConnectHandler = async (message: {
     [key: string]: string;

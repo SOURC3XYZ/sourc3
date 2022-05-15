@@ -100,10 +100,10 @@ export const thunks:ThunkObject = {
   },
 
   connectBeamApi:
-    () => async (dispatch) => {
+    (apiHost?:string) => async (dispatch) => {
       try {
         if (api.isApiLoaded()) return;
-        await loadAPI();
+        await loadAPI(apiHost);
         await initContract(wasm);
         api.loadApiEventManager(apiEventManager(dispatch));
         const action = RC.viewContracts();
@@ -123,7 +123,6 @@ export const thunks:ThunkObject = {
             placement: 'bottomRight' as NotificationPlacement,
             style: { fontWeight: 600 }
           });
-          api.headlessConnectedEvent();
         }
       } catch (error) { thunkCatch(error, dispatch); }
     },
