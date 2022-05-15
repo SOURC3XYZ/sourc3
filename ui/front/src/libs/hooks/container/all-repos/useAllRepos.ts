@@ -1,7 +1,7 @@
 import { useObjectState } from '@libs/hooks/shared';
-import { searchFilter } from '@libs/utils';
+import { useSearch } from '@libs/hooks/shared/useSearch';
 import { RepoListType, RepoType } from '@types';
-import { ChangeEvent, useEffect, useMemo } from 'react';
+import { ChangeEvent, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 type LocationState = {
@@ -37,10 +37,7 @@ const useAllRepos = ({
     ? repos.filter(({ repo_owner }) => repo_owner === pkey)
     : repos;
 
-  const elements = useMemo(
-    () => searchFilter(searchText, byRouteRepos, ['repo_id', 'repo_name']),
-    [searchText, repos, type]
-  );
+  const elements = useSearch(searchText, byRouteRepos, ['repo_name', 'repo_owner'], type);
 
   useEffect(() => {
     setPrevHref(pathname);
@@ -64,7 +61,7 @@ const useAllRepos = ({
   };
 
   const repoListProps = {
-    page: +page, type, elements, path
+    page: +page, type, items: elements, path
   };
 
   return {

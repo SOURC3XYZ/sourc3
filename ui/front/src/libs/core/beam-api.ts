@@ -163,9 +163,9 @@ export class BeamAPI<T> {
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
   ) => new Promise<QObject>((resolve) => {
-    const updMessage = { ...message, is_reconnect: !!window.BeamApi };
+    // const updMessage = { ...message, is_reconnect: !!window.BeamApi };
     this.walletConnectResolve = resolve;
-    window.postMessage(updMessage, window.origin);
+    window.postMessage(message, window.origin);
   });
 
   readonly connectHeadless = async () => {
@@ -347,7 +347,7 @@ export class BeamAPI<T> {
     const oReq = new XMLHttpRequest();
     oReq.open('GET', [CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'), true);
     oReq.responseType = 'blob';
-
+    oReq.setRequestHeader('Access-Control-Allow-Origin', '*');
     oReq.onload = async function () {
       const blob = oReq.response as Blob;
       const buffer = await blob.arrayBuffer();

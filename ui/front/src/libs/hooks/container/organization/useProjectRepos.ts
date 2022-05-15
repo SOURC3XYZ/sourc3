@@ -1,9 +1,10 @@
-import { AC } from '@libs/action-creators';
+import { AC, thunks } from '@libs/action-creators';
+import { useSearch } from '@libs/hooks/shared/useSearch';
 import { useDispatch, useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
 import { useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { getOrgName, getReposByProject } from './selectors';
+import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
   projId: string,
@@ -27,8 +28,10 @@ const useProjectRepos = () => {
     (state) => getReposByProject(id, state.entities.repos, type, pkey)
   );
   const orgName = useSelector(
-    (state) => getOrgName(id, state.entities.organizations) || 'NO_NAME'
+    (state) => getProjectName(id, state.entities.projects) || 'NO_NAME'
   );
+
+  const items = useSearch(searchText, repos, ['repo_name', 'repo_id']);
 
   const [isModal, setIsModal] = useState(false);
 
@@ -41,9 +44,14 @@ const useProjectRepos = () => {
     setIsModal(false);
   };
 
+  const handleOk = (name: string) => {
+    closeModal();
+    dispatch(thunks.createRepos(name, id));
+  };
+
   const deleteRepos = () => {};
   return {
-    items: repos,
+    items,
     orgName,
     path,
     pkey,
@@ -55,7 +63,8 @@ const useProjectRepos = () => {
     setInputText,
     showModal,
     closeModal,
-    deleteRepos
+    deleteRepos,
+    handleOk
   };
 };
 

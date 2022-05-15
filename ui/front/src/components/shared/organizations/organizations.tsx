@@ -1,17 +1,29 @@
 import {
-  BeamButton, Nav, Search
+  BeamButton, CreateModal, Nav, Search
 } from '@components/shared';
 import { useMemo } from 'react';
-import { Modal, Typography } from 'antd';
+import { Typography } from 'antd';
 import { useOrganization } from '@libs/hooks/container/organization';
 import styles from './organizations.module.scss';
 import { OrgList } from './list';
 
 const { Title } = Typography;
 
+const placeholder = 'Enter your organization name';
+
 function Organizations() {
   const {
-    items, searchText, type, path, pkey, isModal, showModal, closeModal, setInputText
+    items,
+    searchText,
+    type,
+    page,
+    path,
+    pkey,
+    isModal,
+    showModal,
+    closeModal,
+    setInputText,
+    handleOk
   } = useOrganization();
 
   const navItems = [
@@ -48,13 +60,14 @@ function Organizations() {
         )}
       </div>
 
-      <Modal
-        visible={isModal}
-        onCancel={closeModal}
-        closable={false}
+      <CreateModal
+        isModalVisible={isModal}
+        placeholder={placeholder}
+        handleCreate={handleOk}
+        handleCancel={closeModal}
       />
     </div>
-  ), [searchText, pkey]);
+  ), [searchText, pkey, isModal]);
 
   return (
     <div className={styles.content}>
@@ -65,7 +78,7 @@ function Organizations() {
         searchText={searchText}
         path={path}
         type={type}
-        page={0}
+        page={page}
       />
     </div>
   );

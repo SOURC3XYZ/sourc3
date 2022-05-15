@@ -1,11 +1,12 @@
 import { useProject } from '@libs/hooks/container/organization';
-import { Modal } from 'antd';
 import Title from 'antd/lib/typography/Title';
 import { useMemo } from 'react';
-import { Nav, Search } from '@components/shared';
+import { CreateModal, Nav, Search } from '@components/shared';
 import { BeamButton } from '../beam-button';
 import styles from './projects.module.scss';
 import { ProjectList } from './projectList';
+
+const placeholder = 'Enter name of your project';
 
 function Projects() {
   const {
@@ -15,22 +16,23 @@ function Projects() {
     pkey,
     searchText,
     isModal,
-    orgId,
+    id,
     items,
     setInputText,
     showModal,
+    handleOk,
     closeModal
   } = useProject();
 
   const navItems = [
     {
       key: 'all',
-      to: `${path}projects/${orgId}/all/1`,
+      to: `${path}projects/${id}/all/1`,
       text: 'All Projects'
     },
     {
       key: 'my',
-      to: `${path}projects/${orgId}/my/1`,
+      to: `${path}projects/${id}/my/1`,
       text: 'My Projects'
     }
   ];
@@ -56,19 +58,20 @@ function Projects() {
         )}
       </div>
 
-      <Modal
-        visible={isModal}
-        onCancel={closeModal}
-        closable={false}
+      <CreateModal
+        isModalVisible={isModal}
+        handleCreate={handleOk}
+        handleCancel={closeModal}
+        placeholder={placeholder}
       />
     </div>
-  ), [searchText, pkey]);
+  ), [searchText, pkey, isModal]);
   return (
     <div className={styles.content}>
       <Title level={3}>{`${orgName} projects`}</Title>
       {projectManager}
       <ProjectList
-        orgId={orgId}
+        orgId={id}
         items={items}
         searchText={searchText}
         path={path}

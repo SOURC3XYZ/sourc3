@@ -27,7 +27,7 @@ function ProjectListItem({
     message.info(key);
   };
 
-  const link = `${path}projects/${orgId}/${type}/1`;
+  const link = `${path}project/${orgId}/${type}/1`;
 
   const menuRender = (
     <Menu onClick={onClick} />

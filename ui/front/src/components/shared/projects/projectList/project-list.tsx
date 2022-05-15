@@ -1,7 +1,9 @@
 import { OwnerListType, Project } from '@types';
 import { List } from 'antd';
 import { PaginationConfig } from 'antd/lib/pagination';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './project-list.module.scss';
 import ProjectListItem from './project-list-item';
@@ -45,12 +47,15 @@ function ProjectList({
     onChange,
     onShowSizeChange
   };
+
+  const paginationVisible = useMemo(() => !!items.length && pagination, [items, page, pageSize]);
+
   return (
     <List
       className={styles.list}
       bordered
       size="small"
-      pagination={pagination}
+      pagination={paginationVisible}
       dataSource={items}
       renderItem={(item) => (
         <ProjectListItem

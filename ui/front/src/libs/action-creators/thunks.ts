@@ -295,9 +295,9 @@ export const thunks:ThunkObject = {
     } catch (error) { errHandler(error as Error); }
   },
 
-  createRepos: (resp_name: string) => async (dispatch) => {
+  createRepos: (name: string, projectId: number, pid = 0) => async (dispatch) => {
     try {
-      const res = await callApi(RC.createRepos(resp_name));
+      const res = await callApi(RC.createRepo(name, projectId, pid));
       if (res.result?.raw_data) {
         const tx = await callApi(RC.startTx(res.result.raw_data));
         if (tx.result?.txid) {
@@ -318,6 +318,30 @@ export const thunks:ThunkObject = {
       }
       throw new Error('repo delete failed');
     } catch (error) { return thunkCatch(error, dispatch); }
+  },
+
+  createOrganization: (name: string, pid = 0) => async (dispatch) => {
+    try {
+      const res = await callApi(RC.createOrganization(name, pid));
+      if (res.result?.raw_data) {
+        const tx = await callApi(RC.startTx(res.result.raw_data));
+        if (tx.result?.txid) {
+          dispatch(AC.setTx(tx.result.txid));
+        }
+      }
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
+  createProject: (name: string, organizationId:number, pid = 0) => async (dispatch) => {
+    try {
+      const res = await callApi(RC.createProject(name, organizationId, pid));
+      if (res.result?.raw_data) {
+        const tx = await callApi(RC.startTx(res.result.raw_data));
+        if (tx.result?.txid) {
+          dispatch(AC.setTx(tx.result.txid));
+        }
+      }
+    } catch (error) { thunkCatch(error, dispatch); }
   },
 
   getTextData: (

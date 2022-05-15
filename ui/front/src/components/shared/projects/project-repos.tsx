@@ -1,11 +1,13 @@
 import { useProjectRepos } from '@libs/hooks/container/organization';
-import { Modal } from 'antd';
 import Title from 'antd/lib/typography/Title';
 import { useMemo } from 'react';
 import { Nav, Search } from '@components/shared';
 import { BeamButton } from '../beam-button';
 import styles from './projects.module.scss';
 import { RepoList } from '../all-repos';
+import { CreateModal } from '../create-modal';
+
+const placeholder = 'Enter your repository name';
 
 function ProjectRepos() {
   const {
@@ -17,22 +19,24 @@ function ProjectRepos() {
     isModal,
     id,
     items,
+    page,
     deleteRepos,
     setInputText,
     showModal,
-    closeModal
+    closeModal,
+    handleOk
   } = useProjectRepos();
 
   const navItems = [
     {
       key: 'all',
       to: `${path}project/${id}/all/1`,
-      text: 'All Repos'
+      text: 'All Repositories'
     },
     {
       key: 'my',
       to: `${path}project/${id}/my/1`,
-      text: 'My Repos'
+      text: 'My Repositories'
     }
   ];
 
@@ -57,21 +61,23 @@ function ProjectRepos() {
         )}
       </div>
 
-      <Modal
-        visible={isModal}
-        onCancel={closeModal}
-        closable={false}
+      <CreateModal
+        isModalVisible={isModal}
+        handleCreate={handleOk}
+        handleCancel={closeModal}
+        placeholder={placeholder}
       />
     </div>
-  ), [searchText, pkey]);
+  ), [searchText, pkey, isModal]);
   return (
     <div className={styles.content}>
-      <Title level={3}>{`${orgName} projects`}</Title>
+      <Title level={3}>{`${orgName} repositories`}</Title>
       {projectManager}
       <RepoList
         path={path}
-        page={0}
-        elements={items}
+        page={page}
+        route="project"
+        items={items}
         deleteRepos={deleteRepos}
         type={type}
         searchText={searchText}

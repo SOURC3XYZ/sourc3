@@ -31,30 +31,6 @@ export function buf2hex(buffer: number[] | ArrayBuffer) {
     .join('');
 }
 
-export const equalKeyIndex = (key: string, inputText: string) => key
-  .toLowerCase()
-  .search(inputText.toLowerCase());
-
-export function searchFilter<T>(
-  searchInputTxt: string,
-  elements: T[],
-  keysToEqual: (keyof T)[]
-) {
-  if (searchInputTxt) {
-    return elements.filter((el) => {
-      const entries = Object.entries(el) as [keyof T, T[keyof T]][];
-      const filtered = entries
-        .filter((field) => keysToEqual.find((key) => key === field[0]))
-        .find((field) => (
-          typeof field[1] === 'string' || typeof field[1] === 'number')
-            && ~(equalKeyIndex(String(field[1]), searchInputTxt)));
-      if (filtered) return el;
-      return null;
-    });
-  }
-  return elements;
-}
-
 export const parseToGroth = (beams: number):number => {
   const numb = Math.ceil(beams * BeamAmmount.GROTHS_IN_BEAM);
   return Number(numb);
@@ -64,6 +40,10 @@ export const parseToBeam = (groth: number):string => {
   const numb = groth / BeamAmmount.GROTHS_IN_BEAM;
   return String(numb);
 };
+
+export const equalKeyIndex = (key: string, inputText: string) => key
+  .toLowerCase()
+  .search(inputText.toLowerCase());
 
 export const handleString = (next:string):boolean => {
   let result = true;

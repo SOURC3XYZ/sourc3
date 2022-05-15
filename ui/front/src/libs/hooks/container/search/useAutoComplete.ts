@@ -1,4 +1,5 @@
 import { AC } from '@libs/action-creators';
+import { useSearch } from '@libs/hooks/shared/useSearch';
 import { useDispatch, useSelector } from '@libs/redux';
 
 const useAutoComplete = () => {
@@ -11,8 +12,10 @@ const useAutoComplete = () => {
 
   const setInputText = (inputText: string) => dispatch(AC.setSearch(inputText));
 
+  const items = useSearch(searchText, repoList, ['repo_id', 'repo_name']);
+
   return {
-    repoList,
+    items,
     isOnLoad,
     searchText,
     setInputText

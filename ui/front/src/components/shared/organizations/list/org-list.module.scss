@@ -11,13 +11,6 @@
     }
 }
 
-.pagination {
-
-    li,
-    div[class~=ant-select-selector] {
-        border-radius: 5px !important;
-    }
-}
 
 .listItem {
     em {
@@ -86,4 +79,16 @@
     width: auto;
     opacity: 0.5;
     cursor: pointer;
+}
+
+
+.pagination {
+    :global {
+
+        li,
+        div.ant-select-selector {
+            border-radius: 5px !important;
+        }
+    }
+
 }

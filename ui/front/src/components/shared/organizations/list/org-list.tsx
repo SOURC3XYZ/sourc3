@@ -2,7 +2,9 @@ import { Organization, OwnerListType } from '@types';
 
 import { List } from 'antd';
 import { PaginationConfig } from 'antd/lib/pagination';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import OrgListItem from './org-list-item';
 import styles from './org-list.module.scss';
@@ -23,7 +25,7 @@ function OrgList({
 
   const [pageSize, setPageSize] = useState(4);
 
-  const onChange = (next:number) => navigate(`${path}repos/${type}/${next}`);
+  const onChange = (next:number) => navigate(`${path}organizations/${type}/${next}`);
 
   useEffect(() => {
     if (textCash.current !== searchText) {
@@ -45,12 +47,15 @@ function OrgList({
     onChange,
     onShowSizeChange
   };
+
+  const paginationVisible = useMemo(() => !!items.length && pagination, [items, page, pageSize]);
+
   return (
     <List
       className={styles.list}
       bordered
       size="small"
-      pagination={pagination}
+      pagination={paginationVisible}
       dataSource={items}
       renderItem={(item) => (
         <OrgListItem

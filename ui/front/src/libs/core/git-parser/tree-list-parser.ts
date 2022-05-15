@@ -73,7 +73,7 @@ export default class TreeListParser extends AbstractParser {
     return newTree;
   };
 
-  private readonly extCheck = (attr:number):boolean => attr === FileCodes.LEAF;
+  private readonly extCheck = (attr:number):boolean => attr !== FileCodes.FOLDER;
 
   private readonly fileSorter = (a:TreeElement, b:TreeElement) => {
     const aLow = a.filename.toLocaleLowerCase();

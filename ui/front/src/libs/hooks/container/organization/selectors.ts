@@ -15,7 +15,7 @@ export const getProjectsByOrgId = (
 ) => {
   const orgProjects = items.filter((el) => el.organization_id === id);
   if (pkey && type === 'my') {
-    return items.filter((el) => el.project_creator === pkey);
+    return orgProjects.filter((el) => el.project_creator === pkey);
   } return orgProjects;
 };
 
@@ -33,5 +33,5 @@ export const getReposByProject = (
 ) => {
   const repos = items.filter((el) => el.project_id === id);
   if (pkey && type === 'my') return repos.filter((el) => el.repo_owner === pkey);
-  return items;
+  return repos;
 };

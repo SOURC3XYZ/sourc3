@@ -1,4 +1,4 @@
-import { AC } from '@libs/action-creators';
+import { AC, thunks } from '@libs/action-creators';
 import { useDispatch, useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
 import { useMemo, useState } from 'react';
@@ -8,7 +8,7 @@ import { getOrgName, getProjectsByOrgId } from './selectors';
 type LocationState = {
   orgId: number,
   type: OwnerListType,
-  page: number
+  page: string
 };
 
 // orgId/:type/:page
@@ -18,43 +18,46 @@ const useProject = () => {
   const { type, page, orgId } = useParams<'type' & 'page' & 'orgId'>() as LocationState;
   const path = pathname.split('projects/')[0];
 
-  const orgIdNum = useMemo(() => +orgId, [orgId]);
+  const id = useMemo(() => +orgId, [orgId]);
 
   const dispatch = useDispatch();
   const pkey = useSelector((state) => state.app.pkey);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
-    (state) => getProjectsByOrgId(orgIdNum, state.entities.projects, type, pkey)
+    (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
   );
   const orgName = useSelector(
-    (state) => getOrgName(orgIdNum, state.entities.organizations) || 'NO_NAME'
+    (state) => getOrgName(id, state.entities.organizations) || 'NO_NAME'
   );
 
   const [isModal, setIsModal] = useState(false);
 
-  const setInputText = (txt: string) => {
-    dispatch(AC.setSearch(txt));
+  const setInputText = (txt: string) => dispatch(AC.setSearch(txt));
+
+  const showModal = () => setIsModal(true);
+
+  const closeModal = () => setIsModal(false);
+
+  const handleOk = (name: string) => {
+    closeModal();
+    console.log(name);
+    dispatch(thunks.createProject(name, id));
   };
 
-  const showModal = () => {
-    setIsModal(true);
-  };
-  const closeModal = () => {
-    setIsModal(false);
-  };
   return {
     items: projects,
+    page: +page,
     orgName,
     path,
     pkey,
     type,
-    page,
     searchText,
     isModal,
-    orgId: orgIdNum,
+    id,
     setInputText,
     showModal,
-    closeModal
+    closeModal,
+    handleOk
   };
 };
 

@@ -1,4 +1,5 @@
-import { AC } from '@libs/action-creators';
+import { AC, thunks } from '@libs/action-creators';
+import { useSearch } from '@libs/hooks/shared/useSearch';
 import { useSelector, useDispatch } from '@libs/redux';
 import { OwnerListType } from '@types';
 import { useState } from 'react';
@@ -20,27 +21,32 @@ const useOrganization = () => {
   const items = useSelector((state) => itemsFilter(state.entities.organizations, type, pkey));
   const searchText = useSelector((state) => state.entities.searchText);
 
+  const elements = useSearch(searchText, items, ['organization_name', 'organization_id'], type);
+
   const [isModal, setIsModal] = useState(false);
 
   const setInputText = (txt: string) => {
     dispatch(AC.setSearch(txt));
   };
 
-  const showModal = () => {
-    setIsModal(true);
-  };
-  const closeModal = () => {
-    setIsModal(false);
+  const showModal = () => setIsModal(true);
+
+  const closeModal = () => setIsModal(false);
+
+  const handleOk = (name: string) => {
+    closeModal();
+    dispatch(thunks.createOrganization(name));
   };
 
   return {
-    items,
+    items: elements,
+    page: +page,
     searchText,
     type,
-    page,
     pkey,
     path,
     isModal,
+    handleOk,
     setInputText,
     showModal,
     closeModal

@@ -1,5 +1,4 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { searchFilter } from '@libs/utils';
 import { AutoComplete } from 'antd';
 import { useMemo } from 'react';
 import { useAutoComplete } from '@libs/hooks/container/search';
@@ -16,16 +15,16 @@ function AutocompeteSearch({
   placeholder, className = ''
 }:SearchProps) {
   const {
-    searchText, repoList, isOnLoad, setInputText
+    searchText, items, isOnLoad, setInputText
   } = useAutoComplete();
 
   const options = useMemo(() => (searchText
-    ? searchFilter(searchText, repoList, ['repo_id', 'repo_name']) : [])
+    ? items : [])
     .map((el) => ({
       value: [el.repo_owner, el.repo_name].join('-'),
       className: styles.option,
       label: <Options repo={el} searchText={searchText} />
-    })), [searchText, repoList]);
+    })), [searchText, items]);
 
   const spinnerClass = isOnLoad
     ? styles.loadingActive
