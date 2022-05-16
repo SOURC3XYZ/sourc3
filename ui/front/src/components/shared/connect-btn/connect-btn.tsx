@@ -20,6 +20,8 @@ function ConnectBtn({ isLogined, onConnect }:ConnectBtnProps) {
     if (!isLogined)onConnect();
   };
 
+  const btnClassname = isLogined ? styles.connectBtnLogined : styles.connectBtn;
+
   useEffect(() => {
     if (isLogined) {
       notification.open({
@@ -30,7 +32,7 @@ function ConnectBtn({ isLogined, onConnect }:ConnectBtnProps) {
   }, [isLogined]);
 
   return (
-    <BeamButton classes={styles.connectBtn} callback={onConnectHandler}>
+    <BeamButton classes={btnClassname} callback={onConnectHandler}>
       {connectInner}
     </BeamButton>
   );
