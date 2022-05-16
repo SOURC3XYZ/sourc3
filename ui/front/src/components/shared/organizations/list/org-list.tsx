@@ -44,6 +44,8 @@ function OrgList({
     current: page,
     pageSizeOptions: ['4', '8', '16', '32', '64', '128'],
     pageSize,
+    showSizeChanger: true,
+    responsive: true,
     onChange,
     onShowSizeChange
   };

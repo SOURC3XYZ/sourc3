@@ -59,7 +59,8 @@ const messageBeam = {
   type: 'create_sourc3_api',
   apiver: 'current',
   apivermin: '',
-  appname: 'SOURC3'
+  appname: 'SOURC3',
+  is_reconnect: false
 };
 
 const headers = { 'Content-Type': 'application/json' };

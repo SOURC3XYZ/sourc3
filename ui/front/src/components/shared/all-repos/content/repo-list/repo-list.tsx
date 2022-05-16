@@ -44,6 +44,8 @@ function RepoList({
     size: 'small',
     current: page,
     pageSizeOptions: ['4', '8', '16', '32', '64', '128'],
+    showSizeChanger: true,
+    responsive: true,
     pageSize,
     onChange,
     onShowSizeChange

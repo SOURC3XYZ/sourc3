@@ -23,7 +23,8 @@ const reducer = (
   const newState = JSON.parse(JSON.stringify(state)) as IRepos;
   switch (action.type) {
     case ACTIONS.GET_ALL_REPOS: {
-      newState.repos = [...(action.payload as IRepos['repos'])];
+      newState.repos = [...(action.payload as IRepos['repos'])]
+        .filter((el) => !String(el.repo_id).match(/^(1|3|4|5|6|7|8)$/));
       return newState;
     }
     case ACTIONS.SET_SEARCH: {

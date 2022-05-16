@@ -222,7 +222,7 @@ export class BeamAPI<T> {
     .documentElement.getAttribute('sourc3-extension-installed');
 
   readonly extensionConnect = async (message: {
-    [key: string]: string;
+    [key: string]: any;
   }) => this.extensionConnectHandler(message);
 
   readonly extensionConnectHandler = async (message: {
