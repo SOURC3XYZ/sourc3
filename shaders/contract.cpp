@@ -202,15 +202,38 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+    CheckPermissions<Tag::kRepoMember, Repo>(params.caller, repo_info->repo_id,
+                                             Repo::Permissions::kModifyRepo);
+    Env::AddSig(params.caller);
+
+    std::unique_ptr<Repo> new_repo_info(
+        static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
+
+    auto new_repo_name_hash = GetNameHash(params.name, params.name_len);
+    _POD_(new_repo_info->name_hash) = new_repo_name_hash;
+    new_repo_info->owner = repo_info->owner;
+    new_repo_info->repo_id = repo_info->repo_id;
+    new_repo_info->name_len = params.name_len;
+    new_repo_info->cur_objs_number = repo_info->cur_objs_number;
+    new_repo_info->project_id = repo_info->project_id;
+    Env::Memcpy(new_repo_info->name, params.name, repo_info->name_len);
+
+    Env::DelVar_T(Repo::Key(repo_info->repo_id));
+    Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
+    SaveNamedObject(Repo::Key(new_repo_info->repo_id), new_repo_info);
+    Env::SaveVar_T(Repo::NameKey(new_repo_info->owner, new_repo_name_hash),
+                   new_repo_info->repo_id);
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-    CheckPermissions<Tag::kProjectMember, Project>(params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
+    CheckPermissions<Tag::kProjectMember, Project>(
+        params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
     Env::AddSig(params.caller);
     Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
-    Env::DelVar_T(Members<Tag::kRepoMember, Repo>::Key(repo_info->owner, repo_info->repo_id));
+    Env::DelVar_T(Members<Tag::kRepoMember, Repo>::Key(repo_info->owner,
+                                                       repo_info->repo_id));
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
     // TODO: delete all repo members
     // TODO: delete all git refs and objects
