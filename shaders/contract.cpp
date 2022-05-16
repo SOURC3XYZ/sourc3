@@ -74,23 +74,6 @@ uint32_t git_remote_beam::get_CurrentVersion() {
     return 1;
 }
 
-/*
-BEAM_EXPORT void Method_3(const method::DeleteRepo& params) {  // NOLINT
-  std::unique_ptr<Repo> repo_info = LoadRepo(params.repo_id);
-
-  CheckPermissions(params.user, repo_info->repo_id, kDeleteRepo);
-
-  Env::AddSig(params.user);
-
-  Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
-  Env::DelVar_T(RepoUser::Key(repo_info->owner, repo_info->repo_id));
-  for (auto tag : kAllTags) {
-    auto key = Repo::BaseKey(tag, params.repo_id);
-    Env::DelVar_T(key);
-  }
-}
-*/
-
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
 
@@ -223,7 +206,14 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+    CheckPermissions<Tag::kProjectMember, Project>(params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
+    Env::AddSig(params.caller);
+    Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
+    Env::DelVar_T(Members<Tag::kRepoMember, Repo>::Key(repo_info->owner, repo_info->repo_id));
+    Env::DelVar_T(Repo::Key(repo_info->repo_id));
+    // TODO: delete all repo members
+    // TODO: delete all git refs and objects
 }
 
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
