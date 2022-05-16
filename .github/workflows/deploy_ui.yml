@@ -17,4 +17,4 @@ jobs:
           username: ${{ secrets.INSTANCE_USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
           passphrase: ${{ secrets.INSTANCE_PASSPHRASE }} 
-          script: ${{ secrets.PROJECT_PATH_UI }} && ${{ secrets.GIT_REPO_UI }} && docker build -t sourc3-ui:latest . &&  docker rm -f sourc3-ui || true && docker run -d --name  sourc3-ui sourc3-ui:latest && docker network connect nginx_net sourc3-ui
+          script: ${{ secrets.PROJECT_PATH_UI }} && ${{ secrets.GIT_REPO_UI }} && ${{ secrets.GIT_BRANCH }} && docker build -t sourc3-ui:latest . &&  docker rm -f sourc3-ui || true && docker run -d --name  sourc3-ui sourc3-ui:latest && docker network connect nginx_net sourc3-ui
