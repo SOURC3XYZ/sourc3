@@ -32,11 +32,14 @@ const reducer = (
       return newState;
     }
     case ACTIONS.SET_ORGANIZATIONS: {
-      newState.organizations = action.payload as IRepos['organizations'];
+      newState.organizations = (action.payload as IRepos['organizations'])
+        .filter((el) => !String(el.organization_id).match(/^(1|3)$/));
+
       return newState;
     }
     case ACTIONS.SET_PROJECTS: {
-      newState.projects = action.payload as IRepos['projects'];
+      newState.projects = (action.payload as IRepos['projects'])
+        .filter((el) => !String(el.organization_id).match(/^(1|3)$/));
       return newState;
     }
     default:
