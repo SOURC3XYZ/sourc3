@@ -15,7 +15,6 @@ enum Tag : uint8_t {
     kOrganizationMember,
     kProjectMember,
 };
-constexpr Tag kAllTags[] = {kRepo, kObjects, kRefs, kOrganization};
 
 #pragma pack(push, 1)
 
