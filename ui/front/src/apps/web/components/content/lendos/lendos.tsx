@@ -18,7 +18,7 @@ function Lendos() {
           <h1>
             Building
             <br />
-            the Web3-way.
+            the Web3-way
           </h1>
           <p>
             SOURC3 is a decentralized software development platform, enabling self-sovereignty and recognizing contribution.
