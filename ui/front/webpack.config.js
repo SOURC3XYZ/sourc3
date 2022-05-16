@@ -143,6 +143,9 @@ const build = {
           from: path.join(__dirname, './public/netlify.toml')
         },
         {
+          from: path.join(__dirname, './public/favicon.png')
+        },
+        {
           from: path.join(
             __dirname, './node_modules/beam-wasm-client-masternet/'
           ),
