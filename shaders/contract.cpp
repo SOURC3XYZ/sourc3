@@ -43,7 +43,7 @@ bool ObjectExists(const typename T::Id& id) {
     typename T::Key key(id);
     return Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
 }
-}  // namespace 
+}  // namespace
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
     params.m_Stgs.TestNumApprovers();
@@ -146,7 +146,21 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Organization> organization =
+        LoadNamedObject<Organization>(params.id);
+    CheckPermissions<Tag::kOrganizationMember, Organization>(
+        params.caller, params.id,
+        Organization::Permissions::kModifyOrganization);
+    Env::AddSig(params.caller);
+
+    std::unique_ptr<Organization> new_organization(static_cast<Organization*>(
+        ::operator new(sizeof(Organization) + params.name_len)));
+
+    new_organization->creator = organization->creator;
+    new_organization->name_len = params.name_len;
+    Env::Memcpy(new_organization->name, params.name, params.name_len);
+
+    SaveNamedObject(Organization::Key(params.id), new_organization);
 }
 
 BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT
@@ -259,13 +273,14 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
-    std::unique_ptr<Project> project = LoadNamedObject<Project>(params.project_id);
-    CheckPermissions<Tag::kProjectMember, Project>(params.caller, params.project_id,
-                                             Project::Permissions::kModifyProject);
+    std::unique_ptr<Project> project =
+        LoadNamedObject<Project>(params.project_id);
+    CheckPermissions<Tag::kProjectMember, Project>(
+        params.caller, params.project_id, Project::Permissions::kModifyProject);
     Env::AddSig(params.caller);
 
-    std::unique_ptr<Project> new_project(
-        static_cast<Project*>(::operator new(sizeof(Project) + params.name_len)));
+    std::unique_ptr<Project> new_project(static_cast<Project*>(
+        ::operator new(sizeof(Project) + params.name_len)));
 
     new_project->creator = project->creator;
     new_project->organization_id = project->organization_id;
@@ -295,7 +310,7 @@ BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
                                              Repo::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
@@ -323,19 +338,21 @@ BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_18(const method::ModifyProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_18(
+    const method::ModifyProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_19(const method::RemoveProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_19(
+    const method::RemoveProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
@@ -345,7 +362,8 @@ BEAM_EXPORT void Method_19(const method::RemoveProjectMember& params) {  // NOLI
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_20(const method::AddOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_20(
+    const method::AddOrganizationMember& params) {  // NOLINT
     // TODO: do not allow to modify org owner
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
@@ -357,12 +375,13 @@ BEAM_EXPORT void Method_20(const method::AddOrganizationMember& params) {  // NO
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_21(const method::ModifyOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_21(
+    const method::ModifyOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kOrganizationMember, Organization>(
         params.caller, params.organization_id,
         Organization::Permissions::kModifyMember);
@@ -370,7 +389,8 @@ BEAM_EXPORT void Method_21(const method::ModifyOrganizationMember& params) {  //
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_22(const method::RemoveOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_22(
+    const method::RemoveOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);
