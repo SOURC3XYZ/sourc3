@@ -1,1 +1,1 @@
-export { default as RepoMeta } from './repo-meta';
+export { default as RepoDescription } from './repo-description';

@@ -70,8 +70,7 @@ function ListItem({
       </Menu.Item>
     </Menu>
   );
-
-  return (
+    return (
     <List.Item
       className={styles.listItem}
       key={repo_id}
