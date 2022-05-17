@@ -223,7 +223,7 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     new_repo_info->name_len = params.name_len;
     new_repo_info->cur_objs_number = repo_info->cur_objs_number;
     new_repo_info->project_id = repo_info->project_id;
-    Env::Memcpy(new_repo_info->name, params.name, repo_info->name_len);
+    Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
     Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
