@@ -2,13 +2,14 @@
 
 .main {
   width: 100%;
-  height: auto;
+  // height: auto;
   margin: 0 auto;
   display: flex;
   align-items: center;
   flex-grow: 1;
   flex-direction: column;
   max-width: $max-width;
+  height: 100%;
 }
 
 .appWrapper {
