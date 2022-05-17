@@ -78,7 +78,7 @@ function Repositories({
   );
 }
 const mapState = ({
-  app: { isApiConnected }, repos: { repos }
+  app: { isApiConnected }, entities: { repos }
 }: RootState) => ({
   isApiConnected,
   repos

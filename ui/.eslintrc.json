@@ -56,6 +56,12 @@
         "react/prop-types": "off",
         "react/require-default-props": "off",
         "react/no-array-index-key": "off",
+        "react/jsx-key": [
+            "error",
+            {
+                "checkFragmentShorthand": true
+            }
+        ],
         "react/jsx-props-no-spreading": "off",
         "react/jsx-filename-extension": [
             2,

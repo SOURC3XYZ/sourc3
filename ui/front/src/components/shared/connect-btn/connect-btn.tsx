@@ -1,53 +1,36 @@
-import { LoadingOutlined } from '@ant-design/icons';
 import { BeamButton } from '@components/shared';
-import { loadingData } from '@libs/utils';
-import { PromiseArg } from '@types';
+import { ToastMessages } from '@libs/constants';
+import { NotificationPlacement } from '@types';
 import { notification } from 'antd';
-import { NotificationPlacement } from 'antd/lib/notification';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import styles from './connect-btn.module.scss';
 
 type ConnectBtnProps = {
   isLogined: boolean;
-  onConnect: (resolve:PromiseArg<void>, reject?: PromiseArg<Error>) => void;
+  onConnect: () => void;
 };
 
 function ConnectBtn({ isLogined, onConnect }:ConnectBtnProps) {
-  const [isOnConnect, setOnConnect] = useState(false);
-
-  const connectBtnClassName = isOnConnect ? styles.connectBtnOnConnect : styles.connectBtn;
-
-  const setOnConnectHandler = () => {
-    if (isOnConnect || isLogined) return;
-    setOnConnect(true);
-    loadingData(onConnect)
-      .then(() => {
-        notification.open({
-          message: 'web wallet connected!',
-          placement: 'bottomRight' as NotificationPlacement,
-          style: { fontWeight: 600 }
-        });
-      })
-      .catch((err:Error) => {
-        notification.error({
-          message: err.message,
-          placement: 'bottomRight' as NotificationPlacement,
-          style: { fontWeight: 600 }
-        });
-      });
-  };
-
-  const notLoadedInner = useMemo(() => (isOnConnect
-    ? <LoadingOutlined spin />
-    : 'connect'), [isOnConnect]);
-
   const connectInner = useMemo(() => (
     isLogined
       ? 'wallet'
-      : notLoadedInner), [isLogined, notLoadedInner]);
+      : 'connect'), [isLogined]);
+
+  const onConnectHandler = () => {
+    if (!isLogined)onConnect();
+  };
+
+  useEffect(() => {
+    if (isLogined) {
+      notification.open({
+        message: ToastMessages.WALLET_CONNECTED,
+        placement: 'bottomRight' as NotificationPlacement
+      });
+    }
+  }, [isLogined]);
 
   return (
-    <BeamButton classes={connectBtnClassName} callback={setOnConnectHandler}>
+    <BeamButton classes={styles.connectBtn} callback={onConnectHandler}>
       {connectInner}
     </BeamButton>
   );

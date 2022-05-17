@@ -1,4 +1,4 @@
-import { searchFilter } from '../string-handlers';
+import { searchFilter } from '../useSearchSelector';
 
 test('is search text equal', () => {
   const data = [

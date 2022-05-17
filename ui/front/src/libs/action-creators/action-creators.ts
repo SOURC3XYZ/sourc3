@@ -15,7 +15,9 @@ import {
   LocalRepoBranch,
   LocalRepoName,
   MetaHash,
-  TxInfo
+  TxInfo,
+  Organization,
+  Project
 } from '@types';
 
 export const AC = {
@@ -160,8 +162,17 @@ export const AC = {
   setTxList: (payload: TxInfo[]) => ({
     type: ACTIONS.SET_TX_LIST,
     payload
-  } as const)
+  } as const),
 
+  setOrganizationsList: (payload: Organization[]) => ({
+    type: ACTIONS.SET_ORGANIZATIONS,
+    payload
+  } as const),
+
+  setProjectsList: (payload: Project[]) => ({
+    type: ACTIONS.SET_PROJECTS,
+    payload
+  } as const)
 };
 
 export type ActionCreators = ReturnType<PropertiesType<typeof AC>>;

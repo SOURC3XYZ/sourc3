@@ -1,13 +1,13 @@
 import {
-  BeamButton, Nav, Search
+  Nav, Search
 } from '@components/shared';
 import { AC, thunks } from '@libs/action-creators';
 import { RootState, AppThunkDispatch } from '@libs/redux';
 import { RepoId, RepoListType, RepoType } from '@types';
 import { useMemo } from 'react';
 import { connect } from 'react-redux';
-import { Modal, Input } from 'antd';
 import { useAllRepos } from '@libs/hooks/container/all-repos';
+import Title from 'antd/lib/typography/Title';
 import styles from './all-repos.module.scss';
 import { RepoList } from './content';
 
@@ -40,21 +40,28 @@ function AllRepos({
 
   const {
     state,
-    repoListProps,
-    isModalVisible,
-    inputRepoName,
-    showModal,
-    handleOk,
-    handleCancel,
-    handleChange
+    repoListProps
   } = talonProps;
 
   const { type, path } = repoListProps;
 
+  const navItems = [
+    {
+      key: 'all',
+      to: `${path}repos/all/1`,
+      text: 'All Repository'
+    },
+    {
+      key: 'my',
+      to: `${path}repos/my/1`,
+      text: 'My Repository'
+    }
+  ];
+
   const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
-      {pkey && <Nav type={type} path={path} />}
+      {pkey && <Nav type={type} items={navItems} />}
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>
@@ -64,37 +71,13 @@ function AllRepos({
             placeholder="Search by repo name or ID"
           />
         </div>
-        {pkey && (
-          <div className={styles.buttonWrapper}>
-            <BeamButton callback={showModal}>
-              Add new
-            </BeamButton>
-          </div>
-        )}
       </div>
-
-      <Modal
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        closable={false}
-        footer={[
-          <BeamButton callback={handleOk}>
-            Add
-          </BeamButton>
-        ]}
-      >
-        <Input
-          placeholder="Enter name repository"
-          value={inputRepoName}
-          onChange={handleChange}
-          onPressEnter={handleOk}
-        />
-      </Modal>
     </div>
   ), [searchText, state, pkey]);
 
   return (
     <div className={styles.content}>
+      <Title level={3}>Repositories</Title>
       {repoManager}
       <RepoList
         {...repoListProps}
@@ -107,7 +90,7 @@ function AllRepos({
 
 const mapState = ({
   app: { isApiConnected, pkey },
-  repos: { repos, searchText }
+  entities: { repos, searchText }
 }: RootState) => ({
   pkey,
   isApiConnected,

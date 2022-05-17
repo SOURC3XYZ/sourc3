@@ -20,8 +20,27 @@
 }
 
 .spin {
-	margin: 0 auto;
+	margin: 0 auto 20px;
 	display: block;
+	animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+	25% {
+		transform: rotate(360deg);
+	}
+
+	50% {
+		transform: rotate(720deg);
+	}
+
+	75% {
+		transform: rotate(1080deg);
+	}
+
+	100% {
+		transform: rotate(1080deg);
+	}
 }
 
 .messageWhiteBg {

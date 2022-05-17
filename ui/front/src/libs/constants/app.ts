@@ -28,7 +28,9 @@ export enum ACTIONS {
   SET_LOCAL_MAP = 'SET_LOCAL_MAP',
   SET_REPO_METAS = 'SET_REPO_METAS',
   SET_REPO_FILE = 'SET_REPO_FILE',
-  SET_TX_LIST = 'SET_TX_LIST'
+  SET_TX_LIST = 'SET_TX_LIST',
+  SET_ORGANIZATIONS = 'SET_ORGANIZATIONS',
+  SET_PROJECTS = 'SET_PROJECTS'
 }
 
 export enum ActionColor {
@@ -54,5 +56,12 @@ export enum LoadingMessages {
   COMMITS = 'Building commit tree...',
   TREE = 'Loading file tree...',
   FILE = 'Loading file...',
-  HEADLESS = 'Connecting headless wallet...'
+  HEADLESS = 'Loading decentralized application...'
+}
+
+export enum ToastMessages {
+  EXT_ON_CONN_ERR = 'Web wallet is trying to connect at the moment',
+  EXT_ERR_MSG = 'Extension not found. Please, install the extension from the website and reload the Sourc3',
+  WALLET_CONNECTED = 'Web wallet connected!',
+  HEADLESS_CONNECTED = 'Headless wallet connected!'
 }

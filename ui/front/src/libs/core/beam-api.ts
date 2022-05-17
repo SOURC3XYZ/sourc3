@@ -1,6 +1,6 @@
-import { CONTRACT } from '@libs/constants';
+import { CONTRACT, ToastMessages, WALLET } from '@libs/constants';
 import {
-  QObject, ApiResultWeb, ApiResult, CallApiDesktop, ResultObject
+  QObject, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
 import { QWebChannel } from 'qwebchannel';
 
@@ -43,8 +43,6 @@ export class BeamAPI<T> {
 
   private isHeadlessOnConnect = false;
 
-  private isWebOnConnect = false;
-
   private callIndex: number = 0;
 
   private apiHost?: string;
@@ -57,13 +55,28 @@ export class BeamAPI<T> {
 
   private eventManager:any;
 
+  private walletConnectResolve: ((obj: QObject) => void) | null = null;
+
   constructor(cid: string) {
     this.cid = cid;
     this.BEAM = null;
     this.contract = null;
     this.callbacks = new Map();
-    window.addEventListener('message', this.responseIPC);
+    window.addEventListener('message', this.messageResponses);
   }
+
+  public readonly messageResponses = (e:MessageEvent<MessageType>) => {
+    switch (e.data.type) {
+      case 'ipc-control-res':
+      case 'api-events':
+        return this.responseCbackHandler(e.data.response);
+      case 'apiInjected':
+        console.log('injected');
+        return this.afterWalletConnectHandler();
+      default:
+        return null;
+    }
+  };
 
   private readonly responseCbackHandler = (parsed: ResultObject) => {
     console.log('response', parsed);
@@ -74,11 +87,6 @@ export class BeamAPI<T> {
       if (parsed.error) return cb.reject(new Error(parsed.error.message));
       return cb.resolve(parsed);
     } return this.eventManager(parsed);
-  };
-
-  public readonly headlessConnectedEvent = () => {
-    this.isHeadlessOnConnect = false;
-    document.dispatchEvent(new CustomEvent('headlessConnected'));
   };
 
   private readonly onApiResult = (json: string): void => {
@@ -98,7 +106,11 @@ export class BeamAPI<T> {
     appname:any,
     apirescback:any
   ): Promise<BeamObject> => {
-    await this.injectScript('/wasm-client.js');
+    if (this.isElectron()) {
+      await this.injectScript('./wasm-client.js');
+    } else {
+      await this.injectScript('/wasm-client.js');
+    }
     const WasmModule = await window.BeamModule();
     const { WasmWalletClient } = WasmModule;
     const client = new WasmWalletClient(headlessNode);
@@ -138,30 +150,27 @@ export class BeamAPI<T> {
     });
   };
 
+  private afterWalletConnectHandler = async () => {
+    if (window.BeamApi) {
+      await window.BeamApi
+        .callWalletApiResult(this.onApiResult);
+      const activeUser = await window.BeamApi.localStorage();
+      console.log(activeUser);
+      if (this.walletConnectResolve) this.walletConnectResolve(window.BeamApi);
+    }
+  };
+
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
   ) => new Promise<QObject>((resolve) => {
-    window.addEventListener(
-      'message',
-      async (ev) => {
-        if (window.BeamApi) {
-          const webApiResult = window.BeamApi
-            .callWalletApiResult as ApiResultWeb;
-          if (ev.data === 'apiInjected') {
-            await webApiResult(this.onApiResult);
-            resolve(window.BeamApi);
-          }
-        }
-      },
-      false
-    );
+    // const updMessage = { ...message, is_reconnect: !!window.BeamApi };
+    this.walletConnectResolve = resolve;
     window.postMessage(message, window.origin);
   });
 
   readonly connectHeadless = async () => {
     this.isHeadlessOnConnect = true;
-    const beam = await this.createHeadlessAPI('current', '', 'bla', this.onApiResult);
-    // this.headlessConnectedEvent();
+    const beam = await this.createHeadlessAPI('current', '', 'SOURC3', this.onApiResult);
     return beam;
   };
 
@@ -201,7 +210,6 @@ export class BeamAPI<T> {
 
   readonly loadAPI = async (apiHost?:string): Promise<BeamAPI<T>> => {
     this.apiHost = apiHost;
-    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
     if (!this.apiHost) {
       this.BEAM = this.isDapps()
         ? { api: await this.connectToApi() }
@@ -210,31 +218,25 @@ export class BeamAPI<T> {
     return this;
   };
 
-  readonly extensionConnect = async (message: {
-    [key: string]: string;
-  }) => {
-    if (this.isWebOnConnect) throw new Error('wallet is already waiting to be connected');
-    this.isWebOnConnect = true;
+  readonly checkExtensionInstalled = () => document
+    .documentElement.getAttribute('sourc3-extension-installed');
 
-    if (this.isHeadlessOnConnect) {
-      return new Promise((resolve) => {
-        document.addEventListener(
-          'headlessConnected',
-          async () => {
-            debugger;
-            const api = await this.extensionConnectHandler(message);
-            resolve(api);
-          },
-          { once: true }
-        );
-      });
-    }
-    return this.extensionConnectHandler(message);
-  };
+  readonly extensionConnect = async (message: {
+    [key: string]: any;
+  }) => this.extensionConnectHandler(message);
 
   readonly extensionConnectHandler = async (message: {
     [key: string]: string;
   }) => {
+    if (!this.checkExtensionInstalled()) {
+      window.open(WALLET.EXT_DOWNLOAD);
+      throw new Error(ToastMessages.EXT_ERR_MSG);
+    }
+
+    // if (this.walletConnectResolve) {
+    //   throw new Error(ToastMessages.EXT_ON_CONN_ERR);
+    // }
+
     const api = await this.connectToWebWallet(message);
     if (api && this.isHeadless()) {
       this.BEAM?.api.delete();
@@ -242,7 +244,6 @@ export class BeamAPI<T> {
         this.BEAM?.client.stopWallet(resolve);
       });
     }
-    this.isWebOnConnect = false;
     this.BEAM = { api };
   };
 
@@ -346,7 +347,7 @@ export class BeamAPI<T> {
     const oReq = new XMLHttpRequest();
     oReq.open('GET', [CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'), true);
     oReq.responseType = 'blob';
-
+    oReq.setRequestHeader('Access-Control-Allow-Origin', '*');
     oReq.onload = async function () {
       const blob = oReq.response as Blob;
       const buffer = await blob.arrayBuffer();
@@ -380,16 +381,6 @@ export class BeamAPI<T> {
     });
     this.callbacks.set(id, { resolve, reject });
   });
-
-  public readonly responseIPC = (e:MessageEvent<MessageType>) => {
-    switch (e.data.type) {
-      case 'ipc-control-res':
-      case 'api-events':
-        return this.responseCbackHandler(e.data.response);
-      default:
-        return null;
-    }
-  };
 
   private readonly argsStringify = (
     args: { [key:string]: string | number }

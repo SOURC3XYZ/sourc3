@@ -1,5 +1,7 @@
 import { AppThunkDispatch } from '@libs/redux';
-import { BeamApiRes, ContractResp, ErrorObj } from '@types';
+import {
+  BeamApiRes, ContractResp, ContractResult, ErrorObj
+} from '@types';
 import { AxiosError } from 'axios';
 import { AC } from './action-creators';
 
@@ -15,7 +17,10 @@ export const thunkCatch = (err: unknown, dispatch: AppThunkDispatch) => {
   errorHandler({ message }, dispatch);
 };
 
-export function outputParser<T extends ContractResp>(res: BeamApiRes, dispatch: AppThunkDispatch) {
+export function outputParser<T extends ContractResp>(
+  res: BeamApiRes<ContractResult>,
+  dispatch: AppThunkDispatch
+) {
   try {
     if (res.error) return errorHandler(res.error, dispatch);
     if (res.result.output) {

@@ -75,9 +75,19 @@ function ListItem({
     <List.Item
       className={styles.listItem}
       key={repo_id}
-      actions={[<span className={styles.time}>Updated 5 mins ago</span>,
+      actions={[
+        <span
+          key={`repo-${item.repo_id}`}
+          className={styles.time}
+        >
+          Updated 5 mins ago
+        </span>,
         (
-          <Dropdown overlay={menuRender} placement="bottomRight">
+          <Dropdown
+            key={`dropdown-${item.repo_id}`}
+            overlay={menuRender}
+            placement="bottomRight"
+          >
             <img className={styles.dropdownIcon} alt="dots" src={dotsImg} />
           </Dropdown>
         )

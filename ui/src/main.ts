@@ -52,7 +52,7 @@ function createWindow() {
         fs.mkdirSync(path.join(app.getPath('home'), '.local', 'bin'));
       }
       CopyIfNotExists(
-        path.join(__dirname, '..', '..', 'git-remote-sourc3'),
+        path.join(__dirname, '..', '..', '..', 'git-remote-sourc3'),
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
     } else if (process.platform === 'win32') {
@@ -60,6 +60,13 @@ function createWindow() {
         path.join(__dirname, '..', '..', 'git-remote-sourc3.exe'),
         path.join(__dirname, '..', '..', '..', 'git-remote-sourc3.exe')
       );
+    } else if (process.platform === 'darwin') {
+      console.log(app.getPath('exe'));
+      const dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
+      const src = path.join(__dirname, '..', '..', '..', 'git-remote-sourc3');
+      if (!fs.existsSync(dst)) {
+        fs.symlinkSync(src, dst);
+      }
     }
     if (!fs.existsSync(sourc3Path)) {
       fs.mkdirSync(sourc3Path);
@@ -89,10 +96,10 @@ function createWindow() {
   win.webContents.userAgent = 'SOURC3-DESKTOP';
   if (process.env['NODE_ENV'] === 'dev') {
     win.loadURL('http://localhost:5000');
+    win.webContents.openDevTools();
   } else {
     win.setMenu(null);
     win.loadFile('front/dist/index.html');
-    win.webContents.openDevTools();
   }
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);

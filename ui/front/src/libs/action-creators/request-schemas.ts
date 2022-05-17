@@ -156,19 +156,6 @@ export const RC = {
     }
   } as const),
 
-  createRepos: (resp_name:string) => ({
-    callID: 'create_repo',
-    method: 'invoke_contract',
-    params: {
-      args: {
-        role: 'user',
-        action: 'create_repo',
-        repo_name: resp_name
-      },
-      create_tx: false
-    }
-  } as const),
-
   deleteRepos: (repo_id:RepoId) => ({
     callID: 'delete_repo',
     method: 'invoke_contract',
@@ -265,7 +252,72 @@ export const RC = {
       expiration: 'auto',
       new_style_regular: true
     }
-  } as const)
+  } as const),
 
+  getOrganizations: () => ({
+    callID: 'list_organizations',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_organizations'
+      }
+    }
+  }),
+
+  getProjects: () => ({
+    callID: 'list_projects',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_projects'
+      }
+    }
+  }),
+  createOrganization: (name:string, pid = 0) => ({
+    callID: 'create_organization',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'create_organization',
+        name,
+        pid
+      }
+    }
+  }),
+  createProject: (name:string, organization_id:number, pid = 0) => ({
+    callID: 'create_project',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'create_project',
+        name,
+        organization_id,
+        pid
+      }
+    }
+  }),
+
+  createRepo: (repo_name:string, project_id: number, pid = 0) => ({
+    callID: 'create_repo',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'create_repo',
+        repo_name,
+        project_id,
+        pid
+      }
+    }
+  } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

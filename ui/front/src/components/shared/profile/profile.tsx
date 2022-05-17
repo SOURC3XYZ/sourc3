@@ -11,7 +11,7 @@ type profileType = {
   pKey: string
 };
 
-const Profile = ({ pKey }:profileType) => {
+function Profile({ pKey }:profileType) {
   const [visible, setVisible] = useState(false);
   const showModal = () => {
     setVisible(true);
@@ -84,6 +84,6 @@ const Profile = ({ pKey }:profileType) => {
       </Modal>
     </>
   );
-};
+}
 
 export default Profile;

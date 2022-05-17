@@ -3,25 +3,18 @@ import { Menu } from 'antd';
 import { Link } from 'react-router-dom';
 import style from './nav.module.scss';
 
-type NavProps = {
-  type: RepoListType
-  path:string
+type NavItem = {
+  key: string,
+  to: string,
+  text: string
 };
 
-function Nav({ type, path }:NavProps) {
-  const items = [
-    {
-      key: 'all',
-      to: `${path}repos/all/1`,
-      text: 'All Repository'
-    },
-    {
-      key: 'my',
-      to: `${path}repos/my/1`,
-      text: 'My Repository'
-    }
-  ];
+type NavProps = {
+  type: RepoListType
+  items:NavItem []
+};
 
+function Nav({ type, items }:NavProps) {
   const itemsRender = items.map(({ to, text, key }) => (
     <Menu.Item key={key}>
       <Link to={to}>{text}</Link>
@@ -30,10 +23,7 @@ function Nav({ type, path }:NavProps) {
 
   return (
     <div className={style.nav}>
-      <Menu
-        defaultSelectedKeys={[type]}
-        mode="horizontal"
-      >
+      <Menu defaultSelectedKeys={[type]} mode="horizontal">
         {itemsRender}
       </Menu>
     </div>

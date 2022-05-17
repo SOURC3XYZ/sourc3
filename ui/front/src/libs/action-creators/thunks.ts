@@ -6,7 +6,7 @@ import {
   TreeBlobParser,
   TreeListParser
 } from '@libs/core';
-import { CONTRACT } from '@libs/constants';
+import { CONTRACT, ToastMessages } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
   BeamApiRes,
@@ -15,7 +15,9 @@ import {
   IPCResult,
   MetaHash,
   NotificationPlacement,
+  OrganizationsResp,
   PKeyRes,
+  ProjectsResp,
   PromiseArg,
   RepoId, RepoListType,
   RepoMeta,
@@ -57,7 +59,8 @@ const messageBeam = {
   type: 'create_sourc3_api',
   apiver: 'current',
   apivermin: '',
-  appname: 'SOURC3'
+  appname: 'SOURC3',
+  is_reconnect: false
 };
 
 const headers = { 'Content-Type': 'application/json' };
@@ -71,7 +74,7 @@ async function getOutput<T>(
 }
 
 export const thunks:ThunkObject = {
-  connectExtension: (resolve, reject) => async (dispatch) => {
+  connectExtension: () => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);
       if (!api.isHeadless()) {
@@ -88,18 +91,20 @@ export const thunks:ThunkObject = {
       await callApi(RC.subUnsub()); // subscribe to api events
       const pKey = await getOutput<PKeyRes>(RC.setPublicKey(), dispatch);
       if (pKey) dispatch(AC.setPublicKey(pKey.key));
-      resolve();
-    } catch (error) {
-      reject(error);
+    } catch (error:any) {
+      notification.error({
+        message: error.message,
+        placement: 'bottomRight' as NotificationPlacement
+      });
       thunkCatch(error, dispatch);
     }
   },
 
   connectBeamApi:
-    () => async (dispatch) => {
+    (apiHost?:string) => async (dispatch) => {
       try {
         if (api.isApiLoaded()) return;
-        await loadAPI();
+        await loadAPI(apiHost);
         await initContract(wasm);
         api.loadApiEventManager(apiEventManager(dispatch));
         const action = RC.viewContracts();
@@ -115,11 +120,10 @@ export const thunks:ThunkObject = {
           if (pKey) dispatch(AC.setPublicKey(pKey.key));
         } else {
           notification.open({
-            message: 'headless wallet connected!',
+            message: ToastMessages.HEADLESS_CONNECTED,
             placement: 'bottomRight' as NotificationPlacement,
             style: { fontWeight: 600 }
           });
-          api.headlessConnectedEvent();
         }
       } catch (error) { thunkCatch(error, dispatch); }
     },
@@ -292,9 +296,9 @@ export const thunks:ThunkObject = {
     } catch (error) { errHandler(error as Error); }
   },
 
-  createRepos: (resp_name: string) => async (dispatch) => {
+  createRepos: (name: string, projectId: number, pid = 0) => async (dispatch) => {
     try {
-      const res = await callApi(RC.createRepos(resp_name));
+      const res = await callApi(RC.createRepo(name, projectId, pid));
       if (res.result?.raw_data) {
         const tx = await callApi(RC.startTx(res.result.raw_data));
         if (tx.result?.txid) {
@@ -315,6 +319,30 @@ export const thunks:ThunkObject = {
       }
       throw new Error('repo delete failed');
     } catch (error) { return thunkCatch(error, dispatch); }
+  },
+
+  createOrganization: (name: string, pid = 0) => async (dispatch) => {
+    try {
+      const res = await callApi(RC.createOrganization(name, pid));
+      if (res.result?.raw_data) {
+        const tx = await callApi(RC.startTx(res.result.raw_data));
+        if (tx.result?.txid) {
+          dispatch(AC.setTx(tx.result.txid));
+        }
+      }
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
+  createProject: (name: string, organizationId:number, pid = 0) => async (dispatch) => {
+    try {
+      const res = await callApi(RC.createProject(name, organizationId, pid));
+      if (res.result?.raw_data) {
+        const tx = await callApi(RC.startTx(res.result.raw_data));
+        if (tx.result?.txid) {
+          dispatch(AC.setTx(tx.result.txid));
+        }
+      }
+    } catch (error) { thunkCatch(error, dispatch); }
   },
 
   getTextData: (
@@ -412,5 +440,18 @@ export const thunks:ThunkObject = {
         return dispatch(AC.setTxList(res.result));
       } throw new Error('failed to send beam');
     } catch (error) { return thunkCatch(error, dispatch); }
+  },
+  getOrganizations: () => async (dispatch) => {
+    try {
+      const output = await getOutput<OrganizationsResp>(RC.getOrganizations(), dispatch);
+      if (output) dispatch(AC.setOrganizationsList(output.organizations));
+    } catch (error) { thunkCatch(error, dispatch); }
+  },
+
+  getProjects: () => async (dispatch) => {
+    try {
+      const output = await getOutput<ProjectsResp>(RC.getProjects(), dispatch);
+      if (output) dispatch(AC.setProjectsList(output.projects));
+    } catch (error) { thunkCatch(error, dispatch); }
   }
 };

@@ -1,4 +1,4 @@
-import { Spin } from 'antd';
+import orange from '@assets/img/orange.svg';
 import styles from './preload.module.scss';
 
 type PreloadProps = {
@@ -17,7 +17,7 @@ function Preload({
   return (
     <div className={wrapperClassname}>
       <div className={styles.content}>
-        <Spin className={styles.spin} />
+        <img alt="spinner" src={orange} className={styles.spin} />
         <div className={messageClassName}>{message}</div>
       </div>
     </div>

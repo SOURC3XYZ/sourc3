@@ -25,7 +25,8 @@ export const initialState:IRepo = {
 };
 
 const reducer = (
-  state:IRepo = initialState, action: ActionCreators
+  state:IRepo = initialState,
+  action: ActionCreators = {} as ActionCreators
 ):IRepo => {
   const newState = {
     ...state,

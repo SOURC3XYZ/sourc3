@@ -9,11 +9,11 @@ type CreateModalProps = {
   createRepo: (repo_name: string) => void
 };
 
-const CreateModal = ({
+function CreateModal({
   handleOk,
   handleCancel,
   createRepo
-}: CreateModalProps) => {
+}: CreateModalProps) {
   const [name, setName] = useState('');
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,6 +35,6 @@ const CreateModal = ({
       />
     </Modal>
   );
-};
+}
 
 export default CreateModal;

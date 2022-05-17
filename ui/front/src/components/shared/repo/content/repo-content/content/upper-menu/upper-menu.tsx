@@ -28,10 +28,10 @@ const selectBranchOptionMap = (el: string, i:number) => (
   </Select.Option>
 );
 
-const selectCommitOptionMap = (el: BranchCommit) => (
+const selectCommitOptionMap = (el: BranchCommit, i:number) => (
   <Select.Option
     value={el.commit_oid}
-    key={el.commit_oid}
+    key={`${el.commit_oid}-select-${i}`}
   >
     {el.raw_message}
   </Select.Option>
@@ -49,6 +49,8 @@ function UpperMenu({
   const { commit_oid } = commit;
   const keys = Array.from(repoMap.keys());
   const commits = repoMap.get(branch) as BranchCommit[];
+
+  console.log('commits', commits);
 
   const root = `${baseUrl}/${branch}/${commit.commit_oid}`;
 
