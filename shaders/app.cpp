@@ -41,17 +41,17 @@ auto FindIfContains(const std::string_view str,
     });
 }
 
-const char g_szAdminSeed[] = "admin-sourc3";
+const char kAdminSeed[] = "admin-sourc3";
 
 struct MyKeyID :public Env::KeyID {
-  MyKeyID() :Env::KeyID(&g_szAdminSeed, sizeof(g_szAdminSeed)) {}
+  MyKeyID() :Env::KeyID(&kAdminSeed, sizeof(kAdminSeed)) {}
 };
 
-const ShaderID g_pSid[] = {
+const ShaderID kSid[] = {
         git_remote_beam::s_SID
 };
 
-const git_remote_beam::Manager::VerInfo g_VerInfo = { g_pSid, _countof(g_pSid) };
+const git_remote_beam::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
 void OnActionCreateContract(const ContractID& unused) {
 //    git_remote_beam::method::Initial params;
@@ -71,18 +71,19 @@ void OnActionCreateContract(const ContractID& unused) {
     kid.get_Pk(pk);
 
     git_remote_beam::method::Initial arg;
-    if (!g_VerInfo.FillDeployArgs(arg.m_Stgs, &pk))
+    if (!kVerInfo.FillDeployArgs(arg.m_Stgs, &pk)) {
         return;
+}
 
     Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy()*2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
-    Height hTarget;
+    Height hTarget; // NOLINT
     Env::DocGetNum64("hTarget", &hTarget);
 
     MyKeyID kid;
-    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(g_VerInfo, cid, kid, hTarget);
+    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
@@ -117,14 +118,6 @@ void OnActionViewContractParams(const ContractID& cid) {
     }
 
     Env::DocGroup gr("params");
-}
-
-git_remote_beam::Hash256 GetNameHash(const char* name, size_t len) {
-    git_remote_beam::Hash256 res;
-    HashProcessor::Sha256 hp;
-    hp.Write(name, len);
-    hp >> res;
-    return res;
 }
 
 #pragma pack(push, 1)
@@ -182,7 +175,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -234,7 +227,7 @@ void OnActionModifyRepo(const ContractID& cid) {
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -267,7 +260,7 @@ void OnActionCreateProject(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
 
     if (!Env::DocGet("organization_id", request->organization_id)) {
         return OnError("'organization_id' required");
@@ -397,7 +390,7 @@ void OnActionModifyProject(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
 
     if (!Env::DocGet("organization_id", request->organization_id)) {
         return OnError("'organization_id' required");
@@ -501,7 +494,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -660,7 +653,7 @@ void OnActionModifyOrganization(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = GetNameHash(request->name, request->name_len);
+    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
     if (!Env::DocGet("organization_id", request->id)) {
         return OnError("'organization_id' required");
     }
@@ -1246,7 +1239,7 @@ void OnActionUserGetRepo(const ContractID& cid) {
     --name_len;  // remove 0-term
     PubKey my_key;
     Env::DocGet("repo_owner", my_key);
-    git_remote_beam::Hash256 name_hash = GetNameHash(repo_name, name_len);
+    git_remote_beam::Hash256 name_hash = git_remote_beam::GetNameHash(repo_name, name_len);
     RepoKey key(my_key, name_hash);
     Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
     reader_key.m_Prefix.m_Cid = cid;

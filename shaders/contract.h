@@ -21,7 +21,13 @@ enum Tag : uint8_t {
 using GitOid = Opaque<20>;
 using Hash256 = Opaque<32>;
 
-Hash256 GetNameHash(const char* name, size_t len);
+inline Hash256 GetNameHash(const char* name, size_t len) {
+    Hash256 res;
+    HashProcessor::Sha256 hp;
+    hp.Write(name, len);
+    hp >> res;
+    return res;
+}
 
 struct ContractState {
     uint64_t last_repo_id;
