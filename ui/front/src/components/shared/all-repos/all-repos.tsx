@@ -64,13 +64,13 @@ function AllRepos({
       {pkey && <Nav type={type} items={navItems} />}
 
       <div className={styles.manage}>
-        {/*<div className={styles.searchWrapper}>*/}
-        {/*  <Search*/}
-        {/*    text={searchText}*/}
-        {/*    setInputText={setInputText}*/}
-        {/*    placeholder="Search by repo name or ID"*/}
-        {/*  />*/}
-        {/*</div>*/}
+        <div className={styles.searchWrapper}>
+          <Search
+            text={searchText}
+            setInputText={setInputText}
+            placeholder="Search by repo name or ID"
+          />
+        </div>
       </div>
     </div>
   ), [searchText, state, pkey]);
@@ -80,9 +80,10 @@ function AllRepos({
       <Title level={3}>Repositories</Title>
       {repoManager}
       <RepoList
-          loading={false} {...repoListProps}
-          searchText={searchText}
-          deleteRepos={deleteRepos}      />
+        {...repoListProps}
+        searchText={searchText}
+        deleteRepos={deleteRepos}
+      />
     </div>
   );
 }

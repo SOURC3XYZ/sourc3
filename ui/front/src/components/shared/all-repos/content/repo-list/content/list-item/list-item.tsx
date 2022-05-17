@@ -9,6 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
+import { textEllipsis } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -70,7 +71,7 @@ function ListItem({
       </Menu.Item>
     </Menu>
   );
-    return (
+  return (
     <List.Item
       className={styles.listItem}
       key={repo_id}
@@ -79,7 +80,8 @@ function ListItem({
           key={`repo-${item.repo_id}`}
           className={styles.time}
         >
-          Updated 5 mins ago
+          {`owner: ${textEllipsis(repo_owner, 10)}`}
+
         </span>,
         (
           <Dropdown
