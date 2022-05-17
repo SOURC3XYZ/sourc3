@@ -8,15 +8,7 @@
 #include <memory>
 
 using namespace git_remote_beam;
-namespace git_remote_beam {
-Hash256 GetNameHash(const char* name, size_t len) {
-    Hash256 res;
-    HashProcessor::Sha256 hp;
-    hp.Write(name, len);
-    hp >> res;
-    return res;
-}
-
+namespace {
 template <Tag Tg, class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
                       typename T::Permissions p) {
@@ -51,7 +43,7 @@ bool ObjectExists(const typename T::Id& id) {
     typename T::Key key(id);
     return Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
 }
-}  // namespace git_remote_beam
+}  // namespace 
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
     params.m_Stgs.TestNumApprovers();
@@ -70,7 +62,7 @@ BEAM_EXPORT void Dtor(void*) {
 void git_remote_beam::OnUpgraded(uint32_t /*nPrevVersion*/) {
 }
 
-uint32_t git_remote_beam::get_CurrentVersion() {
+uint32_t git_remote_beam::get_CurrentVersion() {  // NOLINT
     return 1;
 }
 
@@ -289,8 +281,8 @@ BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
-    Env::Halt_if(!Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal));
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
+                               KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
                                              Repo::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
@@ -318,21 +310,19 @@ BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_18(
-    const method::ModifyProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_18(const method::ModifyProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
-    Env::Halt_if(!Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal));
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
+                               KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_19(
-    const method::RemoveProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_19(const method::RemoveProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
@@ -342,8 +332,7 @@ BEAM_EXPORT void Method_19(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_20(
-    const method::AddOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_20(const method::AddOrganizationMember& params) {  // NOLINT
     // TODO: do not allow to modify org owner
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
@@ -355,13 +344,12 @@ BEAM_EXPORT void Method_20(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_21(
-    const method::ModifyOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_21(const method::ModifyOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);
-    Env::Halt_if(!Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal));
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
+                               KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kOrganizationMember, Organization>(
         params.caller, params.organization_id,
         Organization::Permissions::kModifyMember);
@@ -369,8 +357,7 @@ BEAM_EXPORT void Method_21(
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_22(
-    const method::RemoveOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_22(const method::RemoveOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);

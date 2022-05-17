@@ -49,6 +49,9 @@
   display: flex;
   justify-content: space-between;
   margin-left: 35px;
+  .logo{
+    margin-right: 88px;
+  }
 }
 
 .navList {
@@ -137,6 +140,46 @@
       line-height: 16px;
       text-align: right;
       letter-spacing: 0.1px;
+    }
+  }
+}
+@media screen and (max-width: 768px) {
+  .header{
+    height: auto;
+    .nav{
+      flex-direction: column;
+      align-items: flex-end;
+      padding: 10px;
+    }
+  }
+  .headerActive{
+    .nav{
+      flex-direction: row;
+      align-items: center;
+      padding: 10px;
+    }
+  }
+  .connect{
+    width: 100%;
+    margin-top: 10px;
+    margin-right: 0 !important;
+    button{
+      margin: 0 auto;
+    }
+  }
+  .navWrapper{
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-left: 0 !important;
+    .logo{
+      margin-bottom: 10px;
+      margin-right: 0;
+    }
+  }
+  .navList{
+    li{
+      margin: 0 0 0 30px !important;
     }
   }
 }

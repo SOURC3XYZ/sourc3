@@ -1,0 +1,39 @@
+.description {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  max-width: 960px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 24px;
+  h2{
+    font-family: 'Visby', serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 24px;
+    color: #000000;
+    margin: 0 0 16px 0;
+  }
+  p{
+    font-family: 'Public Sans', serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 130%;
+    color: #000000;
+    margin: 0;
+    span{
+      display: block;
+      padding-top: 16px;
+    }
+  }
+  h4{
+    font-family: 'Visby', serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 18px;
+    color: #000000;
+    margin: 24px 0 16px 0;
+  }
+}

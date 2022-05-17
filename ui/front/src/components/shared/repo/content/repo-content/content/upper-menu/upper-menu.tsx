@@ -5,7 +5,8 @@ import { Row, Col, Select } from 'antd';
 import { NavigateFunction } from 'react-router-dom';
 import {
   BreadCrumbMenu,
-  RepoMeta
+  RepoMeta,
+  RepoDescription
 } from './content';
 import styles from './upper-menu.module.scss';
 
@@ -79,6 +80,7 @@ function UpperMenu({
           prevReposHref={prevReposHref}
         />
       </Row>
+      {/*<RepoDescription />*/}
       <Row align="middle" style={{ marginTop: '40px' }}>
         <Col span={7}>
           <CustomAntdSelect
