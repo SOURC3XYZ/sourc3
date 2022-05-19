@@ -47,6 +47,7 @@ struct MyKeyID :public Env::KeyID {
   MyKeyID() :Env::KeyID(&g_szAdminSeed, sizeof(g_szAdminSeed)) {}
 };
 
+// Add new SID here after changing contract.cpp
 const ShaderID g_pSid[] = {
         git_remote_beam::s_SID
 };
@@ -54,18 +55,6 @@ const ShaderID g_pSid[] = {
 const git_remote_beam::Manager::VerInfo g_VerInfo = { g_pSid, _countof(g_pSid) };
 
 void OnActionCreateContract(const ContractID& unused) {
-//    git_remote_beam::method::Initial params;
-//
-//    Env::GenerateKernel(/*pCid=*/nullptr,
-//                        /*iMethod=*/git_remote_beam::method::Initial::kMethod,
-//                        /*args=*/&params,
-//                        /*size=*/sizeof(params),
-//                        /*pFunds=*/nullptr,
-//                        /*nFunds=*/0,
-//                        /*pSig=*/nullptr,
-//                        /*nSig=*/0,
-//                        /*szComment=*/"Create git_remote_beam contract",
-//                        /*nCharge=*/0);
     MyKeyID kid;
     PubKey pk;
     kid.get_Pk(pk);
@@ -103,7 +92,8 @@ void OnActionDestroyContract(const ContractID& cid) {
 }
 
 void OnActionViewContracts(const ContractID& unused) {
-    EnumAndDumpContracts(git_remote_beam::s_SID);
+    MyKeyID kid;
+    g_VerInfo.DumpAll(&kid);
 }
 
 void OnActionViewContractParams(const ContractID& cid) {
