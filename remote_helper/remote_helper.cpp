@@ -95,25 +95,41 @@ ByteBuffer FromHex(const String& s) {
     boost::algorithm::unhex(s.begin(), s.end(), std::back_inserter(res));
     return res;
 }
+
+vector<string_view> ParseArgs(std::string_view args_sv) {
+    vector<string_view> args;
+    while (!args_sv.empty()) {
+        auto p = args_sv.find(' ');
+        auto ss = args_sv.substr(0, p);
+        args_sv.remove_prefix(p == string_view::npos ? ss.size()
+                                                     : ss.size() + 1);
+        if (!ss.empty()) {
+            args.emplace_back(ss);
+        }
+    }
+    return args;
+}
+
 }  // namespace
 
 class RemoteHelper {
 public:
+    enum struct CommandResult { Ok, Failed, Batch };
     explicit RemoteHelper(SimpleWalletClient& wc) : wallet_client_{wc} {
     }
 
-    int DoCommand(string_view command, vector<string_view>& args) {
+    CommandResult DoCommand(string_view command, vector<string_view>& args) {
         auto it = find_if(begin(commands_), end(commands_), [&](const auto& c) {
             return command == c.command;
         });
         if (it == end(commands_)) {
             cerr << "Unknown command: " << command << endl;
-            return -1;
+            return CommandResult::Failed;
         }
         return std::invoke(it->action, this, args);
     }
 
-    int DoList([[maybe_unused]] const vector<string_view>& args) {
+    CommandResult DoList([[maybe_unused]] const vector<string_view>& args) {
         auto refs = RequestRefs();
 
         for (const auto& r : refs) {
@@ -122,22 +138,21 @@ public:
         if (!refs.empty()) {
             cout << "@" << refs.back().name << " HEAD\n";
         }
-        cout << endl;
-        return 0;
+
+        return CommandResult::Ok;
     }
 
-    int DoOption([[maybe_unused]] const vector<string_view>& args) {
+    CommandResult DoOption([[maybe_unused]] const vector<string_view>& args) {
         static string_view results[] = {"error invalid value", "ok",
                                         "unsupported"};
 
         auto res = options_.Set(args[1], args[2]);
 
         cout << results[size_t(res)];
-        cout << endl;
-        return 0;
+        return CommandResult::Ok;
     }
 
-    int DoFetch(const vector<string_view>& args) {
+    CommandResult DoFetch(const vector<string_view>& args) {
         std::set<std::string> object_hashes;
         object_hashes.emplace(args[1].data(), args[1].size());
         size_t depth = 1;
@@ -197,14 +212,11 @@ public:
                     return o.hash == oid;
                 });
             if (it == objects.end()) {
-                // cerr << "No object data for " << objectToReceive << ",
-                // possibly submodule" << endl;
                 received_objects.insert(object_to_receive);  // move to received
                 object_hashes.erase(it_to_receive);
 
                 continue;
             }
-            // cerr << "Received data for:  " << objectToReceive << endl;
             received_objects.insert(object_to_receive);
 
             auto data = root.as_object()["object_data"].as_string();
@@ -225,7 +237,7 @@ public:
                                 .as_object()["data"]
                                 .as_string()
                          << endl;
-                    return -1;
+                    return CommandResult::Failed;
                 }
                 auto d = r.as_object()["result"].as_object()["data"].as_array();
                 buf.reserve(d.size());
@@ -242,10 +254,12 @@ public:
             git_odb_hash(&r, buf.data(), buf.size(), type);
             if (r != oid) {
                 // invalid hash
-                return -1;
+                return CommandResult::Failed;
             }
-            git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(),
-                          type);
+            if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(),
+                              type) < 0) {
+                return CommandResult::Failed;
+            }
             if (type == GIT_OBJECT_TREE) {
                 git::Tree tree;
                 git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
@@ -277,12 +291,10 @@ public:
 
             object_hashes.erase(it_to_receive);
         }
-
-        cout << endl;
-        return 0;
+        return CommandResult::Batch;
     }
 
-    int DoPush(const vector<string_view>& args) {
+    CommandResult DoPush(const vector<string_view>& args) {
         ObjectCollector collector(wallet_client_.GetRepoDir());
         std::vector<Refs> refs;
         std::vector<git_oid> local_refs;
@@ -297,7 +309,7 @@ public:
                                      r.localRef.c_str()) < 0) {
                 cerr << "Local reference \'" << r.localRef << "\' doesn't exist"
                      << endl;
-                return -1;
+                return CommandResult::Failed;
             }
             auto& lr = local_refs.emplace_back();
             git_oid_cpy(&lr, git_reference_target(*local_ref));
@@ -376,20 +388,19 @@ public:
             collector.Serialize([&](const auto& buf, size_t done) {
                 std::stringstream ss;
                 if (!buf.empty()) {
-                    //// log
+                    // log
                     //{
-                    //    const auto* p = reinterpret_cast<const
-                    //    ObjectsInfo*>(buf.data()); const auto* cur =
-                    //    reinterpret_cast<const GitObject*>(p + 1); for
-                    //    (uint32_t i = 0; i < p->objects_number; ++i)
-                    //    {
+                    //    const auto* p =
+                    //        reinterpret_cast<const ObjectsInfo*>(buf.data());
+                    //    const auto* cur =
+                    //        reinterpret_cast<const GitObject*>(p + 1);
+                    //    for (uint32_t i = 0; i < p->objects_number; ++i) {
                     //        size_t s = cur->data_size;
-                    //        std::cerr << to_string(cur->hash) << '\t' << s <<
-                    //        '\t' << (int)cur->type << '\n';
+                    //        std::cerr << to_string(cur->hash) << '\t' << s
+                    //                  << '\t' << (int)cur->type << '\n';
                     //        ++cur;
-                    //        cur = reinterpret_cast<const
-                    //        GitObject*>(reinterpret_cast<const uint8_t*>(cur)
-                    //        + s);
+                    //        cur = reinterpret_cast<const GitObject*>(
+                    //            reinterpret_cast<const uint8_t*>(cur) + s);
                     //    }
                     //    std::cerr << std::endl;
                     //}
@@ -431,17 +442,17 @@ public:
             cout << (res ? "ok " : "error ") << refs[0].remoteRef << '\n';
         }
 
-        cout << endl;
-        return 0;
+        return CommandResult::Batch;
     }
 
-    int DoCapabilities([[maybe_unused]] const vector<string_view>& args) {
+    CommandResult DoCapabilities(
+        [[maybe_unused]] const vector<string_view>& args) {
         for (auto ib = begin(commands_) + 1, ie = end(commands_); ib != ie;
              ++ib) {
             cout << ib->command << '\n';
         }
-        cout << endl;
-        return 0;
+
+        return CommandResult::Ok;
     }
 
 private:
@@ -496,7 +507,8 @@ private:
 private:
     SimpleWalletClient& wallet_client_;
 
-    typedef int (RemoteHelper::*Action)(const vector<string_view>& args);
+    typedef CommandResult (RemoteHelper::*Action)(
+        const vector<string_view>& args);
 
     struct Command {
         string_view command;
@@ -528,30 +540,24 @@ private:
                     return SetResult::InvalidValue;
                 }
                 return SetResult::Ok;
-            }
-            /*          else if (option == "verbosity")
-                        {
-                            char* endPos;
-                            auto v = std::strtol(value.data(), &endPos, 10);
-                            if (endPos == value.data())
-                            {
-                                return SetResult::InvalidValue;
-                            }
-                            verbosity = v;
-                            return SetResult::Ok;
-                        }
-                        else if (option == "depth")
-                        {
-                            char* endPos;
-                            auto v = std::strtoul(value.data(), &endPos, 10);
-                            if (endPos == value.data())
-                            {
-                                return SetResult::InvalidValue;
-                            }
-                            depth = v;
-                            return SetResult::Ok;
-                        }
-            */
+            }/* else if (option == "verbosity") {
+                char* endPos;
+                auto v = std::strtol(value.data(), &endPos, 10);
+                if (endPos == value.data()) {
+                    return SetResult::InvalidValue;
+                }
+                verbosity = v;
+                return SetResult::Ok;
+            } else if (option == "depth") {
+                char* endPos;
+                auto v = std::strtoul(value.data(), &endPos, 10);
+                if (endPos == value.data()) {
+                    return SetResult::InvalidValue;
+                }
+                depth = v;
+                return SetResult::Ok;
+            }*/
+
             return SetResult::Unsupported;
         }
     };
@@ -619,26 +625,31 @@ int main(int argc, char* argv[]) {
         RemoteHelper helper{wallet_client};
         git::Init init;
         string input;
+        auto res = RemoteHelper::CommandResult::Ok;
         while (getline(cin, input, '\n')) {
-            string_view args_sv(input.data(), input.size());
-            vector<string_view> args;
-            while (!args_sv.empty()) {
-                auto p = args_sv.find(' ');
-                auto ss = args_sv.substr(0, p);
-                args_sv.remove_prefix(p == string_view::npos ? ss.size()
-                                                             : ss.size() + 1);
-                if (!ss.empty()) {
-                    args.emplace_back(ss);
+            if (input.empty()) {
+                if (res == RemoteHelper::CommandResult::Batch) {
+                    cout << endl;
+                    continue;
+                } else {
+                    cerr << "Unexpected blank line" << endl;
+                    return -1;
                 }
             }
+
+            string_view args_sv(input.data(), input.size());
+            vector<string_view> args = ParseArgs(args_sv);
             if (args.empty()) {
-                return 0;
+                return -1;
             }
 
             cerr << "Command: " << input << endl;
+            res = helper.DoCommand(args[0], args);
 
-            if (helper.DoCommand(args[0], args) == -1) {
+            if (res == RemoteHelper::CommandResult::Failed) {
                 return -1;
+            } else if (res == RemoteHelper::CommandResult::Ok) {
+                cout << endl;
             }
         }
     } catch (const exception& ex) {

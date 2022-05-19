@@ -19,3 +19,8 @@
 .buttonWrapper {
   margin-left: 1rem;
 }
+@media screen and (max-width: 600px) {
+  .content{
+    padding: 0 5px;
+  }
+}

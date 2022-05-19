@@ -3,6 +3,7 @@
 #include <git2.h>
 #include <string_view>
 #include <string>
+#include <cassert>
 
 // struct git_repository;
 // struct git_odb;
@@ -19,7 +20,7 @@ public:
 
     Holder(const T&) = delete;
 
-    ~Holder() {
+    ~Holder() noexcept {
         D(obj_);
     }
 

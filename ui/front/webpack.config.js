@@ -60,7 +60,7 @@ const build = {
     },
     historyApiFallback: true,
     watchFiles: path.join(__dirname, 'src'),
-    port: 5000,
+    port: 5003,
     open: true,
     hot: true
   },
@@ -141,6 +141,9 @@ const build = {
         },
         {
           from: path.join(__dirname, './public/netlify.toml')
+        },
+        {
+          from: path.join(__dirname, './public/favicon.png')
         },
         {
           from: path.join(

@@ -3,9 +3,17 @@
     text-align: center;
     line-height: 16px;
     height: 36px;
+    font-weight: 800;
+    color: #000000;
+    padding: 0;
 }
 
 .connectBtnOnConnect {
     composes: connectBtn;
     padding: 2px 24px;
+}
+
+.connectBtnLogined {
+    composes: connectBtn;
+    opacity: 0.5;
 }

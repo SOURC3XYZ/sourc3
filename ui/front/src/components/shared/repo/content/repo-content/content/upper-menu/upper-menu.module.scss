@@ -5,3 +5,17 @@
 .branches {
     width: 160px;
 }
+
+
+@media screen and (max-width: 550px) {
+    .commits{
+        width: 160px;
+        margin-top: 10px;
+    }
+    :global{
+        .ant-row{
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+    }
+}

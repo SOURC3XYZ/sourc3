@@ -11,3 +11,9 @@
         color: #FF791F
     }
 }
+
+@media screen and (max-width: 550px) {
+    .breadcrumb{
+        margin-top: 10px;
+    }
+}

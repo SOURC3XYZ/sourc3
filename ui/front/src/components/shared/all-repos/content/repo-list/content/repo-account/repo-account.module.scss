@@ -1,0 +1,144 @@
+.repoAccount {
+    background-color: #000000;
+    border-radius: 8px;
+    color: #FFFFFF;
+    padding: 24px 27px 21px;
+    .list{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        .block{
+            display: flex;
+            align-items: center;
+            .logo {
+                max-width: 80px;
+                max-height: 80px;
+                img{
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+            .title{
+                display: flex;
+                align-items: start;
+                margin-left: 24px;
+                h1{
+                    font-family: 'Visby', serif;
+                    font-style: normal;
+                    font-weight: 400;
+                    font-size: 24px;
+                    line-height: 24px;
+                    color: #FFFFFF;
+                }
+                h4{
+                    font-family: 'Visby', serif;
+                    font-style: normal;
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 16px;
+                    color: #FFFFFF;
+                }
+                .status{
+                    font-family: 'Visby', serif;
+                    font-style: italic;
+                    font-weight: 700;
+                    font-size: 14px;
+                    line-height: 14px;
+                    color: #000000;
+                    background-color: #4DA2E6;
+                    border-radius: 11px;
+                    margin-left: 16px;
+                    padding: 4px 9px;
+                }
+            }
+        }
+    }
+    .social{
+        margin: 0 -9px;
+        a{
+            margin: 0 9px;
+        }
+    }
+    .counts{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 -14px;
+        .countsItem{
+            display: flex;
+            align-items: center;
+            margin: 0 14px;
+        }
+        h4{
+            font-family: 'Visby', serif;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 14px;
+            color: #FFFFFF;
+            margin: 0 8px 0 0;
+        }
+        p{
+            background-color: #FFFFFF;
+            border-radius: 11px;
+            font-family: 'Visby', serif;
+            font-style: normal;
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 14px;
+            color: #000000;
+            margin-bottom: 0;
+            padding: 4px 8px;
+        }
+    }
+}
+
+@media screen and (max-width: 991px) {
+    .repoAccount{
+        .list{
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        .social{
+            margin: 0 -9px 0 93px;
+        }
+        .counts{
+            flex-wrap: wrap;
+            max-width: 320px;
+            width: 100%;
+            justify-content: flex-start;
+            margin-top: 20px;
+            .countsItem{
+                margin-bottom: 15px;
+            }
+        }
+    }
+}
+@media screen and (max-width: 600px) {
+    .repoAccount{
+        padding: 24px 15px;
+        .list{
+            position: relative;
+            .block{
+                flex-direction: column;
+                align-items: flex-start;
+                .title{
+                    margin: 15px 0 15px 0;
+                    .status{
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                    }
+                }
+            }
+        }
+        .social{
+            margin: 0 -9px;
+        }
+        .counts{
+            max-width: unset;
+            width: auto;
+        }
+    }
+}

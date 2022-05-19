@@ -82,7 +82,7 @@ export const thunks:ThunkObject = {
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
         if (output) {
-          const finded = output.contracts.find((el) => el.cid === api.cid);
+          const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
           if (!finded) throw new Error(`no specified cid (${api.cid})`);
           dispatch(AC.setIsConnected(Boolean(finded)));
         } // TODO: DAnik - double code
@@ -110,7 +110,7 @@ export const thunks:ThunkObject = {
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
         if (output) {
-          const finded = output.contracts.find((el) => el.cid === api.cid);
+          const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
           if (!finded) throw new Error(`no specified cid (${api.cid})`);
           dispatch(AC.setIsConnected(Boolean(finded)));
         }

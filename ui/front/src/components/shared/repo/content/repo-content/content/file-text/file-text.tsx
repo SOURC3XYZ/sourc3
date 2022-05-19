@@ -31,6 +31,7 @@ function FileText(props: FileTextProps) {
     >
       <SyntaxHighlighter
         language={ext}
+        wrapLines
         showLineNumbers
         style={vs}
         className={styles.syntax}

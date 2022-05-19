@@ -36,7 +36,7 @@ function OrgListItem({
       key={organization_id}
       actions={[(
         <span key="org-times" className={styles.time}>
-          {textEllipsis(organization_creator, 40)}
+          {`owner: ${textEllipsis(organization_creator, 10)}`}
         </span>
       ),
       (

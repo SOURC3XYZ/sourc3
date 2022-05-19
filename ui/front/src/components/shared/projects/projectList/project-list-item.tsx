@@ -39,8 +39,7 @@ function ProjectListItem({
       key={organization_id}
       actions={[(
         <span key="org-times" className={styles.time}>
-          creator:
-          {textEllipsis(project_creator, 40)}
+          {`creator: ${textEllipsis(project_creator, 10)}`}
         </span>
       ),
       (
