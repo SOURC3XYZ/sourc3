@@ -16,6 +16,8 @@
 #include <string_view>
 #include <vector>
 
+#include "../3rdparty/libgit2/deps/zlib/zlib.h"
+
 #include "object_collector.h"
 #include "utils.h"
 #include "version.h"
@@ -364,8 +366,15 @@ public:
                 }
 
                 if (obj.GetSize() > kIpfsAddressSize) {
-                    auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
-                                                               obj.GetSize());
+                    // Allocate more memory, will be shrinked
+                    std::vector<Bytef> compressed_bytes(obj.GetSize());
+                    uLongf real_size;
+                    compress(compressed_bytes.data(), &real_size,
+                             (const Bytef*)obj.GetData(), obj.GetSize());
+                    compressed_bytes.resize(real_size);
+                    auto res = wallet_client_.SaveObjectToIPFS(
+                        (const uint8_t*)compressed_bytes.data(),
+                        compressed_bytes.size());
                     auto r = json::parse(res);
                     auto hash_str =
                         r.as_object()["result"].as_object()["hash"].as_string();
@@ -540,23 +549,23 @@ private:
                     return SetResult::InvalidValue;
                 }
                 return SetResult::Ok;
-            }/* else if (option == "verbosity") {
-                char* endPos;
-                auto v = std::strtol(value.data(), &endPos, 10);
-                if (endPos == value.data()) {
-                    return SetResult::InvalidValue;
-                }
-                verbosity = v;
-                return SetResult::Ok;
-            } else if (option == "depth") {
-                char* endPos;
-                auto v = std::strtoul(value.data(), &endPos, 10);
-                if (endPos == value.data()) {
-                    return SetResult::InvalidValue;
-                }
-                depth = v;
-                return SetResult::Ok;
-            }*/
+            } /* else if (option == "verbosity") {
+                 char* endPos;
+                 auto v = std::strtol(value.data(), &endPos, 10);
+                 if (endPos == value.data()) {
+                     return SetResult::InvalidValue;
+                 }
+                 verbosity = v;
+                 return SetResult::Ok;
+             } else if (option == "depth") {
+                 char* endPos;
+                 auto v = std::strtoul(value.data(), &endPos, 10);
+                 if (endPos == value.data()) {
+                     return SetResult::InvalidValue;
+                 }
+                 depth = v;
+                 return SetResult::Ok;
+             }*/
 
             return SetResult::Unsupported;
         }

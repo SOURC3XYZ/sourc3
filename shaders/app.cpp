@@ -16,6 +16,7 @@ namespace Env {  // NOLINT
 #include <limits>
 
 #include "../try-to-add-libgit2/full_git.h"
+#include "../try-to-add-libgit2/full_zlib.h"
 
 namespace git_remote_beam {
 #include "contract_sid.i"
@@ -43,16 +44,15 @@ auto FindIfContains(const std::string_view str,
 
 const char kAdminSeed[] = "admin-sourc3";
 
-struct MyKeyID :public Env::KeyID {
-  MyKeyID() :Env::KeyID(&kAdminSeed, sizeof(kAdminSeed)) {}
+struct MyKeyID : public Env::KeyID {
+    MyKeyID() : Env::KeyID(&kAdminSeed, sizeof(kAdminSeed)) {
+    }
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {
-        git_remote_beam::s_SID
-};
+const ShaderID kSid[] = {git_remote_beam::s_SID};
 
-const git_remote_beam::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
+const git_remote_beam::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
 void OnActionCreateContract(const ContractID& unused) {
     MyKeyID kid;
@@ -62,17 +62,20 @@ void OnActionCreateContract(const ContractID& unused) {
     git_remote_beam::method::Initial arg;
     if (!kVerInfo.FillDeployArgs(arg.m_Stgs, &pk)) {
         return;
-}
+    }
 
-    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy()*2);
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0,
+                        "Deploy sourc3 contract",
+                        git_remote_beam::Manager::get_ChargeDeploy() * 2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
-    Height hTarget; // NOLINT
+    Height hTarget;  // NOLINT
     Env::DocGetNum64("hTarget", &hTarget);
 
     MyKeyID kid;
-    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
+    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(
+        kVerInfo, cid, kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
@@ -94,7 +97,7 @@ void OnActionDestroyContract(const ContractID& cid) {
 
 void OnActionViewContracts(const ContractID& unused) {
     MyKeyID kid;
-    g_VerInfo.DumpAll(&kid);
+    kVerInfo.DumpAll(&kid);
 }
 
 void OnActionViewContractParams(const ContractID& cid) {
@@ -1229,7 +1232,8 @@ void OnActionUserGetRepo(const ContractID& cid) {
     --name_len;  // remove 0-term
     PubKey my_key;
     Env::DocGet("repo_owner", my_key);
-    git_remote_beam::Hash256 name_hash = git_remote_beam::GetNameHash(repo_name, name_len);
+    git_remote_beam::Hash256 name_hash =
+        git_remote_beam::GetNameHash(repo_name, name_len);
     RepoKey key(my_key, name_hash);
     Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
     reader_key.m_Prefix.m_Cid = cid;
@@ -1273,6 +1277,27 @@ void OnActionGetRepoMeta(const ContractID& cid) {
     }
 }
 
+constexpr size_t kZlibBufferSize = 1024 * 1024;
+
+std::vector<Bytef> UnCompress(const char* src, uLongf src_len,
+                              size_t grow_scale = 2) {
+    size_t buffer_size = kZlibBufferSize;
+    std::vector<Bytef> uncompressed_bytes;
+    uLongf real_size;
+    int status = Z_BUF_ERROR;
+    while (status == Z_BUF_ERROR) {
+        uncompressed_bytes.resize(buffer_size);
+        status = uncompress(uncompressed_bytes.data(), &real_size,
+                            (const Bytef*)src, src_len);
+        buffer_size *= grow_scale;
+    }
+    if (status < 0) {
+        return {};
+    }
+    uncompressed_bytes.resize(real_size);
+    return uncompressed_bytes;
+}
+
 void OnActionGetRepoData(const ContractID& cid) {
     using git_remote_beam::GitObject;
     using git_remote_beam::GitOid;
@@ -1289,7 +1314,12 @@ void OnActionGetRepoData(const ContractID& cid) {
         auto buf = std::make_unique<uint8_t[]>(value_len);
         reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<GitObject::Data*>(buf.get());
-        Env::DocAddBlob("object_data", value->data, value_len);
+        std::vector<Bytef> uncompressed = UnCompress(value->data, value_len);
+        if (uncompressed.empty()) {
+            return OnError("something went wrong with uncompress");
+        }
+        Env::DocAddBlob("object_data", uncompressed.data(),
+                        uncompressed.size());
     } else {
         Env::DocAddBlob("object_data", nullptr, 0);
     }
@@ -1387,8 +1417,13 @@ void OnActionGetCommit(const ContractID& cid) {
         auto buf = std::make_unique<uint8_t[]>(value_len);
         reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<GitObject::Data*>(buf.get());
+        std::vector<Bytef> uncompressed = UnCompress(value->data, value_len);
+        if (uncompressed.empty()) {
+            return OnError("something went wrong with uncompress");
+        }
         mygit2::git_commit commit{};
-        if (commit_parse(&commit, value->data, value_len, 0) == 0) {
+        if (commit_parse(&commit, (const char*)uncompressed.data(),
+                         uncompressed.size(), 0) == 0) {
             AddCommit(commit, hash);
         }
         Env::DocAddBlob("object_data", value->data, value_len);
@@ -1401,8 +1436,13 @@ void OnActionGetCommitFromData(const ContractID&) {
     using git_remote_beam::GitObject;
     ParseObjectData([](GitObject::Data* value, size_t value_len,
                        git_remote_beam::GitOid hash) {
+        std::vector<Bytef> uncompressed = UnCompress(value->data, value_len);
+        if (uncompressed.empty()) {
+            return OnError("something went wrong with uncompress");
+        }
         mygit2::git_commit commit{};
-        if (commit_parse(&commit, value->data, value_len, 0) == 0) {
+        if (commit_parse(&commit, (const char*)uncompressed.data(),
+                         uncompressed.size(), 0) == 0) {
             AddCommit(commit, hash);
         }
     });
@@ -1424,8 +1464,13 @@ void OnActionGetTree(const ContractID& cid) {
         auto buf = std::make_unique<uint8_t[]>(value_len);
         reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<GitObject::Data*>(buf.get());
+        std::vector<Bytef> uncompressed = UnCompress(value->data, value_len);
+        if (uncompressed.empty()) {
+            return OnError("something went wrong with uncompress");
+        }
         mygit2::git_tree tree{};
-        if (tree_parse(&tree, value->data, value_len) == 0) {
+        if (tree_parse(&tree, (const char*)uncompressed.data(),
+                       uncompressed.size()) == 0) {
             Env::DocGroup tree_obj("tree");
             char oid_buffer[GIT_OID_HEXSZ + 1];
             oid_buffer[GIT_OID_HEXSZ] = '\0';
@@ -1451,8 +1496,13 @@ void OnActionGetTreeFromData(const ContractID&) {
     using git_remote_beam::GitObject;
     using git_remote_beam::GitOid;
     ParseObjectData([](GitObject::Data* value, size_t value_len, GitOid hash) {
+        std::vector<Bytef> uncompressed = UnCompress(value->data, value_len);
+        if (uncompressed.empty()) {
+            return OnError("something went wrong with uncompress");
+        }
         mygit2::git_tree tree{};
-        if (tree_parse(&tree, value->data, value_len) == 0) {
+        if (tree_parse(&tree, (const char*)uncompressed.data(),
+                       uncompressed.size()) == 0) {
             AddTree(tree);
         } else {
             OnError("no tree in data");
