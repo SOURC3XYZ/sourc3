@@ -1,4 +1,4 @@
-import { CONTRACT, ToastMessages, WALLET } from '@libs/constants';
+import { CONFIG, ToastMessages, WALLET } from '@libs/constants';
 import {
   QObject, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
@@ -345,7 +345,7 @@ export class BeamAPI<T> {
     hash: string
   ) => {
     const oReq = new XMLHttpRequest();
-    oReq.open('GET', [CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'), true);
+    oReq.open('GET', [CONFIG.IPFS_HOST, 'ipfs', hash].join('/'), true);
     oReq.responseType = 'blob';
     oReq.setRequestHeader('Access-Control-Allow-Origin', '*');
     oReq.onload = async function () {

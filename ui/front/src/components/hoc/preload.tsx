@@ -11,6 +11,7 @@ function PreloadComponent({
   isLoaded, callback, Fallback, children
 }:PeloadProps) {
   useEffect(() => {
+    console.log('preload', isLoaded);
     if (!isLoaded && callback) callback();
   }, [isLoaded]);
 

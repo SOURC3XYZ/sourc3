@@ -61,7 +61,6 @@ function ProjectList({
       dataSource={items}
       renderItem={(item) => (
         <ProjectListItem
-          orgId={orgId}
           type={type}
           item={item}
           path={path}

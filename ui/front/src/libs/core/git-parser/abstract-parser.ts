@@ -1,11 +1,8 @@
 import { RC, RequestSchema } from '@libs/action-creators';
-import { BeamAPI } from '@libs/core';
 import {
-  RepoId, MetaHash, RepoMeta, DataResp, IpfsResult
+  RepoId, MetaHash, RepoMeta, DataResp, IpfsResult, CallBeamApi
 } from '@types';
 import { arrayBufferToString, buf2hex, hexParser } from '@libs/utils';
-
-type TypedBeamApi = BeamAPI<RequestSchema['params']>;
 
 type IpfsRequestType = 'commit' | 'tree' | 'blob';
 
@@ -18,7 +15,7 @@ type IpfsRequestCreators = {
 export type ParserProps = {
   id:RepoId,
   metas: Map<MetaHash, RepoMeta>,
-  api: TypedBeamApi,
+  callApi: CallBeamApi,
   expect: IpfsRequestType,
   pathname: string;
 };
@@ -28,7 +25,7 @@ export default abstract class AbstractParser {
 
   protected readonly metas: Map<MetaHash, RepoMeta>;
 
-  protected readonly api: TypedBeamApi;
+  protected readonly callApi: CallBeamApi;
 
   private readonly expect: IpfsRequestType;
 
@@ -41,11 +38,11 @@ export default abstract class AbstractParser {
   };
 
   constructor({
-    id, metas, api, expect, pathname
+    id, metas, callApi, expect, pathname
   }:ParserProps) {
     this.id = id;
     this.metas = metas;
-    this.api = api;
+    this.callApi = callApi;
     this.expect = expect;
     this.pathname = pathname;
   }
@@ -54,7 +51,7 @@ export default abstract class AbstractParser {
     if (
       this.pathname !== window.location.pathname
     ) throw new Error('url has changed');
-    const { result, error } = await this.api.callApi(req);
+    const { result, error } = await this.callApi(req);
     if (error) throw new Error(error.message);
     if (result?.output) {
       return JSON.parse(result.output) as T;

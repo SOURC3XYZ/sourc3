@@ -1,5 +1,5 @@
 // 'http://localhost:5001/beam'
-export enum CONTRACT {
+export enum CONFIG {
   HOST = 'http://localhost:5001',
   CID = '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3',
   // '7aaec975d0348348d82e72bd66d508ac93cb6f9e683bd136d2a879f41c32e8d8'

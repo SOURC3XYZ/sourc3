@@ -1,4 +1,4 @@
-import { CONTRACT } from '@libs/constants';
+import { CONFIG } from '@libs/constants';
 import {
   CommitHash, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
@@ -226,7 +226,7 @@ export const RC = {
       address,
       comment,
       offline,
-      asset_id: CONTRACT.ASSET_ID
+      asset_id: CONFIG.ASSET_ID
     }
   } as const),
 

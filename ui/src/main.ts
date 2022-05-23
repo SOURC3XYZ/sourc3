@@ -95,7 +95,7 @@ function createWindow() {
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
   if (process.env['NODE_ENV'] === 'dev') {
-    win.loadURL('http://localhost:5000');
+    win.loadURL('http://localhost:5003');
     win.webContents.openDevTools();
   } else {
     win.setMenu(null);

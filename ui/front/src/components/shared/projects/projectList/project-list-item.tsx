@@ -13,11 +13,10 @@ type ListItemProps = {
   path: string;
   searchText: string;
   type: OwnerListType;
-  orgId: number
 };
 
 function ProjectListItem({
-  item, path, searchText, type, orgId
+  item, path, searchText, type
 }:ListItemProps) {
   const {
     organization_id, project_creator, project_name, project_id
@@ -27,7 +26,7 @@ function ProjectListItem({
     message.info(key);
   };
 
-  const link = `${path}project/${orgId}/${type}/1`;
+  const link = `${path}project/${project_id}/${type}/1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
