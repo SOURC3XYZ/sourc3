@@ -18,7 +18,7 @@ function Header({ isOnLending }:HeaderPropsType) {
   const containerProps = useHeader();
 
   const {
-    isPkey,
+    pkey,
     onConnect
   } = containerProps;
 
@@ -54,9 +54,9 @@ function Header({ isOnLending }:HeaderPropsType) {
           placeholder="Search"
         />
       )}
-      <ConnectBtn isLogined={isPkey} onConnect={onConnect} />
+      <ConnectBtn pkey={pkey} onConnect={onConnect} />
     </div>
-  ), [isOnLending, isPkey]);
+  ), [isOnLending, pkey]);
 
   return (
     <header className={headerClassName}>

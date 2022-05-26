@@ -51,7 +51,7 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
   const setIsConnected = async (dispatch: AppThunkDispatch) => {
     await api.loadAPI();
     await api.initContract(wasm);
-    // api.loadApiEventManager(apiEventManager(dispatch));
+    api.loadApiEventManager(apiEventManager(dispatch));
     await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
       const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
       if (!finded) throw new Error(`no specified cid (${api.cid})`);

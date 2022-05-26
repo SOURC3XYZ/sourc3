@@ -230,13 +230,14 @@ export const RC = {
     }
   } as const),
 
-  setPublicKey: () => ({
+  getPublicKey: (pid = 0) => ({
     callID: 'set_public_key',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
-        action: 'get_key'
+        action: 'get_key',
+        pid
       },
       create_tx: false
     }

@@ -45,7 +45,7 @@ export const userThunk = ({
 
       await query<PKeyRes>(
         dispatch,
-        RC.setPublicKey(),
+        RC.getPublicKey(),
         (output) => dispatch(AC.setPublicKey(output.key))
       );
     } catch (error:any) {
@@ -61,12 +61,12 @@ export const userThunk = ({
     try {
       await setIsConnected(dispatch);
 
-      // await callApi(RC.subUnsub()); // subscribe to api events
+      await callApi(RC.subUnsub()); // subscribe to api events
 
       if (isWebHeadless()) {
         await query<PKeyRes>(
           dispatch,
-          RC.setPublicKey(),
+          RC.getPublicKey(),
           (output) => dispatch(AC.setPublicKey(output.key))
         );
       } else {

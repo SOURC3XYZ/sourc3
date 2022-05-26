@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Nav, Search } from '@components/shared';
 import { BeamButton } from '../beam-button';
 import styles from './projects.module.scss';
-import { RepoList } from '../all-repos';
+import { EntityList } from '../entity-list';
 import { CreateModal } from '../create-modal';
 
 const placeholder = 'Enter your repository name';
@@ -73,7 +73,7 @@ function ProjectRepos() {
     <div className={styles.content}>
       <Title level={3}>{`${orgName} repositories`}</Title>
       {projectManager}
-      <RepoList
+      <EntityList
         path={path}
         page={page}
         route="project"

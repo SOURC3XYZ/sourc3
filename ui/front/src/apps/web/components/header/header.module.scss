@@ -17,10 +17,9 @@
 
     span {
       color: #fff;
-      font-family: Visby;
+      font-family: PublicSans-Bold;
       font-size: 18px;
       line-height: 20px;
-      font-style: normal;
     }
   }
 
@@ -49,7 +48,8 @@
   display: flex;
   justify-content: space-between;
   margin-left: 35px;
-  .logo{
+
+  .logo {
     margin-right: 88px;
   }
 }
@@ -116,7 +116,6 @@
     height: 36px;
     border: none;
     font-size: 14px;
-    font-family: Visby;
     line-height: 14px;
     font-weight: 900;
     letter-spacing: 0.1px;
@@ -143,64 +142,76 @@
     }
   }
 }
+
 @media screen and (max-width: 768px) {
-  .header{
+  .header {
     height: auto;
-    .nav{
+
+    .nav {
       flex-direction: column;
       align-items: flex-end;
       padding: 10px;
     }
   }
-  .headerActive{
-    .nav{
+
+  .headerActive {
+    .nav {
       flex-direction: row;
       align-items: center;
       padding: 10px;
     }
   }
-  .connect{
+
+  .connect {
     width: 100%;
     margin-top: 10px;
     margin-right: 0 !important;
-    button{
+
+    button {
       margin: 0 auto;
     }
   }
-  .navWrapper{
+
+  .navWrapper {
     flex-direction: column;
     align-items: center;
     width: 100%;
     margin-left: 0 !important;
-    .logo{
+
+    .logo {
       margin-bottom: 10px;
       margin-right: 0;
     }
   }
-  .navList{
-    li{
+
+  .navList {
+    li {
       margin: 0 0 0 30px !important;
     }
   }
 }
+
 @media screen and (max-width: 400px) {
-  .navWrapper{
+  .navWrapper {
     align-items: flex-start;
   }
-  .headerActive{
-    .nav{
+
+  .headerActive {
+    .nav {
       flex-direction: column;
       align-items: center;
       padding: 10px;
     }
   }
-  .connect{
-    button{
+
+  .connect {
+    button {
       margin: 0 auto 0 0;
     }
   }
-  .navList{
-    li{
+
+  .navList {
+    li {
       margin: 0 30px 0 0 !important;
     }
   }

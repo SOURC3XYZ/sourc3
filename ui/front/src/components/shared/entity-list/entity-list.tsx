@@ -5,8 +5,8 @@ import {
   useEffect, useMemo, useRef, useState
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ListItem } from './content';
-import styles from './repo-list.module.scss';
+import { ListItem } from './list-item';
+import styles from './entity-list.module.scss';
 
 type ListRenderProps = {
   path: string,
@@ -18,7 +18,7 @@ type ListRenderProps = {
   route?: string
 };
 
-function RepoList({
+function EntityList({
   page = 1, type = 'all', route = 'repos', items, searchText, path, deleteRepos
 }:ListRenderProps) {
   const navigate = useNavigate();
@@ -72,4 +72,4 @@ function RepoList({
   );
 }
 
-export default RepoList;
+export default EntityList;

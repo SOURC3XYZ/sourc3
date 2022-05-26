@@ -11,11 +11,17 @@ const useUserAsync = () => {
 
   const setInputText = (str: string) => dispatch(AC.setSearch(str));
 
+  const setPrevHref = (str: string) => dispatch(AC.setPreviousReposPage(str));
+
   const getOrganizations = () => dispatch(queries.getOrganizations());
 
   const getProjects = () => dispatch(queries.getProjects());
 
   const getRepos = (type: RepoListType) => dispatch(queries.getRepos(type));
+
+  const deleteRepo = (
+    ...args: ArgumentTypes<typeof mutations.deleteRepo>
+  ) => dispatch(mutations.deleteRepo(...args));
 
   const createOrganization = (
     ...args: ArgumentTypes<typeof mutations.createOrganization>
@@ -31,12 +37,14 @@ const useUserAsync = () => {
 
   return {
     setInputText,
+    setPrevHref,
     getOrganizations,
     getProjects,
     getRepos,
     createOrganization,
     createProject,
-    createRepo
+    createRepo,
+    deleteRepo
   };
 };
 

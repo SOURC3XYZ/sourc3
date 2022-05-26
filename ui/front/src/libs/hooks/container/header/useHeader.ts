@@ -6,10 +6,8 @@ const useHeader = () => {
 
   const { connectExtension: onConnect } = useUserAction();
 
-  const isPkey = Boolean(pkey);
-
   return {
-    isPkey,
+    pkey,
     onConnect
   };
 };

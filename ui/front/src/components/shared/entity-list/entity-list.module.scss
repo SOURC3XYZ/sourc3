@@ -29,14 +29,16 @@
         color: #000000 !important;
         opacity: 0.5;
     }
-    .ant-tabs-top > .ant-tabs-nav::before{
+
+    .ant-tabs-top>.ant-tabs-nav::before {
         border-bottom: 0;
     }
-    .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn{
+
+    .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
         opacity: 1;
     }
-    .ant-tabs-ink-bar{
+
+    .ant-tabs-ink-bar {
         border-bottom: 4px solid #000000 !important;
     }
 }
-

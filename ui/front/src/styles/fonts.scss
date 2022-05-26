@@ -3,25 +3,46 @@
     font-style: normal;
     font-weight: normal;
     src: local('Visby'), url("@assets/fonts/VisbyRegular.woff") format("woff")
-   }
-  
-   @font-face {
+}
+
+@font-face {
     font-family: "VisbyBold";
     font-style: normal;
     font-weight: normal;
     src: local('Visby-Regular'), url("@assets/fonts/VisbyBold.woff") format("woff")
-   }
-  
-   @font-face {
+}
+
+@font-face {
     font-family: "VisbyItalic";
     font-style: normal;
     font-weight: normal;
-    src: local('Visby-Regular'), url("@assets/fonts/VisbyItalic.woff") format("woff")
-   }
-  
-   @font-face {
-    font-family: "VisbyItalic";
+    src: local('VisbyItalic'), url("@assets/fonts/VisbyItalic.woff") format("woff")
+}
+
+@font-face {
+    font-family: "VisbyRegular";
     font-style: normal;
     font-weight: normal;
     src: local('VisbyRegular'), url("@assets/fonts/VisbyRegular.woff") format("woff")
-   }
+}
+
+@font-face {
+    font-family: "PublicSans-Bold";
+    font-style: normal;
+    font-weight: normal;
+    src: local('PublicSans-Bold'), url("@assets/fonts/PublicSans-Bold.woff") format("woff")
+}
+
+@font-face {
+    font-family: "PublicSans-Regular";
+    font-style: normal;
+    font-weight: normal;
+    src: local('PublicSans-Regular'), url("@assets/fonts/PublicSans-Regular.woff") format("woff")
+}
+
+@font-face {
+    font-family: "PublicSans-Thin";
+    font-style: normal;
+    font-weight: normal;
+    src: local('PublicSans-Thin'), url("@assets/fonts/PublicSans-Thin.woff") format("woff")
+}
