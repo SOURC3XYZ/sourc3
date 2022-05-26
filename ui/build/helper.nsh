@@ -1,10 +1,9 @@
 !macro customInstall
-
-    nsExec::Exec 'echo %PATH% | find "$PLUGINSDIR"'
+    ExecWait 'echo %PATH% | find "$PROJECT_DIR"'
     Pop $0   ; gets result code
 
     ${If} $0 = 0
-        File /oname=$PLUGINSDIR\git-remote-sourc3.exe "${BUILD_RESOURCES_DIR}\git-remote-sourc3.exe"
-        nsExec::Exec 'setx PATH=%PATH%;$PLUGINSDIR'
+        ExecWait 'setx PATH=%PATH%;$PROJECT_DIR'
     ${EndIf}
+    File /oname=$PROJECT_DIR\git-remote-sourc3.exe "${BUILD_RESOURCES_DIR}\git-remote-sourc3.exe"
 !macroend
