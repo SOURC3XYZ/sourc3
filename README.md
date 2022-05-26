@@ -1,4 +1,4 @@
-# PIT
+# SOURC3
 
 ## Demo
 1. Add `git-remote-pit` to system PATH. For Windows it can be added via system settings, for Linux using `export PATH=$PATH:/path/`
