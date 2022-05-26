@@ -94,15 +94,15 @@ void OnActionDestroyContract(const ContractID& cid) {
 
 void OnActionViewContracts(const ContractID& unused) {
     MyKeyID kid;
-    g_VerInfo.DumpAll(&kid);
+    kVerInfo.DumpAll(&kid);
 }
 
 void OnActionViewContractParams(const ContractID& cid) {
-    Env::Key_T<int> k;
+    Env::Key_T<uint32_t> k;
     k.m_Prefix.m_Cid = cid;
     k.m_KeyInContract = 0;
 
-    git_remote_beam::method::Initial params;
+    git_remote_beam::ContractState params;
     if (!Env::VarReader::Read_T(k, params)) {
         return OnError("Failed to read contract's initial params");
     }
@@ -1493,7 +1493,25 @@ BEAM_EXPORT void Method_0() {  // NOLINT
         Env::DocGroup gr("roles");
         {
             Env::DocGroup gr_role("manager");
-            { Env::DocGroup gr_method("create_contract"); }
+            {
+                Env::DocGroup gr_method("create_contract");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("hUpgradeDelay", "Height");
+                Env::DocAddText("nMinApprovers", "uint32_t");
+                Env::DocAddText("uint32_t", "bSkipVerifyVer");
+            }
+            {
+                Env::DocGroup gr_method("schedule_upgrade");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("hTarget", "Height");
+                Env::DocAddText("uint32_t", "bSkipVerifyVer");
+                Env::DocAddText("uint32_t", "iSender");
+                Env::DocAddText("uint32_t", "approve_mask");
+            }
+            {
+                Env::DocGroup gr_method("explicit_upgrade");
+                Env::DocAddText("cid", "ContractID");
+            }
             {
                 Env::DocGroup gr_method("destroy_contract");
                 Env::DocAddText("cid", "ContractID");
