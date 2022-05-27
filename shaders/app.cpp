@@ -15,7 +15,7 @@ namespace Env {  // NOLINT
 #include <charconv>
 #include <limits>
 
-#include "../try-to-add-libgit2/full_git.h"
+#include "libgit2/full_git.h"
 
 namespace git_remote_beam {
 #include "contract_sid.i"
