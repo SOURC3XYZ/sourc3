@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-using namespace git_remote_beam;
+using namespace sourc3;
 namespace {
 template <Tag Tg, class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
@@ -59,10 +59,10 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-void git_remote_beam::OnUpgraded(uint32_t /*nPrevVersion*/) {
+void sourc3::OnUpgraded(uint32_t /*nPrevVersion*/) {
 }
 
-uint32_t git_remote_beam::get_CurrentVersion() {  // NOLINT
+uint32_t sourc3::get_CurrentVersion() {  // NOLINT
     return 1;
 }
 

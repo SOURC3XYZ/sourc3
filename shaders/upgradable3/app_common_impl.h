@@ -18,7 +18,7 @@
 #include "Shaders/app_comm.h"
 #include "contract.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 
 struct Manager {
     static void OnError(const char* sz) {
@@ -619,4 +619,4 @@ struct Manager {
     };
 };
 
-}  // namespace git_remote_beam
+}  // namespace sourc3

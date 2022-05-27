@@ -1,7 +1,7 @@
 #include "Shaders/common.h"
 #include "contract.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 
 void Settings::Save() const {
     Key key;
@@ -101,4 +101,4 @@ BEAM_EXPORT void Method_2(const Ctl::Base& r_) {
     Env::SaveVar_T(stgk, stg);
 }
 
-}  // namespace git_remote_beam
+}  // namespace sourc3

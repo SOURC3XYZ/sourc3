@@ -17,7 +17,7 @@ namespace Env {  // NOLINT
 
 #include "libgit2/full_git.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 #include "contract_sid.i"
 }
 
@@ -49,22 +49,22 @@ struct MyKeyID :public Env::KeyID {
 
 // Add new SID here after changing contract.cpp
 const ShaderID kSid[] = {
-        git_remote_beam::s_SID
+        sourc3::s_SID
 };
 
-const git_remote_beam::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
+const sourc3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
 void OnActionCreateContract(const ContractID& unused) {
     MyKeyID kid;
     PubKey pk;
     kid.get_Pk(pk);
 
-    git_remote_beam::method::Initial arg;
+    sourc3::method::Initial arg;
     if (!kVerInfo.FillDeployArgs(arg.m_Stgs, &pk)) {
         return;
 }
 
-    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", git_remote_beam::Manager::get_ChargeDeploy()*2);
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", sourc3::Manager::get_ChargeDeploy()*2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
@@ -72,12 +72,12 @@ void OnActionScheduleUpgrade(const ContractID& cid) {
     Env::DocGetNum64("hTarget", &hTarget);
 
     MyKeyID kid;
-    git_remote_beam::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
+    sourc3::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
     MyKeyID kid;
-    git_remote_beam::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
+    sourc3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
 }
 
 void OnActionMyAdminKey(const ContractID& cid) {
@@ -89,7 +89,7 @@ void OnActionMyAdminKey(const ContractID& cid) {
 
 void OnActionDestroyContract(const ContractID& cid) {
     Env::GenerateKernel(&cid, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-                        "Destroy git_remote_beam contract", 0);
+                        "Destroy sourc3 contract", 0);
 }
 
 void OnActionViewContracts(const ContractID& unused) {
@@ -102,7 +102,7 @@ void OnActionViewContractParams(const ContractID& cid) {
     k.m_Prefix.m_Cid = cid;
     k.m_KeyInContract = 0;
 
-    git_remote_beam::ContractState params;
+    sourc3::ContractState params;
     if (!Env::VarReader::Read_T(k, params)) {
         return OnError("Failed to read contract's initial params");
     }
@@ -142,9 +142,9 @@ private:
 #pragma pack(pop)
 
 void OnActionCreateRepo(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::Repo;
-    using git_remote_beam::method::CreateRepo;
+    using sourc3::Project;
+    using sourc3::Repo;
+    using sourc3::method::CreateRepo;
 
     char repo_name[Repo::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
@@ -165,7 +165,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -195,8 +195,8 @@ void OnActionCreateRepo(const ContractID& cid) {
 }
 
 void OnActionModifyRepo(const ContractID& cid) {
-    using git_remote_beam::Repo;
-    using git_remote_beam::method::ModifyRepo;
+    using sourc3::Repo;
+    using sourc3::method::ModifyRepo;
 
     char repo_name[Repo::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
@@ -217,7 +217,7 @@ void OnActionModifyRepo(const ContractID& cid) {
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -234,8 +234,8 @@ void OnActionModifyRepo(const ContractID& cid) {
 }
 
 void OnActionCreateProject(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::CreateProject;
+    using sourc3::Project;
+    using sourc3::method::CreateProject;
 
     char name[Project::kMaxNameLen + 1];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
@@ -250,7 +250,7 @@ void OnActionCreateProject(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
 
     if (!Env::DocGet("organization_id", request->organization_id)) {
         return OnError("'organization_id' required");
@@ -271,7 +271,7 @@ void OnActionCreateProject(const ContractID& cid) {
 }
 
 void OnActionListProjects(const ContractID& cid) {
-    using git_remote_beam::Project;
+    using sourc3::Project;
     using ProjectKey = Env::Key_T<Project::Key>;
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
@@ -298,7 +298,7 @@ void OnActionListProjects(const ContractID& cid) {
 }
 
 void OnActionProjectByName(const ContractID& cid) {
-    using git_remote_beam::Project;
+    using sourc3::Project;
     using ProjectKey = Env::Key_T<Project::Key>;
 
     char name[Project::kMaxNameLen + 1];
@@ -339,9 +339,9 @@ void OnActionProjectByName(const ContractID& cid) {
 }
 
 void OnActionListProjectMembers(const ContractID& cid) {
-    using git_remote_beam::Members;
-    using git_remote_beam::Project;
-    using Member = Members<git_remote_beam::kProjectMember, Project>;
+    using sourc3::Members;
+    using sourc3::Project;
+    using Member = Members<sourc3::kProjectMember, Project>;
     using MemberKey = Env::Key_T<Member::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
@@ -355,7 +355,7 @@ void OnActionListProjectMembers(const ContractID& cid) {
 
     MemberKey key = start;
     Env::DocArray projects("members");
-    git_remote_beam::UserInfo member;
+    sourc3::UserInfo member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);
@@ -364,8 +364,8 @@ void OnActionListProjectMembers(const ContractID& cid) {
 }
 
 void OnActionModifyProject(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::ModifyProject;
+    using sourc3::Project;
+    using sourc3::method::ModifyProject;
 
     char name[Project::kMaxNameLen + 1];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
@@ -380,7 +380,7 @@ void OnActionModifyProject(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
 
     if (!Env::DocGet("organization_id", request->organization_id)) {
         return OnError("'organization_id' required");
@@ -405,8 +405,8 @@ void OnActionModifyProject(const ContractID& cid) {
 }
 
 void OnActionRemoveProject(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::RemoveProject;
+    using sourc3::Project;
+    using sourc3::method::RemoveProject;
 
     RemoveProject request;
     UserKey user_key(cid);
@@ -430,8 +430,8 @@ void OnActionRemoveProject(const ContractID& cid) {
 }
 
 void OnActionListProjectRepos(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::Repo;
+    using sourc3::Project;
+    using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
 
     Project::Id project_id;
@@ -468,8 +468,8 @@ void OnActionListProjectRepos(const ContractID& cid) {
 }
 
 void OnActionCreateOrganization(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::CreateOrganization;
+    using sourc3::Organization;
+    using sourc3::method::CreateOrganization;
 
     char name[Organization::kMaxNameLen + 1];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
@@ -484,7 +484,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -501,7 +501,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
 }
 
 void OnActionListOrganizations(const ContractID& cid) {
-    using git_remote_beam::Organization;
+    using sourc3::Organization;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
     OrganizationKey start{.m_Prefix = {.m_Cid = cid},
@@ -527,7 +527,7 @@ void OnActionListOrganizations(const ContractID& cid) {
 }
 
 void OnActionOrganizationByName(const ContractID& cid) {
-    using git_remote_beam::Organization;
+    using sourc3::Organization;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
     char name[Organization::kMaxNameLen + 1];
@@ -567,8 +567,8 @@ void OnActionOrganizationByName(const ContractID& cid) {
 }
 
 void OnActionListOrganizationProjects(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::Project;
+    using sourc3::Organization;
+    using sourc3::Project;
     using ProjectKey = Env::Key_T<Project::Key>;
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
@@ -602,9 +602,9 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 }
 
 void OnActionListOrganizationMembers(const ContractID& cid) {
-    using git_remote_beam::Members;
-    using git_remote_beam::Organization;
-    using Member = Members<git_remote_beam::kOrganizationMember, Organization>;
+    using sourc3::Members;
+    using sourc3::Organization;
+    using Member = Members<sourc3::kOrganizationMember, Organization>;
     using MemberKey = Env::Key_T<Member::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
@@ -618,7 +618,7 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 
     MemberKey key = start;
     Env::DocArray members("members");
-    git_remote_beam::UserInfo member;
+    sourc3::UserInfo member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);
@@ -627,8 +627,8 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 }
 
 void OnActionModifyOrganization(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::ModifyOrganization;
+    using sourc3::Organization;
+    using sourc3::method::ModifyOrganization;
 
     char name[Organization::kMaxNameLen + 1];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
@@ -643,7 +643,7 @@ void OnActionModifyOrganization(const ContractID& cid) {
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = git_remote_beam::GetNameHash(request->name, request->name_len);
+    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     if (!Env::DocGet("organization_id", request->id)) {
         return OnError("'organization_id' required");
     }
@@ -664,8 +664,8 @@ void OnActionModifyOrganization(const ContractID& cid) {
 }
 
 void OnActionRemoveOrganization(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::RemoveOrganization;
+    using sourc3::Organization;
+    using sourc3::method::RemoveOrganization;
 
     RemoveOrganization request;
     UserKey user_key(cid);
@@ -690,8 +690,8 @@ void OnActionRemoveOrganization(const ContractID& cid) {
 }
 
 void OnActionAddProjectMember(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::AddProjectMember;
+    using sourc3::Project;
+    using sourc3::method::AddProjectMember;
 
     AddProjectMember request{};
     if (!Env::DocGet("project_id", request.project_id)) {
@@ -729,8 +729,8 @@ void OnActionAddProjectMember(const ContractID& cid) {
 }
 
 void OnActionModifyProjectMember(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::ModifyProjectMember;
+    using sourc3::Project;
+    using sourc3::method::ModifyProjectMember;
 
     ModifyProjectMember request{};
     if (!Env::DocGet("project_id", request.project_id)) {
@@ -768,8 +768,8 @@ void OnActionModifyProjectMember(const ContractID& cid) {
 }
 
 void OnActionRemoveProjectMember(const ContractID& cid) {
-    using git_remote_beam::Project;
-    using git_remote_beam::method::RemoveProjectMember;
+    using sourc3::Project;
+    using sourc3::method::RemoveProjectMember;
 
     RemoveProjectMember request{};
     if (!Env::DocGet("project_id", request.project_id)) {
@@ -798,8 +798,8 @@ void OnActionRemoveProjectMember(const ContractID& cid) {
 }
 
 void OnActionAddOrganizationMember(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::AddOrganizationMember;
+    using sourc3::Organization;
+    using sourc3::method::AddOrganizationMember;
 
     AddOrganizationMember request{};
     if (!Env::DocGet("organization_id", request.organization_id)) {
@@ -837,8 +837,8 @@ void OnActionAddOrganizationMember(const ContractID& cid) {
 }
 
 void OnActionModifyOrganizationMember(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::ModifyOrganizationMember;
+    using sourc3::Organization;
+    using sourc3::method::ModifyOrganizationMember;
 
     ModifyOrganizationMember request{};
     if (!Env::DocGet("organization_id", request.organization_id)) {
@@ -876,8 +876,8 @@ void OnActionModifyOrganizationMember(const ContractID& cid) {
 }
 
 void OnActionRemoveOrganizationMember(const ContractID& cid) {
-    using git_remote_beam::Organization;
-    using git_remote_beam::method::RemoveOrganizationMember;
+    using sourc3::Organization;
+    using sourc3::method::RemoveOrganizationMember;
 
     RemoveOrganizationMember request{};
     if (!Env::DocGet("organization_id", request.organization_id)) {
@@ -906,7 +906,7 @@ void OnActionRemoveOrganizationMember(const ContractID& cid) {
 }
 
 void OnActionMyRepos(const ContractID& cid) {
-    using git_remote_beam::Repo;
+    using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
@@ -934,7 +934,7 @@ void OnActionMyRepos(const ContractID& cid) {
 }
 
 void OnActionAllRepos(const ContractID& cid) {
-    using git_remote_beam::Repo;
+    using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
@@ -963,7 +963,7 @@ void OnActionAllRepos(const ContractID& cid) {
 }
 
 void OnActionDeleteRepo(const ContractID& cid) {
-    using git_remote_beam::method::RemoveRepo;
+    using sourc3::method::RemoveRepo;
     uint64_t repo_id;
     if (!Env::DocGet("repo_id", repo_id)) {
         return OnError("no repo id for deleting");
@@ -990,7 +990,7 @@ void OnActionDeleteRepo(const ContractID& cid) {
 }
 
 void OnActionAddUserParams(const ContractID& cid) {
-    using git_remote_beam::method::AddRepoMember;
+    using sourc3::method::AddRepoMember;
     AddRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
     Env::DocGet("user", request.member);
@@ -1023,7 +1023,7 @@ void OnActionAddUserParams(const ContractID& cid) {
 }
 
 void OnActionModifyUserParams(const ContractID& cid) {
-    using git_remote_beam::method::ModifyRepoMember;
+    using sourc3::method::ModifyRepoMember;
     ModifyRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
     Env::DocGet("user", request.member);
@@ -1056,7 +1056,7 @@ void OnActionModifyUserParams(const ContractID& cid) {
 }
 
 void OnActionRemoveUserParams(const ContractID& cid) {
-    using git_remote_beam::method::RemoveRepoMember;
+    using sourc3::method::RemoveRepoMember;
     RemoveRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
     Env::DocGet("user", request.member);
@@ -1079,9 +1079,9 @@ void OnActionRemoveUserParams(const ContractID& cid) {
 }
 
 void OnActionPushObjects(const ContractID& cid) {
-    using git_remote_beam::GitRef;
-    using git_remote_beam::method::PushObjects;
-    using git_remote_beam::method::PushRefs;
+    using sourc3::GitRef;
+    using sourc3::method::PushObjects;
+    using sourc3::method::PushRefs;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
     if (data_len == 0u) {
         return OnError("there is no data to push");
@@ -1117,7 +1117,7 @@ void OnActionPushObjects(const ContractID& cid) {
         refs_params->refs_info.refs_number = refs_count;
         auto* ref = reinterpret_cast<GitRef*>(refs_params + 1);
         if (Env::DocGetBlob("ref_target", &ref->commit_hash,
-                            sizeof(git_remote_beam::GitOid)) == 0u) {
+                            sizeof(sourc3::GitOid)) == 0u) {
             return OnError("failed to read 'ref_target'");
         }
         ref->name_length = name_len;
@@ -1155,7 +1155,7 @@ void OnActionPushObjects(const ContractID& cid) {
         for (uint32_t i = 0; i < params->objects_number; ++i) {
             uint32_t size = obj->data_size;
             Env::DocGroup gr2("object");
-            Env::DocAddBlob("oid", &obj->hash, sizeof(git_remote_beam::GitOid));
+            Env::DocAddBlob("oid", &obj->hash, sizeof(sourc3::GitOid));
             Env::DocAddNum32("size", size);
             Env::DocAddNum32("type", obj->type);
             ++obj;  // skip header
@@ -1180,8 +1180,8 @@ void OnActionPushObjects(const ContractID& cid) {
 }
 
 void OnActionListRefs(const ContractID& cid) {
-    using git_remote_beam::GitRef;
-    using git_remote_beam::Repo;
+    using sourc3::GitRef;
+    using sourc3::Repo;
     using Key = Env::Key_T<GitRef::Key>;
     Key start, end;
     Repo::Id repo_id = 0;
@@ -1219,8 +1219,8 @@ void OnActionUserGetKey(const ContractID& cid) {
 }
 
 void OnActionUserGetRepo(const ContractID& cid) {
-    using RepoKey = git_remote_beam::Repo::NameKey;
-    using git_remote_beam::Repo;
+    using RepoKey = sourc3::Repo::NameKey;
+    using sourc3::Repo;
     char repo_name[Repo::kMaxNameSize + 1];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
     if (name_len <= 1) {
@@ -1229,7 +1229,7 @@ void OnActionUserGetRepo(const ContractID& cid) {
     --name_len;  // remove 0-term
     PubKey my_key;
     Env::DocGet("repo_owner", my_key);
-    git_remote_beam::Hash256 name_hash = git_remote_beam::GetNameHash(repo_name, name_len);
+    sourc3::Hash256 name_hash = sourc3::GetNameHash(repo_name, name_len);
     RepoKey key(my_key, name_hash);
     Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
     reader_key.m_Prefix.m_Cid = cid;
@@ -1240,12 +1240,12 @@ void OnActionUserGetRepo(const ContractID& cid) {
     Env::DocAddNum("repo_id", repo_id);
 }
 
-using MetaKey = Env::Key_T<git_remote_beam::GitObject::Meta::Key>;
-using DataKey = Env::Key_T<git_remote_beam::GitObject::Data::Key>;
+using MetaKey = Env::Key_T<sourc3::GitObject::Meta::Key>;
+using DataKey = Env::Key_T<sourc3::GitObject::Data::Key>;
 
 std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::Repo;
+    using sourc3::GitObject;
+    using sourc3::Repo;
 
     Repo::Id repo_id;
     Env::DocGet("repo_id", repo_id);
@@ -1260,7 +1260,7 @@ std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
 }
 
 void OnActionGetRepoMeta(const ContractID& cid) {
-    using git_remote_beam::GitObject;
+    using sourc3::GitObject;
     auto [start, end, key] = PrepareGetObject(cid);
 
     GitObject::Meta value;
@@ -1274,9 +1274,9 @@ void OnActionGetRepoMeta(const ContractID& cid) {
 }
 
 void OnActionGetRepoData(const ContractID& cid) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::GitOid;
-    using git_remote_beam::Repo;
+    using sourc3::GitObject;
+    using sourc3::GitOid;
+    using sourc3::Repo;
     Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
@@ -1296,7 +1296,7 @@ void OnActionGetRepoData(const ContractID& cid) {
 }
 
 void AddCommit(const mygit2::git_commit& commit,
-               const git_remote_beam::GitOid& hash) {
+               const sourc3::GitOid& hash) {
     Env::DocGroup commit_obj("commit");
     char oid_buffer[GIT_OID_HEXSZ + 1];
     oid_buffer[GIT_OID_HEXSZ] = '\0';
@@ -1352,10 +1352,10 @@ void AddTree(const mygit2::git_tree& tree) {
 }
 
 void ParseObjectData(
-    const std::function<void(git_remote_beam::GitObject::Data*, size_t,
-                             git_remote_beam::GitOid)>& handler) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::GitOid;
+    const std::function<void(sourc3::GitObject::Data*, size_t,
+                             sourc3::GitOid)>& handler) {
+    using sourc3::GitObject;
+    using sourc3::GitOid;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
     if (data_len == 0u) {
         return OnError("there is no data");
@@ -1372,9 +1372,9 @@ void ParseObjectData(
 }
 
 void OnActionGetCommit(const ContractID& cid) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::GitOid;
-    using git_remote_beam::Repo;
+    using sourc3::GitObject;
+    using sourc3::GitOid;
+    using sourc3::Repo;
     Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
@@ -1398,9 +1398,9 @@ void OnActionGetCommit(const ContractID& cid) {
 }
 
 void OnActionGetCommitFromData(const ContractID&) {
-    using git_remote_beam::GitObject;
+    using sourc3::GitObject;
     ParseObjectData([](GitObject::Data* value, size_t value_len,
-                       git_remote_beam::GitOid hash) {
+                       sourc3::GitOid hash) {
         mygit2::git_commit commit{};
         if (commit_parse(&commit, value->data, value_len, 0) == 0) {
             AddCommit(commit, hash);
@@ -1409,9 +1409,9 @@ void OnActionGetCommitFromData(const ContractID&) {
 }
 
 void OnActionGetTree(const ContractID& cid) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::GitOid;
-    using git_remote_beam::Repo;
+    using sourc3::GitObject;
+    using sourc3::GitOid;
+    using sourc3::Repo;
     Repo::Id repo_id;
     GitOid hash;
     Env::DocGet("repo_id", repo_id);
@@ -1448,8 +1448,8 @@ void OnActionGetTree(const ContractID& cid) {
 }
 
 void OnActionGetTreeFromData(const ContractID&) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::GitOid;
+    using sourc3::GitObject;
+    using sourc3::GitOid;
     ParseObjectData([](GitObject::Data* value, size_t value_len, GitOid hash) {
         mygit2::git_tree tree{};
         if (tree_parse(&tree, value->data, value_len) == 0) {
@@ -1461,9 +1461,9 @@ void OnActionGetTreeFromData(const ContractID&) {
 }
 
 void GetObjects(const ContractID& cid,
-                git_remote_beam::GitObject::Meta::Type type) {
-    using git_remote_beam::GitObject;
-    using git_remote_beam::Repo;
+                sourc3::GitObject::Meta::Type type) {
+    using sourc3::GitObject;
+    using sourc3::Repo;
     auto [start, end, key] = PrepareGetObject(cid);
     GitObject::Meta value;
     Env::DocArray objects_array("objects");
@@ -1479,11 +1479,11 @@ void GetObjects(const ContractID& cid,
 }
 
 void OnActionGetCommits(const ContractID& cid) {
-    GetObjects(cid, git_remote_beam::GitObject::Meta::kGitObjectCommit);
+    GetObjects(cid, sourc3::GitObject::Meta::kGitObjectCommit);
 }
 
 void OnActionGetTrees(const ContractID& cid) {
-    GetObjects(cid, git_remote_beam::GitObject::Meta::kGitObjectTree);
+    GetObjects(cid, sourc3::GitObject::Meta::kGitObjectTree);
 }
 }  // namespace
 

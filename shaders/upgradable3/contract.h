@@ -1,5 +1,5 @@
 #pragma once
-namespace git_remote_beam {
+namespace sourc3 {
 #pragma pack(push, 1)
 // the following structures will be stored in the node in binary form
 
@@ -35,8 +35,8 @@ struct NextVersion {
     // followed by the new shader bytecode
 };
 
-void OnUpgraded(uint32_t nPrevVersion); // called when new version is activated
-uint32_t get_CurrentVersion();  // NOLINT
+void OnUpgraded(uint32_t nPrevVersion);  // called when new version is activated
+uint32_t get_CurrentVersion();           // NOLINT
 
 namespace Method {
 struct Control {
@@ -105,4 +105,4 @@ struct Control {
 }  // namespace Method
 
 #pragma pack(pop)
-}  // namespace git_remote_beam
+}  // namespace sourc3

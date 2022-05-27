@@ -64,7 +64,7 @@ function Profile({ pKey }:profileType) {
         </Dropdown>
       </div>
       <Modal
-        title="RECEIVE PIT"
+        title="RECEIVE SC3"
         visible={visible}
         onCancel={handleCancel}
         footer={[

@@ -1,6 +1,6 @@
 Steps to upgrade contract:
 
-1. Save previous SID in `contract.h`, rename it and place as the last item of array `g_pSid` in `app.cpp`. For example, rename to `git_remote_beam::s_SID_{previous version}` and leave `git_remote_beam::s_SID` (which automaticly generates when compiling via shader-sdk).
+1. Save previous SID in `contract.h`, rename it and place as the last item of array `g_pSid` in `app.cpp`. For example, rename to `sourc3::s_SID_{previous version}` and leave `sourc3::s_SID` (which automaticly generates when compiling via shader-sdk).
 
 2. Compile `contract.cpp` and generate new `s_SID`, then compile `app.cpp`.
 

@@ -540,23 +540,23 @@ private:
                     return SetResult::InvalidValue;
                 }
                 return SetResult::Ok;
-            }/* else if (option == "verbosity") {
-                char* endPos;
-                auto v = std::strtol(value.data(), &endPos, 10);
-                if (endPos == value.data()) {
-                    return SetResult::InvalidValue;
-                }
-                verbosity = v;
-                return SetResult::Ok;
-            } else if (option == "depth") {
-                char* endPos;
-                auto v = std::strtoul(value.data(), &endPos, 10);
-                if (endPos == value.data()) {
-                    return SetResult::InvalidValue;
-                }
-                depth = v;
-                return SetResult::Ok;
-            }*/
+            } /* else if (option == "verbosity") {
+                 char* endPos;
+                 auto v = std::strtol(value.data(), &endPos, 10);
+                 if (endPos == value.data()) {
+                     return SetResult::InvalidValue;
+                 }
+                 verbosity = v;
+                 return SetResult::Ok;
+             } else if (option == "depth") {
+                 char* endPos;
+                 auto v = std::strtoul(value.data(), &endPos, 10);
+                 if (endPos == value.data()) {
+                     return SetResult::InvalidValue;
+                 }
+                 depth = v;
+                 return SetResult::Ok;
+             }*/
 
             return SetResult::Unsupported;
         }
@@ -572,7 +572,7 @@ int main(int argc, char* argv[]) {
     }
     try {
         SimpleWalletClient::Options options;
-        po::options_description desc("PIT config options");
+        po::options_description desc("SOURC3 config options");
 
         desc.add_options()("api-host",
                            po::value<std::string>(&options.apiHost)

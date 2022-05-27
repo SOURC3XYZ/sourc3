@@ -4,7 +4,7 @@
 #include "Shaders/common.h"
 #include "upgradable3/contract.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -392,4 +392,4 @@ struct RemoveOrganizationMember {
 
 #pragma pack(pop)
 }  // namespace method
-}  // namespace git_remote_beam
+}  // namespace sourc3
