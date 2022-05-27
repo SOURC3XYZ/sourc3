@@ -1,0 +1,24 @@
+.wrapper {
+    height: 100%;
+    width: 100%;
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2.5rem;
+    position: relative;
+}
+
+.preload {
+    height: max-content;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    margin: auto;
+    z-index: 99;
+}
+@media screen and (max-width: 600px) {
+    .wrapper{
+        padding: 0 10px !important;
+    }
+}

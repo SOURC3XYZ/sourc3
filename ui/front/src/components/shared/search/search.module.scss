@@ -1,0 +1,71 @@
+.search {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    height: 36px;
+    width: 300px;
+}
+
+.search span[class*=ant-input-prefix] {
+    order: 1;
+}
+
+.search input {
+    background: transparent;
+}
+
+.autocomplete.autocomplete {
+    flex-grow: 1;
+    margin-right: 20px;
+}
+
+.loading {
+    visibility: hidden;
+}
+
+.loadingActive {
+    composes: loading;
+    visibility: visible;
+    color: #FF791F !important;
+}
+
+.label {
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dropdown {
+    background: #252525;
+    border-radius: 8px;
+}
+
+.tableName {
+    width: 80%;
+}
+
+.tableId {
+    width: 20%;
+    text-align: left;
+}
+
+.option {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.option:hover,
+div.option[class~=ant-select-item-option-active],
+div.option[class~=ant-select-item-option-selected] {
+    background-color: #FF791F !important;
+}
+
+
+.option:hover .label,
+div.option[class~=ant-select-item-option-active] .label,
+div.option[class~=ant-select-item-option-selected] .label {
+    color: #252525 !important;
+}
+
+.dropdown div[class~=rc-virtual-list-scrollbar-thumb] {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+}

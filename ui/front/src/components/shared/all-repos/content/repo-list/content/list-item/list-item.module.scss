@@ -1,0 +1,68 @@
+.listItem {
+    em {
+        display: none;
+    }
+
+    [class~=ant-list-item-action] {
+        align-self: flex-start;
+    }
+
+}
+
+.title {
+    margin-bottom: 8px;
+
+    * {
+        font-size: 1.12rem;
+        font-family: 'VisbyBold';
+        color: #000000;
+    }
+}
+
+.subtitle {
+    .idField {
+        font-family: 'VisbyItalic';
+        font-size: 1rem;
+        line-height: 1rem;
+
+        * {
+            font-family: 'VisbyItalic';
+            color: #000000;
+            opacity: 0.5;
+        }
+
+        mark {
+            font-family: 'VisbyItalic';
+        }
+    }
+
+    .interaction {
+        display: flex;
+
+        div {
+            display: flex;
+            align-items: center;
+            margin-right: 2rem;
+            margin-top: 1.62rem;
+
+            img {
+                width: 1rem;
+                height: auto;
+                margin-right: .5rem;
+            }
+
+            span {
+                display: inline;
+                font-size: .87rem;
+            }
+
+        }
+    }
+}
+
+.dropdownIcon {
+    height: 15.67px;
+    width: auto;
+    opacity: 0.5;
+    cursor: pointer;
+}

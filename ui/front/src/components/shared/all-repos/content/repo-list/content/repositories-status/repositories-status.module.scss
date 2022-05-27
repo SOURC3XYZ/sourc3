@@ -1,0 +1,156 @@
+.RepositoriesStatus {
+    margin: 16px 0 47px 0;
+    em{
+        display: none;
+    }
+    [class~=ant-list-item-action]{
+        align-self: flex-start;
+    }
+}
+.list{
+    display: flex;
+    justify-content: space-between;
+    .item{
+        width: 100%;
+        max-width: 309px;
+        border: 2px solid #000000;
+        box-sizing: border-box;
+        border-radius: 8px;
+        padding: 24px;
+        &:nth-child(2){
+            margin:0 16px;
+        }
+        .title{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            h4{
+                font-family: 'Visby', serif;
+                font-style: normal;
+                font-weight: 700;
+                font-size: 20px;
+                line-height: 20px;
+                color: #000000;
+                margin-bottom: 0;
+            }
+
+        }
+        .counts{
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            .countsItem{
+                &:nth-child(1){
+                    position: relative;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .circleImg{
+                    position: absolute;
+                }
+                .countsGraph{
+                    display: flex;
+                    align-items: flex-start;
+                    margin-left: 25px;
+                    img{
+                        margin-right: 8px;
+                    }
+                    h4{
+                        font-family: 'Visby', serif;
+                        font-style: normal;
+                        font-weight: 700;
+                        font-size: 14px;
+                        line-height: 14px;
+                        color: #000000;
+                        opacity: 0.5;
+                    }
+                    p{
+                        font-family: 'Visby', serif;
+                        font-style: normal;
+                        font-weight: 700;
+                        font-size: 14px;
+                        line-height: 14px;
+                        color: #000000;
+                    }
+                }
+            }
+            .countsMoney{
+                &:nth-child(1){
+                    margin-right: 18px;
+                }
+                p{
+                    font-family: 'Visby', serif;
+                    font-style: normal;
+                    font-weight: 400;
+                    font-size: 14px;
+                    line-height: 14px;
+                    color: #000000;
+                    opacity: 0.5;
+                    margin-bottom: 0;
+                }
+                h2{
+                    font-family: 'Montserrat', serif;
+                    font-style: normal;
+                    font-weight: 600;
+                    font-size: 24px;
+                    line-height: 29px;
+                    color: #3FD05A;
+                    margin-bottom: 27px;
+                }
+                .orange{
+                    color: #FF791F;
+                }
+                h4{
+                    font-family: 'Visby', serif;
+                    font-style: normal;
+                    font-weight: 700;
+                    font-size: 14px;
+                    line-height: 14px;
+                    color: #000000;
+                }
+                .countPercent{
+                    display: flex;
+                    span{
+                        margin-left: 6px;
+                    }
+                }
+            }
+        }
+    }
+}
+.card2Scr{
+    width: 250px;
+}
+@media screen and (max-width: 991px) {
+    .list{
+        flex-direction: column;
+        align-items: center !important;
+        .item{
+            margin: 20px 0 !important;
+        }
+    }
+    :global {
+        .ant-tabs > .ant-tabs-nav{
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .ant-tabs > .ant-tabs-nav .ant-tabs-nav-list{
+            margin-bottom: 15px;
+        }
+    }
+}
+@media screen and (max-width: 600px) {
+    :global {
+        .ant-tabs-extra-content{
+            div{
+                flex-direction: column;
+                align-items: flex-start;
+                input{
+                    margin: 0 0 10px 0;
+                }
+            }
+        }
+    }
+}

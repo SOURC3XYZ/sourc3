@@ -1,0 +1,26 @@
+.content {
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2.5rem;
+}
+
+.manage {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.repoHeader {
+  padding-bottom: 1.5rem;
+  display: flex;
+}
+
+.buttonWrapper {
+  margin-left: 1rem;
+}
+@media screen and (max-width: 600px) {
+  .content{
+    padding: 0 5px;
+  }
+}

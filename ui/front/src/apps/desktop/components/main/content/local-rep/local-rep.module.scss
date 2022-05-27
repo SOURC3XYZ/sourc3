@@ -1,0 +1,16 @@
+.wrapper{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+.wrapperSelect{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+.wrapperRadio{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+}

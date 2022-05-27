@@ -11,7 +11,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": " -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF",
+      "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": ""
     },
@@ -24,8 +24,7 @@
       "cmakeCommandArgs": " -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
       "name": "x64-Release-static",
@@ -33,11 +32,10 @@
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": " -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DBEAM_LINK_TYPE=Static -DBEAM_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF",
+      "cmakeCommandArgs": " -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=ON -DSTATIC_CRT=ON",
       "buildCommandArgs": "-j15",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
       "name": "wasm32-Release",
@@ -46,10 +44,24 @@
       "inheritEnvironments": [],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": " -DCMAKE_SYSTEM_NAME=\"WASI\" -DCMAKE_SYSROOT=${env.WASI_SDK_PREFIX}/share/wasi-sysroot -DWASI_SDK_PREFIX=${env.WASI_SDK_PREFIX} -DCMAKE_CXX_COMPILER_FORCED=True -DCMAKE_C_COMPILER_FORCED=True",
+      "cmakeCommandArgs": "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY=\"clang-tidy;--fix-errors\" -DCMAKE_SYSTEM_NAME=\"WASI\" -DCMAKE_SYSROOT=${env.WASI_SDK_PREFIX}/share/wasi-sysroot -DWASI_SDK_PREFIX=${env.WASI_SDK_PREFIX} -DCMAKE_CXX_COMPILER_FORCED=True -DCMAKE_C_COMPILER_FORCED=True",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "cmakeToolchain": "${env.WASI_SDK_PREFIX}/share/cmake/wasi-sdk.cmake"
+    },
+    {
+      "name": "WSL-GCC-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "-DBOOST_ROOT=/home/anatol/boost_prebuild",
+      "buildCommandArgs": "-j15",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "variables": []
     }
   ]
 }

@@ -1,0 +1,16 @@
+@import './fonts.scss';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  width: 100vw !important;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: Visby, serif;
+}

@@ -1,0 +1,9 @@
+.beam {
+    margin-right: 5px;
+}
+
+.info {
+    display: flex;
+    padding-bottom: 1rem;
+    width: 100vh;
+}

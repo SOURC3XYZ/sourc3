@@ -1,0 +1,73 @@
+{
+	"compilerOptions": {
+		"target": "es2020",
+		"plugins": [
+			{
+				"plugins": [
+					{
+						"name": "typescript-plugin-css-modules"
+					}
+				]
+			}
+		],
+		"lib": [
+			"dom",
+			"dom.iterable",
+			"esnext"
+		],
+		"baseUrl": "src/",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"paths": {
+			"@styles/*": [
+				"styles/*"
+			],
+			"@components/*": [
+				"components/*"
+			],
+			"@libs/*": [
+				"libs/*"
+			],
+			"@assets/*": [
+				"assets/*"
+			],
+			"@types": [
+				"types"
+			]
+		},
+		"sourceMap": true,
+		"types": [
+			"node",
+			"jest"
+		],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": false,
+		"jsx": "react-jsx",
+		"alwaysStrict": true,
+		"strictBindCallApply": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictPropertyInitialization": true,
+	},
+	"include": [
+		"./src"
+	],
+	"exclude": [
+		"node_modules",
+		"**/*.config.js",
+		"dist",
+		"index.js",
+		"preload.js"
+	]
+}

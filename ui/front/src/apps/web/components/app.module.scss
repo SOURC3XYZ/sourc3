@@ -1,0 +1,31 @@
+@import '@styles/vars.scss';
+
+.main {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  flex-direction: column;
+  max-width: $max-width;
+}
+
+.appWrapper {
+  height: max-content;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  flex: 0 0 auto;
+  padding: 25px;
+  color: $color-white;
+  text-align: center;
+}
+
+.footerWhiteBg {
+  composes: footer;
+  background: rgb(51, 51, 51);
+}

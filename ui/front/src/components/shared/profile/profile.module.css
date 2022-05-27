@@ -1,0 +1,12 @@
+.wrapper{
+    cursor: pointer;
+}
+.disabled{
+    margin-left: 5px;
+}
+
+@media (max-width: 520px) { 
+    .disabled{
+    display: none;
+    }
+}

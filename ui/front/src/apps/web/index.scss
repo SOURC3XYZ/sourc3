@@ -1,0 +1,9 @@
+[id~=root] {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+[class~=ant-notification-notice-message] {
+    color: #fff !important;
+}
