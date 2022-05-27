@@ -2,7 +2,7 @@
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
-#include "upgradable3/contract_impl.h"
+#include "Shaders/upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -59,11 +59,13 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-void sourc3::OnUpgraded(uint32_t /*nPrevVersion*/) {
+namespace Upgradable3 { // NOLINT
+void OnUpgraded(uint32_t /*nPrevVersion*/) {
 }
 
-uint32_t sourc3::get_CurrentVersion() {  // NOLINT
+uint32_t get_CurrentVersion() {  // NOLINT
     return 1;
+}
 }
 
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT

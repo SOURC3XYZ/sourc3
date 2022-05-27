@@ -1,7 +1,7 @@
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
 #include "contract.h"
-#include "upgradable3/app_common_impl.h"
+#include "Shaders/upgradable3/app_common_impl.h"
 
 namespace Env {  // NOLINT
 #include "bvm2_cost.h"
@@ -52,7 +52,7 @@ const ShaderID kSid[] = {
         sourc3::s_SID
 };
 
-const sourc3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
+const Upgradable3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
 void OnActionCreateContract(const ContractID& unused) {
     MyKeyID kid;
@@ -64,7 +64,7 @@ void OnActionCreateContract(const ContractID& unused) {
         return;
 }
 
-    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", sourc3::Manager::get_ChargeDeploy()*2);
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", Upgradable3::Manager::get_ChargeDeploy()*2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
@@ -72,12 +72,12 @@ void OnActionScheduleUpgrade(const ContractID& cid) {
     Env::DocGetNum64("hTarget", &hTarget);
 
     MyKeyID kid;
-    sourc3::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
+    Upgradable3::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
     MyKeyID kid;
-    sourc3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
+    Upgradable3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
 }
 
 void OnActionMyAdminKey(const ContractID& cid) {

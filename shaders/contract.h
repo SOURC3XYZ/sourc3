@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include "Shaders/common.h"
-#include "upgradable3/contract.h"
+#include "Shaders/upgradable3/contract.h"
 
 namespace sourc3 {
 enum Tag : uint8_t {
@@ -231,7 +231,7 @@ namespace method {
 
 struct Initial {
     static const uint32_t kMethod = 0;
-    Settings m_Stgs;
+    Upgradable3::Settings m_Stgs;
 };
 
 struct PushObjects {
