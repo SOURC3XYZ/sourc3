@@ -11,6 +11,13 @@
     }
 }
 
+.pagination {
+
+    li,
+    div[class~=ant-select-selector] {
+        border-radius: 5px !important;
+    }
+}
 
 .listItem {
     em {
@@ -28,25 +35,25 @@
 
     * {
         font-size: 1.12rem;
-        font-family: 'VisbyBold';
+        font-family: 'PublicSans-Bold';
         color: $color-pure_black;
     }
 }
 
 .subtitle {
     .idField {
-        font-family: 'VisbyItalic';
+        font-family: PublicSans-Thin;
         font-size: 1rem;
         line-height: 1rem;
 
         * {
-            font-family: 'VisbyItalic';
+            font-family: PublicSans-Thin;
             color: #000000;
             opacity: 0.5;
         }
 
         mark {
-            font-family: 'VisbyItalic';
+            font-family: PublicSans-Thin;
         }
     }
 
@@ -81,14 +88,8 @@
     cursor: pointer;
 }
 
-
-.pagination {
-    :global {
-
-        li,
-        div.ant-select-selector {
-            border-radius: 5px !important;
-        }
+@media screen and (max-width:1024) {
+    .time {
+        display: none;
     }
-
 }

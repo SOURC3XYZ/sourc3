@@ -1,12 +1,21 @@
 import { useAllRepos } from '@libs/hooks/container/all-repos';
-import { EntityList } from '../entity-list';
-import EntityWrapper from '../entity-wrapper/entity-wrapper';
+import { EntityList, EntityWrapper } from '@components/shared';
+import RepoItem from './repo-item';
+
+const placeholder = 'type your repo name or ID';
 
 function AllRepos() {
   const containerProps = useAllRepos();
 
   const {
-    pkey, type, path, page, searchText, items, setInputText, deleteRepo
+    pkey,
+    type,
+    path,
+    page,
+    searchText,
+    items,
+    setInputText,
+    deleteRepo
   } = containerProps;
 
   const navItems = [
@@ -22,9 +31,19 @@ function AllRepos() {
     }
   ];
 
+  const listItem = (item: typeof items[number]) => (
+    <RepoItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      deleteRepo={deleteRepo}
+    />
+  );
+
   return (
     <EntityWrapper
       title="Repositories"
+      placeholder={placeholder}
       type={type}
       pkey={pkey}
       searchText={searchText}
@@ -33,7 +52,7 @@ function AllRepos() {
     >
       <EntityList
         searchText={searchText}
-        deleteRepos={deleteRepo}
+        renderItem={listItem}
         path={path}
         page={page}
         items={items}

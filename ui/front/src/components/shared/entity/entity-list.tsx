@@ -1,26 +1,25 @@
-import { OwnerListType, RepoType } from '@types';
+import { OwnerListType } from '@types';
 import { List } from 'antd';
 import { PaginationConfig } from 'antd/lib/pagination';
 import {
   useEffect, useMemo, useRef, useState
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ListItem } from './list-item';
 import styles from './entity-list.module.scss';
 
-type ListRenderProps = {
+type ListRenderProps<T> = {
   path: string,
   page: number,
-  items: RepoType[],
-  deleteRepos: (repo_id: number) => void
+  items: T[],
+  renderItem: (item: T) => JSX.Element
   type: OwnerListType;
   searchText: string;
   route?: string
 };
 
-function EntityList({
-  page = 1, type = 'all', route = 'repos', items, searchText, path, deleteRepos
-}:ListRenderProps) {
+function EntityList<T>({
+  page = 1, type = 'all', route = 'repos', items, searchText, path, renderItem
+}:ListRenderProps<T>) {
   const navigate = useNavigate();
   const textCash = useRef(searchText);
 
@@ -60,14 +59,7 @@ function EntityList({
       size="small"
       pagination={paginationVisible}
       dataSource={items}
-      renderItem={(item) => (
-        <ListItem
-          item={item}
-          path={path}
-          searchText={searchText}
-          deleteRepos={deleteRepos}
-        />
-      )}
+      renderItem={renderItem}
     />
   );
 }

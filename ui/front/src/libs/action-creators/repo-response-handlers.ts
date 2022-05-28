@@ -44,6 +44,7 @@ export const contractCall = (callApi: CallBeamApi) => {
 
   const contractMutation = async (dispatch: AppThunkDispatch, action: RequestSchema) => {
     try {
+      console.log('hui');
       const res = await callApi(action);
       if (res.result?.raw_data) {
         const tx = await callApi(RC.startTx(res.result.raw_data));

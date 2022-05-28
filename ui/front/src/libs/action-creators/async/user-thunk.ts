@@ -33,6 +33,21 @@ export const userThunk = ({
     });
   };
 
+  const getTxStatus = (
+    txId: string,
+    callback: SetPropertiesType<TxResponse>
+  ):CustomAction => async (dispatch) => {
+    try {
+      const res = await callApi(RC.getTxStatus(txId));
+      if (res.result) {
+        callback({
+          message: res.result.comment,
+          status_string: res.result.status_string
+        });
+      }
+    } catch (error) { thunkCatch(error, dispatch); }
+  };
+
   const startTx = ():CustomAction => (dispatch) => (res: BeamApiRes<TxResult>) => {
     dispatch(AC.setTx(res.result.txid));
   };
@@ -83,6 +98,7 @@ export const userThunk = ({
     connectExtension,
     connectBeamApi,
     checkTxStatus,
+    getTxStatus,
     startTx
   };
 };

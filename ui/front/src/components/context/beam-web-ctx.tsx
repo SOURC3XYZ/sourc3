@@ -83,7 +83,7 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
       isWebHeadless,
       connectExtension
     }
-  ), [api]);
+  ), [api.BEAM]);
 
   return (
     <BeamWebApiContext.Provider value={contextObj}>

@@ -1,6 +1,8 @@
 import { OwnerListType } from '@types';
 import { useMemo } from 'react';
-import { Nav, NavItem, Search } from '@components/shared';
+import {
+  BeamButton, Nav, NavItem, Search
+} from '@components/shared';
 import styles from './entity-manager.module.scss';
 
 type EntityManagerProps = {
@@ -8,7 +10,9 @@ type EntityManagerProps = {
   pkey: string;
   searchText: string;
   navItems: NavItem[];
+  placeholder:string;
   setInputText: (str: string) => void;
+  showModal?: () => void;
 };
 
 const EntityManager = ({
@@ -16,8 +20,18 @@ const EntityManager = ({
   type,
   searchText,
   navItems,
+  placeholder,
+  showModal,
   setInputText
 }:EntityManagerProps) => {
+  const addEntityBtn = useMemo(() => (pkey && showModal) && (
+    <div className={styles.buttonWrapper}>
+      <BeamButton callback={showModal}>
+        Add new
+      </BeamButton>
+    </div>
+  ), [showModal, pkey]);
+
   const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
@@ -28,9 +42,10 @@ const EntityManager = ({
           <Search
             text={searchText}
             setInputText={setInputText}
-            placeholder="Search by repo name or ID"
+            placeholder={placeholder}
           />
         </div>
+        {addEntityBtn}
       </div>
     </div>
   ), [searchText, pkey]);

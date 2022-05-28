@@ -1,7 +1,7 @@
-export * from './info';
-export * from './fail-page';
 export { default as OkPage } from './ok-page';
 export { default as ErrorAlert } from './error-alert';
+export * from './info';
+export * from './fail-page';
 export * from './preload';
 export * from './beam-button';
 export * from './nav';
@@ -23,5 +23,4 @@ export * from './select';
 export * from './organizations';
 export * from './projects';
 export * from './create-modal';
-export * from './entity-list';
-export * from './entity-manager';
+export * from './entity';

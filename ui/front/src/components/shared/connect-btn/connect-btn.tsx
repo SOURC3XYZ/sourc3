@@ -13,9 +13,8 @@ type ConnectBtnProps = {
 
 function ConnectBtn({ pkey, onConnect }:ConnectBtnProps) {
   const connectInner = useMemo(() => (
-    pkey
-      ? textEllipsis(pkey, 10)
-      : 'connect'), [pkey]);
+    pkey ? textEllipsis(pkey, 7, { ellipsis: '' }) : 'connect'
+  ), [pkey]);
 
   const onConnectHandler = () => {
     if (!pkey)onConnect();

@@ -9,12 +9,6 @@ type LocationState = {
   repoParams:string;
 };
 
-// currentId,
-// repoMap,
-// filesMap,
-// tree,
-// prevReposHref,
-
 const useUserRepos = () => {
   const {
     id: currentId, repoMap, filesMap, tree, prevReposHref, repoMetas

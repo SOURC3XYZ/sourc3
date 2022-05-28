@@ -47,7 +47,7 @@ export class BeamAPI<T> {
 
   private apiHost?: string;
 
-  private BEAM: null | BeamObject;
+  public BEAM: null | BeamObject;
 
   private contract: Array<number> | null;
 

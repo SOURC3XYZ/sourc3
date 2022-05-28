@@ -16,11 +16,11 @@ type ListItemProps = {
   item: RepoType;
   path: string;
   searchText: string;
-  deleteRepos: (repo_id: number) => void;
+  deleteRepo: (repo_id: number) => void;
 };
 
-function ListItem({
-  item, path, searchText, deleteRepos
+function RepoItem({
+  item, path, searchText, deleteRepo
 }:ListItemProps) {
   const pkey = useSelector((state) => state.app.pkey);
   const { repo_id, repo_name, repo_owner } = item;
@@ -44,7 +44,7 @@ function ListItem({
 
   const handleCloneRepo = () => navigator.clipboard.writeText(repoLink);
 
-  const handleDeleteRepo = () => deleteRepos(repo_id);
+  const handleDeleteRepo = () => deleteRepo(repo_id);
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
     <div key={`list-item-${alt}`}>
@@ -71,6 +71,7 @@ function ListItem({
       </Menu.Item>
     </Menu>
   );
+
   return (
     <List.Item
       className={styles.listItem}
@@ -80,7 +81,7 @@ function ListItem({
           key={`repo-${item.repo_id}`}
           className={styles.time}
         >
-          {`owner: ${textEllipsis(repo_owner, 10)}`}
+          {`owner: ${textEllipsis(repo_owner, 7, { ellipsis: '' })}`}
 
         </span>,
         (
@@ -121,4 +122,4 @@ function ListItem({
   );
 }
 
-export default ListItem;
+export default RepoItem;

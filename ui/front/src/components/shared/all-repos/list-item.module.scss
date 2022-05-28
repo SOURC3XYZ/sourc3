@@ -14,25 +14,25 @@
 
     * {
         font-size: 1.12rem;
-        font-family: 'VisbyBold';
+        font-family: 'PublicSans-Bold';
         color: #000000;
     }
 }
 
 .subtitle {
     .idField {
-        font-family: 'VisbyItalic';
+        font-family: 'PublicSans-Thin';
         font-size: 1rem;
         line-height: 1rem;
 
         * {
-            font-family: 'VisbyItalic';
+            font-family: 'PublicSans-Thin';
             color: #000000;
             opacity: 0.5;
         }
 
         mark {
-            font-family: 'VisbyItalic';
+            font-family: 'PublicSans-Thin';
         }
     }
 
