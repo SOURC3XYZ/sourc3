@@ -60,6 +60,7 @@ Function AddToPath
         StrCpy $0 "$1;$0"
     WriteRegExpandStr ${Environ} "PATH" $0
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+    MessageBox MB_OK 'Path changed!'
 
 done:
     Pop $4
@@ -70,7 +71,9 @@ done:
 FunctionEnd
 
 !macro customInstall
+    MessageBox MB_OK 'Custom installer starts'
     Push $PROJECT_DIR
     Call AddToPath
+    MessageBox MB_OK 'Copy installer'
     File /oname=$PROJECT_DIR\git-remote-sourc3.exe "${BUILD_RESOURCES_DIR}\git-remote-sourc3.exe"
 !macroend
