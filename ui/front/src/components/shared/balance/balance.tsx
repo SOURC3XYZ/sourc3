@@ -64,7 +64,7 @@ function Balance({ current }:BalancePropsType) {
           <br />
           {current}
           {' '}
-          PIT
+          SC3
         </Button>
       </Dropdown>
       <Send

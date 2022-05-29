@@ -69,14 +69,14 @@ const RepositoriesStatus = () => (
                 <div className={styles.counts}>
                     <div className={styles.countsMoney}>
                         <p>Earned</p>
-                        <h2>1789 PIT</h2>
+                        <h2>1789 SC3</h2>
                         <h4 className={styles.countPercent}><img src={arrowUp} alt=""/><span>34</span>%</h4>
                         <p>higher than
                             on previous month</p>
                     </div>
                     <div className={styles.countsMoney}>
                         <p>Spend</p>
-                        <h2 className={styles.orange}>598 PIT</h2>
+                        <h2 className={styles.orange}>598 SC3</h2>
                         <h4 className={styles.countPercent}><img src={arrowUp} alt=""/><span>12</span>%</h4>
                         <p>higher than
                             on previous month</p>

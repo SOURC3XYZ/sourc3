@@ -34,6 +34,6 @@ target_link_libraries(${TARGET_NAME}
 		Boost::filesystem 
 )
 
-if (PIT_TESTS_ENABLED)
+if (SOURC3_TESTS_ENABLED)
 	add_subdirectory(unittests)
 endif()

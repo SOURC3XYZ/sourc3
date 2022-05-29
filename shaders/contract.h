@@ -2,9 +2,9 @@
 
 #include <cstddef>
 #include "Shaders/common.h"
-#include "upgradable3/contract.h"
+#include "Shaders/upgradable3/contract.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -231,7 +231,7 @@ namespace method {
 
 struct Initial {
     static const uint32_t kMethod = 0;
-    Settings m_Stgs;
+    Upgradable3::Settings m_Stgs;
 };
 
 struct PushObjects {
@@ -392,4 +392,4 @@ struct RemoveOrganizationMember {
 
 #pragma pack(pop)
 }  // namespace method
-}  // namespace git_remote_beam
+}  // namespace sourc3
