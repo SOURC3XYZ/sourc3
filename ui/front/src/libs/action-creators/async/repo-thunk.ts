@@ -17,6 +17,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
+      const cache = await caches.open(['repo', id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
@@ -26,7 +27,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
         });
       }
       const commitTree = await new CommitMapParser({
-        id, metas, callApi, pathname, expect: 'commit'
+        id, metas, pathname, expect: 'commit', cache, callApi
       }).buildCommitTree();
 
       batcher(dispatch, [
@@ -43,10 +44,11 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     id, oid, key, resolve
   }: UpdateProps, errHandler: (err: Error) => void):CustomAction => async (dispatch, getState) => {
     try {
+      const cache = await caches.open(['repo', id].join('-'));
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
-        id, metas, callApi, key, pathname
+        id, metas, callApi, key, pathname, cache
       };
       const updated = await new TreeListParser(
         { ...parserProps, expect: 'tree' }
@@ -63,10 +65,11 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch, getState) => {
     try {
+      const cache = await caches.open(['repo', repoId].join('-'));
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {
-        id: repoId, metas, callApi, pathname
+        id: repoId, metas, callApi, pathname, cache
       };
       const output = await new TreeBlobParser(
         { ...parserProps, expect: 'blob' }

@@ -18,6 +18,7 @@ export type ParserProps = {
   callApi: CallBeamApi,
   expect: IpfsRequestType,
   pathname: string;
+  cache: Cache;
 };
 
 export default abstract class AbstractParser {
@@ -31,6 +32,8 @@ export default abstract class AbstractParser {
 
   private readonly pathname: string;
 
+  protected readonly cache: Cache;
+
   protected readonly ipfsRequest: IpfsRequestCreators = {
     commit: RC.getCommitFromData,
     tree: RC.getTreeFromData,
@@ -38,13 +41,14 @@ export default abstract class AbstractParser {
   };
 
   constructor({
-    id, metas, callApi, expect, pathname
+    id, metas, callApi, expect, pathname, cache
   }:ParserProps) {
     this.id = id;
     this.metas = metas;
     this.callApi = callApi;
     this.expect = expect;
     this.pathname = pathname;
+    this.cache = cache;
   }
 
   protected readonly call = async <T>(req: RequestSchema):Promise<T> => {

@@ -11,9 +11,21 @@ import AbstractParser from './abstract-parser';
 
 export default class CommitMapParser extends AbstractParser {
   private readonly getCommitParent = async (oid: string) => {
+    const key = new Request(`/commit/${oid}`);
+
+    const cachedCommit = await caches.match(key);
+    if (cachedCommit) {
+      const blob = await cachedCommit.blob();
+      const json = await blob.text();
+      return JSON.parse(json) as BranchCommit;
+    }
     const res = this.isIpfsHash(oid)
       ? await this.getIpfsData<RepoCommitResp>(oid)
       : await this.call<RepoCommitResp>(RC.repoGetCommit(this.id, oid));
+    const commit = new Blob([JSON.stringify(res.commit)], { type: 'application/json' });
+    const init = { status: 200, statusText: 'OK!' };
+    const response = new Response(commit, init);
+    this.cache.put(key, response);
     return res.commit;
   };
 

@@ -59,6 +59,7 @@
 		"strictNullChecks": true,
 		"strictFunctionTypes": true,
 		"strictPropertyInitialization": true,
+		"outDir": "dist"
 	},
 	"include": [
 		"./src"
