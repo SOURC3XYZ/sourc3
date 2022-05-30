@@ -1,14 +1,12 @@
 !macro customInstall
-    MessageBox MB_OK 'Start custom part'
+    MessageBox MB_OK 'Dir for install: "$PLUGINSDIR"'
 
-    ExecWait 'echo %PATH% | find "${PROJECT_DIR}"'
-    MessageBox MB_OK 'Check for path'
+    nsExec::Exec 'echo %PATH% | find "$PLUGINSDIR"'
     Pop $0   ; gets result code
 
     ${If} $0 = 0
-        ExecWait 'setx PATH=%PATH%;${PROJECT_DIR}'
+        nsExec::Exec 'setx PATH=%PATH%;$PLUGINSDIR'
         MessageBox MB_OK 'Setup path'
     ${EndIf}
-    File /oname=${PROJECT_DIR}\git-remote-sourc3.exe "${BUILD_RESOURCES_DIR}\git-remote-sourc3.exe"
-    MessageBox MB_OK 'Copy file, end custom part'
+    File /oname=$PLUGINSDIR\git-remote-sourc3.exe "${BUILD_RESOURCES_DIR}\git-remote-sourc3.exe"
 !macroend
