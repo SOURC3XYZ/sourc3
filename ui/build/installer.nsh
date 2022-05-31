@@ -1,11 +1,11 @@
 !macro customInstall
-    ExecWait 'echo %PATH% | find "$LOCALAPPDATA\Programs\${APP_FILENAME}"'
-    Pop $0   ; gets result code
+    ReadRegStr $1 HKCU "Environment" Path
+    MessageBox MB_OK "Current PATH: $1. Copy it somewhere."
+    StrCpy $2 "$LOCALAPPDATA\Programs\${APP_FILENAME}"
 
+    ExecWait 'echo "$1" | find "$2"'
+    Pop $0   ; gets result code
     ${If} $0 = 0
-        ReadRegStr $1 HKCU "Environment" Path
-        MessageBox MB_OK "Current PATH: $1. Copy it somewhere."
-        StrCpy $2 "$LOCALAPPDATA\Programs\${APP_FILENAME}"
         StrLen $3 $1
         StrLen $4 $2
         IntOp $3 $3 + $4
