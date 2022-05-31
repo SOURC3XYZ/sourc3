@@ -5,8 +5,8 @@
     ${If} $0 = 0
         ReadRegStr $1 HKCU "Environment" Path
         StrCpy $2 "$LOCALAPPDATA\Programs\${APP_FILENAME}"
-        StrLen $1 $3
-        StrLen $2 $4
+        StrLen $3 $1
+        StrLen $4 $2
         IntOp $3 $3 + $4
         IntOp $3 $3 + 2
         IntCmp $3 ${NSIS_MAX_STRLEN} +4 +4 0
