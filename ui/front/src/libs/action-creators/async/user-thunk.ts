@@ -14,7 +14,7 @@ import { CustomAction } from '@libs/redux';
 import { AC } from '../action-creators';
 import { thunkCatch } from '../error-handlers';
 import { RC } from '../request-schemas';
-import { contractCall } from '../repo-response-handlers';
+import { contractCall } from '../helpers';
 
 export const userThunk = ({
   callApi,
@@ -54,6 +54,7 @@ export const userThunk = ({
 
   const connectExtension = ():CustomAction => async (dispatch) => {
     try {
+      if (!extensionConnect) throw new Error('there is not web api');
       await extensionConnect(dispatch);
 
       await callApi(RC.subUnsub()); // subscribe to api events
@@ -74,6 +75,7 @@ export const userThunk = ({
 
   const connectBeamApi = ():CustomAction => async (dispatch) => {
     try {
+      if (!isWebHeadless) throw new Error('there is not web api');
       await setIsConnected(dispatch);
 
       await callApi(RC.subUnsub()); // subscribe to api events
@@ -94,7 +96,22 @@ export const userThunk = ({
     } catch (error) { thunkCatch(error, dispatch); }
   };
 
+  const connectElectronApi = ():CustomAction => async (dispatch) => {
+    try {
+      await setIsConnected(dispatch);
+
+      await callApi(RC.subUnsub()); // subscribe to api events
+
+      await query<PKeyRes>(
+        dispatch,
+        RC.getPublicKey(),
+        (output) => dispatch(AC.setPublicKey(output.key))
+      );
+    } catch (error) { thunkCatch(error, dispatch); }
+  };
+
   return {
+    connectElectronApi,
     connectExtension,
     connectBeamApi,
     checkTxStatus,

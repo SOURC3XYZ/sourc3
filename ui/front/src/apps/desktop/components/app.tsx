@@ -39,7 +39,7 @@ function App({ error, resetErr }: AppProps) {
   ];
 
   const routesRef = useRef(routes.map(({ path, element }) => (
-    <Route path={path} element={element} />
+    <Route key={`path-${path}`} path={path} element={element} />
   )));
 
   const View = useMemo(() => {

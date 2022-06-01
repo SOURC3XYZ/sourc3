@@ -3,7 +3,7 @@ import {
   CallBeamApi, OrganizationsResp, ProjectsResp, RepoListType, ReposResp
 } from '@types';
 import { AC } from '../action-creators';
-import { contractCall } from '../repo-response-handlers';
+import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
 
 export const entitiesThunk = (callApi: CallBeamApi) => {

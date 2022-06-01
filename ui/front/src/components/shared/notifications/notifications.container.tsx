@@ -17,7 +17,7 @@ function Notifications() {
       />
     )
   );
-  return maped;
+  return <>{maped}</>;
 }
 
 export default Notifications;

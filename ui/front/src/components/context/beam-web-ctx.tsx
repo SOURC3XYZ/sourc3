@@ -1,15 +1,16 @@
 import { CONFIG } from '@libs/constants';
 import { BeamAPI } from '@libs/core';
-import {
-  BeamApiContext, BeamApiRes, ContractsResp, EventResult
-} from '@types';
+import { ContractsResp } from '@types';
 import wasm from '@assets/app.wasm';
 import {
-  createContext, useCallback, useContext, useMemo, useRef
+  useCallback, useMemo, useRef
 } from 'react';
 import { AppThunkDispatch } from '@libs/redux';
-import { AC, contractCall, RC } from '@libs/action-creators';
+import {
+  AC, apiManagerHelper, contractCall, RC
+} from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
+import { BeamWebApiContext } from './shared-context';
 
 type BeamWebCtxProps = {
   children: JSX.Element
@@ -23,8 +24,6 @@ const messageBeam = {
   is_reconnect: false
 };
 
-const BeamWebApiContext = createContext<BeamApiContext>(null);
-
 export function BeamWebApi({ children }:BeamWebCtxProps) {
   const { current: api } = useRef(new BeamAPI(CONFIG.CID));
 
@@ -32,18 +31,13 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
     const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
-    return function ({ result }:BeamApiRes<EventResult>) {
-      const isInSync = !result.is_in_sync
-      || result.tip_height !== result.current_height;
-      if (isInSync) return;
-      // we're not in sync, wait
-
-      dispatch(getRepos('all'));
-      dispatch(getOrganizations());
-      dispatch(getProjects());
-      // dispatch(thunks.getWalletStatus());
-      // dispatch(thunks.getTxList());
-    };
+    return apiManagerHelper(
+      () => {
+        dispatch(getRepos('all'));
+        dispatch(getOrganizations());
+        dispatch(getProjects());
+      }
+    );
   }, [api]);
 
   const isWebHeadless = () => api.isDapps() || api.isElectron();
@@ -91,9 +85,3 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
     </BeamWebApiContext.Provider>
   );
 }
-
-export const useSourc3Web = () => {
-  const api = useContext(BeamWebApiContext);
-  if (!api) throw new Error('Api not initialized');
-  return api as NonNullable<BeamApiContext>;
-};

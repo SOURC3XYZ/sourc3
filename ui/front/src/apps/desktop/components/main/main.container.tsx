@@ -9,24 +9,23 @@ import { AppThunkDispatch, RootState } from '@libs/redux';
 import React, { useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { CONTRACT } from '@libs/constants';
+import { useUserAction } from '@libs/hooks/thunk';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
 
 type MainDeskProps = {
-  connectApi: (host:string) => void,
   isApiConnected: boolean,
   balance: number,
   pkey: string
 };
 
-const beamHost = `${CONTRACT.HOST}/beam`;
-
 function App({
-  isApiConnected, connectApi, balance, pkey
+  isApiConnected, balance, pkey
 }: MainDeskProps) {
+  const { connectToDesktopApi } = useUserAction();
+
   React.useEffect(() => {
-    if (!isApiConnected) connectApi(beamHost);
+    if (!isApiConnected) connectToDesktopApi();
   }, []);
 
   const data = [
@@ -59,7 +58,7 @@ function App({
   const View = useMemo(() => {
     const Component = isApiConnected
       ? <Routes>{routes}</Routes>
-      : <Preload />;
+      : <Preload message="loading" />;
     return () => Component;
   }, [isApiConnected]);
 

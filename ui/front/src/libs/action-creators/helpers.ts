@@ -44,7 +44,6 @@ export const contractCall = (callApi: CallBeamApi) => {
 
   const contractMutation = async (dispatch: AppThunkDispatch, action: RequestSchema) => {
     try {
-      console.log('hui');
       const res = await callApi(action);
       if (res.result?.raw_data) {
         const tx = await callApi(RC.startTx(res.result.raw_data));
@@ -56,4 +55,12 @@ export const contractCall = (callApi: CallBeamApi) => {
     } catch (error) { return thunkCatch(error, dispatch); }
   };
   return [contractQuery, contractMutation, getOutput] as const;
+};
+
+export const apiManagerHelper = (callback: () => void) => ({ result }:BeamApiRes<EventResult>) => {
+  const isInSync = !result.is_in_sync
+    || result.tip_height !== result.current_height;
+  if (isInSync) return;
+  // we're not in sync, wait
+  callback();
 };

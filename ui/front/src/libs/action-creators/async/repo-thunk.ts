@@ -1,11 +1,18 @@
 import { CommitMapParser, TreeBlobParser, TreeListParser } from '@libs/core';
 import { CustomAction } from '@libs/redux';
 import {
-  BeamApiContext, MetaHash, RepoId, RepoMeta, RepoMetaResp, TreeElementOid, UpdateProps
+  BeamApiContext,
+  MetaHash,
+  RepoCommitResp,
+  RepoId,
+  RepoMeta,
+  RepoMetaResp,
+  TreeElementOid,
+  UpdateProps
 } from '@types';
 import { AC } from '../action-creators';
 import batcher from '../batcher';
-import { contractCall } from '../repo-response-handlers';
+import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
 
 export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
@@ -25,6 +32,10 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
         metaArray.objects.forEach((el) => {
           metas.set(el.object_hash, el);
         });
+      }
+      const commitsArray = await getOutput<RepoCommitResp>(RC.getCommitList(id), dispatch);
+      if (commitsArray) {
+        console.log(commitsArray);
       }
       const commitTree = await new CommitMapParser({
         id, metas, pathname, expect: 'commit', cache, callApi

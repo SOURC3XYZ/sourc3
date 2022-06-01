@@ -22,7 +22,10 @@ const useUserAction = () => {
 
   const setNotifiedTrue = (txItem: TxItem) => dispatch(AC.setTxNotifyTrue(txItem));
 
+  const connectToDesktopApi = () => dispatch(thunks.connectElectronApi());
+
   return {
+    connectToDesktopApi,
     connectBeamApi,
     connectExtension,
     checkTxStatus,

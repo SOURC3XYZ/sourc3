@@ -5,6 +5,7 @@ import { AppThunkDispatch, RootState } from '@libs/redux';
 import { connect } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { useEffect } from 'react';
+import { PromiseArg } from '@types';
 import { Login, Start, SignUp } from './content';
 import { Restore } from './content/restore';
 import styles from './auth.module.scss';
@@ -64,6 +65,7 @@ function Auth({
 
   const routeElements = data.map((el, i) => (
     <Route
+      key={el.link}
       path={el.link}
       element={(
         i
@@ -85,7 +87,7 @@ function Auth({
         </Routes>
       </div>
     )
-    : <Preload />
+    : <Preload message="loading" />
   );
 }
 

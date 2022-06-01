@@ -13,11 +13,14 @@ export type Entries<T> = { [K in keyof T]: [K, T[K]]; }[keyof T][];
 
 export type CallBeamApi = ({ callID, method, params }: CallApiProps<unknown>) => Promise<any>;
 
+export type IpcMethod = 'get' | 'post' | 'put' | 'delete';
+
 export type ApiConnecting = (dispatch: AppThunkDispatch) => Promise<void>;
 
 export type BeamApiContext = {
   setIsConnected: ApiConnecting,
-  connectExtension: ApiConnecting,
   callApi: CallBeamApi,
-  isWebHeadless: () => boolean,
+  connectExtension?: ApiConnecting,
+  isWebHeadless?: () => boolean,
+  callIPC?: (url: string, method: IpcMethod, body?: {}, callId?: string) => Promise<any>
 } | null;

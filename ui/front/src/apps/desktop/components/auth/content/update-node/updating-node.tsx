@@ -1,5 +1,6 @@
 import { NavButton } from '@components/shared';
 import useFetch from '@libs/hooks/shared/useFetch';
+import { PromiseArg } from '@types';
 import { Progress, Typography } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';

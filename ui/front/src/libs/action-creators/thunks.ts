@@ -38,7 +38,7 @@ import batcher from './batcher';
 import { RC, RequestSchema } from './request-schemas';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
 import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
-import { apiEventManager } from './repo-response-handlers';
+import { apiEventManager } from './helpers';
 
 const api = new BeamAPI<RequestSchema['params']>(CONFIG.CID);
 
