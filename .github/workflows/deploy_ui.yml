@@ -9,13 +9,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Push to server
+      - uses: actions/checkout@v3
+      - name: Deployment on the server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.INSTANCE_KEY }}
+          REMOTE_HOST: ${{ secrets.INSTANCE_IP }}
+          REMOTE_USER: ${{ secrets.INSTANCE_USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
+      - name: Executing commands on the server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.INSTANCE_IP_UI }}
+          host: ${{ secrets.INSTANCE_IP }}
           username: ${{ secrets.INSTANCE_USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
-          passphrase: ${{ secrets.INSTANCE_PASSPHRASE }} 
-          script: ${{ secrets.PROJECT_PATH_UI }} && ${{ secrets.GIT_REPO_UI }} && docker build -t sourc3-ui:latest . &&  docker rm -f sourc3-ui || true && docker run -d --name  sourc3-ui sourc3-ui:latest && docker network connect nginx_net sourc3-ui
+          passphrase: ${{ secrets.INSTANCE_PASSPHRASE }}  
+          script: ${{ secrets.PROJECT_PATH_UI }} && docker build -t sourc3-ui:latest . &&  docker rm -f sourc3-ui || true && docker run -d --name  sourc3-ui sourc3-ui:latest && docker network connect nginx_net sourc3-ui
 
