@@ -50,7 +50,7 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
   const contextObj = useMemo(() => (
     {
       setIsConnected,
-      callApi: api.callApi
+      callApi: api.callApi,
       callIPC: api.callIPC
     }
   ), [api.BEAM]);
