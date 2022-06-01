@@ -34,7 +34,7 @@ function Header({ isOnLending }:HeaderPropsType) {
       <ul className={[styles.navList, styles.textColor].join(' ')}>
         <li>
           <Link className={styles.textColor} to="/repos/all/1">
-            Repositiories
+            Repositories
           </Link>
         </li>
         <li>

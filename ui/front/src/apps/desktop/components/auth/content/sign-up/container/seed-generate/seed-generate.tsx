@@ -21,7 +21,7 @@ function SignUp({
       {' '}
       <div className={styles.wrapper}>
         <Text>
-          To start using PIT you need to first create an account.
+          To start using SOURC3 you need to first create an account.
           Each account is uniquely identified by a 12 word mnemonic
           phrase that is secret and should not be revealed to anyone.
           Make at least 2 copies of the phrase in case of emergency

@@ -43,56 +43,45 @@ function RepositoriesStatus() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div className={styles.item}>
-          <div className={styles.title}>
-            <h4>Pull requests</h4>
-            <Select defaultValue="This Month" bordered={false}>
-              <Option value="jack">Jack</Option>
-              <Option value="lucy">Lucy</Option>
-              <Option value="Yiminghe">yiminghe</Option>
-            </Select>
-          </div>
-          <div className={styles.counts}>
-            <img className={styles.card2Scr} src={card2Scr} alt="" />
-          </div>
-        </div>
-        <div className={styles.item}>
-          <div className={styles.title}>
-            <h4>Funds</h4>
-            <Select defaultValue="This Month" bordered={false}>
-              <Option value="jack">Jack</Option>
-              <Option value="lucy">Lucy</Option>
-              <Option value="Yiminghe">yiminghe</Option>
-            </Select>
-          </div>
-          <div className={styles.counts}>
-            <div className={styles.countsMoney}>
-              <p>Earned</p>
-              <h2>1789 PIT</h2>
-              <h4 className={styles.countPercent}>
-                <img src={arrowUp} alt="" />
-                <span>34</span>
-                %
-              </h4>
-              <p>
-                higher than
-                on previous month
-              </p>
-            </div>
-            <div className={styles.countsMoney}>
-              <p>Spend</p>
-              <h2 className={styles.orange}>598 PIT</h2>
-              <h4 className={styles.countPercent}>
-                <img src={arrowUp} alt="" />
-                <span>12</span>
-                %
-              </h4>
-              <p>
-                higher than
-                on previous month
-              </p>
+            <div className={styles.item}>
+              <div className={styles.title}>
+                <h4>Funds</h4>
+                <Select defaultValue="This Month" bordered={false}>
+                  <Option value="jack">Jack</Option>
+                  <Option value="lucy">Lucy</Option>
+                  <Option value="Yiminghe">yiminghe</Option>
+                </Select>
+              </div>
+              <div className={styles.counts}>
+                <div className={styles.countsMoney}>
+                  <p>Earned</p>
+                  <h2>1789 SC3</h2>
+                  <h4 className={styles.countPercent}>
+                    <img src={arrowUp} alt="" />
+                    <span>34</span>
+                    %
+                  </h4>
+                  <p>
+                    higher than
+                    on previous month
+
+                  </p>
+                </div>
+                <div className={styles.countsMoney}>
+                  <p>Spend</p>
+                  <h2 className={styles.orange}>598 SC3</h2>
+                  <h4 className={styles.countPercent}>
+                    <img src={arrowUp} alt="" />
+                    <span>12</span>
+                    %
+                  </h4>
+                  <p>
+                    higher than
+                    on previous month
+
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
