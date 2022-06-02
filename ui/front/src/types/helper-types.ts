@@ -11,7 +11,7 @@ export type OwnerListType = 'all' | 'my';
 
 export type Entries<T> = { [K in keyof T]: [K, T[K]]; }[keyof T][];
 
-export type CallBeamApi = ({ callID, method, params }: CallApiProps<unknown>) => Promise<any>;
+export type CallBeamApi = (obj: CallApiProps<unknown>) => Promise<any>;
 
 export type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 

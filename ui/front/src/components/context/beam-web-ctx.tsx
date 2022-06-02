@@ -50,7 +50,7 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
       const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
       if (!finded) throw new Error(`no specified cid (${api.cid})`);
       return dispatch(AC.setIsConnected(!!finded));
-    });
+    }, true);
   };
 
   const connectExtension = async (dispatch: AppThunkDispatch) => {
@@ -64,7 +64,9 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
           const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
           if (!finded) throw new Error(`no specified cid (${api.cid})`);
           return dispatch(AC.setIsConnected(!!finded));
-        }
+        },
+
+        true
       );
       api.loadApiEventManager(apiEventManager(dispatch));
     }
