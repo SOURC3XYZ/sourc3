@@ -25,19 +25,21 @@ export function apiEventManager(dispatch: AppThunkDispatch) {
 export const contractCall = (callApi: CallBeamApi) => {
   async function getOutput<T>(
     props: CallApiProps<RequestSchema['params']>,
-    dispatch: AppThunkDispatch
+    dispatch: AppThunkDispatch,
+    isContractInit = false
   ) {
-    const res = await callApi(props);
+    const res = await callApi({ ...props, isContractInit });
     return outputParser<T>(res, dispatch);
   }
 
   const contractQuery = async <T>(
     dispatch: AppThunkDispatch,
     action: RequestSchema,
-    callback: (output: T) => ActionCreators
+    callback: (output: T) => ActionCreators,
+    isContract = false
   ) => {
     try {
-      const output = await getOutput<T>(action, dispatch);
+      const output = await getOutput<T>(action, dispatch, isContract);
       if (output) dispatch(callback(output as T));
     } catch (error) { thunkCatch(error, dispatch); }
   };

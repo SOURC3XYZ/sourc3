@@ -1,3 +1,4 @@
+import { CONFIG } from '@libs/constants';
 import { CommitMapParser, TreeBlobParser, TreeListParser } from '@libs/core';
 import { CustomAction } from '@libs/redux';
 import {
@@ -24,7 +25,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
-      const cache = await caches.open(['repo', id].join('-'));
+      const cache = await caches.open([CONFIG.CID, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
