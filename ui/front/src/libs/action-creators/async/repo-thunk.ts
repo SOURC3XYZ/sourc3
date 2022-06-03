@@ -56,7 +56,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     id, oid, key, resolve
   }: UpdateProps, errHandler: (err: Error) => void):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open(['repo', id].join('-'));
+      const cache = await caches.open([CONFIG.CID, id].join('-'));
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
@@ -77,7 +77,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open(['repo', repoId].join('-'));
+      const cache = await caches.open([CONFIG.CID, repoId].join('-'));
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {

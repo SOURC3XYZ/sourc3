@@ -92,3 +92,43 @@ export function textEllipsis(
   }
   return str;
 }
+
+export function timeSince(date: number) {
+  const today = Number(new Date());
+  const seconds = Math.floor((today - date) / 1000);
+
+  let interval = seconds / 31536000;
+
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} year${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} month${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} day${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} hour${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} minute${floor === 1 ? '' : 's'}`;
+  }
+  const floor = ~~interval;
+  return `${floor} second${floor === 1 ? '' : 's'}`;
+}
+
+export const dateCreator = (mls: number) => {
+  const date = +new Date(mls);
+  return timeSince(date);
+  // return date.toLocaleString();
+};

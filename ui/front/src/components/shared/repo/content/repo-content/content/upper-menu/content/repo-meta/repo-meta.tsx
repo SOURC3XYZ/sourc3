@@ -1,5 +1,5 @@
 import { Info } from '@components/shared';
-import { textEllipsis } from '@libs/utils';
+import { dateCreator, textEllipsis } from '@libs/utils';
 import { BranchCommit } from '@types';
 import { Col } from 'antd';
 import styles from './repo-meta.module.scss';
@@ -24,12 +24,17 @@ function RepoMeta({ commit }: RepoMetaProps) {
       title: 'Commit: ',
       message: commit.raw_message,
       link: commit.raw_header
+    },
+    {
+      title: 'Updated: ',
+      message: `${dateCreator(commit.create_time_sec * 1000)} ago`,
+      link: commit.raw_header
     }
   ];
 
   const dataRender = data.map(({ title, message, link }, i) => (
-    <Col key={`repo-meta-${title}`} offset={i && 1}>
-      <Info title={title} message={textEllipsis(message, 20)} link={link} />
+    <Col key={`repo-meta-${title}`}>
+      <Info title={title} message={textEllipsis(message, 12)} link={link} />
     </Col>
   ));
   return (

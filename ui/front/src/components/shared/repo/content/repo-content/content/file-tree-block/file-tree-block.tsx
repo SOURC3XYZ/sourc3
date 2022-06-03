@@ -1,5 +1,5 @@
 import { Preload } from '@components/shared';
-import { getTree } from '@libs/utils';
+import { dateCreator, getTree } from '@libs/utils';
 import {
   DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
@@ -18,16 +18,21 @@ type FileTreeBlockProps = {
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
+  time: number;
   updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void;
 };
 
 const leafCreator = (url:string, node: DataNode) => {
+  // const date = `${dateCreator(time * 1000)}`;
+
   if (node.isLeaf) {
     const blobUrl = url.replace('tree', 'blob');
     return (
       <List.Item
         className={styles.listItem}
-        actions={[(<span className={styles.time}>Updated 5 hours ago</span>)]}
+        // actions={
+        //   [(<span key="list-time" className={styles.time}>{date}</span>)]
+        // }
       >
         <List.Item.Meta
           title={(
@@ -42,7 +47,7 @@ const leafCreator = (url:string, node: DataNode) => {
   } return (
     <List.Item
       className={styles.listItem}
-      actions={[(<span className={styles.time}>Updated 5 hours ago</span>)]}
+      // actions={[(<span key="list-time" className={styles.time}>{date}</span>)]}
     >
       <List.Item.Meta
         title={(
@@ -57,7 +62,7 @@ const leafCreator = (url:string, node: DataNode) => {
 };
 
 function FileTreeBlock({
-  id, tree, pathname, pathArray, updateTree
+  id, tree, pathname, pathArray, time, updateTree
 }:FileTreeBlockProps) {
   const setError = useAsyncError();
 

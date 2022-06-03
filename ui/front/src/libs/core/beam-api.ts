@@ -347,12 +347,12 @@ export class BeamAPI<T> {
     reject:BeamApiReqHandlers['reject'],
     hash: string
   ) => {
-    const oReq = new XMLHttpRequest();
-    oReq.open('GET', [CONFIG.IPFS_HOST, 'ipfs', hash].join('/'), true);
-    oReq.responseType = 'blob';
-    oReq.setRequestHeader('Access-Control-Allow-Origin', '*');
-    oReq.onload = async function () {
-      const blob = oReq.response as Blob;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', [CONFIG.IPFS_HOST, 'ipfs', hash].join('/'), true);
+    xhr.responseType = 'blob';
+    xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+    xhr.onload = async function () {
+      const blob = xhr.response as Blob;
       const buffer = await blob.arrayBuffer();
       const result = {} as ResultObject;
       result.data = Array.from(new Uint8Array(buffer));
@@ -365,7 +365,10 @@ export class BeamAPI<T> {
       );
     };
 
-    oReq.send();
+    xhr.onloadend = function () {
+      if (xhr.status === 404) { reject(new Error('hash not found')); }
+    };
+    xhr.send();
   };
 
   public readonly callIPC = (

@@ -7,7 +7,7 @@ import fs from 'fs';
 import { getRepository } from 'typeorm';
 import { app } from 'electron';
 import {
-  BEAM_NODE_PORT, HTTP_MODE, IPFS_BOOTSRAP, WALLET_API_PORT
+  BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT
 } from '../../common';
 import { Seed } from '../../entities';
 import {
@@ -246,8 +246,7 @@ export function runWalletApi(
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
       '--tcp_max_line=20256000',
-      `--ipfs_repo=${ipfsPath}`,
-      `--ipfs_bootstrap=/ip4/3.209.99.179/tcp/8100/p2p/${IPFS_BOOTSRAP}`
+      `--ipfs_repo=${ipfsPath}`
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);

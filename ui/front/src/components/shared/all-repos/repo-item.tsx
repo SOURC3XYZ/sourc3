@@ -9,7 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { textEllipsis } from '@libs/utils';
+import { dateCreator, textEllipsis } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -72,6 +72,10 @@ function RepoItem({
     </Menu>
   );
 
+  const time = item.lastCommit
+    ? `${dateCreator(item.lastCommit.create_time_sec * 1000)} ago`
+    : 'empty';
+
   return (
     <List.Item
       className={styles.listItem}
@@ -81,7 +85,7 @@ function RepoItem({
           key={`repo-${item.repo_id}`}
           className={styles.time}
         >
-          {`owner: ${textEllipsis(repo_owner, 7, { ellipsis: '' })}`}
+          {time}
 
         </span>,
         (

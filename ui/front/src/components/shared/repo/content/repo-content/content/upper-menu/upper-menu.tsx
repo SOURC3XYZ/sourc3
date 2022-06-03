@@ -51,8 +51,6 @@ function UpperMenu({
   const keys = Array.from(repoMap.keys());
   const commits = repoMap.get(branch) as BranchCommit[];
 
-  console.log('commits', commits);
-
   const root = `${baseUrl}/${branch}/${commit.commit_oid}`;
 
   let treePath = clipString(pathname, root);
@@ -80,7 +78,7 @@ function UpperMenu({
           prevReposHref={prevReposHref}
         />
       </Row>
-      {/*<RepoDescription />*/}
+      {/* <RepoDescription /> */}
       <Row align="middle" style={{ marginTop: '40px' }}>
         <Col span={7}>
           <CustomAntdSelect

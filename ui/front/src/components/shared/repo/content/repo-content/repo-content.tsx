@@ -70,7 +70,6 @@ function RepoContent({
   const { pathname } = useLocation();
   const { baseUrl, params } = splitUrl(['tree', 'blob'], pathname);
   const { branch, commit } = setBranchCommit(repoMap, params);
-
   const splitted = pathname.split('/');
 
   const pathArray = splitted.slice(splitted.indexOf(commit.commit_oid) + 1);
@@ -112,6 +111,7 @@ function RepoContent({
                 tree={tree}
                 updateTree={updateTree}
                 pathArray={pathArray}
+                time={commit.create_time_sec}
               />
             </ErrorBoundary>
           )}
