@@ -142,6 +142,9 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     UserInfo member_info{.permissions = Organization::Permissions::kAll};
     Env::SaveVar_T(member_key, member_info);
 
+    Organization::NameKey org_name_key{GetNameHash(org->name, org->name_len)};
+    Env::Halt_if(Env::SaveVar_T(org_name_key, org_key.id));
+
     Env::AddSig(org->creator);
 }
 
@@ -159,6 +162,14 @@ BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
     new_organization->creator = organization->creator;
     new_organization->name_len = params.name_len;
     Env::Memcpy(new_organization->name, params.name, params.name_len);
+
+    Organization::NameKey old_org_name_key{
+        GetNameHash(organization->name, organization->name_len)};
+    Env::DelVar_T(old_org_name_key);
+
+    Organization::NameKey new_org_name_key{
+        GetNameHash(new_organization->name, new_organization->name_len)};
+    Env::Halt_if(Env::SaveVar_T(new_org_name_key, params.id));
 
     SaveNamedObject(Organization::Key(params.id), new_organization);
 }

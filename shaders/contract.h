@@ -14,6 +14,8 @@ enum Tag : uint8_t {
     kRepoMember,
     kOrganizationMember,
     kProjectMember,
+    kOrganizationName,
+    kRepoName,
 };
 
 #pragma pack(push, 1)
@@ -41,6 +43,13 @@ struct Organization {
         Tag tag = Tag::kOrganization;
         Id id;
         explicit Key(const Id& id) : id(id) {
+        }
+    };
+    struct NameKey {
+        Tag tag = Tag::kOrganizationName;
+        Hash256 name_hash;
+        explicit NameKey(const Hash256& h) {
+            Env::Memcpy(&name_hash, &h, sizeof(name_hash));
         }
     };
     enum Permissions : uint8_t {
@@ -99,6 +108,7 @@ struct Repo {
     static constexpr size_t kMaxNameSize = 256;
 
     struct NameKey {
+        Tag tag = Tag::kRepoName;
         PubKey owner;
         Hash256 name_hash;
         NameKey(const PubKey& o, const Hash256& h) : owner(o) {
