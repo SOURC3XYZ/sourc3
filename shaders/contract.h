@@ -15,6 +15,7 @@ enum Tag : uint8_t {
     kOrganizationMember,
     kProjectMember,
     kOrganizationName,
+    kProjectName,
     kRepoName,
 };
 
@@ -74,6 +75,14 @@ struct Project {
         Tag tag = Tag::kProject;
         Id id;
         explicit Key(const Id& id) : id(id) {
+        }
+    };
+    struct NameKey {
+        Tag tag = Tag::kProjectName;
+        Organization::Id org_id;
+        Hash256 proj_name_hash;
+        explicit NameKey(const Organization::Id& org_id, const Hash256& h) : org_id{org_id} {
+            Env::Memcpy(&proj_name_hash, &h, sizeof(proj_name_hash));
         }
     };
     enum Permissions : uint8_t {

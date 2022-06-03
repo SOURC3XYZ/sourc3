@@ -275,6 +275,9 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     Env::SaveVar_T(0, cs);
     SaveNamedObject(project_key, project);
 
+    Project::NameKey name_key{project->organization_id, GetNameHash(project->name, project->name_len)};
+    Env::Halt_if(Env::SaveVar_T(name_key, project_key.id));
+
     Members<Tag::kProjectMember, Project>::Key member_key(project->creator,
                                                           project_key.id);
     UserInfo member_info{.permissions = Project::Permissions::kAll};
@@ -297,6 +300,12 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     new_project->organization_id = project->organization_id;
     new_project->name_len = params.name_len;
     Env::Memcpy(new_project->name, params.name, params.name_len);
+
+    Project::NameKey old_name_key{project->organization_id, GetNameHash(project->name, project->name_len)};
+    Env::DelVar_T(old_name_key);
+
+    Project::NameKey new_name_key{new_project->organization_id, GetNameHash(new_project->name, new_project->name_len)};
+    Env::Halt_if(Env::SaveVar_T(new_name_key, params.project_id));
 
     SaveNamedObject(Project::Key(params.project_id), new_project);
 }
