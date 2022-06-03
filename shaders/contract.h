@@ -81,7 +81,8 @@ struct Project {
         Tag tag = Tag::kProjectName;
         Organization::Id org_id;
         Hash256 proj_name_hash;
-        explicit NameKey(const Organization::Id& org_id, const Hash256& h) : org_id{org_id} {
+        explicit NameKey(const Organization::Id& org_id, const Hash256& h)
+            : org_id{org_id} {
             Env::Memcpy(&proj_name_hash, &h, sizeof(proj_name_hash));
         }
     };
@@ -118,10 +119,14 @@ struct Repo {
 
     struct NameKey {
         Tag tag = Tag::kRepoName;
-        PubKey owner;
-        Hash256 name_hash;
-        NameKey(const PubKey& o, const Hash256& h) : owner(o) {
-            Env::Memcpy(&name_hash, &h, sizeof(name_hash));
+        Organization::Id org_id;
+        Hash256 proj_hash;
+        Hash256 repo_hash;
+        NameKey(const Organization::Id& org_id, const Hash256& proj_hash,
+                const Hash256& repo_hash)
+            : org_id(org_id) {
+            Env::Memcpy(&this->proj_hash, &proj_hash, sizeof(proj_hash));
+            Env::Memcpy(&this->repo_hash, &repo_hash, sizeof(repo_hash));
         }
     };
     struct BaseKey {

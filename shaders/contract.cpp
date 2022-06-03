@@ -183,21 +183,17 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kAddRepo);
 
-    auto repo_name_hash = GetNameHash(params.name, params.name_len);
-
-    Repo::NameKey key1(params.caller, repo_name_hash);
-    uint64_t repo_id = 0;
-
-    // halt if repo exists
-    Env::Halt_if(Env::LoadVar_T(key1, repo_id) && repo_id != 0);
+    std::unique_ptr<Project> project =
+        LoadNamedObject<Project>(params.project_id);
 
     ContractState cs;
     Env::LoadVar_T(0, cs);
 
-    repo_id = cs.last_repo_id++;
+    uint64_t repo_id = cs.last_repo_id++;
 
     Env::SaveVar_T(0, cs);
-    Env::SaveVar_T(key1, repo_id);
+
+    auto repo_name_hash = GetNameHash(params.name, params.name_len);
 
     std::unique_ptr<Repo> repo_info(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
@@ -212,6 +208,11 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     Members<Tag::kRepoMember, Repo>::Key key_user(params.caller,
                                                   repo_info->repo_id);
     Env::SaveVar_T(key_user, UserInfo{.permissions = Repo::Permissions::kAll});
+
+    Repo::NameKey name_key{project->organization_id,
+                           GetNameHash(project->name, project->name_len),
+                           repo_name_hash};
+    Env::Halt_if(Env::SaveVar_T(name_key, repo_id));
 
     SaveNamedObject(Repo::Key(repo_info->repo_id), repo_info);
 
@@ -237,10 +238,19 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
-    Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
+
+    std::unique_ptr<Project> project =
+        LoadNamedObject<Project>(repo_info->project_id);
+
+    Env::DelVar_T(Repo::NameKey(project->organization_id,
+                                GetNameHash(project->name, project->name_len),
+                                repo_info->name_hash));
+    Repo::NameKey new_name_key{project->organization_id,
+                               GetNameHash(project->name, project->name_len),
+                               new_repo_info->name_hash};
+    Env::Halt_if(Env::SaveVar_T(new_name_key, new_repo_info->repo_id));
+
     SaveNamedObject(Repo::Key(new_repo_info->repo_id), new_repo_info);
-    Env::SaveVar_T(Repo::NameKey(new_repo_info->owner, new_repo_name_hash),
-                   new_repo_info->repo_id);
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
@@ -248,7 +258,7 @@ BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
     Env::AddSig(params.caller);
-    Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
+    // Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
     Env::DelVar_T(Members<Tag::kRepoMember, Repo>::Key(repo_info->owner,
                                                        repo_info->repo_id));
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
@@ -275,7 +285,8 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     Env::SaveVar_T(0, cs);
     SaveNamedObject(project_key, project);
 
-    Project::NameKey name_key{project->organization_id, GetNameHash(project->name, project->name_len)};
+    Project::NameKey name_key{project->organization_id,
+                              GetNameHash(project->name, project->name_len)};
     Env::Halt_if(Env::SaveVar_T(name_key, project_key.id));
 
     Members<Tag::kProjectMember, Project>::Key member_key(project->creator,
@@ -301,10 +312,14 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     new_project->name_len = params.name_len;
     Env::Memcpy(new_project->name, params.name, params.name_len);
 
-    Project::NameKey old_name_key{project->organization_id, GetNameHash(project->name, project->name_len)};
+    Project::NameKey old_name_key{
+        project->organization_id,
+        GetNameHash(project->name, project->name_len)};
     Env::DelVar_T(old_name_key);
 
-    Project::NameKey new_name_key{new_project->organization_id, GetNameHash(new_project->name, new_project->name_len)};
+    Project::NameKey new_name_key{
+        new_project->organization_id,
+        GetNameHash(new_project->name, new_project->name_len)};
     Env::Halt_if(Env::SaveVar_T(new_name_key, params.project_id));
 
     SaveNamedObject(Project::Key(params.project_id), new_project);

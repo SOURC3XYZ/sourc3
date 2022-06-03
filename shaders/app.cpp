@@ -1240,6 +1240,8 @@ void OnActionUserGetRepo(const ContractID& cid) {
     PubKey my_key;
     Env::DocGet("repo_owner", my_key);
     git_remote_beam::Hash256 name_hash = git_remote_beam::GetNameHash(repo_name, name_len);
+    // TODO: new RepoKey
+    /*
     RepoKey key(my_key, name_hash);
     Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
     reader_key.m_Prefix.m_Cid = cid;
@@ -1248,6 +1250,7 @@ void OnActionUserGetRepo(const ContractID& cid) {
         return OnError("Failed to read repo ids");
     }
     Env::DocAddNum("repo_id", repo_id);
+    */
 }
 
 using MetaKey = Env::Key_T<git_remote_beam::GitObject::Meta::Key>;
