@@ -74,7 +74,7 @@ async function getOutput<T>(
   return outputParser<T>(res, dispatch);
 }
 
-export const thunks:ThunkObject = {
+const thunks:ThunkObject = {
   connectExtension: (api) => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);

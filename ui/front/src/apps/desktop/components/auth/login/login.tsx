@@ -1,15 +1,12 @@
 import React from 'react';
 import { Preload } from '@components/shared';
 import { useAsyncError, useObjectState } from '@libs/hooks/shared';
+import { PromiseArg } from '@types';
 import styles from './login.module.scss';
-import { Password } from './content';
 import { UpdatingNode } from '../update-node';
+import { Password } from './password';
 
-enum STATUS {
-  LOGIN,
-  LOADING,
-  SYNC
-}
+enum STATUS { LOGIN, LOADING, SYNC }
 
 type LoginProps = {
   statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
@@ -45,7 +42,7 @@ function Login({ startWalletApi, statusFetcher }: LoginProps) {
     <div className={styles.wrapper}>
       {
         status === STATUS.LOADING
-          ? <Preload />
+          ? <Preload message="Loading" />
           : status === STATUS.SYNC
             ? <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />

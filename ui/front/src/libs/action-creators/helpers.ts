@@ -1,26 +1,50 @@
 import { AppThunkDispatch } from '@libs/redux';
 import {
-  BeamApiRes, CallApiProps, CallBeamApi, EventResult
+  BeamApiRes, CallApiProps, CallBeamApi, CallIPCType, EventResult, IPCResult
 } from '@types';
 import {
   thunkCatch,
-  ActionCreators, outputParser, RequestSchema, thunks, AC, RC
+  ActionCreators, outputParser, RequestSchema, AC, RC
 } from '@libs/action-creators';
 
-export function apiEventManager(dispatch: AppThunkDispatch) {
-  return function ({ result }:BeamApiRes<EventResult>) {
-    const isInSync = !result.is_in_sync
-    || result.tip_height !== result.current_height;
-    if (isInSync) return;
-    // we're not in sync, wait
+type HelperCallbackType<T, C> = C extends ActionCreators
+  ? (output: BeamApiRes<IPCResult<T>>) => ActionCreators
+  : (output: BeamApiRes<IPCResult<T>>) => void;
 
-    dispatch(thunks.getAllRepos('all'));
-    dispatch(thunks.getOrganizations());
-    dispatch(thunks.getProjects());
-    dispatch(thunks.getWalletStatus());
-    dispatch(thunks.getTxList());
+// export function apiEventManager(dispatch: AppThunkDispatch) {
+//   return function ({ result }:BeamApiRes<EventResult>) {
+//     const isInSync = !result.is_in_sync
+//     || result.tip_height !== result.current_height;
+//     if (isInSync) return;
+//     // we're not in sync, wait
+
+//     dispatch(thunks.getAllRepos('all'));
+//     dispatch(thunks.getOrganizations());
+//     dispatch(thunks.getProjects());
+//     dispatch(thunks.getWalletStatus());
+//     dispatch(thunks.getTxList());
+//   };
+// }
+
+export const desktopCall = (callIPC: CallIPCType) => {
+  const get = async <T>(
+    url:string,
+    dispatch: AppThunkDispatch,
+    callback: HelperCallbackType<T, ActionCreators | void>,
+    noDispatch?: boolean
+  ) => {
+    try {
+      const data = await callIPC(url, 'get', {}) as BeamApiRes<IPCResult<T>>;
+      if (!data) throw new Error('main process call failed');
+      if (noDispatch) return callback(data);
+      return dispatch(
+        callback(data) as ReturnType<HelperCallbackType<T, ActionCreators>>
+      );
+    } catch (error) { return thunkCatch(error, dispatch); }
   };
-}
+
+  return [get];
+};
 
 export const contractCall = (callApi: CallBeamApi) => {
   async function getOutput<T>(

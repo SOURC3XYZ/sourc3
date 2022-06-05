@@ -11,9 +11,9 @@ interface SeedListProps {
   validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
 }
 
-const SeedList = ({
+function SeedList({
   data, errors, isShuffle, isSlice, onInput, validatePasted
-}:SeedListProps) => {
+}:SeedListProps) {
   const shuffleIndexes = React.useMemo(() => shuffle(data), []);
 
   const validatedSeedWord = (el: string | null, i:number) => {
@@ -24,7 +24,7 @@ const SeedList = ({
       <li className={className} key={i} data-index={i + 1}>
         <input
           required
-          value={el ?? ''}
+          defaultValue={el ?? ''}
           data-index={i}
           type="text"
           onInput={onInput}
@@ -53,6 +53,6 @@ const SeedList = ({
       {visualisation(data)}
     </div>
   );
-};
+}
 
 export default SeedList;

@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { message } from 'antd';
 import { useDispatch, useSelector } from '@libs/redux';
-import { thunks } from '@libs/action-creators';
+import { useSourc3Api } from '@components/context';
+import { userThunk } from '@libs/action-creators/async';
 
 const initialState = {
   visible: false,
@@ -21,6 +22,10 @@ enum ErrMsg {
 const useManager = () => {
   const balance = useSelector((state) => state.app.balance);
   const dispatch = useDispatch();
+
+  const api = useSourc3Api();
+
+  const thunks = userThunk(api);
 
   const getWalletStatus = () => dispatch(thunks.getWalletStatus());
 

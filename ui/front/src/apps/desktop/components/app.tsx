@@ -1,21 +1,20 @@
 import { ErrorAlert } from '@components/shared';
 import { AC } from '@libs/action-creators';
-import { AppThunkDispatch, RootState } from '@libs/redux';
-import { BeamError } from '@types';
-import { useMemo, useRef } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from '@libs/redux';
+import { useMemo } from 'react';
 import {
   Navigate, Route, Routes, useNavigate
 } from 'react-router-dom';
 import { Auth } from './auth';
 import { Main } from './main';
 
-type AppProps = {
-  error: BeamError | null;
-  resetErr: () => void
-};
+function App() {
+  const error = useSelector((state) => state.app.error);
 
-function App({ error, resetErr }: AppProps) {
+  const dispatch = useDispatch();
+
+  const resetErr = () => dispatch(AC.setError(null));
+
   const navigate = useNavigate();
 
   const onClick = () => {
@@ -23,7 +22,7 @@ function App({ error, resetErr }: AppProps) {
     navigate('/');
   };
 
-  const routes = [
+  const routesData = [
     {
       path: '/',
       element: <Navigate replace to="auth/" />
@@ -38,28 +37,15 @@ function App({ error, resetErr }: AppProps) {
     }
   ];
 
-  const routesRef = useRef(routes.map(({ path, element }) => (
+  const routes = useMemo(() => routesData.map(({ path, element }) => (
     <Route key={`path-${path}`} path={path} element={element} />
-  )));
+  )), []);
 
-  const View = useMemo(() => {
-    const Component = error
-      ? <ErrorAlert onClick={onClick} error={error} />
-      : <Routes>{routesRef.current}</Routes>;
-    return () => Component;
-  }, [error]);
+  const component = useMemo(() => (error
+    ? <ErrorAlert onClick={onClick} error={error} />
+    : <Routes>{routes}</Routes>), [error]);
 
-  return <View />;
+  return component;
 }
 
-const mapState = ({ app: { error } }:RootState) => ({
-  error
-});
-
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  resetErr: () => {
-    dispatch(AC.setError(null));
-  }
-});
-
-export default connect(mapState, mapDispatch)(App);
+export default App;

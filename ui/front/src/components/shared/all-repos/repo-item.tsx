@@ -9,7 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { dateCreator, textEllipsis } from '@libs/utils';
+import { dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {

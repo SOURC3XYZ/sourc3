@@ -6,7 +6,7 @@ import { useState } from 'react';
 type CreateModalProps = {
   handleOk: () => void;
   handleCancel: () => void;
-  createRepo: (repo_name: string) => void
+  createRepo: (name: string, projectId: number, pid?: number | undefined) => void
 };
 
 function CreateModal({
@@ -21,7 +21,7 @@ function CreateModal({
   };
 
   const onCancel = () => {
-    createRepo(name);
+    createRepo(name, 0);
     handleCancel();
   };
 

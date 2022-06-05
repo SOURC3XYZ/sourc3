@@ -15,7 +15,8 @@ export const RC = {
     callID: 'ipfs_get',
     method: 'ipfs_get',
     params: {
-      hash: ipfsHash
+      hash: ipfsHash,
+      timeout: CONFIG.IPFS_TIMEOUT
     }
   } as const),
 

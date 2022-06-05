@@ -109,13 +109,15 @@ export class BeamApiDesktop<T> {
   );
 
   readonly callApi = (
-    { callID, method, params }: CallApiProps<T>
+    {
+      callID, method, params, isContractInit
+    }: CallApiProps<T>
   ): Promise<ResultObject> => {
     const id = [callID, this.callIndex++].join('-');
     const modifiedParams = { ...params } as Modified<T>;
 
     if (this.isNoContractMethod(method)) {
-      if (this.contract) {
+      if (this.contract && isContractInit) {
         modifiedParams.contract = this.contract;
       }
       if (params && 'args' in params) {

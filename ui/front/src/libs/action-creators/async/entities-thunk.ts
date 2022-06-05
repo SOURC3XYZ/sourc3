@@ -103,7 +103,6 @@ export const entitiesThunk = (callApi: CallBeamApi) => {
       });
 
       const fullRepos = await Promise.all(promises);
-
       dispatch(AC.setRepos(fullRepos));
 
       // const promises = repos

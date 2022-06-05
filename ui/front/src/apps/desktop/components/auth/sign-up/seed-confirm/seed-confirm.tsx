@@ -1,7 +1,7 @@
 import { NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
 import React, { useEffect, useState } from 'react';
-import styles from '../../sign-up.module.scss';
+import styles from '../sign-up.module.scss';
 
 type SeedConfirmType = {
   seedGenerated: string[],

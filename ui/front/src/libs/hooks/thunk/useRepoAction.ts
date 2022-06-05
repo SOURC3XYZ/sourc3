@@ -1,4 +1,4 @@
-import { useSourc3Web } from '@components/context';
+import { useSourc3Api } from '@components/context';
 import { AC } from '@libs/action-creators';
 import { getRepoThunk } from '@libs/action-creators/async';
 import { useDispatch } from '@libs/redux';
@@ -9,7 +9,7 @@ import { batch } from 'react-redux';
 
 const useRepoAction = () => {
   const dispatch = useDispatch();
-  const api = useSourc3Web();
+  const api = useSourc3Api();
   const thunks = getRepoThunk(api);
 
   const getRepo = (id:RepoId, errHandler: ErrorHandler) => (resolve: () => void) => {

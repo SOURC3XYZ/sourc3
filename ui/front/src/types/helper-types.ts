@@ -15,12 +15,16 @@ export type CallBeamApi = (obj: CallApiProps<unknown>) => Promise<any>;
 
 export type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 
+export type CallIPCType = (
+  url: string, method: IpcMethod, body?: {}, callId?: string
+) => Promise<any>;
+
 export type ApiConnecting = (dispatch: AppThunkDispatch) => Promise<void>;
 
-export type BeamApiContext = {
+export interface BeamApiContext {
   setIsConnected: ApiConnecting,
   callApi: CallBeamApi,
   connectExtension?: ApiConnecting,
   isWebHeadless?: () => boolean,
-  callIPC?: (url: string, method: IpcMethod, body?: {}, callId?: string) => Promise<any>
-} | null;
+  callIPC?: CallIPCType
+}

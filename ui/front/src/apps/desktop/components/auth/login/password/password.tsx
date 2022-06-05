@@ -1,7 +1,7 @@
 import { NavButton } from '@components/shared';
 import { Input, Typography } from 'antd';
 import { Link } from 'react-router-dom';
-import styles from '../../login.module.scss';
+import styles from '../login.module.scss';
 
 const { Text } = Typography;
 

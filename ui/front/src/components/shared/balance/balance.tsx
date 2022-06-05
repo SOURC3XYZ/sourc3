@@ -59,11 +59,9 @@ function Balance({ current }:BalancePropsType) {
           border: 'none', height: 60
         }}
         >
-          {' '}
           Current balance:
           <br />
           {current}
-          {' '}
           SC3
         </Button>
       </Dropdown>
