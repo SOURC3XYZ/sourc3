@@ -1,26 +1,42 @@
 .wrapper {
+  padding-top: 120px;
   margin: 0 auto;
-  max-width: 315px;
+  max-width: 485px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-}
 
-.btnNav {
-  /* margin-top: 30px; */
-  max-width: 315px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  h2 {
+    margin: 0;
+    padding: 0 0 22px;
+    font-weight: 900;
+    font-size: 40px;
+    font-family: PublicSans-Regular;
+  }
 
-.btnNav>button {
-  margin-top: 10px;
-}
+  .description {
+    text-align: center;
+    padding: 0 20px;
+    margin-bottom: 58px;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: PublicSans-Regular;
+    color: #000000;
+    opacity: 0.5;
+  }
 
-.forgot {
-  color: rgb(2, 123, 236);
+  .btnBlock {
+    max-width: 275px;
+    width: 100%;
+    margin: 0 auto;
+
+    button:hover {
+      color: #fff;
+    }
+  }
+
 }
 
 .syncStatusWrapper {

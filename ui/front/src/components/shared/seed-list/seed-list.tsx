@@ -1,10 +1,11 @@
 import { shuffle } from '@libs/utils';
 import React from 'react';
-import styles from './seed-list.module.css';
+import styles from './seed-list.module.scss';
 
 interface SeedListProps {
   data: (string | null) [];
   errors: boolean[];
+  readOnly?:boolean;
   isShuffle?: boolean;
   isSlice?: boolean;
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -12,7 +13,7 @@ interface SeedListProps {
 }
 
 function SeedList({
-  data, errors, isShuffle, isSlice, onInput, validatePasted
+  data, errors, isShuffle, isSlice, readOnly, onInput, validatePasted
 }:SeedListProps) {
   const shuffleIndexes = React.useMemo(() => shuffle(data), []);
 
@@ -23,6 +24,7 @@ function SeedList({
     return (
       <li className={className} key={i} data-index={i + 1}>
         <input
+          readOnly={readOnly}
           required
           defaultValue={el ?? ''}
           data-index={i}

@@ -1,5 +1,4 @@
 import { Preload } from '@components/shared';
-import { NavButton } from '@components/shared/nav-button';
 import { RestoreStatus } from '@libs/constants';
 import { useRestore } from '@libs/hooks/container/auth';
 import { UpdatingNode } from '../update-node';
@@ -51,12 +50,6 @@ function Restore() {
   return (
     <div className={styles.wrapper}>
       {currentMode()}
-      <div className={styles.btnNav}>
-        <NavButton
-          name="Back"
-          link="/auth/login"
-        />
-      </div>
     </div>
   );
 }

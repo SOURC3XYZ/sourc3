@@ -1,7 +1,7 @@
-import { NavButton, SeedList } from '@components/shared';
+import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
 import { useEffect, useState } from 'react';
-import styles from './seed-restore.module.css';
+import styles from './seed-restore.module.scss';
 
 type SeedRestoreProps = {
   seed: string[];
@@ -39,11 +39,10 @@ function SeedRestore({
   };
   return (
     <div className={styles.wrapper}>
+      <h2>Secret phrase</h2>
       <p className={styles.description}>
-        To start using SOURC3 you need to first create an account.
-        Each account is uniquely identified by a 12 word mnemonic
-        phrase that is secret and should not be revealed to anyone.
-        Make at least 2 copies of the phrase in case of emergency
+        Enter the words from the secret phrase corresponding
+        the numbers shown below.  You can skip the confirmation.
       </p>
       <SeedList
         data={seed}
@@ -51,12 +50,20 @@ function SeedRestore({
         onInput={validateDecor}
         validatePasted={handlePaste}
       />
-      <div className={styles.btnNav}>
-        <NavButton
-          isDisabled={isDisabled}
-          onClick={next}
-          name="Complete verification"
-        />
+      <div className={styles.btnBlockWrapper}>
+        <AuthBtnBlock>
+          <>
+            <NavButton
+              isDisabled={isDisabled}
+              onClick={next}
+              name="Complete verification"
+            />
+            <NavButton
+              name="Back"
+              link="/auth/login"
+            />
+          </>
+        </AuthBtnBlock>
       </div>
     </div>
   );

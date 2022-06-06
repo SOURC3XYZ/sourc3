@@ -1,5 +1,4 @@
-import Text from 'antd/lib/typography/Text';
-import { NavButton, SeedList } from '@components/shared';
+import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
 import styles from '../sign-up.module.scss';
 
@@ -14,24 +13,32 @@ function SignUp({
 }: SignUpProps) {
   const errors = new Array(WALLET.SEED_PHRASE_COUNT).fill(true);
   return (
-    <div className={styles.wrapper}>
-      <Text>
-        To start using SOURC3 you need to first create an account.
-        Each account is uniquely identified by a 12 word mnemonic
-        phrase that is secret and should not be revealed to anyone.
-        Make at least 2 copies of the phrase in case of emergency
-      </Text>
+    <>
+      <h2>Secret phrase</h2>
+      <p className={styles.description}>
+        Copy the words of the secret phrase (The order is important!).
+        Without the phrase you will not be able to recover your account.
+      </p>
       <SeedList
+        readOnly
         data={seed}
         errors={errors}
       />
-      <div className={styles.btnNav}>
-        <NavButton
-          onClick={next}
-          name="Complete verification"
-        />
+      <div className={styles.btnBlock}>
+        <AuthBtnBlock>
+          <>
+            <NavButton
+              onClick={next}
+              name="Complete phrase"
+            />
+            <NavButton
+              name="Back"
+              link="/auth/"
+            />
+          </>
+        </AuthBtnBlock>
       </div>
-    </div>
+    </>
   );
 }
 

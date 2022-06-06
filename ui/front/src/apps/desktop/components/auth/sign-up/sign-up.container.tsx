@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { Preload } from '@components/shared';
-import NavButton from '@components/shared/nav-button/nav-button';
 import { MODE } from '@libs/constants';
 import { useSignUp } from '@libs/hooks/container/sign-up';
 import styles from './sign-up.module.scss';
@@ -44,12 +43,6 @@ function SignUp() {
   return (
     <div className={styles.wrapper}>
       <CurrentMode />
-      <div className={styles.btnNav}>
-        <NavButton
-          name="Back"
-          link="/auth/"
-        />
-      </div>
     </div>
   );
 }

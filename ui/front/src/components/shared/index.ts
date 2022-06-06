@@ -24,3 +24,4 @@ export * from './organizations';
 export * from './projects';
 export * from './create-modal';
 export * from './entity';
+export * from './auth-btn-block';
