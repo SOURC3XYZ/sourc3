@@ -9,6 +9,7 @@ type CallApiProps<T> = {
   callID: string;
   method: string;
   params: T;
+  isContractInit?: boolean;
 };
 
 type MessageType = {

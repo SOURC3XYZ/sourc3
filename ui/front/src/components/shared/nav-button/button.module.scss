@@ -1,0 +1,35 @@
+.button {
+    display: block;
+    min-width: 163px;
+    padding: 15px 0;
+    background-color: transparent;
+    border: 1px solid #FF791F;
+    box-sizing: border-box;
+    border-radius: 8px;
+    color: #FF791F;
+    font-family: PublicSans-Regular;
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 20px;
+    // transition: background-color, color .1s;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #FF791F;
+    color: black;
+}
+
+.button {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.button [class~=ant-btn] {
+    border-radius: 7;
+}
+
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

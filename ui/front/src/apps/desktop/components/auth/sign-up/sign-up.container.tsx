@@ -47,7 +47,7 @@ function SignUp() {
       <div className={styles.btnNav}>
         <NavButton
           name="Back"
-          link="/auth"
+          link="/auth/"
         />
       </div>
     </div>

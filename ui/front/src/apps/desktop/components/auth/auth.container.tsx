@@ -21,7 +21,7 @@ function Auth() {
 
   const data = [
     {
-      link: '', component: <Start />
+      link: '/', component: <Start />
     },
     {
       link: 'sign-up', component: <SignUp />
@@ -40,7 +40,7 @@ function Auth() {
 
   const fallback = ({ message }:FallbackProps) => (
     <div style={{ margin: '0 auto' }}>
-      <FailPage comeBack="/auth" subTitle={message || 'invalid pass'} isBtn />
+      <FailPage comeBack="/auth/" subTitle={message || 'invalid pass'} isBtn />
     </div>
   );
 

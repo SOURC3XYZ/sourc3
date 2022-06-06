@@ -2,6 +2,7 @@ import React from 'react';
 import { Preload } from '@components/shared';
 import { useAsyncError, useObjectState } from '@libs/hooks/shared';
 import { PromiseArg } from '@types';
+import { Sourc3Logo } from '@components/svg';
 import styles from './login.module.scss';
 import { UpdatingNode } from '../update-node';
 import { Password } from './password';
@@ -40,11 +41,28 @@ function Login({ startWalletApi, statusFetcher }: LoginProps) {
 
   return (
     <div className={styles.wrapper}>
+      <div className={styles.logo}>
+        <Sourc3Logo fill="black" />
+        <h3>desktop client</h3>
+      </div>
+      <div className={styles.intro}>
+        <h2>Sign in</h2>
+      </div>
       {
         status === STATUS.LOADING
-          ? <Preload message="Loading" />
+          ? (
+            <div>
+              <Preload message="Loading" />
+            </div>
+          )
           : status === STATUS.SYNC
-            ? <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
+            ? (
+              <UpdatingNode
+                backButton
+                statusFetcher={statusFetcher}
+                errorCatcher={throwError}
+              />
+            )
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
       }
     </div>

@@ -1,1 +1,1 @@
-export { default as useWebApp } from './useWebApp';
+export { default as useWebMain } from './useWebMain';

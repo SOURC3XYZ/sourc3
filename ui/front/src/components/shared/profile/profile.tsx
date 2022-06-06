@@ -44,7 +44,7 @@ function Profile({ pKey }:profileType) {
         <Button type="link">Support</Button>
       </Menu.Item>
       <Menu.Item>
-        <Link type="link" to="/auth">Log out</Link>
+        <Link type="link" to="/auth/">Log out</Link>
       </Menu.Item>
     </Menu>
   );
@@ -59,7 +59,6 @@ function Profile({ pKey }:profileType) {
         >
           <div>
             <Avatar size="large" icon={<UserOutlined />} />
-            <span className={styles.disabled}>yourmail.@gmail.com</span>
           </div>
         </Dropdown>
       </div>

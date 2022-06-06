@@ -26,10 +26,17 @@ function UpdatingNode({ backButton, statusFetcher, errorCatcher }:UpdatingNodePr
 
   const backBtn = useMemo(() => (
     !!backButton && (
-      <div style={{ margin: '30px auto 0' }}>
+      <div style={{ margin: '157px auto 0' }}>
         <NavButton
+          inlineStyles={{
+            display: 'block',
+            width: '278px',
+            margin: '0 auto',
+            color: 'rgba(0, 0, 0, 0.3)',
+            borderColor: 'rgba(0, 0, 0, 0.3)'
+          }}
           name="Back"
-          link="/auth"
+          link="/auth/"
         />
       </div>
     )
@@ -37,14 +44,21 @@ function UpdatingNode({ backButton, statusFetcher, errorCatcher }:UpdatingNodePr
 
   return (
     <>
-      <Text style={{ margin: '0 auto 30px' }}>
-        Updating node
+      <Text style={{
+        color: 'rgba(0, 0, 0, 0.3)',
+        display: 'block',
+        margin: '0 auto 30px',
+        textAlign: 'center'
+      }}
+      >
+        Unpacking blockchain info
       </Text>
       <Progress
         strokeColor={{
-          from: '#108ee9',
-          to: '#87d068'
+          from: '#3FD05A',
+          to: '#3FD05A'
         }}
+        showInfo
         percent={status}
         status="active"
       />

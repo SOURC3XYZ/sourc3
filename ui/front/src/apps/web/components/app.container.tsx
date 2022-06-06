@@ -15,13 +15,13 @@ import {
 } from 'react';
 import { Footer } from 'antd/lib/layout/layout';
 import { LoadingMessages } from '@libs/constants';
-import { useWebApp } from '@libs/hooks/container/web-app';
+import { useWebMain } from '@libs/hooks/container/web-app';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 
 function Main() {
-  const { isApiConnected, isOnLending, connectBeamApi } = useWebApp();
+  const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
 
   const routesData = [
     {

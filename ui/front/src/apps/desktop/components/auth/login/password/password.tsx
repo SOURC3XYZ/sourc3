@@ -1,9 +1,7 @@
 import { NavButton } from '@components/shared';
-import { Input, Typography } from 'antd';
+import { Input } from 'antd';
 import { Link } from 'react-router-dom';
 import styles from '../login.module.scss';
-
-const { Text } = Typography;
 
 type PasswordProps = {
   pass: string,
@@ -11,36 +9,34 @@ type PasswordProps = {
   onSubmit: () => void
 };
 
+const placeholder = 'Enter your password';
+
 function Password({ pass, onInput, onSubmit }:PasswordProps) {
   return (
     <>
-      <Text style={{ margin: '0 auto 30px' }}>
-        Sign In using your password
-      </Text>
-
-      <Text>Password</Text>
-
       <label htmlFor="password">
         <Input.Password
+          className={styles.password}
+          placeholder={placeholder}
           onChange={onInput}
           value={pass}
           type="password"
         />
       </label>
 
-      <Link to="/auth/restore">
-        I forgot my password
+      <Link className={styles.forgot} to="/auth/restore">
+        Forgot password?
       </Link>
 
       <div className={styles.btnNav}>
         <NavButton
-          name="Back"
-          link="/auth"
-        />
-        <NavButton
           name="Sign in"
           link="/auth/login"
           onClick={onSubmit}
+        />
+        <NavButton
+          name="Back"
+          link="/auth/"
         />
       </div>
     </>
