@@ -1,5 +1,7 @@
 import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
+import { Popup } from '@components/shared/popup';
 import { WALLET } from '@libs/constants';
+import { useState } from 'react';
 import styles from '../sign-up.module.scss';
 
 type SignUpProps = {
@@ -12,6 +14,12 @@ function SignUp({
   next
 }: SignUpProps) {
   const errors = new Array(WALLET.SEED_PHRASE_COUNT).fill(true);
+
+  const [isPopup, setIsPopup] = useState(false);
+  const onCancel = () => {
+    setIsPopup(false);
+  };
+
   return (
     <>
       <h2>Secret phrase</h2>
@@ -28,7 +36,7 @@ function SignUp({
         <AuthBtnBlock>
           <>
             <NavButton
-              onClick={next}
+              onClick={() => setIsPopup(true)}
               name="Complete phrase"
             />
             <NavButton
@@ -38,6 +46,24 @@ function SignUp({
           </>
         </AuthBtnBlock>
       </div>
+      <Popup
+        visible={isPopup}
+        title="Restore wallet or create new one"
+        onCancel={onCancel}
+        agree
+        confirmButton={(
+          <NavButton
+            name="I understand"
+            inlineStyles={{ width: '278px' }}
+            onClick={next}
+          />
+        )}
+      >
+        <span>
+          It is stricly recommended to write down the secret phrase on a paper.
+          Storing it in a files makes it prone to cyber attacks and therefore less secure
+        </span>
+      </Popup>
     </>
   );
 }

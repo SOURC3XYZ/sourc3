@@ -34,6 +34,9 @@ function Auth() {
       />
     },
     {
+      link: 'start', component: <Start restore />
+    },
+    {
       link: 'restore', component: <Restore />
     }
   ];

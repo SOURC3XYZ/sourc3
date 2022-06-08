@@ -140,7 +140,24 @@
     }
   }
 }
-
+.wrapper_light{
+  composes: wrapper;
+  color: black;
+  .logo{
+    h3{color: black}
+  }
+  .intro{
+    h2{
+      color: black;
+    }
+  }
+  .version{
+    color: black;
+  }
+  button:hover{
+    color: white;
+  }
+}
 @keyframes fadein {
   from {
     opacity: 0;

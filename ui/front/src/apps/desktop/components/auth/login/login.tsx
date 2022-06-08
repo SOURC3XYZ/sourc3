@@ -13,7 +13,6 @@ type LoginProps = {
   statusFetcher: (resolve: PromiseArg<{ status: number }>) => void,
   startWalletApi: (password: string, cb: (err?: Error) => void) => void,
 };
-
 type LoginState = {
   pass: string,
   status: STATUS,

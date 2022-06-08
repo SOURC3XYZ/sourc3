@@ -27,22 +27,46 @@
 }
 
 @font-face {
-    font-family: "PublicSans-Bold";
+    font-family: "PublicSans-Thin";
     font-style: normal;
-    font-weight: normal;
-    src: local('PublicSans-Bold'), url("@assets/fonts/PublicSans-Bold.woff") format("woff")
+    font-weight: 100;
+    src: local('PublicSans-Thin'), url("@assets/fonts/PublicSans-Thin.woff") format("woff")
 }
 
 @font-face {
     font-family: "PublicSans-Regular";
     font-style: normal;
-    font-weight: normal;
+    font-weight: 400;
     src: local('PublicSans-Regular'), url("@assets/fonts/PublicSans-Regular.woff") format("woff")
 }
 
 @font-face {
-    font-family: "PublicSans-Thin";
+    font-family: "PublicSans-Medium";
     font-style: normal;
-    font-weight: normal;
-    src: local('PublicSans-Thin'), url("@assets/fonts/PublicSans-Thin.woff") format("woff")
+    font-weight: 500;
+    src: local('PublicSans-Medium'), url("@assets/fonts/PublicSans-Medium.woff") format("woff")
+}
+@font-face {
+    font-family: "PublicSans-SemiBold";
+    font-style: normal;
+    font-weight: 600;
+    src: local('PublicSans-SemiBold'), url("@assets/fonts/PublicSans-SemiBold.woff") format("woff")
+}
+@font-face {
+    font-family: "PublicSans-Bold";
+    font-style: normal;
+    font-weight: 700;
+    src: local('PublicSans-Bold'), url("@assets/fonts/PublicSans-Bold.woff") format("woff")
+}
+@font-face {
+    font-family: "PublicSans-ExtraBold";
+    font-style: normal;
+    font-weight: 800;
+    src: local('PublicSans-ExtraBold'), url("@assets/fonts/PublicSans-ExtraBold.woff") format("woff")
+}
+@font-face {
+    font-family: "PublicSans-Black";
+    font-style: normal;
+    font-weight: 900;
+    src: local('PublicSans-Black'), url("@assets/fonts/PublicSans-Black.woff") format("woff")
 }
