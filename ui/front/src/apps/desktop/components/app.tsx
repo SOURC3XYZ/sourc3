@@ -25,7 +25,7 @@ function App() {
   const routesData = [
     {
       path: '/',
-      element: <Navigate replace to="auth/restore" />
+      element: <Navigate replace to="auth/" />
     },
     {
       path: 'auth/*',
