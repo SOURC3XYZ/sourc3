@@ -20,7 +20,7 @@ type MessageType = {
 
 type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 
-const headlessNode = 'eu-node01.masternet.beam.mw:8200';
+const headlessNode = 'eu-node01.dappnet.beam.mw:8200';
 
 type BeamApiReqHandlers = {
   resolve: (value: ResultObject) => void,
