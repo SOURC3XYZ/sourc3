@@ -1,4 +1,4 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useAsyncError, useCallApi } from '@libs/hooks/shared';
 import { useRepoAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
@@ -11,8 +11,10 @@ type LocationState = {
 
 const useUserRepos = () => {
   const {
-    id: currentId, repoMap, filesMap, tree, prevReposHref, repoMetas
+    id: currentId, repoMap, branches, filesMap, tree, prevReposHref, repoMetas
   } = useSelector(({ repo }) => repo);
+
+  const [callApi, isLoading, callApiErr] = useCallApi();
 
   const setError = useAsyncError();
   const {
@@ -34,6 +36,7 @@ const useUserRepos = () => {
 
   return {
     id: numId,
+    branches,
     isLoaded,
     repoName,
     repoMap: repoMap as NonNullable<typeof repoMap>,
@@ -41,6 +44,9 @@ const useUserRepos = () => {
     tree,
     prevReposHref,
     repoMetas,
+    callApi,
+    isLoading,
+    callApiErr,
     updateTree: update,
     killTree,
     loadingHandler,

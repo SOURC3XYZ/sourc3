@@ -10,7 +10,9 @@ import styles from './repo.module.scss';
 function UserRepos() {
   const containerProps = useUserRepos();
 
-  const { isLoaded, loadingHandler, repoName } = containerProps;
+  const {
+    isLoaded, loadingHandler, repoName
+  } = containerProps;
 
   const fallback = (props:any) => {
     const updatedProps = { ...props, subTitle: 'no data' };

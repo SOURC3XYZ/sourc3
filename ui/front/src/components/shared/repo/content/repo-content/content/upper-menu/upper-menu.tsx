@@ -1,98 +1,95 @@
 import { CustomAntdSelect } from '@components/shared/select';
-import { clipString, setBranchAndCommit } from '@libs/utils';
-import { BranchCommit } from '@types';
+import { clipString } from '@libs/utils';
+import { Branch, BranchCommit } from '@types';
 import { Row, Col, Select } from 'antd';
-import { NavigateFunction } from 'react-router-dom';
+import { useMemo } from 'react';
 import {
   BreadCrumbMenu,
-  RepoMeta,
-  RepoDescription
+  RepoMeta
+  // RepoDescription
 } from './content';
 import styles from './upper-menu.module.scss';
 
 type UpperMenuProps = {
-  branch: string,
+  branch: Branch,
   baseUrl: string,
-  repoMap: Map<string, BranchCommit[]>,
+  branches: Branch[],
+  setBranch: (branch: Branch) => void
   pathname:string,
-  commit: BranchCommit,
+  commit: BranchCommit | null,
   prevReposHref: string | null,
-  navigate:NavigateFunction
 };
 
-const selectBranchOptionMap = (el: string, i:number) => (
+const selectBranchOptionMap = (el: Branch, i:number) => (
   <Select.Option
-    value={el}
-    key={`${el}-select-${i}`}
+    value={el.name}
+    key={`${el.name}-select-${i}`}
   >
-    {el}
+    {clipString(el.name)}
   </Select.Option>
 );
 
-const selectCommitOptionMap = (el: BranchCommit, i:number) => (
-  <Select.Option
-    value={el.commit_oid}
-    key={`${el.commit_oid}-select-${i}`}
-  >
-    {el.raw_message}
-  </Select.Option>
-);
+// const selectCommitOptionMap = (el: BranchCommit, i:number) => (
+//   <Select.Option
+//     value={el.commit_oid}
+//     key={`${el.commit_oid}-select-${i}`}
+//   >
+//     {el.raw_message}
+//   </Select.Option>
+// );
 
 function UpperMenu({
+  branches,
+  setBranch,
   branch,
   commit,
-  repoMap,
   pathname,
   prevReposHref,
-  baseUrl,
-  navigate
+  baseUrl
 }:UpperMenuProps) {
-  const { commit_oid } = commit;
-  const keys = Array.from(repoMap.keys());
-  const commits = repoMap.get(branch) as BranchCommit[];
+  const root = commit && `${baseUrl}/${clipString(branch.name)}/${commit.commit_oid}`;
 
-  const root = `${baseUrl}/${branch}/${commit.commit_oid}`;
-
-  let treePath = clipString(pathname, root);
-  treePath = pathname !== treePath ? treePath : '';
-
-  const onChange = (selectedCommit:string, selectedBranch = branch) => {
-    const {
-      branch: recBranch, commit: recCommit
-    } = setBranchAndCommit(repoMap, selectedBranch, selectedCommit);
-    navigate(`${baseUrl}/${recBranch}/${recCommit.commit_oid}${treePath}`);
+  const onBranchChange = (selectedBranch: string) => {
+    const finded = branches.find((el) => el.name === selectedBranch);
+    if (finded) setBranch(finded);
   };
 
-  const onBranchChange = (selectedBranch: string) => onChange(commit_oid, selectedBranch);
+  const breadcrumbs = useMemo(() => (root ? (
+    <BreadCrumbMenu
+      root={root}
+      pathname={pathname}
+      prevReposHref={prevReposHref}
+    />
+  )
+    : null), [root]);
 
-  const onCommitChange = (selectedCommit:string) => onChange(selectedCommit);
+  const repoMeta = useMemo(() => (
+    commit ? (
+      <Col span={24}>
+        <RepoMeta commit={commit} />
+      </Col>
+    )
+      : null
+  ), [commit]);
 
   return (
     <>
-      <Row>
-        <BreadCrumbMenu
-          pathname={pathname}
-          branch={branch}
-          commit={commit_oid}
-          baseUrl={baseUrl}
-          prevReposHref={prevReposHref}
-        />
-      </Row>
+      <Row>{breadcrumbs}</Row>
       {/* <RepoDescription /> */}
       <Row align="middle" style={{ marginTop: '40px' }}>
         <Col span={7}>
           <CustomAntdSelect
-            defaultValue={keys[keys.length - 1]}
+            defaultValue={branch.name}
             className={styles.branch}
-            value={branch}
+            value={branch.name}
             onChange={onBranchChange}
             title="Branch"
           >
-            {keys.map(selectBranchOptionMap)}
+            {branches.map(selectBranchOptionMap)}
           </CustomAntdSelect>
         </Col>
 
-        <Col span={8}>
+        {/* <Col span={8}>
           <CustomAntdSelect
             title="Commits"
             value={commit_oid}
@@ -102,13 +99,11 @@ function UpperMenu({
           >
             {commits.map(selectCommitOptionMap)}
           </CustomAntdSelect>
-        </Col>
+        </Col> */}
       </Row>
 
       <Row style={{ marginTop: '1rem' }}>
-        <Col span={24}>
-          <RepoMeta commit={commit} />
-        </Col>
+        {repoMeta}
       </Row>
     </>
   );

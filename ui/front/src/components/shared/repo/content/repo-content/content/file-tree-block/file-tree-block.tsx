@@ -1,5 +1,5 @@
 import { Preload } from '@components/shared';
-import { dateCreator, getTree } from '@libs/utils';
+import { getTree } from '@libs/utils';
 import {
   DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
@@ -18,7 +18,7 @@ type FileTreeBlockProps = {
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
-  time: number;
+  // time: number;
   updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void;
 };
 
@@ -62,7 +62,7 @@ const leafCreator = (url:string, node: DataNode) => {
 };
 
 function FileTreeBlock({
-  id, tree, pathname, pathArray, time, updateTree
+  id, tree, pathname, pathArray, updateTree
 }:FileTreeBlockProps) {
   const setError = useAsyncError();
 

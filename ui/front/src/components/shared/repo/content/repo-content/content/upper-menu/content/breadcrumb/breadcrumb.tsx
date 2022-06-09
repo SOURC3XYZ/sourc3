@@ -6,10 +6,8 @@ import styles from './breadcrumb.module.scss';
 
 type BreadCrumbMenuProps = {
   prevReposHref: string | null;
+  root:string;
   pathname:string;
-  baseUrl: string;
-  branch:string;
-  commit:string;
 };
 
 type ArrayPath = {
@@ -40,9 +38,9 @@ const hrefCreator = (path: string[], elements: ArrayPath[] = []):ArrayPath[] => 
 };
 
 function BreadCrumbMenu({
-  prevReposHref, pathname, baseUrl, branch, commit
+  root, prevReposHref, pathname
 }:BreadCrumbMenuProps) {
-  const root = `${baseUrl}/${branch}/${commit}`;
+  // const root = `${baseUrl}/${branch}/${commit}`;
 
   let treePath = clipString(pathname, `${root}/`);
   treePath = pathname !== treePath ? treePath : '';

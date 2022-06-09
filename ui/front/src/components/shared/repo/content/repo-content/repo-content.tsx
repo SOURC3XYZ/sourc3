@@ -1,8 +1,10 @@
 import { ErrorBoundary } from '@components/hoc';
 import { FailPage } from '@components/shared';
+import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
 import { useAsyncError } from '@libs/hooks/shared';
-import { setBranchAndCommit } from '@libs/utils';
+import { clipString, setBranchAndCommit } from '@libs/utils';
 import {
+  Branch,
   BranchCommit,
   BranchName,
   DataNode,
@@ -20,7 +22,8 @@ export type UpperMenuProps = {
   id: RepoId;
   repoName: string;
   tree: DataNode[] | null;
-  repoMap: Map<BranchName, BranchCommit[]>;
+  branches: Branch[];
+  // repoMap: Map<BranchName, BranchCommit[]>;
   filesMap: Map<MetaHash, string>;
   prevReposHref: string | null;
   updateTree: (
@@ -41,8 +44,22 @@ const splitUrl = (routes: string[], fullUrl: string) => {
   };
 };
 
-const setBranchCommit = (repoMap:Map<BranchName, BranchCommit[]>, tree:string) => {
-  const [branch, commit] = tree.split('/');
+// const setBranchCommit = (repoMap:Map<BranchName, BranchCommit[]>, tree:string) => {
+//   const [branch, commit] = tree.split('/');
+//   if (branch && commit) {
+//     return setBranchAndCommit(repoMap, branch, commit);
+//   }
+//   const masterBranch = Array.from(repoMap.keys())[0];
+//   const masterCommits = repoMap.get(masterBranch) as BranchCommit[];
+//   const lastCommit = masterCommits[masterCommits.length - 1];
+//   return {
+//     branch: masterBranch,
+//     commit: lastCommit
+//   };
+// };
+
+const setBranchCommit = (branches: Branch[], params:string) => {
+  const [branch, commit] = params.split('/');
   if (branch && commit) {
     return setBranchAndCommit(repoMap, branch, commit);
   }
@@ -57,7 +74,8 @@ const setBranchCommit = (repoMap:Map<BranchName, BranchCommit[]>, tree:string) =
 
 function RepoContent({
   id,
-  repoMap,
+  branches,
+  // repoMap,
   filesMap,
   tree,
   prevReposHref,
@@ -68,21 +86,29 @@ function RepoContent({
   const setError = useAsyncError();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+
+  const {
+    branch,
+    commit,
+    loading,
+    err,
+    setBranch
+  } = useRepoContent(id, branches);
   const { baseUrl, params } = splitUrl(['tree', 'blob'], pathname);
-  const { branch, commit } = setBranchCommit(repoMap, params);
+  // const { branch, commit } = setBranchCommit(branches, params);
   const splitted = pathname.split('/');
 
-  const pathArray = splitted.slice(splitted.indexOf(commit.commit_oid) + 1);
+  const pathArray = commit && splitted.slice(splitted.indexOf(commit.commit_oid) + 1);
 
   useEffect(() => {
-    if (repoMap === null) setError(new Error('no data'));
-    navigate(`tree/${branch}/${commit.commit_oid}`);
-  }, []);
+    // if (repoMap === null) setError(new Error('no data'));
+    if (commit) navigate(`tree/${clipString(branch.name)}/${commit.commit_oid}`);
+  }, [commit]);
 
   useEffect(() => {
     if (tree) killTree();
-    updateTree({ oid: commit.tree_oid }, setError);
-  }, [commit]);
+    if (commit) updateTree({ oid: commit.tree_oid }, setError);
+  }, [pathname]);
 
   const fallback = (props:any) => {
     const updatedProps = { ...props, subTitle: props.message || 'no data' };
@@ -96,9 +122,9 @@ function RepoContent({
         baseUrl={baseUrl}
         branch={branch}
         prevReposHref={prevReposHref}
-        repoMap={repoMap}
         commit={commit}
-        navigate={navigate}
+        branches={branches}
+        setBranch={setBranch}
       />
       <Routes>
         <Route
@@ -111,7 +137,7 @@ function RepoContent({
                 tree={tree}
                 updateTree={updateTree}
                 pathArray={pathArray}
-                time={commit.create_time_sec}
+                // time={commit.create_time_sec}
               />
             </ErrorBoundary>
           )}
