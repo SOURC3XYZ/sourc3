@@ -58,11 +58,6 @@ function createWindow() {
         path.join(__dirname, '..', '..', '..', 'git-remote-sourc3'),
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
-    } else if (process.platform === 'win32') {
-      CopyIfNotExists(
-        path.join(__dirname, '..', '..', 'git-remote-sourc3.exe'),
-        path.join(__dirname, '..', '..', '..', 'git-remote-sourc3.exe')
-      );
     } else if (process.platform === 'darwin') {
       console.log(app.getPath('exe'));
       const dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
