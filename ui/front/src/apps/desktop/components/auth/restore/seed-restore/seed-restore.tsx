@@ -39,10 +39,9 @@ function SeedRestore({
   };
   return (
     <div className={styles.wrapper}>
-      <h2>Secret phrase</h2>
+      <h2>Restore wallet</h2>
       <p className={styles.description}>
-        Enter the words from the secret phrase corresponding
-        the numbers shown below.  You can skip the confirmation.
+        Type in or paste your secret phrase .
       </p>
       <SeedList
         data={seed}
@@ -50,13 +49,13 @@ function SeedRestore({
         onInput={validateDecor}
         validatePasted={handlePaste}
       />
-      <div className={styles.btnBlockWrapper}>
+      <div className={styles.btnBlock}>
         <AuthBtnBlock>
           <>
             <NavButton
               isDisabled={isDisabled}
               onClick={next}
-              name="Complete verification"
+              name="Next"
             />
             <NavButton
               name="Back"

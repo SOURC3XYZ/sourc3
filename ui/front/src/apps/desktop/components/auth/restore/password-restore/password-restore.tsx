@@ -1,7 +1,7 @@
-import { EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
+// import { EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
 import { NavButton } from '@components/shared/nav-button';
-import { Input } from 'antd';
-import React from 'react';
+import { InputCustom } from '@components/shared/input';
+import React, { useRef } from 'react';
 import styles from './password-restore.module.scss';
 
 const STRENGTH_CRITERIA = [
@@ -14,7 +14,6 @@ const STRENGTH_CRITERIA = [
 
 type PasswordRestoreType = {
   onClick: (base: string, repeat:string) => void
-  isCreate?: boolean
 };
 
 function ratePassword(password: string): number {
@@ -25,23 +24,29 @@ function ratePassword(password: string): number {
   }, 0);
 }
 const BARS_MAX = 6;
-function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
+function PasswordRestore({ onClick }: PasswordRestoreType) {
   const [base, setBase] = React.useState('');
   const [repeat, setRepeat] = React.useState('');
 
+  const matched = base === repeat;
+  const valid = repeat === '' || matched;
+  const ready = base !== '' && matched;
+
+  const error = valid ? null : 'Passwords do not match';
+
   const points = ratePassword(base);
 
-  const setInputState = (
-    callback: React.Dispatch<React.SetStateAction<string>>
-  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target) callback(e.target.value);
-  };
+  // const setInputState = (
+  //   callback: React.Dispatch<React.SetStateAction<string>>
+  // ) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target) callback(e.target.value);
+  // };
 
   const onClickDecor = () => onClick(base, repeat);
 
-  const setVisibleIcon = (visible:boolean) => (
-    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
-
+  // const setVisibleIcon = (visible:boolean) => (
+  //   visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
+  console.log(ready);
   const bars = new Array(BARS_MAX).fill(null).map((v, index) => (index < points ? points : 0));
 
   const black = (num:any) => {
@@ -68,34 +73,33 @@ function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
       </p>
 
       <div className={styles.wrapperInput}>
-        {' '}
-        <Input.Password
-          className={styles.password}
-          onChange={setInputState(setBase)}
-          value={base}
+        <InputCustom
+          autoFocus
+          password
           placeholder="Enter your password"
-          iconRender={setVisibleIcon}
+          onChange={(e) => setBase(e.target.value)}
         />
-        <Input.Password
-          className={styles.password}
-          onChange={setInputState(setRepeat)}
-          value={repeat}
+        <InputCustom
+          valid={valid}
+          label={error}
           placeholder="Confirm your password"
-          iconRender={setVisibleIcon}
+          onChange={(e) => setRepeat(e.target.value)}
+          password={!!useRef}
         />
-        <div className={styles.wrapperList}>
-          <ul className={styles.listStyled}>
-            {bars.map((p, index) => (
-              <li
-                className={styles.listItemStyled}
-                key={index}
-                style={
-                  { backgroundColor: black(p) }
-                }
-              />
-            ))}
-          </ul>
-        </div>
+
+      </div>
+      <div className={styles.wrapperList}>
+        <ul className={styles.listStyled}>
+          {bars.map((p, index) => (
+            <li
+              className={styles.listItemStyled}
+              key={index}
+              style={
+                { backgroundColor: black(p) }
+              }
+            />
+          ))}
+        </ul>
       </div>
       <div className={styles.wrapperDescr}>
         <p className={styles.descrTitle}>
@@ -118,8 +122,10 @@ function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
 
       </div>
       <NavButton
-        name={isCreate ? 'Create' : 'Get Started'}
+        name="Get Started"
+        inlineStyles={{ width: '278px' }}
         onClick={onClickDecor}
+        isDisabled={!ready}
       />
       {/* </Space> */}
     </div>

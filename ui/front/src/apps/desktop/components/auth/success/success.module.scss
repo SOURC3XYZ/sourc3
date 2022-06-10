@@ -1,0 +1,64 @@
+.wrapper {
+	margin: 0 auto;
+	max-width: 485px;
+    padding-top: 120px;
+	text-align: center;
+
+	h2 {
+        font-weight: 900;
+		font-size: 32px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
+	}
+
+    .intro{
+        // margin-top: 145px;
+        margin-bottom: 100px;
+    }
+    .intro::before {
+        position: relative;
+        content: '';
+        left: 152px;
+        background: url('@assets/icons/cross-small.png') no-repeat;
+        width: 20px;
+        height: 112px;
+        display: block;
+        animation: fadein 4s alternate;
+        top: 102px;
+    }
+    .intro::after {
+        position: relative;
+        content: '';
+        left: 330px;
+        background: url('@assets/icons/cross-big.svg') no-repeat;
+        width: 33px;
+        height: 33px;
+        display: block;
+        animation: fadein 4s alternate;
+        top: -37px;
+    }
+    
+    h2::after {
+        position: relative;
+        content: '';
+        left: 110px;
+        background: url('@assets/icons/cross-big.svg') no-repeat;
+        width: 60px;
+        height: 33px;
+        display: block;
+        animation: fadein 4s alternate;
+        top: 181px;
+      }
+    button:hover{
+        color:white;
+    }
+}
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    
+    to {
+        opacity: 1;
+    }
+}

@@ -22,7 +22,7 @@ const useSignUp = () => {
     clearSeed2Validation(clearSeed, clearErrors);
   }, []);
 
-  const [mode, toggleMode] = useState<MODE>(MODE.SEED);
+  const [mode, toggleMode] = useState<MODE>(MODE.AUTHINFO);
 
   const setOk = (err?: Error) => {
     if (err) return throwError(err);
@@ -38,8 +38,16 @@ const useSignUp = () => {
   };
 
   const setNextMode = () => {
-    if (mode === MODE.SEED) return toggleMode(MODE.CONFIRM);
-    return toggleMode(MODE.PASS);
+    switch (mode) {
+      case MODE.AUTHINFO:
+        return toggleMode(MODE.SEED);
+      case MODE.SEED:
+        return toggleMode(MODE.CONFIRM);
+      case MODE.CONFIRM:
+        return toggleMode(MODE.PASS);
+      default:
+        return toggleMode(MODE.AUTHINFO);
+    }
   };
 
   return {

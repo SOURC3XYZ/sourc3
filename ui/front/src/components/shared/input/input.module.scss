@@ -1,0 +1,74 @@
+.wrapper {
+    position: relative;
+    border:none;
+    // .buttonEye {
+    //   display: none ;
+    // }
+    &:focus-within>.buttonEye{
+      display: inline-block !important;
+    }
+    .buttonEye{
+      margin: 0 0 0 -40px;
+      outline: none;
+      border: none;
+      background-color: transparent;
+      position: relative;
+      top: 6px;
+    }
+  }
+  
+  .input{
+    width: 400px;
+    height: 44px;
+    line-height: 20px;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 8px;
+    caret-color: orange;
+    padding: 0 41px 0 10px;
+    border:none;
+    outline: none;
+    background: rgba(0, 0, 0, 0.03);
+    font-family: "PublicSans-Regular";
+    &[type="password"]
+    {
+      letter-spacing: 4px  !important;
+      
+    }
+
+  &::placeholder {
+    font-family: "PublicSans-Regular";
+    color: rgba(0,0,0, 0.3);
+    font-size: 14px;
+    transform: translateX(1px);
+    letter-spacing: 0; 
+    
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  &:focus-within{
+    border: solid 1px #000;
+  }
+}
+.valid{
+  composes: input;
+  background: rgba(234, 0, 0, 0.03);
+  color: rgba(234, 0, 0, 1);
+  border: solid 1px rgba(234, 0, 0, 1);
+  &::placeholder {
+      border: solid 1px rgba(234, 0, 0, 1);
+  }
+}
+.label{
+  color: red;
+  margin-bottom: 15px;
+  text-align: left;
+  padding-left: 50px;
+}
+
+.eyeCrossed:hover{
+   g { fill: rgba(0,0,0, 0.3);}
+}

@@ -1,0 +1,36 @@
+.wrapper {
+	margin: 0 auto;
+	width: 100%;
+    font-family: "PublicSans-Regular";
+	padding-top: 120px;
+    
+	h2 {
+		font-weight: 900;
+		font-size: 32px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
+	}
+	.description, p{
+		font-size: 14px;
+		line-height: 20px;
+		font-weight: 400;
+		color: rgba(0, 0, 0, 0.5);
+	}
+    button{
+		&:hover{
+			color: white;
+		}
+	}
+
+    .wrapperIcons{
+    display: flex;
+    justify-content: space-around;
+    margin: 80px auto 96px;
+    .itemIcons{
+        max-width: 232px;
+        p{
+            margin-top: 32px;
+        }
+    }
+}
+}

@@ -1,0 +1,268 @@
+.password {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    padding: 12px;
+    color: rgba(0, 0, 0, 0.3);
+  
+    input {
+      background: transparent;
+    }
+  
+    margin-bottom: 16px;
+  }
+  
+  
+  .wrapper {
+    margin: 0 auto;
+    width: 395px;
+  }
+  
+  .btnNav {
+    margin-top: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  
+    button:hover {
+      color: #fff;
+    }
+  }
+  
+  .forgot {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  
+  .wrapper {
+    position: relative;
+    right: 100px;
+    margin: 0 auto;
+    font-family: PublicSans-Regular;
+    color: #000;
+    padding-top: 81px;
+  
+    .logo {
+      position: relative;
+  
+      svg {
+        display: block;
+        margin: 0 auto;
+        animation: fadein 3s alternate;
+      }
+  
+      h3 {
+        margin-top: 40px;
+        display: block;
+        color: #000;
+        margin: 0 auto;
+        text-align: center;
+        font-weight: 600;
+        font-family: VisbyRegular;
+      }
+    }
+    .statusBar{
+      margin-top: 40px;
+      width: 400px;
+    }
+  
+    .logo::before {
+      position: absolute;
+      content: '';
+      left: -10px;
+      background: url('@assets/img/orange-half-square.png') no-repeat;
+      width: 60px;
+      height: 146px;
+      display: block;
+      animation: fadein 4s alternate;
+      top: -17px;
+    }
+  
+    .logo::after {
+      position: absolute;
+      content: '';
+      top: -50px;
+      right: -243px;
+      background: url('@assets/img/rect-half.png');
+      width: 86px;
+      height: 86px;
+      display: block;
+      animation: fadein 2s alternate;
+    }
+  
+    h2 {
+      color: #000;
+      max-width: 609px;
+      font-weight: 900;
+      font-size: 32px;
+      line-height: 37.6px;
+      font-family: PublicSans-Black;
+  
+      span {
+        border-bottom: 5px solid #3FD05A;
+      }
+    }
+  
+    .version {
+      margin-top: 60px;
+      color: #FFFFFF;
+      opacity: 0.5;
+      text-align: center;
+    }
+  
+    .intro {
+      position: relative;
+      width: max-content;
+      margin: 178px auto 0;
+  
+      h1 {
+        color: white;
+        font-size: 80px;
+        font-weight: 900;
+        line-height: 90px;
+        max-width: 609px;
+        margin-bottom: 16px;
+      }
+  
+      p {
+        position: relative;
+        max-width: 669px;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 32px;
+        margin-bottom: 40px;
+      }
+  
+      p:after {
+        position: absolute;
+        content: '';
+        bottom: -105px;
+        right: -105px;
+        background: url('@assets/img/orange-half-square.png');
+        width: 121px;
+        height: 292px;
+        display: block;
+        animation: fadein 7s alternate;
+      }
+  
+      .button {
+        width: 154px;
+        height: 52px;
+        background: #FF791F;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+        border-radius: 8px;
+        color: black;
+        font-family: PublicSans-Regular;
+        font-size: 20px;
+        line-height: 20px;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  .wrapper::before {
+    background: url('@assets/img/rect.png');
+    position: absolute;
+    content: '';
+    bottom: 40%;
+    left: -55%;
+    width: 84px;
+    height: 84px;
+    display: block;
+    animation: fadein 10s alternate;
+  }
+  
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+  
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @media screen and (min-width: 1920px) and (max-width: 2560px) {
+    .wrapper {
+      right: 0 !important;
+    }
+  }
+  
+  @media screen and (max-width: 1280px) {
+    .wrapper {
+      right: 0 !important;
+    }
+  }
+  
+  @media screen and (max-width: 992px) {
+    .wrapper {
+      .logo::after {
+        display: none !important;
+      }
+  
+      .intro::before {
+        display: none !important;
+      }
+  
+      .intro p:after {
+        display: none !important;
+      }
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    .wrapper {
+      img {
+        margin: 0 auto;
+        margin-top: 40px !important;
+      }
+  
+      .intro {
+        margin: 25px 0 !important;
+        padding: 0 20px;
+      }
+    }
+  }
+  
+  @media screen and (max-width: 600px) {
+    .wrapper {
+      width: 100% !important;
+  
+      &::before {
+        left: unset !important;
+        right: 5px;
+        bottom: 0 !important;
+      }
+  
+      .logo {
+        width: 200px;
+      }
+  
+      .intro {
+        width: 100% !important;
+        padding: 0 10px;
+  
+        h1 {
+          font-size: 50px !important;
+          height: auto !important;
+          line-height: 1.2 !important;
+        }
+  
+        p {
+          font-size: 14px !important;
+        }
+  
+        button {
+          width: 130px !important;
+          height: 40px !important;
+          font-size: 14px !important;
+        }
+      }
+    }
+  }
+  
+  /* img{
+        position: relative;
+        right: 150px;
+      top: 60px;
+    } */

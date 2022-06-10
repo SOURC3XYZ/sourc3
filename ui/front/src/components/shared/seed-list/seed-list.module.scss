@@ -1,76 +1,102 @@
-.list {
+.listGenerated {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	grid-template-rows: repeat(3, 1fr);
 	justify-content: space-between;
 	padding: 0 0.6rem;
 	max-width: 36rem;
-	margin: 15px auto;
+	margin: 15px 300px;
 	gap: 16px;
+	justify-items: center;
+
+
+	& li {
+		// background: rgba(0, 0, 0, 0.03);
+		border-radius: 8px;
+		position: relative;
+		border: 1px solid rgba(255, 255, 255, 1);
+		display: inline-block;
+		padding-left: 46px;
+		padding-top: 12px;
+		padding-bottom: 12px;
+	}
+	& li:before {
+		position: absolute;
+		top: 6px;
+		left: 10px;
+		content: attr(data-index);
+		width: 24px;
+		height: 24px;
+		line-height: 22px;
+		border: 1px solid rgba(255, 255, 255, 1);
+		background: #000;
+		border-radius: 50%;
+		text-align: center;
+		font-family: PublicSans-Regular;
+		font-weight: 600;
+		font-size: 12px;
+		color: #fff;
+		box-sizing: border-box;
+	}
+	
+	& li input {
+		width: 100%;
+		background-color: transparent;
+		font-weight: 700;
+		font-size: 14px;
+		font-family: 'PublicSans-Bold';
+		border: none;
+		outline: none;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+		color: #000000;
+		caret-color: #FF791F;
+	}
 }
 
-.list li {
-	background: rgba(0, 0, 0, 0.03);
-	border-radius: 8px;
-	position: relative;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	display: inline-block;
-	padding-left: 46px;
-	padding-top: 12px;
-	padding-bottom: 12px;
-}
+.list {
+	composes: listGenerated;
+	margin: 15px auto;
+	& li {
+		background: rgba(0, 0, 0, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		&:before{
+			background: #fff;
+			color: rgba(0, 0, 0, 0.5);
+		}
+	}
 
-.list li:before {
-	position: absolute;
-	top: 6px;
-	left: 10px;
-	content: attr(data-index);
-	width: 24px;
-	height: 24px;
-	line-height: 23px;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	background: #000;
-	border-radius: 50%;
-	text-align: center;
-	font-family: PublicSans-Regular;
-	font-weight: 600;
-	font-size: 12px;
-	color: #fff;
-	box-sizing: border-box;
 }
-
-.list li input {
-	width: 100%;
-	background-color: transparent;
-	font-weight: 400;
-	font-size: 14px;
-	font-family: PublicSans-Regular;
-	border: none;
-	outline: none;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-	color: #000000;
-	caret-color: #FF791F;
-}
-
-.list li input:focus .list li {
-	background: rgba(0, 0, 0, 0.03);
-	border-color: #000000;
+.list li:focus-within{
+	border: solid 1px #000;
+	&:focus-within:before{
+	border: solid 1px #000;
+	color: #000;
+	}
 }
 
 .list li.errorName {
 	border: 1px solid #EA0000;
-	color: #EA0000;
+	background: rgba(234, 0, 0, 0.03);
+	input{
+		color: #EA0000;
+	}
+	&:before{
+		border: none;
+	}
 }
 
+
+
+
 li.errorName:before {
-	line-height: 23px;
+	line-height: 22px;
 	text-align: center;
 	font-family: PublicSans-Regular;
 	font-weight: 600;
 	font-size: 12px;
-	border: 1px solid #EA0000;
+	border: 1px solid #EA0000 !important;
 	background: #EA0000;
-	color: #FFFFFF;
+	color: #FFFFFF !important;
 }
 
 
@@ -80,11 +106,16 @@ li.errorName:before {
 }
 
 
-li.validName:before {
-	line-height: 23px;
-	border: none;
-	font-family: PublicSans-Regular;
-	border: 1px solid #000;
-	background: #FFFFFF;
-	color: #000;
+li.validName:before, li.validName:focus:before {
+	border: solid 1px #fff;
+	font-size: 12px;
+	line-height: 22px;
+	font-family: 'PublicSans-SemiBold';
+	background: #000;
+	color: #fff !important;
+}
+
+.listConfirm{
+compose: list;
+grid-template-columns: repeat(2, 1fr);
 }

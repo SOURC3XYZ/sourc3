@@ -1,37 +1,38 @@
 .wrapper {
 	margin: 0 auto;
-	padding-top: 120px;
-	max-width: 485px;
 	width: 100%;
-
-	h2 {
-		font-weight: 900;
-		font-size: 40px;
-		font-family: PublicSans-Regular;
-	}
-}
-
-
-.btnBlockWrapper {
-	margin-top: 92px;
-
-	button:hover {
-		color: #fff;
-	}
-}
-
-.btnNav {
-	margin-top: 92px;
-	display: flex;
-	justify-content: center;
-}
-
-.description {
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 20px;
-	padding: 0 60px;
-	margin: 0 auto 40px;
 	text-align: center;
-	color: #344054;
+    margin-top: 120px;
+
+  h2 {
+    margin: 0;
+    padding: 0 0 22px;
+    font-weight: 900;
+    font-size: 32px;
+    font-family: PublicSans-Black;
+  }
+
+  .description {
+    text-align: center;
+    padding: 0 20px;
+    margin-bottom: 58px;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: PublicSans-Regular;
+    color: #000000;
+    opacity: 0.5;
+  }
+
+  .btnBlock {
+    max-width: 275px;
+    width: 100%;
+    margin: 92px auto 0;
+    button:not(:last-child){
+        margin-bottom: 16px;
+    }
+    button:hover {
+      color: #fff;
+    }
+  }
 }

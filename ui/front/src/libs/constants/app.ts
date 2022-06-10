@@ -66,7 +66,7 @@ export enum ToastMessages {
   HEADLESS_CONNECTED = 'Headless wallet connected!',
 }
 
-export enum MODE { SEED, CONFIRM, PASS, OK, LOADING }
+export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
 
 export enum RestoreStatus { SEED, PASS, OK, LOADING }
 

@@ -1,6 +1,7 @@
 import { NavButton } from '@components/shared';
+import { InputCustom } from '@components/shared/input';
 import Popup from '@components/shared/popup/popup';
-import { Button, Input } from 'antd';
+import { Button } from 'antd';
 import { useState } from 'react';
 import styles from '../login.module.scss';
 
@@ -20,15 +21,13 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
 
   return (
     <>
-      <label htmlFor="password">
-        <Input.Password
-          className={styles.password}
-          placeholder={placeholder}
-          onChange={onInput}
-          value={pass}
-          type="password"
-        />
-      </label>
+      <InputCustom
+        autoFocus
+        placeholder={placeholder}
+        onChange={onInput}
+        value={pass}
+        type="password"
+      />
 
       <Button type="link" className={styles.forgot} onClick={() => (setIsPopup(true))}>
         Forgot password?

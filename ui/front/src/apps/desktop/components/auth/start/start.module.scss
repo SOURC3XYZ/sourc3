@@ -43,6 +43,8 @@
       color: white;
       margin: 0 auto;
       text-align: center;
+      font-weight: 600;
+      font-family: VisbyRegular;
     }
   }
 
@@ -72,11 +74,12 @@
 
   h2 {
     color: white;
-    font-size: 40px;
-    font-weight: 900;
     max-width: 609px;
     margin-bottom: 16px;
-    font-family: PublicSans-Regular;
+    font-weight: 900;
+		font-size: 40px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
 
     span {
       border-bottom: 5px solid #3FD05A;
