@@ -2964,10 +2964,10 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-beam-wasm-client-masternet@^7.1.12735:
-  version "7.1.12735"
-  resolved "https://registry.npmjs.org/beam-wasm-client-masternet/-/beam-wasm-client-masternet-7.1.12735.tgz"
-  integrity sha512-yELMJsl9vU3XALA90okKXNFVSXk1bPXtnvgl3rusu702yQ7r/OG+zGQFZTkbY5D0diyM/P1B0SG+FmaszYzgTg==
+beam-wasm-client-dappnet@^7.1.12820:
+  version "7.1.12820"
+  resolved "https://registry.yarnpkg.com/beam-wasm-client-dappnet/-/beam-wasm-client-dappnet-7.1.12820.tgz#c1679a0ce5f5ded92c1de194f000eb63e0faceba"
+  integrity sha512-LlOriFNjRZ+5d6nPoikjg79BZ7Yvncrn79lcfv6qAA8Ow/IVMeuN16nTB+4+4SRbXL07cejhQoFwEpsLsP3ckg==
 
 big.js@^3.1.3:
   version "3.2.0"

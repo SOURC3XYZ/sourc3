@@ -96,7 +96,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "antd": "^4.17.3",
     "axios": "^0.25.0",
-    "beam-wasm-client-masternet": "^7.1.12735",
+    "beam-wasm-client-dappnet": "^7.1.12820",
     "cross-env": "^7.0.3",
     "hexdump-js": "^0.1.0",
     "qwebchannel": "^5.9.0",
