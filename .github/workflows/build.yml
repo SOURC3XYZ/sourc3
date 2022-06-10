@@ -22,7 +22,6 @@ jobs:
             PLATFORM_NAME: linux
           - os: macos-10.15
             PLATFORM_NAME: mac
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -308,7 +307,7 @@ jobs:
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/git-remote-sourc3.exe
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/build/git-remote-sourc3.exe
         cp remote_helper/sourc3-remote.cfg ui/sourc3-remote.cfg
 
     - name: Build electron
