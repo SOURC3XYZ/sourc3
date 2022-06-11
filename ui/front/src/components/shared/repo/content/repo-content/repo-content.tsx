@@ -1,6 +1,4 @@
 import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
-import { useAsyncError } from '@libs/hooks/shared';
-import { clipString } from '@libs/utils';
 import {
   Branch,
   DataNode,
@@ -8,8 +6,7 @@ import {
   MetaHash, RepoId,
   UpdateProps
 } from '@types';
-import { useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useMemo } from 'react';
 import { FileText, FileTreeBlock, UpperMenu } from './content';
 
 export type UpperMenuProps = {
@@ -26,12 +23,11 @@ export type UpperMenuProps = {
     repoId: RepoId, oid: string, errorHandler: ErrorHandler) => void;
 };
 
-const splitUrl = (type: 'blob' | 'tree', fullUrl: string) => {
-  const currentRoute = fullUrl.split(type)[1] as string;
-  const params = fullUrl.split(currentRoute);
+const splitUrl = (branch: string, fullUrl: string) => {
+  const [baseUrl, params] = fullUrl.split(branch);
   return {
-    baseUrl: `${params[0]}${currentRoute}`,
-    params: params[1]?.substring(1)
+    baseUrl: `${baseUrl}${branch}`,
+    params: params.split('/').filter((el) => el)
   };
 };
 
@@ -68,43 +64,36 @@ function RepoContent({
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
 
-  const { baseUrl } = splitUrl(type, pathname);
-  const splitted = pathname.split('/');
+  const { baseUrl, params } = splitUrl(branchName, pathname);
 
-  const pathArray = commit && splitted.slice(splitted.indexOf(branchName) + 1);
-
-  const content = useMemo(() => {
-    if (pathArray) {
-      return type === 'blob'
-        ? (
-          <FileText
-            id={id}
-            tree={tree}
-            pathname={pathname}
-            filesMap={filesMap}
-            pathArray={pathArray}
-            getFileData={getFileData}
-            updateTree={updateTree}
-          />
-        )
-        : (
-          <FileTreeBlock
-            id={id}
-            pathname={pathname}
-            tree={tree}
-            updateTree={updateTree}
-            pathArray={pathArray}
-          />
-        );
-    } return null;
-  }, [pathArray, type]);
+  const content = useMemo(() => (type === 'blob'
+    ? (
+      <FileText
+        id={id}
+        tree={tree}
+        pathname={pathname}
+        filesMap={filesMap}
+        pathArray={params}
+        getFileData={getFileData}
+        updateTree={updateTree}
+      />
+    )
+    : (
+      <FileTreeBlock
+        id={id}
+        pathname={pathname}
+        tree={tree}
+        updateTree={updateTree}
+        pathArray={params}
+      />
+    )), [params, type]);
 
   return (
     <>
       <UpperMenu
-        pathname={pathname}
         baseUrl={baseUrl}
         branch={branchName}
+        params={params}
         prevReposHref={prevReposHref}
         commit={commit}
         branches={branches}

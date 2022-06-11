@@ -1,6 +1,6 @@
 import { RC, RequestSchema } from '@libs/action-creators';
 import { useAsyncError, useCallApi } from '@libs/hooks/shared';
-import { buf2hex, clipString, hexParser } from '@libs/utils';
+import { buf2hex, hexParser } from '@libs/utils';
 import {
   Branch,
   BranchCommit,

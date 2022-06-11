@@ -14,8 +14,8 @@ type UpperMenuProps = {
   branch: string,
   baseUrl: string,
   branches: Branch[],
+  params: string[],
   goToBranch: (name: string) => void
-  pathname:string,
   commit: BranchCommit | null,
   prevReposHref: string | null,
 };
@@ -40,23 +40,24 @@ const selectBranchOptionMap = (el: Branch, i:number) => (
 
 function UpperMenu({
   branches,
+  params,
   goToBranch,
   branch,
   commit,
-  pathname,
   prevReposHref,
   baseUrl
 }:UpperMenuProps) {
-  const root = commit && `${baseUrl}/${branch}/${commit.commit_oid}`;
+  const root = baseUrl;
 
-  const breadcrumbs = useMemo(() => (root ? (
-    <BreadCrumbMenu
-      root={root}
-      pathname={pathname}
-      prevReposHref={prevReposHref}
-    />
-  )
-    : null), [root]);
+  const breadcrumbs = useMemo(() => (
+    root ? (
+      <BreadCrumbMenu
+        root={root}
+        params={params}
+        prevReposHref={prevReposHref}
+      />
+    )
+      : null), [params]);
 
   const repoMeta = useMemo(() => (
     commit ? (

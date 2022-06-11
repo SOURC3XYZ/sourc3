@@ -1,13 +1,12 @@
 import { Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { clipString } from '@libs/utils';
 import styles from './breadcrumb.module.scss';
 
 type BreadCrumbMenuProps = {
   prevReposHref: string | null;
   root:string;
-  pathname:string;
+  params: string[];
 };
 
 type ArrayPath = {
@@ -38,14 +37,10 @@ const hrefCreator = (path: string[], elements: ArrayPath[] = []):ArrayPath[] => 
 };
 
 function BreadCrumbMenu({
-  root, prevReposHref, pathname
+  root, prevReposHref, params
 }:BreadCrumbMenuProps) {
   // const root = `${baseUrl}/${branch}/${commit}`;
-
-  let treePath = clipString(pathname, `${root}/`);
-  treePath = pathname !== treePath ? treePath : '';
-
-  const pathElements = hrefCreator(treePath.split('/'));
+  const pathElements = hrefCreator(params);
 
   const replacedRoot = root.replace('blob', 'tree');
   // TODO: DANIK refactor all calculations into one function
