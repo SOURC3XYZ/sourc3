@@ -11,10 +11,10 @@ import {
 import styles from './upper-menu.module.scss';
 
 type UpperMenuProps = {
-  branch: Branch,
+  branch: string,
   baseUrl: string,
   branches: Branch[],
-  setBranch: (branch: Branch) => void
+  goToBranch: (name: string) => void
   pathname:string,
   commit: BranchCommit | null,
   prevReposHref: string | null,
@@ -22,7 +22,7 @@ type UpperMenuProps = {
 
 const selectBranchOptionMap = (el: Branch, i:number) => (
   <Select.Option
-    value={el.name}
+    value={clipString(el.name)}
     key={`${el.name}-select-${i}`}
   >
     {clipString(el.name)}
@@ -40,19 +40,14 @@ const selectBranchOptionMap = (el: Branch, i:number) => (
 
 function UpperMenu({
   branches,
-  setBranch,
+  goToBranch,
   branch,
   commit,
   pathname,
   prevReposHref,
   baseUrl
 }:UpperMenuProps) {
-  const root = commit && `${baseUrl}/${clipString(branch.name)}/${commit.commit_oid}`;
-
-  const onBranchChange = (selectedBranch: string) => {
-    const finded = branches.find((el) => el.name === selectedBranch);
-    if (finded) setBranch(finded);
-  };
+  const root = commit && `${baseUrl}/${branch}/${commit.commit_oid}`;
 
   const breadcrumbs = useMemo(() => (root ? (
     <BreadCrumbMenu
@@ -79,10 +74,10 @@ function UpperMenu({
       <Row align="middle" style={{ marginTop: '40px' }}>
         <Col span={7}>
           <CustomAntdSelect
-            defaultValue={branch.name}
+            defaultValue={branch}
             className={styles.branch}
-            value={branch.name}
-            onChange={onBranchChange}
+            value={branch}
+            onChange={goToBranch}
             title="Branch"
           >
             {branches.map(selectBranchOptionMap)}

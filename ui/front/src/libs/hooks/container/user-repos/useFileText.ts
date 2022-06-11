@@ -21,7 +21,7 @@ export type FileTextProps = {
 };
 
 export const useFileText = ({
-  id, tree, filesMap, pathArray, pathname, getFileData, updateTree
+  id, tree, pathArray, pathname, filesMap, getFileData, updateTree
 }: FileTextProps) => {
   const setError = useAsyncError();
   const [ext, setExt] = useState('');

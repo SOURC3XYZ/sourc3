@@ -11,7 +11,7 @@ type LocationState = {
 
 const useUserRepos = () => {
   const {
-    id: currentId, repoMap, branches, filesMap, tree, prevReposHref, repoMetas
+    id: currentId, branches, filesMap, tree, prevReposHref, repoMetas
   } = useSelector(({ repo }) => repo);
 
   const [callApi, isLoading, callApiErr] = useCallApi();
@@ -39,7 +39,6 @@ const useUserRepos = () => {
     branches,
     isLoaded,
     repoName,
-    repoMap: repoMap as NonNullable<typeof repoMap>,
     filesMap,
     tree,
     prevReposHref,

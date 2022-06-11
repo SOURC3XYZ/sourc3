@@ -1,12 +1,18 @@
 import { RC, RequestSchema } from '@libs/action-creators';
-import { useCallApi } from '@libs/hooks/shared';
-import { buf2hex, hexParser } from '@libs/utils';
+import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { buf2hex, clipString, hexParser } from '@libs/utils';
 import {
   Branch,
   BranchCommit,
-  CallBeamApi, ContractResp, ObjectDataResp, RepoCommitResp
+  CallBeamApi, ContractResp, DataNode, ErrorHandler, ObjectDataResp, RepoCommitResp, UpdateProps
 } from '@types';
 import { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+
+type LocationState = {
+  branchName: string;
+  type: 'tree' | 'blob'
+};
 
 const getCommit = async (
   id:number,
@@ -34,28 +40,60 @@ const getCommit = async (
   }
 };
 
-const useRepoContent = (id: number, branches: Branch[]) => {
+const useRepoContent = (
+  id: number,
+  branches: Branch[],
+  tree: DataNode[] | null,
+  goTo: (path: string) => void,
+  updateTree: (
+    props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void,
+  killTree: () => void
+) => {
+  const setError = useAsyncError();
+  const location = useLocation();
+  const { pathname } = location;
   const [contractCall, callApi, loading, err] = useCallApi();
-  const [branch, setBranch] = useState(branches
-    .find((el) => el.name.match(/(master|main)/)) || branches[0]);
+  const { branchName, type } = useParams<'branchName' | 'type'>() as LocationState;
+
+  // const regex = new RegExp(`(${branchName})`);
+  // const [branch, setBranch] = useState(branches
+  //   .find((el) => el.name.match(regex)) || branches[0]);
 
   const [commit, setCommit] = useState<BranchCommit | null>(null);
 
-  const fetchCommit = async () => {
-    const lastCommit = await getCommit(id, branch.commit_hash, contractCall, callApi);
-    setCommit(lastCommit);
+  const fetchCommit = async (name: string) => {
+    const regex = new RegExp(`(${name})`);
+    const findedBranch = branches.find((el) => el.name.match(regex)) || branches[0];
+    if (!findedBranch) return setError(new Error('no branch'));
+    const lastCommit = await getCommit(id, findedBranch.commit_hash, contractCall, callApi);
+    if (lastCommit) {
+      setCommit(lastCommit);
+      return updateTree({ oid: lastCommit.tree_oid }, setError);
+    } return setError(new Error('no commit'));
   };
 
-  useEffect(() => { fetchCommit(); }, [branch]);
+  const goToBranch = (newBranch: string) => goTo(`${type}/branch/${newBranch}`);
+
+  useEffect(() => {
+    fetchCommit(branchName);
+  }, [branchName]);
 
   const isLoading = loading || !commit;
 
+  useEffect(() => {
+    if (tree) killTree();
+    if (commit) updateTree({ oid: commit.tree_oid }, setError);
+  }, [pathname]);
+
   return {
-    branch,
+    goToBranch,
+    branchName,
     commit,
+    type,
     loading: isLoading,
     err,
-    setBranch
+    setError,
+    pathname
   };
 };
 

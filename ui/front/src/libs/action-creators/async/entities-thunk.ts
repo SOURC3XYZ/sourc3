@@ -92,7 +92,7 @@ export const entitiesThunk = (callApi: CallBeamApi) => {
                   dispatch
                 );
                 if (getCommitFromIpfs) {
-                  return { ...repo, lastCommit: getCommitFromIpfs.commit };
+                  return { ...repo, masterBranch: master, lastCommit: getCommitFromIpfs.commit };
                 }
               }
             }

@@ -9,7 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { dateCreator } from '@libs/utils';
+import { clipString, dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -57,7 +57,9 @@ function RepoItem({
     message.info(key);
   };
 
-  const link = `${path}repo/${repo_id}&${repo_name}/tree/`;
+  const link = `${path}repo/${repo_id}&${repo_name}/tree/branch/${
+    item.masterBranch ? clipString(item.masterBranch?.name) : '#'
+  }`;
 
   const menuRender = (
     <Menu onClick={onClick}>
