@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import styles from './breadcrumb.module.scss';
 
 type BreadCrumbMenuProps = {
-  prevReposHref: string | null;
+  prevReposHref: string;
   root:string;
   params: string[];
 };
@@ -48,7 +48,7 @@ function BreadCrumbMenu({
   return (
     <Breadcrumb className={styles.breadcrumb}>
       <Breadcrumb.Item>
-        <Link to={prevReposHref || '/repos/all/1'}>
+        <Link to={prevReposHref}>
           <HomeOutlined />
         </Link>
       </Breadcrumb.Item>

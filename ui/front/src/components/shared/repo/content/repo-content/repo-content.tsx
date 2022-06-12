@@ -64,29 +64,30 @@ function RepoContent({
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
 
-  const { baseUrl, params } = splitUrl(branchName, pathname);
+  const { baseUrl, params } = splitUrl(`branch/${branchName}`, pathname);
 
-  const content = useMemo(() => (type === 'blob'
-    ? (
-      <FileText
-        id={id}
-        tree={tree}
-        pathname={pathname}
-        filesMap={filesMap}
-        pathArray={params}
-        getFileData={getFileData}
-        updateTree={updateTree}
-      />
-    )
-    : (
-      <FileTreeBlock
-        id={id}
-        pathname={pathname}
-        tree={tree}
-        updateTree={updateTree}
-        pathArray={params}
-      />
-    )), [params, type]);
+  const content = useMemo(() => (
+    type === 'blob'
+      ? (
+        <FileText
+          id={id}
+          tree={tree}
+          pathname={pathname}
+          filesMap={filesMap}
+          pathArray={params}
+          getFileData={getFileData}
+          updateTree={updateTree}
+        />
+      )
+      : (
+        <FileTreeBlock
+          id={id}
+          pathname={pathname}
+          tree={tree}
+          updateTree={updateTree}
+          pathArray={params}
+        />
+      )), [params, type]);
 
   return (
     <>

@@ -54,7 +54,7 @@ function UpperMenu({
       <BreadCrumbMenu
         root={root}
         params={params}
-        prevReposHref={prevReposHref}
+        prevReposHref={prevReposHref || '/repos/all/1'}
       />
     )
       : null), [params]);

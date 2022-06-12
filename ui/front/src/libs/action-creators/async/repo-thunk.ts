@@ -26,8 +26,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
-      // const cache = await caches.open([CONFIG.CID, id].join('-'));
-      // const { pathname } = window.location;
+      const cache = await caches.open([CONFIG.CID, id].join('-'));
+      const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
       if (metaArray) {
@@ -39,27 +39,17 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
       if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
       if (resolve) resolve();
-      // const metas = new Map<MetaHash, RepoMeta>();
-      // const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
-      // if (metaArray) {
-      //   metaArray.objects.forEach((el) => {
-      //     metas.set(el.object_hash, el);
-      //   });
-      // }
-      // const commitsArray = await getOutput<RepoCommitResp>(RC.getCommitList(id), dispatch);
-      // if (commitsArray) {
-      //   console.log(commitsArray);
-      // }
-      // const commitTree = await new CommitMapParser({
-      //   id, metas, pathname, expect: 'commit', cache, callApi
-      // }).buildCommitTree();
 
-      // batcher(dispatch, [
-      //   AC.setRepoMeta(metas),
-      //   AC.setRepoId(id),
-      //   AC.setRepoMap(commitTree),
-      //   AC.setTreeData(null)
-      // ]);
+      const commitsArray = await getOutput<RepoCommitResp>(RC.getCommitList(id), dispatch);
+      const commitTree = await new CommitMapParser({
+        id, metas, pathname, expect: 'commit', cache, callApi
+      }).buildCommitTree();
+
+      batcher(dispatch, [
+        AC.setRepoMeta(metas),
+        AC.setRepoId(id),
+        AC.setRepoMap(commitTree)
+      ]);
     } catch (error) { errHandler(error as Error); }
   };
 
