@@ -1,20 +1,21 @@
 import { useCommitsTree } from '@libs/hooks/container/user-repos';
-import { dateCreator } from '@libs/utils';
+import {
+  actualTime, dateCreator, getDateFromMs, getDay, getMsFromDays
+} from '@libs/utils';
 import {
   Branch,
+  BranchCommit,
   DataNode,
   List,
   RepoId
 } from '@types';
-import { Avatar } from 'antd';
-import img from '@assets/img/avatar-large.png';
+import Avatar from 'boring-avatars';
 import { useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import ErrorBoundary from 'antd/lib/alert/ErrorBoundary';
-import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
 import { LoadingMessages } from '@libs/constants';
 import { FailPage } from '@components/shared/fail-page';
+import { Link } from 'react-router-dom';
+import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import { UpperMenu } from '../repo-content/content';
 import styles from '../../repo.module.scss';
 
@@ -44,7 +45,6 @@ function CommitsTree({
     branchName,
     loading,
     commitsMap,
-    setError,
     repoMap,
     goToBranch,
     goToCommit
@@ -59,11 +59,76 @@ function CommitsTree({
     />
   ), []);
 
+  const handleOnClick = (hash: string):React.MouseEventHandler<HTMLAnchorElement> => (e) => {
+    e.preventDefault();
+    goToCommit(hash);
+  };
+
+  const listRender = (sortedData: [number, BranchCommit[]][]) => sortedData.map((el) => {
+    const [key, items] = el;
+    return (
+      <div key={key}>
+        <h3 className={styles.dateHeader}>{getDateFromMs(getMsFromDays(key))}</h3>
+        <List
+          className={styles.list}
+          bordered
+          dataSource={items}
+          renderItem={(item, index) => (
+            <List.Item key={item.create_time_sec + index}>
+              <List.Item.Meta
+                avatar={(
+                  <Avatar
+                    size={40}
+                    name={item.committer_email}
+                    variant="beam"
+                    colors={[
+                      '#FF791F',
+                      '#3FD05A',
+                      '#000000',
+                      '#C271B4',
+                      '#4DA2E6',
+                      '#DDDDDD',
+                      '#92A1C6',
+                      '#146A7C',
+                      '#F0AB3D',
+                      '#C271B4',
+                      '#C20D90'
+                    ]}
+                  />
+                )}
+                title={(
+                  <Link
+                    onClick={handleOnClick(item.commit_oid)}
+                    to=""
+                  >
+                    {item.raw_message}
+                  </Link>
+                )}
+                description={item.author_name}
+              />
+              <div>{`${dateCreator(actualTime(item))} ago`}</div>
+            </List.Item>
+          )}
+        />
+      </div>
+    );
+  });
+
   const data = useMemo(() => {
     if (repoMap) {
       const commits = repoMap.get(branchName);
       if (!commits) return null;
-      return commits;
+      const storage = new Map<number, BranchCommit[]>();
+      commits.forEach((el) => {
+        const key = getDay(actualTime(el));
+        const time = storage.get(key);
+        if (time) {
+          time.push(el);
+          return storage.set(key, time);
+        }
+        return storage.set(key, [el]);
+      });
+      return listRender(Array.from(storage.entries()));
     } return null;
   }, [repoMap, loading, branchName]);
 
@@ -72,10 +137,8 @@ function CommitsTree({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const handleOnClick = (hash: string):React.MouseEventHandler<HTMLAnchorElement> => (e) => {
-    e.preventDefault();
-    goToCommit(hash);
-  };
+  console.log(data);
+
   return (
     <>
       <UpperMenu
@@ -90,29 +153,11 @@ function CommitsTree({
       />
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
-          isLoaded={loading}
+          isLoaded={loading && !!data}
           Fallback={RefsPreloadFallback}
         >
-          <List
-            dataSource={data as NonNullable<typeof data>}
-            renderItem={(item, index) => (
-              <List.Item key={item.create_time_sec + index}>
-                <List.Item.Meta
-                  avatar={<Avatar src={img} />}
-                  title={(
-                    <Link
-                      onClick={handleOnClick(item.commit_oid)}
-                      to=""
-                    >
-                      {item.raw_message}
-                    </Link>
-                  )}
-                  description={item.author_name}
-                />
-                <div>{`${dateCreator(item.create_time_sec * 1000)} ago`}</div>
-              </List.Item>
-            )}
-          />
+          <div>{data}</div>
+
         </PreloadComponent>
       </ErrorBoundary>
     </>

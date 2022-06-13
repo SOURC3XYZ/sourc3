@@ -1,5 +1,5 @@
 import { BeamAmmount } from '@libs/constants';
-import { ObjectData, BeamReqAction } from '@types';
+import { ObjectData, BeamReqAction, BranchCommit } from '@types';
 
 export const argsStringify = (args: BeamReqAction): string => Object
   .entries(args)
@@ -131,4 +131,23 @@ export const dateCreator = (mls: number) => {
   const date = +new Date(mls);
   return timeSince(date);
   // return date.toLocaleString();
+};
+
+export const actualTime = (commit: BranchCommit) => {
+  const { create_time_sec, create_time_tz_offset_min, create_time_positive } = commit;
+  return (create_time_sec + (
+    create_time_tz_offset_min * 60 * (create_time_positive === 1 ? -1 : 1)
+  )) * 1000;
+};
+
+export const getDay = (milliSeconds: number) => Math.floor(milliSeconds / (86400 * 1000));
+
+export const getMsFromDays = (days: number) => days * (86400 * 1000);
+
+export const getDateFromMs = (ms: number) => {
+  const date = new Date(ms);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 };

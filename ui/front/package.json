@@ -97,6 +97,7 @@
     "antd": "^4.17.3",
     "axios": "^0.25.0",
     "beam-wasm-client-masternet": "^7.1.12735",
+    "boring-avatars": "^1.6.3",
     "cross-env": "^7.0.3",
     "hexdump-js": "^0.1.0",
     "qwebchannel": "^5.9.0",

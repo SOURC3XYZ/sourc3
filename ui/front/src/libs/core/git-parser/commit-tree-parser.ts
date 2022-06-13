@@ -1,4 +1,4 @@
-import { clipString } from '@libs/utils';
+import { actualTime, clipString } from '@libs/utils';
 import {
   Branch,
   BranchCommit,
@@ -55,6 +55,7 @@ export default class CommitMapParser extends AbstractParser {
       const commit = workingStack.pop() as BranchCommit;
       commitIds.add(commit.commit_oid);
       commitList.push(commit);
+
       const parentCommits = await Promise.all(
         commit.parents.map(({ oid }) => this.getCommitParent(oid))
       );
@@ -64,7 +65,7 @@ export default class CommitMapParser extends AbstractParser {
       });
 
       return this.buildCommitList(workingStack, commitList, commitIds);
-    } return commitList;
+    } return commitList.sort((a, b) => actualTime(b) - actualTime(a));
   };
 
   private readonly getCommit = async (

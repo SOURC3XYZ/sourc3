@@ -9,7 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { clipString, dateCreator } from '@libs/utils';
+import { actualTime, clipString, dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -75,7 +75,7 @@ function RepoItem({
   );
 
   const time = item.lastCommit
-    ? `${dateCreator(item.lastCommit.create_time_sec * 1000)} ago`
+    ? `${dateCreator(actualTime(item.lastCommit))} ago`
     : 'empty';
 
   return (

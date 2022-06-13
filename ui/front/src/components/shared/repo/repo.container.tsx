@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import Title from 'antd/lib/typography/Title';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { RepoContent } from './content';
+import { CommitContent, RepoContent } from './content';
 import styles from './repo.module.scss';
 import { CommitsTree } from './content/commit-tree';
 
@@ -44,19 +44,16 @@ function UserRepos() {
           <Routes>
             <Route
               path="branch/:type/:branchName/*"
-              element={(
-                <ErrorBoundary fallback={fallback}>
-                  <RepoContent {...containerProps} goTo={goTo} />
-                </ErrorBoundary>
-              )}
+              element={<RepoContent {...containerProps} goTo={goTo} />}
             />
             <Route
               path="commits/:branchName"
-              element={(
-                <ErrorBoundary fallback={fallback}>
-                  <CommitsTree {...containerProps} goTo={goTo} />
-                </ErrorBoundary>
-              )}
+              element={<CommitsTree {...containerProps} goTo={goTo} />}
+            />
+
+            <Route
+              path="commit/:hash"
+              element={<CommitContent />}
             />
           </Routes>
         </PreloadComponent>
