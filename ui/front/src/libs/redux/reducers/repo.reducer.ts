@@ -7,6 +7,7 @@ import {
 interface IRepo {
   id: RepoId | null,
   branches: Branch[],
+  commitsMap: Map<string, BranchCommit> | null,
   repoMetas: Map<MetaHash, RepoMeta>,
   repoMap: Map<BranchName, BranchCommit[]> | null,
   tree: DataNode[] | null,
@@ -20,6 +21,7 @@ export const initialState:IRepo = {
   branches: [],
   repoMetas: new Map(),
   filesMap: new Map(),
+  commitsMap: null,
   repoMap: null,
   tree: null,
   fileText: null,
@@ -61,6 +63,10 @@ const reducer = (
     }
     case ACTIONS.SET_REPO_MAP: {
       newState.repoMap = action.payload as IRepo['repoMap'];
+      return newState;
+    }
+    case ACTIONS.SET_COMMITS_MAP: {
+      newState.commitsMap = action.payload as IRepo['commitsMap'];
       return newState;
     }
     case ACTIONS.SET_PREV_REPO_HREF: {

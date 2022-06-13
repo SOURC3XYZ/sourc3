@@ -3,6 +3,7 @@ import { clipString } from '@libs/utils';
 import { Branch, BranchCommit } from '@types';
 import { Row, Col, Select } from 'antd';
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   BreadCrumbMenu,
   RepoMeta
@@ -15,9 +16,11 @@ type UpperMenuProps = {
   baseUrl: string,
   branches: Branch[],
   params: string[],
-  goToBranch: (name: string) => void
+  commitsMap: Map<string, BranchCommit> | null,
   commit: BranchCommit | null,
   prevReposHref: string | null,
+  goToBranch: (name: string) => void;
+  goToCommitTree?: (branch:string) => void;
 };
 
 const selectBranchOptionMap = (el: Branch, i:number) => (
@@ -41,18 +44,18 @@ const selectBranchOptionMap = (el: Branch, i:number) => (
 function UpperMenu({
   branches,
   params,
+  commitsMap,
   goToBranch,
+  goToCommitTree,
   branch,
   commit,
   prevReposHref,
   baseUrl
 }:UpperMenuProps) {
-  const root = baseUrl;
-
   const breadcrumbs = useMemo(() => (
-    root ? (
+    baseUrl ? (
       <BreadCrumbMenu
-        root={root}
+        root={baseUrl}
         params={params}
         prevReposHref={prevReposHref || '/repos/all/1'}
       />
@@ -68,24 +71,40 @@ function UpperMenu({
       : null
   ), [commit]);
 
+  const onCommitMapClickHandle:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    e.preventDefault();
+    if (goToCommitTree) goToCommitTree(branch);
+  };
+
+  const commits = useMemo(() => (
+    commitsMap
+      ? (
+        <Link onClick={onCommitMapClickHandle} to="#">
+          {`${commitsMap.size} commits`}
+        </Link>
+      )
+      : <div>Building commit tree...</div>
+  ), [commitsMap]);
+
   return (
     <>
       <Row>{breadcrumbs}</Row>
       {/* <RepoDescription /> */}
       <Row align="middle" style={{ marginTop: '40px' }}>
-        <Col span={7}>
-          <CustomAntdSelect
-            defaultValue={branch}
-            className={styles.branch}
-            value={branch}
-            onChange={goToBranch}
-            title="Branch"
-          >
-            {branches.map(selectBranchOptionMap)}
-          </CustomAntdSelect>
-        </Col>
-
-        {/* <Col span={8}>
+        <div className={styles.branchAndCommits}>
+          <div>
+            <CustomAntdSelect
+              defaultValue={branch}
+              className={styles.branch}
+              value={branch}
+              onChange={goToBranch}
+              title="Branch"
+            >
+              {branches.map(selectBranchOptionMap)}
+            </CustomAntdSelect>
+          </div>
+          {commits}
+          {/* <Col span={8}>
           <CustomAntdSelect
             title="Commits"
             value={commit_oid}
@@ -96,6 +115,7 @@ function UpperMenu({
             {commits.map(selectCommitOptionMap)}
           </CustomAntdSelect>
         </Col> */}
+        </div>
       </Row>
 
       <Row style={{ marginTop: '1rem' }}>

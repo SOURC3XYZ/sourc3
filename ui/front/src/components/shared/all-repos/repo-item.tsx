@@ -57,7 +57,7 @@ function RepoItem({
     message.info(key);
   };
 
-  const link = `${path}repo/${repo_id}&${repo_name}/tree/branch/${
+  const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
     item.masterBranch ? clipString(item.masterBranch?.name) : '#'
   }`;
 

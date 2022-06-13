@@ -1,10 +1,10 @@
 import { CONFIG } from '@libs/constants';
 import { CommitMapParser, TreeBlobParser, TreeListParser } from '@libs/core';
+import CommitListParser from '@libs/core/git-parser/commit-data-parser';
 import { CustomAction } from '@libs/redux';
 import {
   BeamApiContext,
   MetaHash,
-  RepoCommitResp,
   RepoId,
   RepoMeta,
   RepoMetaResp,
@@ -26,6 +26,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
+      dispatch(AC.setCommits(null));
       const cache = await caches.open([CONFIG.CID, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
@@ -37,19 +38,35 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
       }
       dispatch(AC.setRepoMeta(metas));
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
-      if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
-      if (resolve) resolve();
+      if (branches) {
+        if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
+        if (resolve) resolve();
 
-      const commitsArray = await getOutput<RepoCommitResp>(RC.getCommitList(id), dispatch);
-      const commitTree = await new CommitMapParser({
-        id, metas, pathname, expect: 'commit', cache, callApi
-      }).buildCommitTree();
+        const commitsArray = await getOutput<RepoMetaResp>(RC.getCommitList(id), dispatch);
+        if (commitsArray) {
+          const commitMap = await new CommitListParser({
+            id, metas, pathname, expect: 'commit', cache, callApi, commits: commitsArray.objects
+          }).getCommitMap();
 
-      batcher(dispatch, [
-        AC.setRepoMeta(metas),
-        AC.setRepoId(id),
-        AC.setRepoMap(commitTree)
-      ]);
+          const commitTree = await new CommitMapParser({
+            id,
+            metas,
+            pathname,
+            expect: 'commit',
+            cache,
+            callApi,
+            commitMap,
+            branches: branches.refs
+          }).buildCommitTree();
+
+          batcher(dispatch, [
+            AC.setCommits(commitMap),
+            AC.setRepoMeta(metas),
+            AC.setRepoId(id),
+            AC.setRepoMap(commitTree)
+          ]);
+        }
+      }
     } catch (error) { errHandler(error as Error); }
   };
 

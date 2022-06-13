@@ -72,7 +72,7 @@ export const handleString = (next:string):boolean => {
   return result;
 };
 
-export const fullBranchName = (clippedName:string, base: 'refs/heads/') => `${base}${clippedName}`;
+export const fullBranchName = (clippedName:string, base = 'refs/heads/') => `${base}${clippedName}`;
 
 export const clipString = (fullName:string, cut = 'refs/heads/') => fullName.replace(cut, '');
 

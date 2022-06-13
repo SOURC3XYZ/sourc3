@@ -28,6 +28,13 @@ export const AC = {
     payload
   } as const),
 
+  setCommits: (
+    payload: Map<string, BranchCommit> | null
+  ) => ({
+    type: ACTIONS.SET_COMMITS_MAP,
+    payload
+  }),
+
   setWalletConnection: (payload: boolean) => ({
     type: ACTIONS.SET_WALLET_CONNECTION,
     payload

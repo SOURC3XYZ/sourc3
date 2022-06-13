@@ -1,5 +1,6 @@
 import { RC, RequestSchema } from '@libs/action-creators';
 import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useSelector } from '@libs/redux';
 import { buf2hex, hexParser } from '@libs/utils';
 import {
   Branch,
@@ -49,6 +50,7 @@ const useRepoContent = (
     props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void,
   killTree: () => void
 ) => {
+  const commitsMap = useSelector((state) => state.repo.commitsMap);
   const setError = useAsyncError();
   const location = useLocation();
   const { pathname } = location;
@@ -72,7 +74,9 @@ const useRepoContent = (
     } return setError(new Error('no commit'));
   };
 
-  const goToBranch = (newBranch: string) => goTo(`${type}/branch/${newBranch}`);
+  const goToBranch = (newBranch: string) => goTo(`branch/${type}/${newBranch}`);
+
+  const goToCommitTree = (branch: string) => goTo(`commits/${branch}`);
 
   useEffect(() => {
     fetchCommit(branchName);
@@ -87,13 +91,15 @@ const useRepoContent = (
 
   return {
     goToBranch,
+    goToCommitTree,
     branchName,
     commit,
     type,
     loading: isLoading,
     err,
     setError,
-    pathname
+    pathname,
+    commitsMap
   };
 };
 

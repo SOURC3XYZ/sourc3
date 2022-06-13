@@ -61,10 +61,12 @@ function RepoContent({
     type,
     branchName,
     pathname,
+    commitsMap,
+    goToCommitTree,
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
 
-  const { baseUrl, params } = splitUrl(`branch/${branchName}`, pathname);
+  const { baseUrl, params } = splitUrl(`${type}/${branchName}`, pathname);
 
   const content = useMemo(() => (
     type === 'blob'
@@ -92,6 +94,8 @@ function RepoContent({
   return (
     <>
       <UpperMenu
+        commitsMap={commitsMap}
+        goToCommitTree={goToCommitTree}
         baseUrl={baseUrl}
         branch={branchName}
         params={params}

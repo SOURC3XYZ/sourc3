@@ -7,6 +7,7 @@ import Title from 'antd/lib/typography/Title';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { RepoContent } from './content';
 import styles from './repo.module.scss';
+import { CommitsTree } from './content/commit-tree';
 
 function UserRepos() {
   const containerProps = useUserRepos();
@@ -42,10 +43,18 @@ function UserRepos() {
         >
           <Routes>
             <Route
-              path=":type/branch/:branchName/*"
+              path="branch/:type/:branchName/*"
               element={(
                 <ErrorBoundary fallback={fallback}>
                   <RepoContent {...containerProps} goTo={goTo} />
+                </ErrorBoundary>
+              )}
+            />
+            <Route
+              path="commits/:branchName"
+              element={(
+                <ErrorBoundary fallback={fallback}>
+                  <CommitsTree {...containerProps} goTo={goTo} />
                 </ErrorBoundary>
               )}
             />
