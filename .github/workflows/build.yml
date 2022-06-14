@@ -336,7 +336,6 @@ jobs:
           ln -s $local_name $sym_file
         done
         cd ../../..
-        mv -v squashfs-root/resources/git-remote-sourc3 squashfs-root/git-remote-sourc3
         rm $filename
         ./appimagetool-x86_64.AppImage squashfs-root $filename
         rm appimagetool-x86_64.AppImage
