@@ -71,7 +71,7 @@ function createWindow() {
         fs.mkdirSync(path.join(app.getPath('home'), '.local', 'bin'));
       }
       CopyIfNotEqualHash(
-        path.join(__dirname, '..', '..', 'git-remote-sourc3'),
+        path.join(__dirname, '..', '..', '..', 'git-remote-sourc3'),
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
     } else if (process.platform === 'darwin') {
