@@ -102,7 +102,7 @@ li.errorName:before {
 
 .list li.validName {
 	background: rgba(0, 0, 0, 0.03);
-	border: 1px solid #000000;
+	// border: 1px solid #000000;
 }
 
 
@@ -116,6 +116,6 @@ li.validName:before, li.validName:focus:before {
 }
 
 .listConfirm{
-compose: list;
+composes: list;
 grid-template-columns: repeat(2, 1fr);
 }

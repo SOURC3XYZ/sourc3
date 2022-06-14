@@ -1,12 +1,16 @@
 .wrapper{
-    
-    max-width: 74rem;
-    margin: 0 auto;
+  width: 525px;
     background-color: #fff;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     padding: 0 10px;
+   div{
+    margin-right: 24px;
+   }
+    button{
+      color:black !important;
+    }
 
 }
  .nav{

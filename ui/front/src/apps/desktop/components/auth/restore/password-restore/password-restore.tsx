@@ -12,6 +12,23 @@ const STRENGTH_CRITERIA = [
   /^(?=.*?[" !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"])/ // at least 1 special char
 ];
 
+function getStrengthTitle(value: number) {
+  switch (value) {
+    case 6:
+      return 'Very strong';
+    case 5:
+      return 'Strong';
+    case 3:
+      return 'Medium strength';
+    case 2:
+      return 'Weak';
+    case 1:
+      return 'Very Weak';
+    default:
+      return null;
+  }
+}
+
 type PasswordRestoreType = {
   onClick: (base: string, repeat:string) => void
 };
@@ -35,17 +52,10 @@ function PasswordRestore({ onClick }: PasswordRestoreType) {
   const error = valid ? null : 'Passwords do not match';
 
   const points = ratePassword(base);
-
-  // const setInputState = (
-  //   callback: React.Dispatch<React.SetStateAction<string>>
-  // ) => (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target) callback(e.target.value);
-  // };
+  const title = getStrengthTitle(points);
 
   const onClickDecor = () => onClick(base, repeat);
 
-  // const setVisibleIcon = (visible:boolean) => (
-  //   visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
   console.log(ready);
   const bars = new Array(BARS_MAX).fill(null).map((v, index) => (index < points ? points : 0));
 
@@ -100,6 +110,13 @@ function PasswordRestore({ onClick }: PasswordRestoreType) {
             />
           ))}
         </ul>
+        {title && (
+          <span className={styles.strengthTitle}>
+            {title}
+            {' '}
+            password
+          </span>
+        )}
       </div>
       <div className={styles.wrapperDescr}>
         <p className={styles.descrTitle}>
@@ -122,12 +139,11 @@ function PasswordRestore({ onClick }: PasswordRestoreType) {
 
       </div>
       <NavButton
-        name="Get Started"
+        name="Get started"
         inlineStyles={{ width: '278px' }}
         onClick={onClickDecor}
         isDisabled={!ready}
       />
-      {/* </Space> */}
     </div>
   );
 }

@@ -12,7 +12,7 @@ function Success() {
   const navigate = useNavigate();
   const location = useLocation().state as LocationState;
 
-  const goMain = () => navigate('/main');
+  const goMain = () => navigate('/repos/all/1');
 
   const title = location.restore ? 'restored' : 'created';
   return (

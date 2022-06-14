@@ -67,9 +67,10 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
       <p className={styles.description}>
         Enter the words from the secret phrase corresponding
         <br />
-        the numbers shown below.  You can skip the confirmation.
+        the numbers shown below.
       </p>
       <SeedList
+        listConfirm
         isShuffle
         isSlice
         data={seed}
@@ -83,7 +84,7 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
               inlineStyles={{ width: '278px' }}
               isDisabled={isDisabled}
               onClick={next}
-              name="Complete phrase"
+              name="Confirm phrase"
             />
             <NavButton
               inlineStyles={{ width: '278px' }}

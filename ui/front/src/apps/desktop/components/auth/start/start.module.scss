@@ -6,6 +6,9 @@
   margin-top: 244px;
   display: flex;
   justify-content: space-between;
+  button{
+    color: black;
+  }
 }
 
 .wrapper::before {
@@ -157,7 +160,7 @@
   .version{
     color: black;
   }
-  button:hover{
+  button{
     color: white;
   }
 }

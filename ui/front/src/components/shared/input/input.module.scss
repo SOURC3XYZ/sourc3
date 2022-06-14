@@ -1,9 +1,8 @@
 .wrapper {
-    position: relative;
-    border:none;
-    // .buttonEye {
-    //   display: none ;
-    // }
+
+  & .buttonEye {
+      display: none;
+  }
     &:focus-within>.buttonEye{
       display: inline-block !important;
     }
@@ -14,11 +13,12 @@
       background-color: transparent;
       position: relative;
       top: 6px;
+      cursor: pointer;
     }
   }
   
   .input{
-    width: 400px;
+    width: 410px;
     height: 44px;
     line-height: 20px;
     font-weight: 600;
@@ -64,11 +64,8 @@
 }
 .label{
   color: red;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+  position: relative;
+  top: 5px;
   text-align: left;
-  padding-left: 50px;
-}
-
-.eyeCrossed:hover{
-   g { fill: rgba(0,0,0, 0.3);}
 }

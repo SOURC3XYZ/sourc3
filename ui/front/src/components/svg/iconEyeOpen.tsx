@@ -3,7 +3,7 @@ type IconCloseCrossProps = {
   className?: string;
 };
 
-function IconEyeOpen({ fill = 'rgba(0,0,0, 0.3)', className = '' }:IconCloseCrossProps) {
+function IconEyeOpen({ fill = 'rgba(0,0,0)', className = '' }:IconCloseCrossProps) {
   return (
     <svg
       className={className}

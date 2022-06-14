@@ -33,7 +33,7 @@ function App() {
       element: <Auth />
     },
     {
-      path: 'main/*',
+      path: '/*',
       element: <Main />
     },
     {

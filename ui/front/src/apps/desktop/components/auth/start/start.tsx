@@ -10,7 +10,7 @@ interface StartProps {
 
 function Start({ restore }:StartProps) {
   const btnNameLeft = restore ? 'Restore client' : 'Sign in';
-  const btnNameRight = restore ? 'Create new' : 'Get started';
+  const btnNameRight = restore ? 'Create new' : 'Get Started';
   const linkLeft = restore ? '/auth/restore' : '/auth/login';
   const linkRight = '/auth/sign-up';
 
@@ -31,7 +31,7 @@ function Start({ restore }:StartProps) {
           {' '}
           <span>Web3</span>
           {' '}
-          builds
+          Builds
         </h2>
       </div>
       <div className={styles.btnNav}>

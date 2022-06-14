@@ -66,7 +66,8 @@ function SignUp({
       >
         <span>
           It is stricly recommended to write down the secret phrase on a paper.
-          Storing it in a files makes it prone to cyber attacks and therefore less secure
+          <br />
+          Storing it in a files makes it prone to cyber attacks and therefore less secure.
         </span>
       </Popup>
     </div>

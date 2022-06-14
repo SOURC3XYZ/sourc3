@@ -39,32 +39,34 @@ function Login({ startWalletApi, statusFetcher }: LoginProps) {
   ) => setState({ pass: e.target.value });
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.logo}>
-        <Sourc3Logo fill="black" />
-        <h3>desktop client</h3>
-      </div>
-      <div className={styles.intro}>
-        <h2>Sign in</h2>
-      </div>
-      {
-        status === STATUS.LOADING
-          ? (
-            <div>
-              <Preload message="Loading" />
-            </div>
-          )
-          : status === STATUS.SYNC
+
+    status !== STATUS.SYNC ? (
+      <div className={styles.wrapper}>
+        <div className={styles.logo}>
+          <Sourc3Logo fill="black" />
+          <h3>desktop client</h3>
+        </div>
+        <div className={styles.intro}>
+          <h2>Sign in</h2>
+        </div>
+        {
+          status === STATUS.LOADING
             ? (
-              <UpdatingNode
-                backButton
-                statusFetcher={statusFetcher}
-                errorCatcher={throwError}
-              />
+              <div>
+                <Preload message="Loading" />
+              </div>
             )
             : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
-      }
-    </div>
+        }
+      </div>
+    )
+      : (
+        <UpdatingNode
+          backButton
+          statusFetcher={statusFetcher}
+          errorCatcher={throwError}
+        />
+      )
   );
 }
 

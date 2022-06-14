@@ -9,12 +9,13 @@ interface SeedListProps {
   isShuffle?: boolean;
   isSlice?: boolean;
   listGenerated?: boolean;
+  listConfirm?: boolean;
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
 }
 
 function SeedList({
-  data, errors, isShuffle, isSlice, listGenerated, readOnly, onInput, validatePasted
+  data, errors, isShuffle, isSlice, listGenerated, listConfirm, readOnly, onInput, validatePasted
 }:SeedListProps) {
   const shuffleIndexes = React.useMemo(() => shuffle(data), []);
   const validatedSeedWord = (el: string | null, i:number) => {
@@ -51,7 +52,7 @@ function SeedList({
   };
 
   const classNameList = listGenerated
-    ? styles.listGenerated : styles.list;
+    ? styles.listGenerated : listConfirm ? styles.listConfirm : styles.list;
 
   return (
     <div className={classNameList} onPaste={validatePasted}>

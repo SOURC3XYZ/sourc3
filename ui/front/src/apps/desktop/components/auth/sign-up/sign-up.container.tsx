@@ -32,7 +32,7 @@ function SignUp() {
       case MODE.OK:
         return (
           <div className={styles.syncStatusWrapper}>
-            <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
+            <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
           </div>
         );
         // TODO: DANIK: make a generalized component

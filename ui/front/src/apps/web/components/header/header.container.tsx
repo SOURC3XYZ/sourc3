@@ -1,6 +1,7 @@
 import {
   AutocompeteSearch,
-  ConnectBtn
+  ConnectBtn,
+  ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
 import img from '@assets/img/source-header-logo.svg';
@@ -9,13 +10,15 @@ import { useMemo } from 'react';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
-  isOnLending: boolean,
+  isOnLending?: boolean,
+  balance?: number,
 };
 
-function Header({ isOnLending }:HeaderPropsType) {
+function Header({ isOnLending, balance }:HeaderPropsType) {
   // const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
   const containerProps = useHeader();
+  console.log(balance);
 
   const {
     pkey,
@@ -54,7 +57,16 @@ function Header({ isOnLending }:HeaderPropsType) {
           placeholder="Search"
         />
       )}
-      <ConnectBtn pkey={pkey} onConnect={onConnect} />
+      { isOnLending ? (
+        <ConnectBtn
+          pkey={pkey}
+          onConnect={onConnect}
+        />
+      ) : (
+        <ProfileBlock
+          pKey={pkey}
+        />
+      ) }
     </div>
   ), [isOnLending, pkey]);
 

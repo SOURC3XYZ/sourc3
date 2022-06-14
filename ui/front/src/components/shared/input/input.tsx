@@ -1,5 +1,4 @@
 import { IconEyeOpen, IconEyeCrossed } from '@components/svg';
-import { Button } from 'antd';
 import React, { useRef, useState } from 'react';
 import styles from './input.module.scss';
 
@@ -36,6 +35,7 @@ function InputCustom({
           ? <IconEyeOpen className={styles.eye} />
           : <IconEyeCrossed className={styles.eyeCrossed} />}
       </button>
+      {/* TODO Jenk component label */}
       {!!ref && <div className={styles.label} valid={valid}>{label}</div>}
     </div>
   );
