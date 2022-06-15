@@ -4,6 +4,7 @@ import { useWalletAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const useRestore = () => {
   const seed2Validation = useSelector((state) => state.wallet.seed2Validation);
@@ -12,6 +13,7 @@ export const useRestore = () => {
   const throwError = useAsyncError();
   const [mode, toggleMode] = useState<RestoreStatus>(RestoreStatus.SEED);
   const { seed, errors } = seed2Validation;
+  const navigate = useNavigate();
 
   const setOk = (err?:Error) => {
     if (err) return throwError(err);
@@ -38,6 +40,20 @@ export const useRestore = () => {
   const setNextMode = () => {
     if (!errors.includes(false)) toggleMode(RestoreStatus.PASS);
   };
+  const setBackMode = () => {
+    switch (mode) {
+      case RestoreStatus.SEED:
+        return navigate('/auth/start');
+      case RestoreStatus.PASS:
+        return toggleMode(RestoreStatus.SEED);
+      case RestoreStatus.OK:
+        return toggleMode(RestoreStatus.PASS);
+      case RestoreStatus.LOADING:
+        return toggleMode(RestoreStatus.PASS);
+      default:
+        return toggleMode(RestoreStatus.SEED);
+    }
+  };
 
   return {
     mode,
@@ -48,7 +64,8 @@ export const useRestore = () => {
     setNextMode,
     restoreWallet,
     statusFetcher,
-    validate
+    validate,
+    setBackMode
   };
 };
 

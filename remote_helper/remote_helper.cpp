@@ -579,7 +579,7 @@ int main(int argc, char* argv[]) {
                                ->default_value("localhost"),
                            "Wallet API host")(
             "api-port",
-            po::value<std::string>(&options.apiPort)->default_value("10000"),
+            po::value<std::string>(&options.apiPort)->default_value("9100"),
             "Wallet API port")("api-target",
                                po::value<std::string>(&options.apiTarget)
                                    ->default_value("/api/wallet"),

@@ -1,6 +1,6 @@
-import { UserOutlined } from '@ant-design/icons';
+import avatar from '@assets/icons/icon-avatar.png';
 import {
-  Avatar, Button, Dropdown, Menu, Typography
+  Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import { useState } from 'react';
@@ -58,7 +58,7 @@ function Profile({ pKey }:profileType) {
           trigger={['click']}
         >
           <div>
-            <Avatar size="large" icon={<UserOutlined />} />
+            <img src={avatar} alt="" />
           </div>
         </Dropdown>
       </div>

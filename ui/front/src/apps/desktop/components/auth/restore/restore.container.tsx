@@ -14,6 +14,7 @@ function Restore() {
     throwError,
     endOfVerification,
     setNextMode,
+    setBackMode,
     statusFetcher,
     validate
   } = useRestore();
@@ -28,15 +29,18 @@ function Restore() {
             validate={validate}
             validatePasted={validate}
             next={setNextMode}
+            back={setBackMode}
           />
         );
       case RestoreStatus.PASS:
-        return <PasswordRestore onClick={endOfVerification} />;
+        return <PasswordRestore onClick={endOfVerification} back={setBackMode} />;
       case RestoreStatus.OK:
         return (
-          <div className={styles.syncStatusWrapper}>
-            <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
-          </div>
+          <UpdatingNode
+            back={setBackMode}
+            statusFetcher={statusFetcher}
+            errorCatcher={throwError}
+          />
         );
         // TODO: DANIK: make a generalized component
       case RestoreStatus.LOADING:

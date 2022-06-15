@@ -1,7 +1,8 @@
-import { EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
+// import { EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
 import { NavButton } from '@components/shared/nav-button';
-import { Input } from 'antd';
-import React from 'react';
+import { InputCustom } from '@components/shared/input';
+import React, { useRef } from 'react';
+import { BackButton } from '@components/shared/back-button';
 import styles from './password-restore.module.scss';
 
 const STRENGTH_CRITERIA = [
@@ -12,9 +13,26 @@ const STRENGTH_CRITERIA = [
   /^(?=.*?[" !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"])/ // at least 1 special char
 ];
 
+function getStrengthTitle(value: number) {
+  switch (value) {
+    case 6:
+      return 'Very strong';
+    case 5:
+      return 'Strong';
+    case 3:
+      return 'Medium strength';
+    case 2:
+      return 'Weak';
+    case 1:
+      return 'Very Weak';
+    default:
+      return null;
+  }
+}
+
 type PasswordRestoreType = {
   onClick: (base: string, repeat:string) => void
-  isCreate?: boolean
+  back?: () => void;
 };
 
 function ratePassword(password: string): number {
@@ -25,22 +43,20 @@ function ratePassword(password: string): number {
   }, 0);
 }
 const BARS_MAX = 6;
-function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
+function PasswordRestore({ onClick, back }: PasswordRestoreType) {
   const [base, setBase] = React.useState('');
   const [repeat, setRepeat] = React.useState('');
 
-  const points = ratePassword(base);
+  const matched = base === repeat;
+  const valid = repeat === '' || matched;
+  const ready = base !== '' && matched;
 
-  const setInputState = (
-    callback: React.Dispatch<React.SetStateAction<string>>
-  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target) callback(e.target.value);
-  };
+  const error = valid ? null : 'Passwords do not match';
+
+  const points = ratePassword(base);
+  const title = getStrengthTitle(points);
 
   const onClickDecor = () => onClick(base, repeat);
-
-  const setVisibleIcon = (visible:boolean) => (
-    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
 
   const bars = new Array(BARS_MAX).fill(null).map((v, index) => (index < points ? points : 0));
 
@@ -58,31 +74,34 @@ function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <h2>Password</h2>
+    <>
+      {' '}
+      {back && <BackButton onClick={back} />}
+      <div className={styles.wrapper}>
+        <h2>Password</h2>
 
-      <p className={styles.description}>
-        Enter a strong password.
-        <br />
-        The password is specific to each client and is only store locally.
-      </p>
+        <p className={styles.description}>
+          Enter a strong password.
+          <br />
+          The password is specific to each account and is only store locally.
+        </p>
 
-      <div className={styles.wrapperInput}>
-        {' '}
-        <Input.Password
-          className={styles.password}
-          onChange={setInputState(setBase)}
-          value={base}
-          placeholder="Enter your password"
-          iconRender={setVisibleIcon}
-        />
-        <Input.Password
-          className={styles.password}
-          onChange={setInputState(setRepeat)}
-          value={repeat}
-          placeholder="Confirm your password"
-          iconRender={setVisibleIcon}
-        />
+        <div className={styles.wrapperInput}>
+          <InputCustom
+            autoFocus
+            password
+            placeholder="Enter your password"
+            onChange={(e) => setBase(e.target.value)}
+          />
+          <InputCustom
+            valid={valid}
+            label={error}
+            placeholder="Confirm your password"
+            onChange={(e) => setRepeat(e.target.value)}
+            password={!!useRef}
+          />
+
+        </div>
         <div className={styles.wrapperList}>
           <ul className={styles.listStyled}>
             {bars.map((p, index) => (
@@ -95,34 +114,43 @@ function PasswordRestore({ onClick, isCreate }: PasswordRestoreType) {
               />
             ))}
           </ul>
+          {title && (
+            <span className={styles.strengthTitle}>
+              {title}
+              {' '}
+              password
+            </span>
+          )}
         </div>
-      </div>
-      <div className={styles.wrapperDescr}>
-        <p className={styles.descrTitle}>
-          Strong password needs to meet the following requirements:
-        </p>
-        <ul className={styles.list}>
-          <li className={styles.listItem}>
-            the length must be at least 10 characters
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one lowercase letter
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one uppercase letter
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one number
-          </li>
-        </ul>
+        <div className={styles.wrapperDescr}>
+          <p className={styles.descrTitle}>
+            Strong password needs to meet the following requirements:
+          </p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>
+              the length must be at least 10 characters
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one lowercase letter
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one uppercase letter
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one number
+            </li>
+          </ul>
 
+        </div>
+        <NavButton
+          name="Get started"
+          inlineStyles={{ width: '278px' }}
+          onClick={onClickDecor}
+          isDisabled={!ready}
+        />
       </div>
-      <NavButton
-        name={isCreate ? 'Create' : 'Get Started'}
-        onClick={onClickDecor}
-      />
-      {/* </Space> */}
-    </div>
+
+    </>
   );
 }
 export default PasswordRestore;

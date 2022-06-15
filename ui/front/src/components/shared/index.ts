@@ -6,7 +6,7 @@ export * from './preload';
 export * from './beam-button';
 export * from './nav';
 export * from './menu';
-export * from './header';
+export * from './profile-block';
 export * from './seed-list';
 export * from './nav-button';
 export * from './balance';

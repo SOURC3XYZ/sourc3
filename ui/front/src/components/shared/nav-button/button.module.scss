@@ -1,12 +1,12 @@
 .button {
     display: block;
-    min-width: 163px;
+    width: 278px;
     padding: 15px 0;
-    background-color: transparent;
+    background-color: #FF791F;
     border: 1px solid #FF791F;
     box-sizing: border-box;
     border-radius: 8px;
-    color: #FF791F;
+    color: #fff;
     font-family: PublicSans-ExtraBold;
     font-weight: 800;
     font-size: 16px;
@@ -16,20 +16,19 @@
 }
 
 .button:hover {
-    background-color: #FF791F;
-    color: black;
+    background-color: transparent;
+    color: #FF791F;
 }
 
 .button {
     display: inline-block;
-    margin-top: 5px;
 }
 
 .button [class~=ant-btn] {
     border-radius: 7;
 }
 
-.disabled {
+.button:disabled {
     opacity: 0.5;
     pointer-events: none;
 }

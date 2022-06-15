@@ -1309,7 +1309,7 @@ void AddCommit(const mygit2::git_commit& commit,
     Env::DocAddText("author_email", commit.author->email);
     Env::DocAddText("committer_name", commit.committer->name);
     Env::DocAddText("committer_email", commit.committer->email);
-    Env::DocAddNum32("commit_time_sec", commit.committer->when.offset);
+    Env::DocAddNum32("commit_time_sec", commit.committer->when.time);
     Env::DocAddNum32("commit_time_tz_offset_min",
                      commit.committer->when.offset);
     Env::DocAddNum32(

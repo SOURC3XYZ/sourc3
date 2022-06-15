@@ -7,6 +7,7 @@ import { IpcServer } from 'ipc-express';
 import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
+import crypto from 'crypto';
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
@@ -22,10 +23,25 @@ function CopyIfNotExists(src: string, dst: string) {
   }
 }
 
-// process.on('uncaughtException', (err) => {
-//   console.error(err.stack);
-//   console.log('Node NOT Exiting...');
-// });
+function GetHash(file: string, algo: string) {
+  const hashSum = crypto.createHash(algo);
+  const fileBuffer = fs.readFileSync(file);
+  hashSum.update(fileBuffer);
+  return hashSum.digest('hex');
+}
+
+function CopyIfNotEqualHash(src: string, dst: string) {
+  console.log(`Check ${src} to ${dst}`)
+  if (fs.existsSync(dst)) {
+    const dstHex = GetHash(dst, "sha256");
+    const srcHex = GetHash(src, "sha256");
+    if (srcHex != dstHex) {
+      fs.copyFileSync(src, dst);
+    }
+  } else {
+    fs.copyFileSync(src, dst);
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -54,7 +70,7 @@ function createWindow() {
       if (!fs.existsSync(path.join(app.getPath('home'), '.local', 'bin'))) {
         fs.mkdirSync(path.join(app.getPath('home'), '.local', 'bin'));
       }
-      CopyIfNotExists(
+      CopyIfNotEqualHash(
         path.join(__dirname, '..', '..', '..', 'git-remote-sourc3'),
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
@@ -83,7 +99,7 @@ function createWindow() {
         return null;
       });
     });
-    CopyIfNotExists(
+    CopyIfNotEqualHash(
       path.join(__dirname, '..', 'front', 'dist', 'assets', 'app.wasm'),
       path.join(sourc3Path, 'app.wasm')
     );

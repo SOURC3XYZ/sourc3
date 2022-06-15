@@ -3,17 +3,16 @@ import {
 } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Send from './send';
 import Receive from './receive';
-import styles from './balance.module.css';
+import styles from './balance.module.scss';
 
-type BalancePropsType = {
-  current:number;
-};
-
-function Balance({ current }:BalancePropsType) {
+function Balance() {
   const [isVisible, setIsVisible] = useState(false);
   const [visible, setVisible] = useState(false);
+
+  const balance = useSelector((state) => state.app.balance);
 
   const showModal = () => {
     setIsVisible(true);
@@ -55,18 +54,14 @@ function Balance({ current }:BalancePropsType) {
         placement="bottomCenter"
         trigger={['click']}
       >
-        <Button style={{
-          border: 'none', height: 60
-        }}
-        >
-          Current balance:
-          <br />
-          {current}
+        <Button>
+          {balance}
+          {' '}
           SC3
         </Button>
       </Dropdown>
       <Send
-        current={current}
+        current={balance}
         isVisible={isVisible}
         onClose={closeModal}
       />

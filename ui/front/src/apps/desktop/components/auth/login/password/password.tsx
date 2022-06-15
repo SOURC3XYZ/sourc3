@@ -1,6 +1,7 @@
 import { NavButton } from '@components/shared';
+import { InputCustom } from '@components/shared/input';
 import Popup from '@components/shared/popup/popup';
-import { Button, Input } from 'antd';
+import { Button } from 'antd';
 import { useState } from 'react';
 import styles from '../login.module.scss';
 
@@ -20,15 +21,13 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
 
   return (
     <>
-      <label htmlFor="password">
-        <Input.Password
-          className={styles.password}
-          placeholder={placeholder}
-          onChange={onInput}
-          value={pass}
-          type="password"
-        />
-      </label>
+      <InputCustom
+        autoFocus
+        placeholder={placeholder}
+        onChange={onInput}
+        value={pass}
+        type="password"
+      />
 
       <Button type="link" className={styles.forgot} onClick={() => (setIsPopup(true))}>
         Forgot password?
@@ -40,14 +39,10 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
           link="/auth/login"
           onClick={onSubmit}
         />
-        <NavButton
-          name="Back"
-          link="/auth/"
-        />
       </div>
       <Popup
         visible={isPopup}
-        title="Restore wallet or create new one"
+        title="Restore account or create new one"
         onCancel={onCancel}
         agree
         confirmButton={(
@@ -60,7 +55,7 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
       >
         <span>
           If you forgot your password,
-          you still can access your wallet using your secret phrase,
+          you still can access your account using your secret phrase,
           but all transaction history and addresses will be lost
         </span>
       </Popup>

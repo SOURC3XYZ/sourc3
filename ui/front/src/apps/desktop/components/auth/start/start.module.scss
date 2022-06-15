@@ -3,19 +3,28 @@
 }
 
 .btnNav {
-  margin-top: 244px;
+  margin-top: 144px;
   display: flex;
   justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  button:not(:last-child){
+    margin-bottom: 16px;
+  }
+  button{
+    color: black;
+  }
 }
 
 .wrapper::before {
-  background: url('@assets/img/rect.png');
+  background: url('@assets/img/rect.svg');
   position: absolute;
   content: '';
   bottom: 40%;
   left: -55%;
-  width: 84px;
-  height: 84px;
+  width: 55px;
+  height: 55px;
   display: block;
   animation: fadein 10s alternate;
 }
@@ -27,7 +36,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: white;
-  padding-top: 81px;
+  padding-top: 139px;
 
   .logo {
     position: relative;
@@ -43,6 +52,8 @@
       color: white;
       margin: 0 auto;
       text-align: center;
+      font-weight: 600;
+      font-family: VisbyRegular;
     }
   }
 
@@ -72,11 +83,12 @@
 
   h2 {
     color: white;
-    font-size: 40px;
-    font-weight: 900;
     max-width: 609px;
     margin-bottom: 16px;
-    font-family: PublicSans-Regular;
+    font-weight: 900;
+		font-size: 40px;
+		line-height: 37.6px;
+		font-family: "VisbyExtraBold";
 
     span {
       border-bottom: 5px solid #3FD05A;
@@ -154,7 +166,7 @@
   .version{
     color: black;
   }
-  button:hover{
+  button{
     color: white;
   }
 }

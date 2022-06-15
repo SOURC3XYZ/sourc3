@@ -7,14 +7,19 @@ import { UpdatingNode } from '../update-node';
 import { SeedGenerate } from './seed-generate';
 import { SeedConfirm } from './seed-confirm';
 import { PasswordRestore } from '../restore/password-restore';
+import { AuthInfo } from './auth-info';
 
 function SignUp() {
   const {
-    seed, mode, setNextMode, statusFetcher, endOfVerification, throwError
+    seed, mode, setNextMode, statusFetcher, endOfVerification, throwError, setBackMode
   } = useSignUp();
 
   const CurrentMode = useCallback(() => {
     switch (mode) {
+      case MODE.AUTHINFO:
+        return (
+          <AuthInfo next={setNextMode} />
+        );
       case MODE.SEED:
         return <SeedGenerate seed={seed} next={setNextMode} />;
 
@@ -22,13 +27,15 @@ function SignUp() {
         return <SeedConfirm seedGenerated={seed} next={setNextMode} />;
 
       case MODE.PASS:
-        return <PasswordRestore onClick={endOfVerification} isCreate />;
+        return <PasswordRestore onClick={endOfVerification} />;
 
       case MODE.OK:
         return (
-          <div className={styles.syncStatusWrapper}>
-            <UpdatingNode statusFetcher={statusFetcher} errorCatcher={throwError} />
-          </div>
+          <UpdatingNode
+            back={setBackMode}
+            statusFetcher={statusFetcher}
+            errorCatcher={throwError}
+          />
         );
         // TODO: DANIK: make a generalized component
 

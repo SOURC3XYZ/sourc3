@@ -1,7 +1,7 @@
 import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
 import { WALLET } from '@libs/constants';
 import React, { useEffect, useState } from 'react';
-import styles from '../sign-up.module.scss';
+import styles from './seed-confirm.module.scss';
 
 type SeedConfirmType = {
   seedGenerated: string[],
@@ -62,13 +62,15 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
   };
 
   return (
-    <>
+    <div className={styles.wrapper}>
       <h2>Confirmation</h2>
       <p className={styles.description}>
         Enter the words from the secret phrase corresponding
-        the numbers shown below.  You can skip the confirmation.
+        <br />
+        the numbers shown below.
       </p>
       <SeedList
+        listConfirm
         isShuffle
         isSlice
         data={seed}
@@ -79,18 +81,20 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
         <AuthBtnBlock>
           <>
             <NavButton
+              inlineStyles={{ width: '278px' }}
               isDisabled={isDisabled}
               onClick={next}
-              name="Complete phrase"
+              name="Confirm phrase"
             />
             <NavButton
-              name="Back"
+              inlineStyles={{ width: '278px' }}
+              name="Confirm later"
               link="/auth/"
             />
           </>
         </AuthBtnBlock>
       </div>
-    </>
+    </div>
   );
 }
 

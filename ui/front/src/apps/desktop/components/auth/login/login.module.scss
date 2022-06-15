@@ -1,15 +1,15 @@
-.password {
-  background: rgba(0, 0, 0, 0.03);
-  border-radius: 8px;
-  padding: 12px;
-  color: rgba(0, 0, 0, 0.3);
+// .password {
+//   background: rgba(0, 0, 0, 0.03);
+//   border-radius: 8px;
+//   padding: 12px;
+//   color: rgba(0, 0, 0, 0.3);
 
-  input {
-    background: transparent;
-  }
+//   input {
+//     background: transparent;
+//   }
 
-  margin-bottom: 16px;
-}
+//   margin-bottom: 16px;
+// }
 
 
 .wrapper {
@@ -18,13 +18,15 @@
 }
 
 .btnNav {
-  margin-top: 76px;
+  margin-top: 90px;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-
-  button:hover {
-    color: #fff;
+  align-items: center;
+  button:not(:last-child){
+    margin-bottom: 16px;
+  }
+  button{
+    width: 278px;
   }
 }
 
@@ -39,7 +41,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: #000;
-  padding-top: 81px;
+  padding-top: 139px;
 
   .logo {
     position: relative;
@@ -56,6 +58,8 @@
       color: #000;
       margin: 0 auto;
       text-align: center;
+      font-weight: 600;
+      font-family: VisbyRegular;
     }
   }
 
@@ -85,11 +89,12 @@
 
   h2 {
     color: #000;
-    font-size: 40px;
-    font-weight: 900;
     max-width: 609px;
     margin-bottom: 40px;
-    font-family: PublicSans-Regular;
+    font-weight: 900;
+		font-size: 32px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
 
     span {
       border-bottom: 5px solid #3FD05A;
@@ -137,7 +142,7 @@
       display: block;
       animation: fadein 7s alternate;
     }
-
+    
     .button {
       width: 154px;
       height: 52px;
@@ -155,15 +160,21 @@
 }
 
 .wrapper::before {
-  background: url('@assets/img/rect.png');
+  background: url('@assets/img/rect.svg');
   position: absolute;
   content: '';
-  bottom: 40%;
+  bottom: 45%;
   left: -55%;
-  width: 84px;
-  height: 84px;
+  width: 55px;
+  height: 55px;
   display: block;
   animation: fadein 10s alternate;
+}
+
+.backButton{
+  position: absolute;
+    top: 30px;
+    right: 616px;
 }
 
 @keyframes fadein {
@@ -202,6 +213,11 @@
       display: none !important;
     }
   }
+  // .backButton{
+  //   position: absolute;
+  //     top: 30px;
+  //     right: 505px;
+  // }
 }
 
 @media screen and (max-width: 768px) {
@@ -215,6 +231,11 @@
       margin: 25px 0 !important;
       padding: 0 20px;
     }
+  }
+  .backButton{
+    position: absolute;
+      top: 30px;
+      right: 420px;
   }
 }
 
@@ -252,6 +273,11 @@
         font-size: 14px !important;
       }
     }
+  }
+  .backButton{
+    position: absolute;
+      top: 30px;
+      right: 250px;
   }
 }
 

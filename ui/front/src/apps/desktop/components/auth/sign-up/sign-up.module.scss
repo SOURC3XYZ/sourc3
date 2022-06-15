@@ -1,18 +1,15 @@
 .wrapper {
-  padding-top: 120px;
-  margin: 0 auto;
-  max-width: 485px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+	margin: 0 auto;
+	width: 100%;
+	text-align: center;
 
   h2 {
     margin: 0;
     padding: 0 0 22px;
     font-weight: 900;
-    font-size: 40px;
-    font-family: PublicSans-Regular;
+		font-size: 32px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
   }
 
   .description {

@@ -1,4 +1,3 @@
-import { PlusOutlined } from '@ant-design/icons';
 import { MODAL } from '@libs/constants';
 import { useAddButton } from '@libs/hooks/container/wallet';
 import useUserAsync from '@libs/hooks/thunk/useEntitiesAction';
@@ -6,7 +5,7 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useCallback } from 'react';
-import styles from './add.module.css';
+import styles from './add.module.scss';
 import { CloneModal } from './content';
 import { CreateModal } from './content/create-modal';
 
@@ -69,7 +68,6 @@ function AddButton() {
         <Dropdown overlay={menu} placement="bottomCenter" trigger={['click']}>
           <Button className={styles.addButton}>
             Add
-            <PlusOutlined />
           </Button>
         </Dropdown>
       </div>

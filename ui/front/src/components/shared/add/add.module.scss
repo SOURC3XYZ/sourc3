@@ -1,0 +1,20 @@
+@import '@styles/vars.scss';
+
+.addButton {
+    color: black !important;
+    border: none;
+    background-color: $color-orage !important;
+    border-radius: 8px;
+    span{
+        font-family: 'PublicSans-Medium' !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px !important;
+        line-height: 16px !important;
+        letter-spacing: 0.1px;
+    }
+    &:hover, &:target{
+        background-color: $color-orage !important;
+        color: white !important;
+    }
+}

@@ -28,6 +28,7 @@ let nodeUpdate = 0;
 
 const successReg = /server/i;
 const errorReg = /Please check your password/i;
+const beamErrorReg = /^E /i;
 const ownerKeyReg = /Owner Viewer key/i;
 const walletRestoreSuccessReg = /generated:/i;
 const walletRestoreErrorReg = /provide a valid seed phrase for the wallet./i;
@@ -164,6 +165,8 @@ export function startBeamNode(
         if (bufferString.match(nodeUpdatingReq)) {
           const str = String(bufferString.split('node')[1]);
           nodeUpdate = Number(/\d+/.exec(str));
+        } else if (bufferString.match(beamErrorReg)) {
+          throw new Error(`Node error: ${bufferString}. Try to start on port: ${BEAM_NODE_PORT}`);
         }
       });
 
@@ -256,6 +259,8 @@ export function runWalletApi(
       if (bufferString.match(errorReg)) {
         killApiServer()
           .then(() => reject(new Error('Please, check your password')));
+      } else if (bufferString.match(beamErrorReg)) {
+        throw new Error(`Wallet API start error: ${bufferString}. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
       }
     };
 

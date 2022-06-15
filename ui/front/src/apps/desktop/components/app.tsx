@@ -6,6 +6,7 @@ import {
   Navigate, Route, Routes, useNavigate
 } from 'react-router-dom';
 import { Auth } from './auth';
+import Success from './auth/success/success';
 import { Main } from './main';
 
 function App() {
@@ -32,8 +33,12 @@ function App() {
       element: <Auth />
     },
     {
-      path: 'main/*',
+      path: '/*',
       element: <Main />
+    },
+    {
+      path: 'success/*',
+      element: <Success />
     }
   ];
 

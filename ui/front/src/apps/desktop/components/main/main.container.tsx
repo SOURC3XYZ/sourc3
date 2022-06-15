@@ -2,16 +2,15 @@
 import {
   AllRepos,
   FailPage,
-  Header,
   Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
 } from '@components/shared';
-import NavMenu from '@components/shared/menu/menu';
 import { useSelector } from '@libs/redux';
 import React, { useCallback, useMemo } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useUserAction } from '@libs/hooks/thunk';
 import { LoadingMessages } from '@libs/constants';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import Header from '../../../web/components/header/header.container';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
 
@@ -33,7 +32,7 @@ function App() {
       element: <AllRepos />
     },
     {
-      path: '/repo/:repoParams/*',
+      path: 'repo/:repoParams/*',
       element: <Repo />
     },
     {
@@ -59,7 +58,7 @@ function App() {
   ];
 
   const routes = data.map(
-    ({ path, element }) => <Route key={path} path={path} element={element} />
+    ({ path, element }) => <Route key={`route-${path}`} path={path} element={element} />
   );
 
   const HeadlessPreloadFallback = useCallback(() => (
@@ -80,6 +79,8 @@ function App() {
     return () => Component;
   }, [isApiConnected]);
 
+  console.log(balance);
+
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
@@ -88,8 +89,7 @@ function App() {
     >
       <ErrorBoundary fallback={fallback}>
         <>
-          <Header balance={balance} pKey={pkey} />
-          <NavMenu />
+          <Header balance={balance} />
           <div className={styles.wrapper}>
             <View />
             <Notifications />
