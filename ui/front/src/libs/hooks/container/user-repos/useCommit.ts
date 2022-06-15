@@ -45,7 +45,10 @@ export const useCommit = (
     } return setError(new Error('no commit'));
   };
 
-  useEffect(() => { fetchCommit(); }, []);
+  useEffect(() => {
+    if (!branches.length) setError(new Error('no data'));
+    else fetchCommit();
+  }, []);
 
   const goToCommitTree = useCallback((e: any) => {
     e.preventDefault();

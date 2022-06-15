@@ -76,12 +76,12 @@ function RepoContent({
           updateTree={updateTree}
           pathArray={params}
         />
-      )), [tree, pathname, type, params]);
+      )), [tree, pathname, type, params, filesMap]);
 
   const CommitPreloadFallback = useCallback(() => (
     <Preload
       className={styles.preload}
-      message={LoadingMessages.COMMIT}
+      message={LoadingMessages.BRANCHES}
     />
   ), []);
 

@@ -58,7 +58,7 @@ function RepoItem({
   };
 
   const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
-    item.masterBranch ? clipString(item.masterBranch?.name) : '#'
+    item.masterBranch ? clipString(item.masterBranch?.name) : ''
   }`;
 
   const menuRender = (
@@ -77,6 +77,12 @@ function RepoItem({
   const time = item.lastCommit
     ? `${dateCreator(actualTime(item.lastCommit))} ago`
     : 'empty';
+
+  const handleRepoLink:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    if (!item.masterBranch) e.preventDefault();
+  };
+
+  const titleClassname = item.masterBranch ? styles.title : styles.titleDisabled;
 
   return (
     <List.Item
@@ -103,8 +109,8 @@ function RepoItem({
     >
       <List.Item.Meta
         title={(
-          <div className={styles.title}>
-            <Link to={link} state={{ id: repo_id }}>
+          <div className={titleClassname}>
+            <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
               <Excretion name={repo_name} inputText={searchText} />
             </Link>
           </div>

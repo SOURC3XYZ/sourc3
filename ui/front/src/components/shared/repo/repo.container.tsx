@@ -17,7 +17,7 @@ function UserRepos() {
   const containerProps = useUserRepos();
 
   const {
-    isLoaded, loadingHandler, repoName
+    isLoaded, repoName, loadingHandler
   } = containerProps;
 
   const navigate = useNavigate();

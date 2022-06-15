@@ -62,7 +62,10 @@ const useRepoContent = (
     [params]
   );
 
-  useEffect(() => { fetchCommit(branchName); }, []);
+  useEffect(() => {
+    if (!branches.length) setError(new Error('repo is empty'));
+    else fetchCommit(branchName);
+  }, []);
 
   const goToCommitTree = useCallback((branch: string) => goTo(`commits/${branch}`), []);
 

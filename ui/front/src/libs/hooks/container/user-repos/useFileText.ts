@@ -32,7 +32,7 @@ export const useFileText = ({
   };
 
   const fileChecker = () => {
-    if (text !== null) setText(null);
+    // if (text !== null) setText(null);
     const paramsCopy = [...params];
     const fileName = paramsCopy.pop();
     const currentFileList = tree && getTree(tree, paramsCopy, updateTreeDecor);
@@ -53,7 +53,7 @@ export const useFileText = ({
     }
   };
 
-  useEffect(fileChecker, [tree, filesMap, pathname]);
+  useEffect(fileChecker, [filesMap]);
 
   const isLoaded = text !== null;
 

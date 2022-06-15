@@ -64,7 +64,7 @@ function CommitContent({
           pathArray={params}
           updateTree={updateTree}
         />
-      )), [tree, pathname, type, params]);
+      )), [tree, pathname, type, params, filesMap]);
 
   const CommitPreloadFallback = useCallback(() => (
     <Preload
