@@ -52,9 +52,9 @@ export default abstract class AbstractParser {
   }
 
   protected readonly call = async <T>(req: RequestSchema):Promise<T> => {
-    if (
-      this.pathname !== window.location.pathname
-    ) throw new Error('url has changed');
+    // if (
+    //   this.pathname !== window.location.pathname
+    // ) throw new Error('url has changed');
     const { result, error } = await this.callApi(req);
     if (error) throw new Error(error.message);
     if (result?.output) {

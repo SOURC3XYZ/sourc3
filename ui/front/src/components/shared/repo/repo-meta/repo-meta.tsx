@@ -32,7 +32,7 @@ function RepoMeta({ commit }: RepoMetaProps) {
     }
   ];
 
-  const dataRender = data.map(({ title, message, link }, i) => (
+  const dataRender = data.map(({ title, message, link }) => (
     <Col key={`repo-meta-${title}`}>
       <Info title={title} message={textEllipsis(message, 12)} link={link} />
     </Col>

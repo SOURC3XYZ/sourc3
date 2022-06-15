@@ -19,6 +19,15 @@
     }
 }
 
+.titleDisabled {
+    composes: title;
+
+    * {
+        color: rgba(0, 0, 0, 0.4);
+    }
+}
+
+
 .subtitle {
     .idField {
         font-family: 'PublicSans-Thin';

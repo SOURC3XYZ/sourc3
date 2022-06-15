@@ -1,10 +1,10 @@
 import { AppThunkDispatch } from '@libs/redux';
 import {
-  BeamApiRes, CallApiProps, CallBeamApi, CallIPCType, EventResult, IPCResult
+  BeamApiRes, CallApiProps, CallBeamApi, CallIPCType, ContractResp, ContractResult, EventResult, IPCResult
 } from '@types';
 import {
   thunkCatch,
-  ActionCreators, outputParser, RequestSchema, AC, RC
+  ActionCreators, RequestSchema, AC, RC, errorHandler
 } from '@libs/action-creators';
 
 type HelperCallbackType<T, C> = C extends ActionCreators
@@ -25,6 +25,26 @@ type HelperCallbackType<T, C> = C extends ActionCreators
 //     dispatch(thunks.getTxList());
 //   };
 // }
+
+export function outputParser<T extends ContractResp>(
+  res: BeamApiRes<ContractResult>,
+  dispatch?: AppThunkDispatch
+) {
+  try {
+    if (res.error) return errorHandler(res.error, dispatch);
+    if (res.result.output) {
+      const output = JSON.parse(res.result.output) as T;
+      if (output.error) {
+        return errorHandler({ message: output.error }, dispatch);
+      }
+      return output;
+    } throw new Error('no output');
+  } catch (error) {
+    const { message } = error as Error;
+    errorHandler({ message }, dispatch);
+    return undefined;
+  }
+}
 
 export const desktopCall = (callIPC: CallIPCType) => {
   const get = async <T>(
