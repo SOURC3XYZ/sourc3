@@ -38,6 +38,7 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
           name="Sign in"
           link="/auth/login"
           onClick={onSubmit}
+          active
         />
       </div>
       <Popup
@@ -49,7 +50,7 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
           <NavButton
             name="Proceed"
             link="/auth/start"
-            inlineStyles={{ width: '278px' }}
+            active
           />
         )}
       >

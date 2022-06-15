@@ -28,9 +28,10 @@ function Success() {
         <img src={IconSuccess} alt="success-icon" />
       </div>
       <NavButton
-        name="Get Started!"
+        name={location.restore ? 'Open' : 'Get started'}
         onClick={goMain}
         inlineStyles={{ width: '278px' }}
+        active
       />
     </div>
   );

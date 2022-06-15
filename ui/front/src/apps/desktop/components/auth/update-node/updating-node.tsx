@@ -24,9 +24,11 @@ function UpdatingNode({
   const { status } = useFetch(statusFetcher, initial, errorCatcher);
   console.log('updating node: ', status);
   const location = useLocation();
+  const login = location.pathname === '/auth/login';
   const restored = location.pathname === '/auth/restore';
   useEffect(() => {
     if (status === 100 && restored) navigate('/success', { state: { restore: true } });
+    else if (status === 100 && login) navigate('/repos/all/1', { state: { restore: true } });
     else if (status === 100) {
       navigate('/success', { state: { restore: false } });
     }
@@ -68,6 +70,8 @@ function UpdatingNode({
               showInfo={false}
               percent={status}
               status="active"
+              strokeWidth={6}
+              trailColor="rgba(0, 0, 0, 0.1)"
             />
           </div>
         </div>

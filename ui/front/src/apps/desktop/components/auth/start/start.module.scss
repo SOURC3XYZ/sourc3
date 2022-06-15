@@ -3,7 +3,7 @@
 }
 
 .btnNav {
-  margin-top: 144px;
+  margin-top: 176px;
   display: flex;
   justify-content: space-between;
   display: flex;
@@ -12,16 +12,13 @@
   button:not(:last-child){
     margin-bottom: 16px;
   }
-  button{
-    color: black;
-  }
 }
 
 .wrapper::before {
   background: url('@assets/img/rect.svg');
   position: absolute;
   content: '';
-  bottom: 40%;
+  bottom: 36%;
   left: -55%;
   width: 55px;
   height: 55px;
@@ -36,7 +33,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: white;
-  padding-top: 139px;
+  padding-top: 116px;
 
   .logo {
     position: relative;
@@ -72,7 +69,7 @@
   .logo::after {
     position: absolute;
     content: '';
-    top: -50px;
+    top: -56px;
     right: -243px;
     background: url('@assets/img/rect-half.png');
     width: 86px;
@@ -165,9 +162,6 @@
   }
   .version{
     color: black;
-  }
-  button{
-    color: white;
   }
 }
 @keyframes fadein {

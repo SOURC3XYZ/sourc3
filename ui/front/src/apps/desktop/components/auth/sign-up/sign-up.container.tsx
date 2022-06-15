@@ -18,16 +18,36 @@ function SignUp() {
     switch (mode) {
       case MODE.AUTHINFO:
         return (
-          <AuthInfo next={setNextMode} />
+          <AuthInfo
+            back={setBackMode}
+            next={setNextMode}
+          />
         );
       case MODE.SEED:
-        return <SeedGenerate seed={seed} next={setNextMode} />;
+        return (
+          <SeedGenerate
+            back={setBackMode}
+            seed={seed}
+            next={setNextMode}
+          />
+        );
 
       case MODE.CONFIRM:
-        return <SeedConfirm seedGenerated={seed} next={setNextMode} />;
+        return (
+          <SeedConfirm
+            back={setBackMode}
+            seedGenerated={seed}
+            next={setNextMode}
+          />
+        );
 
       case MODE.PASS:
-        return <PasswordRestore onClick={endOfVerification} />;
+        return (
+          <PasswordRestore
+            back={setBackMode}
+            onClick={endOfVerification}
+          />
+        );
 
       case MODE.OK:
         return (

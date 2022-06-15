@@ -57,6 +57,7 @@ function SeedRestore({
           isDisabled={isDisabled}
           onClick={next}
           name="Next"
+          active
         />
       </div>
     </div>

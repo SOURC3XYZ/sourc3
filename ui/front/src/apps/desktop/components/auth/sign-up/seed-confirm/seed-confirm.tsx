@@ -1,4 +1,5 @@
 import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
+import { BackButton } from '@components/shared/back-button';
 import { WALLET } from '@libs/constants';
 import React, { useEffect, useState } from 'react';
 import styles from './seed-confirm.module.scss';
@@ -6,9 +7,10 @@ import styles from './seed-confirm.module.scss';
 type SeedConfirmType = {
   seedGenerated: string[],
   next: () => void
+  back: () => void
 };
 
-function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
+function SeedConfirm({ seedGenerated, next, back }:SeedConfirmType) {
   const emptyErrors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
   const emptySeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
 
@@ -62,39 +64,44 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <h2>Confirmation</h2>
-      <p className={styles.description}>
-        Enter the words from the secret phrase corresponding
-        <br />
-        the numbers shown below.
-      </p>
-      <SeedList
-        listConfirm
-        isShuffle
-        isSlice
-        data={seed}
-        errors={errors}
-        onInput={validateDecor}
-      />
-      <div className={styles.btnBlock}>
-        <AuthBtnBlock>
-          <>
-            <NavButton
-              inlineStyles={{ width: '278px' }}
-              isDisabled={isDisabled}
-              onClick={next}
-              name="Confirm phrase"
-            />
-            <NavButton
-              inlineStyles={{ width: '278px' }}
-              name="Confirm later"
-              link="/auth/"
-            />
-          </>
-        </AuthBtnBlock>
+    <>
+      <BackButton onClick={back} />
+      <div className={styles.wrapper}>
+        <h2>Confirmation</h2>
+        <p className={styles.description}>
+          Enter the words from the secret phrase corresponding
+          <br />
+          the numbers shown below.
+        </p>
+        <SeedList
+          listConfirm
+          isShuffle
+          isSlice
+          data={seed}
+          errors={errors}
+          onInput={validateDecor}
+        />
+        <div className={styles.btnBlock}>
+          <AuthBtnBlock>
+            <>
+              <NavButton
+                inlineStyles={{ width: '278px' }}
+                isDisabled={isDisabled}
+                onClick={next}
+                name="Confirm phrase"
+                active
+              />
+              {/* <NavButton
+                inlineStyles={{ width: '278px' }}
+                name="Confirm later"
+                link="/auth/"
+              /> */}
+            </>
+          </AuthBtnBlock>
+        </div>
       </div>
-    </div>
+
+    </>
   );
 }
 

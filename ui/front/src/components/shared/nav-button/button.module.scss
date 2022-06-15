@@ -15,10 +15,9 @@
     cursor: pointer;
 }
 
-.button:hover {
-    background-color: transparent;
-    color: #FF791F;
-}
+// .button:hover {
+//     color: #FF791F;
+// }
 
 .button {
     display: inline-block;
@@ -31,4 +30,11 @@
 .button:disabled {
     opacity: 0.5;
     pointer-events: none;
+}
+
+.buttonSecond{
+    composes: button;
+    background-color: transparent;
+    border: 1px solid #FF791F;
+    color: #FF791F;
 }
