@@ -88,7 +88,7 @@ function SeedConfirm({ seedGenerated, next }:SeedConfirmType) {
             />
             <NavButton
               inlineStyles={{ width: '278px' }}
-              name="Back"
+              name="Confirm later"
               link="/auth/"
             />
           </>

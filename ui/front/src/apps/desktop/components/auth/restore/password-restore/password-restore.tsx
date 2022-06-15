@@ -2,6 +2,7 @@
 import { NavButton } from '@components/shared/nav-button';
 import { InputCustom } from '@components/shared/input';
 import React, { useRef } from 'react';
+import { BackButton } from '@components/shared/back-button';
 import styles from './password-restore.module.scss';
 
 const STRENGTH_CRITERIA = [
@@ -31,6 +32,7 @@ function getStrengthTitle(value: number) {
 
 type PasswordRestoreType = {
   onClick: (base: string, repeat:string) => void
+  back?: () => void;
 };
 
 function ratePassword(password: string): number {
@@ -41,7 +43,7 @@ function ratePassword(password: string): number {
   }, 0);
 }
 const BARS_MAX = 6;
-function PasswordRestore({ onClick }: PasswordRestoreType) {
+function PasswordRestore({ onClick, back }: PasswordRestoreType) {
   const [base, setBase] = React.useState('');
   const [repeat, setRepeat] = React.useState('');
 
@@ -56,7 +58,6 @@ function PasswordRestore({ onClick }: PasswordRestoreType) {
 
   const onClickDecor = () => onClick(base, repeat);
 
-  console.log(ready);
   const bars = new Array(BARS_MAX).fill(null).map((v, index) => (index < points ? points : 0));
 
   const black = (num:any) => {
@@ -73,78 +74,83 @@ function PasswordRestore({ onClick }: PasswordRestoreType) {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <h2>Password</h2>
+    <>
+      {' '}
+      {back && <BackButton onClick={back} />}
+      <div className={styles.wrapper}>
+        <h2>Password</h2>
 
-      <p className={styles.description}>
-        Enter a strong password.
-        <br />
-        The password is specific to each client and is only store locally.
-      </p>
-
-      <div className={styles.wrapperInput}>
-        <InputCustom
-          autoFocus
-          password
-          placeholder="Enter your password"
-          onChange={(e) => setBase(e.target.value)}
-        />
-        <InputCustom
-          valid={valid}
-          label={error}
-          placeholder="Confirm your password"
-          onChange={(e) => setRepeat(e.target.value)}
-          password={!!useRef}
-        />
-
-      </div>
-      <div className={styles.wrapperList}>
-        <ul className={styles.listStyled}>
-          {bars.map((p, index) => (
-            <li
-              className={styles.listItemStyled}
-              key={index}
-              style={
-                { backgroundColor: black(p) }
-              }
-            />
-          ))}
-        </ul>
-        {title && (
-          <span className={styles.strengthTitle}>
-            {title}
-            {' '}
-            password
-          </span>
-        )}
-      </div>
-      <div className={styles.wrapperDescr}>
-        <p className={styles.descrTitle}>
-          Strong password needs to meet the following requirements:
+        <p className={styles.description}>
+          Enter a strong password.
+          <br />
+          The password is specific to each account and is only store locally.
         </p>
-        <ul className={styles.list}>
-          <li className={styles.listItem}>
-            the length must be at least 10 characters
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one lowercase letter
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one uppercase letter
-          </li>
-          <li className={styles.listItem}>
-            must contain at least one number
-          </li>
-        </ul>
 
+        <div className={styles.wrapperInput}>
+          <InputCustom
+            autoFocus
+            password
+            placeholder="Enter your password"
+            onChange={(e) => setBase(e.target.value)}
+          />
+          <InputCustom
+            valid={valid}
+            label={error}
+            placeholder="Confirm your password"
+            onChange={(e) => setRepeat(e.target.value)}
+            password={!!useRef}
+          />
+
+        </div>
+        <div className={styles.wrapperList}>
+          <ul className={styles.listStyled}>
+            {bars.map((p, index) => (
+              <li
+                className={styles.listItemStyled}
+                key={index}
+                style={
+                  { backgroundColor: black(p) }
+                }
+              />
+            ))}
+          </ul>
+          {title && (
+            <span className={styles.strengthTitle}>
+              {title}
+              {' '}
+              password
+            </span>
+          )}
+        </div>
+        <div className={styles.wrapperDescr}>
+          <p className={styles.descrTitle}>
+            Strong password needs to meet the following requirements:
+          </p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>
+              the length must be at least 10 characters
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one lowercase letter
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one uppercase letter
+            </li>
+            <li className={styles.listItem}>
+              must contain at least one number
+            </li>
+          </ul>
+
+        </div>
+        <NavButton
+          name="Get started"
+          inlineStyles={{ width: '278px' }}
+          onClick={onClickDecor}
+          isDisabled={!ready}
+        />
       </div>
-      <NavButton
-        name="Get started"
-        inlineStyles={{ width: '278px' }}
-        onClick={onClickDecor}
-        isDisabled={!ready}
-      />
-    </div>
+
+    </>
   );
 }
 export default PasswordRestore;

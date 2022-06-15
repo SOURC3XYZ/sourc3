@@ -18,7 +18,7 @@
 }
 
 .btnNav {
-  margin-top: 76px;
+  margin-top: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,7 +41,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: #000;
-  padding-top: 81px;
+  padding-top: 139px;
 
   .logo {
     position: relative;
@@ -160,15 +160,21 @@
 }
 
 .wrapper::before {
-  background: url('@assets/img/rect.png');
+  background: url('@assets/img/rect.svg');
   position: absolute;
   content: '';
-  bottom: 40%;
+  bottom: 45%;
   left: -55%;
-  width: 84px;
-  height: 84px;
+  width: 55px;
+  height: 55px;
   display: block;
   animation: fadein 10s alternate;
+}
+
+.backButton{
+  position: absolute;
+    top: 30px;
+    right: 616px;
 }
 
 @keyframes fadein {
@@ -207,6 +213,11 @@
       display: none !important;
     }
   }
+  // .backButton{
+  //   position: absolute;
+  //     top: 30px;
+  //     right: 505px;
+  // }
 }
 
 @media screen and (max-width: 768px) {
@@ -220,6 +231,11 @@
       margin: 25px 0 !important;
       padding: 0 20px;
     }
+  }
+  .backButton{
+    position: absolute;
+      top: 30px;
+      right: 420px;
   }
 }
 
@@ -257,6 +273,11 @@
         font-size: 14px !important;
       }
     }
+  }
+  .backButton{
+    position: absolute;
+      top: 30px;
+      right: 250px;
   }
 }
 

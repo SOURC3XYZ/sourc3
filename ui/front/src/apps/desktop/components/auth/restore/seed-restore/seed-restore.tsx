@@ -1,4 +1,5 @@
-import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
+import { NavButton, SeedList } from '@components/shared';
+import { BackButton } from '@components/shared/back-button';
 import { WALLET } from '@libs/constants';
 import { useEffect, useState } from 'react';
 import styles from './seed-restore.module.scss';
@@ -9,10 +10,11 @@ type SeedRestoreProps = {
   validate: (seed: string []) => void;
   validatePasted: (str: string[]) => void;
   next: () => void;
+  back: () => void;
 };
 
 function SeedRestore({
-  seed, errors, validate, validatePasted, next
+  seed, errors, validate, validatePasted, next, back
 }:SeedRestoreProps) {
   const [isDisabled, setIsDisabled] = useState(true);
 
@@ -39,7 +41,8 @@ function SeedRestore({
   };
   return (
     <div className={styles.wrapper}>
-      <h2>Restore wallet</h2>
+      <BackButton onClick={back} />
+      <h2>Restore account</h2>
       <p className={styles.description}>
         Type in or paste your secret phrase .
       </p>
@@ -50,19 +53,11 @@ function SeedRestore({
         validatePasted={handlePaste}
       />
       <div className={styles.btnBlock}>
-        <AuthBtnBlock>
-          <>
-            <NavButton
-              isDisabled={isDisabled}
-              onClick={next}
-              name="Next"
-            />
-            <NavButton
-              name="Back"
-              link="/auth/login"
-            />
-          </>
-        </AuthBtnBlock>
+        <NavButton
+          isDisabled={isDisabled}
+          onClick={next}
+          name="Next"
+        />
       </div>
     </div>
   );

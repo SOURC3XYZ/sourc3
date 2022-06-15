@@ -1,4 +1,4 @@
-import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
+import { NavButton, SeedList } from '@components/shared';
 import { Popup } from '@components/shared/popup';
 import { WALLET } from '@libs/constants';
 import { useState } from 'react';
@@ -38,18 +38,14 @@ function SignUp({
         errors={errors}
       />
       <div className={styles.btnBlock}>
-        <AuthBtnBlock>
-          <>
-            <NavButton
-              onClick={() => setIsPopup(true)}
-              name="Confirm phrase"
-            />
-            <NavButton
-              name="Confirm later"
-              link="/auth/"
-            />
-          </>
-        </AuthBtnBlock>
+        <NavButton
+          onClick={() => setIsPopup(true)}
+          name="Confirm phrase"
+        />
+        <NavButton
+          name="Confirm later"
+          link="/auth/"
+        />
       </div>
       <Popup
         visible={isPopup}

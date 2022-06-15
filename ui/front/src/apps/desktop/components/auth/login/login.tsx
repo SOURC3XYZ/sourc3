@@ -3,6 +3,8 @@ import { Preload } from '@components/shared';
 import { useAsyncError, useObjectState } from '@libs/hooks/shared';
 import { PromiseArg } from '@types';
 import { Sourc3Logo } from '@components/svg';
+import { BackButton } from '@components/shared/back-button';
+import { useNavigate } from 'react-router-dom';
 import styles from './login.module.scss';
 import { UpdatingNode } from '../update-node';
 import { Password } from './password';
@@ -38,31 +40,39 @@ function Login({ startWalletApi, statusFetcher }: LoginProps) {
     e: React.ChangeEvent<HTMLInputElement>
   ) => setState({ pass: e.target.value });
 
+  const navigate = useNavigate();
+  const back = () => navigate('/');
+
   return (
 
     status !== STATUS.SYNC ? (
-      <div className={styles.wrapper}>
-        <div className={styles.logo}>
-          <Sourc3Logo fill="black" />
-          <h3>desktop client</h3>
+      <>
+        {' '}
+        <BackButton onClick={back} />
+        <div className={styles.wrapper}>
+          <div className={styles.logo}>
+            <Sourc3Logo fill="black" />
+            <h3>desktop client</h3>
+          </div>
+          <div className={styles.intro}>
+            <h2>Sign in</h2>
+          </div>
+          {
+            status === STATUS.LOADING
+              ? (
+                <div>
+                  <Preload message="Loading" />
+                </div>
+              )
+              : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
+          }
         </div>
-        <div className={styles.intro}>
-          <h2>Sign in</h2>
-        </div>
-        {
-          status === STATUS.LOADING
-            ? (
-              <div>
-                <Preload message="Loading" />
-              </div>
-            )
-            : <Password pass={pass} onSubmit={onSubmit} onInput={onInput} />
-        }
-      </div>
+
+      </>
     )
       : (
         <UpdatingNode
-          backButton
+          back={back}
           statusFetcher={statusFetcher}
           errorCatcher={throwError}
         />

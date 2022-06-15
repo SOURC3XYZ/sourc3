@@ -1,6 +1,6 @@
 .button {
     display: block;
-    min-width: 163px;
+    width: 278px;
     padding: 15px 0;
     background-color: #FF791F;
     border: 1px solid #FF791F;
@@ -22,7 +22,6 @@
 
 .button {
     display: inline-block;
-    margin-top: 5px;
 }
 
 .button [class~=ant-btn] {

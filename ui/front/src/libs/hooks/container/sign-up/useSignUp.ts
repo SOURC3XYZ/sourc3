@@ -4,6 +4,7 @@ import { useWalletAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const useSignUp = () => {
   const seedPhrase = useSelector((state) => state.wallet.seedPhrase);
@@ -23,6 +24,7 @@ const useSignUp = () => {
   }, []);
 
   const [mode, toggleMode] = useState<MODE>(MODE.AUTHINFO);
+  const navigate = useNavigate();
 
   const setOk = (err?: Error) => {
     if (err) return throwError(err);
@@ -50,6 +52,23 @@ const useSignUp = () => {
     }
   };
 
+  const setBackMode = () => {
+    switch (mode) {
+      case MODE.AUTHINFO:
+        return navigate('/auth/start');
+      case MODE.SEED:
+        return toggleMode(MODE.AUTHINFO);
+      case MODE.CONFIRM:
+        return toggleMode(MODE.SEED);
+      case MODE.PASS:
+        return toggleMode(MODE.CONFIRM);
+      case MODE.OK:
+        return toggleMode(MODE.PASS);
+      default:
+        return toggleMode(MODE.AUTHINFO);
+    }
+  };
+
   return {
     seed,
     mode,
@@ -59,7 +78,8 @@ const useSignUp = () => {
     clearSeed2Validation,
     statusFetcher,
     setNextMode,
-    throwError
+    throwError,
+    setBackMode
   };
 };
 

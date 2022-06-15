@@ -11,7 +11,7 @@ import { AuthInfo } from './auth-info';
 
 function SignUp() {
   const {
-    seed, mode, setNextMode, statusFetcher, endOfVerification, throwError
+    seed, mode, setNextMode, statusFetcher, endOfVerification, throwError, setBackMode
   } = useSignUp();
 
   const CurrentMode = useCallback(() => {
@@ -31,9 +31,11 @@ function SignUp() {
 
       case MODE.OK:
         return (
-          <div className={styles.syncStatusWrapper}>
-            <UpdatingNode backButton statusFetcher={statusFetcher} errorCatcher={throwError} />
-          </div>
+          <UpdatingNode
+            back={setBackMode}
+            statusFetcher={statusFetcher}
+            errorCatcher={throwError}
+          />
         );
         // TODO: DANIK: make a generalized component
 
