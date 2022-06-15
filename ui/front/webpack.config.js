@@ -147,7 +147,7 @@ const build = {
         },
         {
           from: path.join(
-            __dirname, './node_modules/beam-wasm-client-masternet/'
+            __dirname, './node_modules/beam-wasm-client-dappnet/'
           ),
           globOptions: {
             ignore: ['package.json']
