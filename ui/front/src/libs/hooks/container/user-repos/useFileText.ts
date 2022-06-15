@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 export type FileTextProps = {
   id: RepoId;
   tree: DataNode[] | null;
-  pathArray: string[];
+  params: string[];
   pathname: string;
   filesMap: Map<MetaHash, string>,
   getFileData: (repoId: RepoId, oid: string, errHandler: ErrorHandler) => void;
@@ -21,7 +21,7 @@ export type FileTextProps = {
 };
 
 export const useFileText = ({
-  id, tree, pathArray, pathname, filesMap, getFileData, updateTree
+  id, tree, params, pathname, filesMap, getFileData, updateTree
 }: FileTextProps) => {
   const setError = useAsyncError();
   const [ext, setExt] = useState('');
@@ -33,8 +33,9 @@ export const useFileText = ({
 
   const fileChecker = () => {
     if (text !== null) setText(null);
-    const fileName = pathArray.pop();
-    const currentFileList = tree && getTree(tree, pathArray, updateTreeDecor);
+    const paramsCopy = [...params];
+    const fileName = paramsCopy.pop();
+    const currentFileList = tree && getTree(tree, paramsCopy, updateTreeDecor);
     if (currentFileList) {
       const file = currentFileList.find(
         (el) => el.title === fileName

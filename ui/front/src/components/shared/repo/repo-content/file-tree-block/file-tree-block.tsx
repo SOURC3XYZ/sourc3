@@ -4,7 +4,7 @@ import {
   DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
 import { List } from 'antd';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
@@ -66,9 +66,9 @@ function FileTreeBlock({
 }:FileTreeBlockProps) {
   const setError = useAsyncError();
 
-  const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id }, setError);
-  };
+  const updateTreeDecor = (
+    props: Omit<UpdateProps, 'id'>
+  ) => updateTree({ ...props, id }, setError);
 
   const TreeListPreloadFallback = useCallback(() => (
     <Preload
@@ -77,11 +77,11 @@ function FileTreeBlock({
     />
   ), []);
 
-  const treeList = tree && getTree(
+  const treeList = useMemo(() => tree && getTree(
     tree,
     pathArray,
     updateTreeDecor
-  );
+  ), [tree]);
   return (
     <PreloadComponent
       isLoaded={!!treeList}
@@ -98,4 +98,4 @@ function FileTreeBlock({
   );
 }
 
-export default React.memo(FileTreeBlock);
+export default FileTreeBlock;

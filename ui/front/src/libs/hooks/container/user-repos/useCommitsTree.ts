@@ -20,7 +20,7 @@ const useCommitsTree = ({ goTo }: UseCommitsTreeProps) => {
 
   const goToBranch = (newBranch: string) => goTo(`commits/${newBranch}`);
 
-  const goToCommit = (hash: string) => goTo(`commit/${hash}`);
+  const goToCommit = (hash: string) => goTo(`commit/tree/${hash}`);
 
   const loading = !!repoMap && !!commitsMap;
 

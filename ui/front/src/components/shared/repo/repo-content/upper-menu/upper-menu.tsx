@@ -1,14 +1,10 @@
 import { CustomAntdSelect } from '@components/shared/select';
 import { clipString } from '@libs/utils';
 import { Branch, BranchCommit } from '@types';
-import { Row, Col, Select } from 'antd';
+import { Row, Select } from 'antd';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  BreadCrumbMenu,
-  RepoMeta
-  // RepoDescription
-} from './content';
+import { BreadCrumbMenu } from './breadcrumb';
 import styles from './upper-menu.module.scss';
 
 type UpperMenuProps = {
@@ -17,7 +13,6 @@ type UpperMenuProps = {
   branches: Branch[],
   params: string[],
   commitsMap: Map<string, BranchCommit> | null,
-  commit: BranchCommit | null,
   prevReposHref: string | null,
   goToBranch: (name: string) => void;
   goToCommitTree?: (branch:string) => void;
@@ -48,7 +43,6 @@ function UpperMenu({
   goToBranch,
   goToCommitTree,
   branch,
-  commit,
   prevReposHref,
   baseUrl
 }:UpperMenuProps) {
@@ -62,15 +56,6 @@ function UpperMenu({
     )
       : null), [params]);
 
-  const repoMeta = useMemo(() => (
-    commit ? (
-      <Col span={24}>
-        <RepoMeta commit={commit} />
-      </Col>
-    )
-      : null
-  ), [commit]);
-
   const onCommitMapClickHandle:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     e.preventDefault();
     if (goToCommitTree) goToCommitTree(branch);
@@ -79,7 +64,7 @@ function UpperMenu({
   const commits = useMemo(() => (
     commitsMap
       ? (
-        <Link onClick={onCommitMapClickHandle} to="#">
+        <Link onClick={onCommitMapClickHandle} to="">
           {`${commitsMap.size} commits`}
         </Link>
       )
@@ -116,10 +101,6 @@ function UpperMenu({
           </CustomAntdSelect>
         </Col> */}
         </div>
-      </Row>
-
-      <Row style={{ marginTop: '1rem' }}>
-        {repoMeta}
       </Row>
     </>
   );

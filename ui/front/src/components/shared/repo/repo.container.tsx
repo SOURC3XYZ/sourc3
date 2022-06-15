@@ -1,13 +1,17 @@
-import { FailPage, Preload } from '@components/shared';
+import {
+  FailPage, Preload
+} from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import { useUserRepos } from '@libs/hooks/container/user-repos';
 import { useCallback } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import Title from 'antd/lib/typography/Title';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { CommitContent, RepoContent } from './content';
+import { CommitContent } from './commit-content';
+import { CommitsTree } from './commit-tree';
+import { RepoContent } from './repo-content';
+
 import styles from './repo.module.scss';
-import { CommitsTree } from './content/commit-tree';
 
 function UserRepos() {
   const containerProps = useUserRepos();
@@ -28,7 +32,7 @@ function UserRepos() {
   const RefsPreloadFallback = useCallback(() => (
     <Preload
       className={styles.preload}
-      message={LoadingMessages.COMMITS}
+      message={LoadingMessages.BRANCHES}
     />
   ), []);
 
@@ -52,8 +56,8 @@ function UserRepos() {
             />
 
             <Route
-              path="commit/:hash"
-              element={<CommitContent />}
+              path="commit/:type/:hash/*"
+              element={<CommitContent {...containerProps} goTo={goTo} />}
             />
           </Routes>
         </PreloadComponent>

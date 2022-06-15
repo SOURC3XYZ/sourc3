@@ -1,12 +1,9 @@
 import { useAsyncError, useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
-
+import { clipString } from '@libs/utils';
 import {
   Branch,
-  BranchCommit,
-  DataNode,
-  ErrorHandler,
-  UpdateProps
+  BranchCommit, DataNode, ErrorHandler, UpdateProps
 } from '@types';
 import {
   useCallback, useEffect, useMemo, useState
@@ -15,11 +12,11 @@ import { useLocation, useParams } from 'react-router-dom';
 import { getCommit, splitUrl } from './helpers';
 
 type LocationState = {
-  branchName: string;
-  type: 'tree' | 'blob'
+  hash: string;
+  type: string;
 };
 
-const useRepoContent = (
+export const useCommit = (
   id: number,
   branches: Branch[],
   tree: DataNode[] | null,
@@ -32,39 +29,30 @@ const useRepoContent = (
   const setError = useAsyncError();
   const [callApi, callIpfs, loading, err] = useCallApi();
   const { pathname } = useLocation();
-  const { branchName, type } = useParams<'branchName' | 'type'>() as LocationState;
+  const { hash, type } = useParams<'hash' | 'type'>() as LocationState;
 
   const { baseUrl, params } = useMemo(
-    () => splitUrl(`${type}/${branchName}`, pathname),
+    () => splitUrl(`${hash}`, pathname),
     [pathname]
   );
 
-  const fetchCommit = async (name: string) => {
+  const fetchCommit = async () => {
     setCommit(null);
-    if (tree) killTree();
-    const regex = new RegExp(`(${name})`);
-    const [first] = branches;
-    const findedBranch = branches.find((el) => el.name.match(regex)) || first;
-
-    if (!findedBranch) return setError(new Error('no branch'));
-    const lastCommit = await getCommit(id, findedBranch.commit_hash, callApi, callIpfs);
+    const lastCommit = await getCommit(id, hash, callApi, callIpfs);
     if (lastCommit) {
       setCommit(lastCommit);
       return updateTree({ oid: lastCommit.tree_oid }, setError);
     } return setError(new Error('no commit'));
   };
 
-  const goToBranch = useCallback(
-    (newBranch: string) => {
-      fetchCommit(newBranch);
-      goTo(`branch/${type}/${newBranch}/${params.join('/')}`);
-    },
-    [params]
-  );
+  useEffect(() => { fetchCommit(); }, []);
 
-  useEffect(() => { fetchCommit(branchName); }, []);
-
-  const goToCommitTree = useCallback((branch: string) => goTo(`commits/${branch}`), []);
+  const goToCommitTree = useCallback((e: any) => {
+    e.preventDefault();
+    const [first] = branches;
+    const branch = branches.find((el) => el.name.match(/(main|master)/)) || first;
+    goTo(`commits/${clipString(branch.name)}`);
+  }, []);
 
   const isLoading = loading || !commit;
 
@@ -74,19 +62,15 @@ const useRepoContent = (
   }, [params]);
 
   return {
-    branchName,
     baseUrl,
     params,
     commit,
-    type,
     isLoading,
     err,
+    type,
     pathname,
     commitsMap,
     setError,
-    goToBranch,
     goToCommitTree
   };
 };
-
-export default useRepoContent;

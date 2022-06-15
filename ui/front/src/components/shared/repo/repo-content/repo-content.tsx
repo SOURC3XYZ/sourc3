@@ -1,3 +1,6 @@
+import { PreloadComponent } from '@components/hoc';
+import { Preload } from '@components/shared/preload';
+import { LoadingMessages } from '@libs/constants';
 import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
 import {
   Branch,
@@ -6,8 +9,13 @@ import {
   MetaHash, RepoId,
   UpdateProps
 } from '@types';
-import { useMemo } from 'react';
-import { FileText, FileTreeBlock, UpperMenu } from './content';
+import { Col, Row } from 'antd';
+import { useCallback, useMemo } from 'react';
+import { RepoMeta } from '../repo-meta';
+import { FileText } from './file-text';
+import { FileTreeBlock } from './file-tree-block';
+import { UpperMenu } from './upper-menu';
+import styles from '../repo.module.scss';
 
 export type UpperMenuProps = {
   id: RepoId;
@@ -23,28 +31,6 @@ export type UpperMenuProps = {
     repoId: RepoId, oid: string, errorHandler: ErrorHandler) => void;
 };
 
-const splitUrl = (branch: string, fullUrl: string) => {
-  const [baseUrl, params] = fullUrl.split(branch);
-  return {
-    baseUrl: `${baseUrl}${branch}`,
-    params: params.split('/').filter((el) => el)
-  };
-};
-
-// const setBranchCommit = (repoMap:Map<BranchName, BranchCommit[]>, tree:string) => {
-//   const [branch, commit] = tree.split('/');
-//   if (branch && commit) {
-//     return setBranchAndCommit(repoMap, branch, commit);
-//   }
-//   const masterBranch = Array.from(repoMap.keys())[0];
-//   const masterCommits = repoMap.get(masterBranch) as BranchCommit[];
-//   const lastCommit = masterCommits[masterCommits.length - 1];
-//   return {
-//     branch: masterBranch,
-//     commit: lastCommit
-//   };
-// };
-
 function RepoContent({
   id,
   branches,
@@ -59,14 +45,15 @@ function RepoContent({
   const {
     commit,
     type,
+    isLoading,
     branchName,
     pathname,
     commitsMap,
+    params,
+    baseUrl,
     goToCommitTree,
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
-
-  const { baseUrl, params } = splitUrl(`${type}/${branchName}`, pathname);
 
   const content = useMemo(() => (
     type === 'blob'
@@ -76,7 +63,7 @@ function RepoContent({
           tree={tree}
           pathname={pathname}
           filesMap={filesMap}
-          pathArray={params}
+          params={params}
           getFileData={getFileData}
           updateTree={updateTree}
         />
@@ -89,22 +76,41 @@ function RepoContent({
           updateTree={updateTree}
           pathArray={params}
         />
-      )), [params, type]);
+      )), [tree, pathname, type, params]);
+
+  const CommitPreloadFallback = useCallback(() => (
+    <Preload
+      className={styles.preload}
+      message={LoadingMessages.COMMIT}
+    />
+  ), []);
 
   return (
     <>
       <UpperMenu
         commitsMap={commitsMap}
-        goToCommitTree={goToCommitTree}
         baseUrl={baseUrl}
         branch={branchName}
         params={params}
         prevReposHref={prevReposHref}
-        commit={commit}
         branches={branches}
+        goToCommitTree={goToCommitTree}
         goToBranch={goToBranch}
       />
-      {content}
+      <PreloadComponent
+        isLoaded={!isLoading}
+        Fallback={CommitPreloadFallback}
+      >
+        <>
+          <Row style={{ marginTop: '10px' }}>
+            <Col span={24}>
+              <RepoMeta commit={commit as NonNullable<typeof commit>} />
+            </Col>
+          </Row>
+
+          {content}
+        </>
+      </PreloadComponent>
     </>
   );
 }

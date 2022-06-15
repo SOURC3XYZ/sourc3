@@ -10,14 +10,20 @@ import {
   RepoId
 } from '@types';
 import Avatar from 'boring-avatars';
-import { useCallback, useMemo } from 'react';
+import {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
 import { Preload } from '@components/shared/preload';
 import { LoadingMessages } from '@libs/constants';
 import { FailPage } from '@components/shared/fail-page';
 import { Link } from 'react-router-dom';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { UpperMenu } from '../repo-content/content';
-import styles from '../../repo.module.scss';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { Skeleton } from 'antd';
+import styles from '../repo.module.scss';
+import { UpperMenu } from '../repo-content/upper-menu';
+
+const ITEMS_COUNT = 5;
 
 export type UpperMenuProps = {
   id: RepoId;
@@ -55,7 +61,7 @@ function CommitsTree({
   const RefsPreloadFallback = useCallback(() => (
     <Preload
       className={styles.preload}
-      message={LoadingMessages.COMMITS}
+      message={LoadingMessages.COMMIT_TREE}
     />
   ), []);
 
@@ -80,7 +86,7 @@ function CommitsTree({
                   <Avatar
                     size={40}
                     name={item.committer_email}
-                    variant="beam"
+                    variant="marble"
                     colors={[
                       '#FF791F',
                       '#3FD05A',
@@ -114,7 +120,9 @@ function CommitsTree({
     );
   });
 
-  const data = useMemo(() => {
+  const [data, setData] = useState<JSX.Element[]>([]);
+
+  const commitsBlock = useMemo(() => {
     if (repoMap) {
       const commits = repoMap.get(branchName);
       if (!commits) return null;
@@ -137,7 +145,21 @@ function CommitsTree({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  console.log(data);
+  const loadMoreData = ():void => {
+    if (commitsBlock && commitsBlock.length) {
+      const { length } = data;
+      if (!length) setTimeout(() => setData(commitsBlock.slice(0, ITEMS_COUNT)));
+      else {
+        setTimeout(() => setData(
+          (prev) => [...prev, ...commitsBlock.slice(length, length + ITEMS_COUNT)]
+        ));
+      }
+    }
+  };
+
+  useEffect(loadMoreData, [commitsBlock]);
+
+  useEffect(() => setData([]), [branchName]);
 
   return (
     <>
@@ -147,16 +169,24 @@ function CommitsTree({
         branch={branchName}
         params={params}
         prevReposHref={prevReposHref}
-        commit={null}
         branches={branches}
         goToBranch={goToBranch}
       />
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
-          isLoaded={loading && !!data}
+          isLoaded={loading && !!data && !!commitsBlock}
           Fallback={RefsPreloadFallback}
         >
-          <div>{data}</div>
+          {commitsBlock ? (
+            <InfiniteScroll
+              dataLength={data.length}
+              next={loadMoreData}
+              loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
+              hasMore={data.length < commitsBlock.length}
+            >
+              {data}
+            </InfiniteScroll>
+          ) : null}
 
         </PreloadComponent>
       </ErrorBoundary>

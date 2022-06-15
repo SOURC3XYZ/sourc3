@@ -1,6 +1,7 @@
 import { useSourc3Api } from '@components/context';
-import { outputParser, RequestSchema } from '@libs/action-creators';
-import { ContractResp } from '@types';
+import { outputParser, RC, RequestSchema } from '@libs/action-creators';
+import { buf2hex } from '@libs/utils';
+import { BeamApiRes, ContractResp, IpfsResult } from '@types';
 import { useCallback, useState } from 'react';
 
 const useCallApi = () => {
@@ -19,7 +20,18 @@ const useCallApi = () => {
     }
   }, [api.callApi]);
 
-  return [callApi, api.callApi, isLoading, error] as const;
+  const callIpfs = useCallback(async (hash:string) => {
+    try {
+      setLoading(true);
+      const ipfsData = await api.callApi(RC.getIpfsData(hash)) as BeamApiRes<IpfsResult>;
+      setLoading(false);
+      return buf2hex(ipfsData.result.data as number[]);
+    } catch (err) {
+      return setError((err as Error).message);
+    }
+  }, [api.callApi]);
+
+  return [callApi, callIpfs, isLoading, error] as const;
 };
 
 export default useCallApi;

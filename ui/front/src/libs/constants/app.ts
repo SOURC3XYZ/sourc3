@@ -54,7 +54,9 @@ export enum Routes {
 }
 
 export enum LoadingMessages {
-  COMMITS = 'Building commit tree...',
+  COMMIT = 'Loading commit data...',
+  COMMIT_TREE = 'Building commit tree...',
+  BRANCHES = 'Loading branches...',
   TREE = 'Loading file tree...',
   FILE = 'Loading file...',
   HEADLESS = 'Loading decentralized application...'
