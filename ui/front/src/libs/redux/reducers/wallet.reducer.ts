@@ -18,7 +18,8 @@ const initialState:IWallet = {
 };
 
 const reducer = (
-  state:IWallet = initialState, action: ActionCreators
+  state:IWallet = initialState,
+  action: ActionCreators = {} as ActionCreators
 ):IWallet => {
   const newState = {
     ...state

@@ -9,7 +9,7 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { dateCreator } from '@libs/utils';
+import { actualTime, clipString, dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
 
 type ListItemProps = {
@@ -57,7 +57,9 @@ function RepoItem({
     message.info(key);
   };
 
-  const link = `${path}repo/${repo_id}&${repo_name}/tree/`;
+  const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
+    item.masterBranch ? clipString(item.masterBranch?.name) : ''
+  }`;
 
   const menuRender = (
     <Menu onClick={onClick}>
@@ -73,8 +75,14 @@ function RepoItem({
   );
 
   const time = item.lastCommit
-    ? `${dateCreator(item.lastCommit.create_time_sec * 1000)} ago`
+    ? `${dateCreator(actualTime(item.lastCommit))} ago`
     : 'empty';
+
+  const handleRepoLink:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    if (!item.masterBranch) e.preventDefault();
+  };
+
+  const titleClassname = item.masterBranch ? styles.title : styles.titleDisabled;
 
   return (
     <List.Item
@@ -101,8 +109,8 @@ function RepoItem({
     >
       <List.Item.Meta
         title={(
-          <div className={styles.title}>
-            <Link to={link} state={{ id: repo_id }}>
+          <div className={titleClassname}>
+            <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
               <Excretion name={repo_name} inputText={searchText} />
             </Link>
           </div>

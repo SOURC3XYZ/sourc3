@@ -19,12 +19,14 @@ function getStrengthTitle(value: number) {
       return 'Very strong';
     case 5:
       return 'Strong';
+    case 4:
+      return 'Medium strength';
     case 3:
       return 'Medium strength';
     case 2:
       return 'Weak';
     case 1:
-      return 'Very Weak';
+      return 'Very weak';
     default:
       return null;
   }
@@ -115,11 +117,11 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
             ))}
           </ul>
           {title && (
-            <span className={styles.strengthTitle}>
+            <div className={styles.strengthTitle}>
               {title}
               {' '}
               password
-            </span>
+            </div>
           )}
         </div>
         <div className={styles.wrapperDescr}>
@@ -147,6 +149,7 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
           inlineStyles={{ width: '278px' }}
           onClick={onClickDecor}
           isDisabled={!ready}
+          active
         />
       </div>
 

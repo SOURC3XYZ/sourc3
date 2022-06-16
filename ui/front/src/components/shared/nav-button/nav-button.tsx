@@ -8,9 +8,10 @@ type buttonProps = {
   link?: string;
   onClick?: () => void
   inlineStyles?: CSSProperties
+  active?: boolean
 };
 function NavButton({
-  name, link, inlineStyles, isDisabled, onClick
+  name, link, inlineStyles, isDisabled, onClick, active
 }:buttonProps) {
   const navigate = useNavigate();
 
@@ -19,7 +20,7 @@ function NavButton({
     <button
       disabled={isDisabled}
       style={inlineStyles}
-      className={style.button}
+      className={active ? style.button : style.buttonSecond}
       type="button"
       onClick={onClick || onClickHandler}
     >

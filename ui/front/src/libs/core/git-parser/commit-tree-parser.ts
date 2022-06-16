@@ -1,4 +1,4 @@
-import { clipString } from '@libs/utils';
+import { actualTime, clipString } from '@libs/utils';
 import {
   Branch,
   BranchCommit,
@@ -7,9 +7,26 @@ import {
   BranchName
 } from '@types';
 import { RC } from '@libs/action-creators';
-import AbstractParser from './abstract-parser';
+import AbstractParser, { ParserProps } from './abstract-parser';
+
+type CommitsMap = {
+  commitMap: Map<string, BranchCommit>;
+  branches: Branch[]
+};
 
 export default class CommitMapParser extends AbstractParser {
+  private readonly commitMap: CommitsMap['commitMap'];
+
+  private readonly branches: Branch[];
+
+  private readonly repoMap = new Map<string, BranchCommit[]>();
+
+  constructor(parserProps: ParserProps & CommitsMap) {
+    super(parserProps);
+    this.commitMap = parserProps.commitMap;
+    this.branches = parserProps.branches;
+  }
+
   private readonly getCommitParent = async (oid: string) => {
     const key = new Request(`/commit/${oid}`);
 
@@ -38,6 +55,7 @@ export default class CommitMapParser extends AbstractParser {
       const commit = workingStack.pop() as BranchCommit;
       commitIds.add(commit.commit_oid);
       commitList.push(commit);
+
       const parentCommits = await Promise.all(
         commit.parents.map(({ oid }) => this.getCommitParent(oid))
       );
@@ -47,7 +65,7 @@ export default class CommitMapParser extends AbstractParser {
       });
 
       return this.buildCommitList(workingStack, commitList, commitIds);
-    } return commitList.reverse();
+    } return commitList.sort((a, b) => actualTime(b) - actualTime(a));
   };
 
   private readonly getCommit = async (
@@ -74,8 +92,27 @@ export default class CommitMapParser extends AbstractParser {
     return branchMap.size ? branchMap : null;
   };
 
+  private readonly repoList = (name:string, commitHash:string, commitArr: Set<string>) => {
+    const commit = this.commitMap.get(commitHash) as BranchCommit;
+    commitArr.add(commit.commit_oid);
+    commit.parents.forEach((el) => this.repoList(name, el.oid, commitArr));
+  };
+
+  private readonly branchRepoCommit = (hash:string) => this.commitMap.get(hash) as BranchCommit;
+
+  private readonly buildSync = async () => {
+    this.branches.forEach((el) => {
+      const commitArr = new Set(el.commit_hash);
+      this.repoList(el.name, el.commit_hash, commitArr);
+      console.log(el.name, Array.from(commitArr));
+      this.repoMap.set(el.name, Array.from(commitArr).map(this.branchRepoCommit));
+    });
+    return this.repoMap;
+  };
+
   public readonly buildCommitTree = async () => {
     const repoMap = await this.buildRepoMap();
+    // const repoMap = this.buildSync();
     return repoMap;
   };
 }

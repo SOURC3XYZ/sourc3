@@ -1,6 +1,6 @@
 import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared';
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { LoadingMessages } from '@libs/constants';
@@ -42,4 +42,4 @@ function FileText(props: FileTextProps) {
   );
 }
 
-export default FileText;
+export default React.memo(FileText);

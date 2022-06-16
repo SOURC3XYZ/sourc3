@@ -1,4 +1,4 @@
-import { AddButton, Balance, Profile } from '@components/shared';
+import { AddButtonOrg, Balance, Profile } from '@components/shared';
 import styles from './profile-block.scss';
 
 type HeaderPropsType = {
@@ -8,7 +8,7 @@ type HeaderPropsType = {
 function ProfileBlock({ pKey }:HeaderPropsType) {
   return (
     <div className={styles.wrapper}>
-      <AddButton />
+      <AddButtonOrg />
       <Balance />
       <Profile pKey={pKey} />
     </div>

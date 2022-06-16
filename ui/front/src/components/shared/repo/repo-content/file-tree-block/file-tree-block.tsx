@@ -1,10 +1,10 @@
 import { Preload } from '@components/shared';
-import { dateCreator, getTree } from '@libs/utils';
+import { getTree } from '@libs/utils';
 import {
   DataNode, ErrorHandler, RepoId, UpdateProps
 } from '@types';
 import { List } from 'antd';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import fileImg from '@assets/img/file.svg';
 import folderImg from '@assets/img/folder.svg';
@@ -18,7 +18,7 @@ type FileTreeBlockProps = {
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
-  time: number;
+  // time: number;
   updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void;
 };
 
@@ -62,13 +62,13 @@ const leafCreator = (url:string, node: DataNode) => {
 };
 
 function FileTreeBlock({
-  id, tree, pathname, pathArray, time, updateTree
+  id, tree, pathname, pathArray, updateTree
 }:FileTreeBlockProps) {
   const setError = useAsyncError();
 
-  const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id }, setError);
-  };
+  const updateTreeDecor = (
+    props: Omit<UpdateProps, 'id'>
+  ) => updateTree({ ...props, id }, setError);
 
   const TreeListPreloadFallback = useCallback(() => (
     <Preload
@@ -77,11 +77,11 @@ function FileTreeBlock({
     />
   ), []);
 
-  const treeList = tree && getTree(
+  const treeList = useMemo(() => tree && getTree(
     tree,
     pathArray,
     updateTreeDecor
-  );
+  ), [tree]);
   return (
     <PreloadComponent
       isLoaded={!!treeList}
@@ -98,4 +98,4 @@ function FileTreeBlock({
   );
 }
 
-export default React.memo(FileTreeBlock);
+export default FileTreeBlock;

@@ -35,7 +35,7 @@
     margin: 0 auto;
     font-family: PublicSans-Regular;
     color: #000;
-    padding-top: 139px;
+    padding-top: 116px;
   
     .logo {
       position: relative;
@@ -57,7 +57,7 @@
       }
     }
     .statusBar{
-      margin-top: 40px;
+      margin-top: 32px;
       width: 400px;
     }
   
@@ -76,7 +76,7 @@
     .logo::after {
       position: absolute;
       content: '';
-      top: -50px;
+      top: -56px;
       right: -243px;
       background: url('@assets/img/rect-half.png');
       width: 86px;
@@ -108,7 +108,7 @@
     .intro {
       position: relative;
       width: max-content;
-      margin-top: 178px;
+      margin-top: 170px;
       text-align: center;
   
       h1 {

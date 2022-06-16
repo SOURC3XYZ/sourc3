@@ -1,15 +1,12 @@
 import { Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { clipString } from '@libs/utils';
 import styles from './breadcrumb.module.scss';
 
 type BreadCrumbMenuProps = {
-  prevReposHref: string | null;
-  pathname:string;
-  baseUrl: string;
-  branch:string;
-  commit:string;
+  prevReposHref: string;
+  root:string;
+  params: string[];
 };
 
 type ArrayPath = {
@@ -40,14 +37,10 @@ const hrefCreator = (path: string[], elements: ArrayPath[] = []):ArrayPath[] => 
 };
 
 function BreadCrumbMenu({
-  prevReposHref, pathname, baseUrl, branch, commit
+  root, prevReposHref, params
 }:BreadCrumbMenuProps) {
-  const root = `${baseUrl}/${branch}/${commit}`;
-
-  let treePath = clipString(pathname, `${root}/`);
-  treePath = pathname !== treePath ? treePath : '';
-
-  const pathElements = hrefCreator(treePath.split('/'));
+  // const root = `${baseUrl}/${branch}/${commit}`;
+  const pathElements = hrefCreator(params);
 
   const replacedRoot = root.replace('blob', 'tree');
   // TODO: DANIK refactor all calculations into one function
@@ -55,7 +48,7 @@ function BreadCrumbMenu({
   return (
     <Breadcrumb className={styles.breadcrumb}>
       <Breadcrumb.Item>
-        <Link to={prevReposHref || '/repos/all/1'}>
+        <Link to={prevReposHref}>
           <HomeOutlined />
         </Link>
       </Breadcrumb.Item>

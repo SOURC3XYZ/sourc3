@@ -18,7 +18,7 @@
 }
 
 .btnNav {
-  margin-top: 90px;
+  margin-top: 125px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,7 +41,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: #000;
-  padding-top: 139px;
+  padding-top: 116px;
 
   .logo {
     position: relative;
@@ -78,7 +78,7 @@
   .logo::after {
     position: absolute;
     content: '';
-    top: -50px;
+    top: -56px;
     right: -243px;
     background: url('@assets/img/rect-half.png');
     width: 86px;
@@ -111,7 +111,7 @@
   .intro {
     position: relative;
     width: max-content;
-    margin: 111px auto 0;
+    margin: 96px auto 0;
 
     h1 {
       color: white;
@@ -163,7 +163,7 @@
   background: url('@assets/img/rect.svg');
   position: absolute;
   content: '';
-  bottom: 45%;
+  bottom: 35.5%;
   left: -55%;
   width: 55px;
   height: 55px;

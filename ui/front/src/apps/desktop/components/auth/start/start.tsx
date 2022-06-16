@@ -44,15 +44,21 @@ function Start({ restore }:StartProps) {
               <NavButton
                 name={btnNameLeft}
                 onClick={() => (setIsPopup(true))}
+                active
               />
             ) : (
               <NavButton
                 name="Sign in"
                 link="/auth/login"
+                active
+                inlineStyles={{ color: '#000' }}
               />
             )
           }
-          <NavButton name={btnNameRight} link={linkRight} />
+          <NavButton
+            name={btnNameRight}
+            link={linkRight}
+          />
         </div>
         <div className={styles.version}>Version 0.52</div>
         <Popup
@@ -65,10 +71,17 @@ function Start({ restore }:StartProps) {
               name="I understand"
               link={linkLeft}
               inlineStyles={{ width: '278px' }}
+              active
             />
           )}
         >
-          <span>You are trying to restore an existing SOURC3 wallet. Please notice that if you use your wallet on another device, your balance will be up to date, but transaction history and addresses will be kept separately on each device.</span>
+          <span>
+            You are trying to restore an existing SOURC3 account.
+            Please notice that if you use your account on another device,
+            your balance will be up to date,
+            but transaction history and addresses will be kept separately on each device.
+
+          </span>
         </Popup>
       </div>
 
