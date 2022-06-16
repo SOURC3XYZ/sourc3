@@ -12,7 +12,7 @@ import styles from './header.module.scss';
 type HeaderPropsType = {
   isOnLending?: boolean,
   balance?: number,
-  desktop: boolean,
+  desktop?: boolean,
 };
 
 function Header({ isOnLending, balance, desktop }:HeaderPropsType) {

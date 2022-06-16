@@ -15,9 +15,9 @@ import styles from './main.module.scss';
 import { LocalRepos } from './content';
 
 function App() {
-  const { isApiConnected, balance, pkey } = useSelector((state) => {
-    const { isApiConnected, balance, pkey } = state.app;
-    return { isApiConnected, balance, pkey };
+  const { isApiConnected, balance } = useSelector((state) => {
+    const { isApiConnected, balance } = state.app;
+    return { isApiConnected, balance };
   });
 
   const { connectToDesktopApi } = useUserAction();
@@ -89,7 +89,7 @@ function App() {
     >
       <ErrorBoundary fallback={fallback}>
         <>
-          <Header balance={balance} />
+          <Header desktop balance={balance} />
           <div className={styles.wrapper}>
             <View />
             <Notifications />
