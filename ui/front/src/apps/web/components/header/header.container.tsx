@@ -12,9 +12,10 @@ import styles from './header.module.scss';
 type HeaderPropsType = {
   isOnLending?: boolean,
   balance?: number,
+  desktop: boolean,
 };
 
-function Header({ isOnLending, balance }:HeaderPropsType) {
+function Header({ isOnLending, balance, desktop }:HeaderPropsType) {
   // const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
   const containerProps = useHeader();
@@ -57,7 +58,7 @@ function Header({ isOnLending, balance }:HeaderPropsType) {
           placeholder="Search"
         />
       )}
-      { isOnLending ? (
+      { !desktop ? (
         <ConnectBtn
           pkey={pkey}
           onConnect={onConnect}
