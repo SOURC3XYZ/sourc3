@@ -32,13 +32,13 @@ function Balance() {
   const menu = (
     <Menu>
       <Menu.Item>
-        <Button type="link" onClick={showModal}>Send</Button>
+        <Button type="link" onClick={showModal} className={styles.button}>Send</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link" onClick={showModals}>Receive</Button>
+        <Button type="link" onClick={showModals} className={styles.button}>Receive</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link">
+        <Button type="link" className={styles.button}>
           <Link type="link" to="manager">
             Get More
           </Link>
@@ -53,6 +53,7 @@ function Balance() {
         overlay={menu}
         placement="bottomCenter"
         trigger={['click']}
+        overlayClassName={styles.dropdown}
       >
         <Button>
           {balance}
