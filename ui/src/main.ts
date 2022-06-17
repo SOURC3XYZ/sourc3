@@ -47,8 +47,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1024,
     height: 786,
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 1024,
+    minHeight: 785,
     resizable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

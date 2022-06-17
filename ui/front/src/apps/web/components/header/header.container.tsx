@@ -11,16 +11,13 @@ import styles from './header.module.scss';
 
 type HeaderPropsType = {
   isOnLending?: boolean,
-  balance?: number,
   desktop?: boolean,
 };
 
-function Header({ isOnLending, balance, desktop }:HeaderPropsType) {
+function Header({ isOnLending, desktop }:HeaderPropsType) {
   // const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
   const containerProps = useHeader();
-  console.log(balance);
-
   const {
     pkey,
     onConnect

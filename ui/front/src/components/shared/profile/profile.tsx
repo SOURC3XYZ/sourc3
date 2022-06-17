@@ -4,8 +4,7 @@ import {
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styles from './profile.module.css';
+import styles from './profile.module.scss';
 
 type profileType = {
   pKey: string
@@ -23,29 +22,23 @@ function Profile({ pKey }:profileType) {
   const handleOk = () => {
     handleCancel();
   };
+  const data = [
+    { title: 'Profile', onClick: showModal },
+    { title: 'My repositories' },
+    { title: 'Settings' },
+    { title: 'Help' },
+    { title: 'Support' },
+    { title: 'Twitter' },
+    { title: 'Discord' },
+    { title: 'Logout' }
+  ];
   const menu = (
     <Menu>
-      <Menu.Item>
-        <Button type="link" onClick={showModal}>Your profile</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Your repositories</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Your organizations</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Settings</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Help</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Support</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Link type="link" to="/auth/">Log out</Link>
-      </Menu.Item>
+      {data.map(({ title, onClick }) => (
+        <Menu.Item key={`menu-item-${title}`}>
+          <Button type="link" className={styles.button} onClick={onClick}>{title}</Button>
+        </Menu.Item>
+      ))}
     </Menu>
   );
 
@@ -56,6 +49,7 @@ function Profile({ pKey }:profileType) {
           overlay={menu}
           placement="bottomCenter"
           trigger={['click']}
+          overlayClassName={styles.dropdown}
         >
           <div>
             <img src={avatar} alt="" />

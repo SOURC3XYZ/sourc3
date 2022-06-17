@@ -20,9 +20,10 @@ function AddButton() {
   } = useAddButton();
 
   const data = [
-    { title: 'Clone repository', mode: MODAL.CLONE },
-    { title: 'Create new Repository', mode: MODAL.CREATE },
-    { title: 'Add existing repository', mode: MODAL.ADD }
+    { title: 'Add new organization '},
+    { title: 'Add new project to organization'},
+    { title: 'Add new user'},
+    { title: 'Add new project for user'}
   ];
 
   const ModalView = useCallback(():JSX.Element | null => {
@@ -54,7 +55,7 @@ function AddButton() {
         const onClick = () => showModal(mode);
         return (
           <Menu.Item key={`menu-item-${title}`}>
-            <Button type="link" onClick={onClick}>{title}</Button>
+            <Button type="link" onClick={onClick} className={styles.button}>{title}</Button>
           </Menu.Item>
         );
       })}
@@ -62,16 +63,21 @@ function AddButton() {
   );
 
   return (
-    <>
+    <div className={styles.dropdown}>
       <ModalView />
       <div className={styles.wrapper}>
-        <Dropdown overlay={menu} placement="bottomCenter" trigger={['click']}>
+        <Dropdown
+          overlay={menu}
+          placement="bottomCenter"
+          trigger={['click']}
+          overlayClassName={styles.dropdown}
+        >
           <Button className={styles.addButton}>
             Add
           </Button>
         </Dropdown>
       </div>
-    </>
+    </div>
   );
 }
 

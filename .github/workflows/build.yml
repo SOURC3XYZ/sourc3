@@ -38,11 +38,11 @@ jobs:
         github_token: ${{secrets.INSTALLER_TOKEN}}
         workflow: build.yml
         workflow_conclusion: success
-        branch: master
+        branch: dappnet
         path: downloads
         repo: BeamMW/beam
         platform_name: ${{matrix.PLATFORM_NAME}}
-        net_name: masternet
+        net_name: dappnet
         search_artifacts: true
 ###############################################################################
 # Create Build Environment
@@ -141,8 +141,7 @@ jobs:
       shell: bash
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-dappnet" >> $GITHUB_ENV
         
     - name: Change version for Electron
       shell: bash
@@ -325,7 +324,7 @@ jobs:
         cd ui/dist
         wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
         chmod a+x appimagetool-x86_64.AppImage
-        filename=$(ls | grep client-master | grep AppImage)
+        filename=$(ls | grep client-dappnet | grep AppImage)
         ./$filename --appimage-extract
         cd squashfs-root/usr/lib
         for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
