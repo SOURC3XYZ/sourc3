@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import wasm from '@assets/app.wasm';
 import {
   BeamAPI,
@@ -6,7 +7,7 @@ import {
   TreeBlobParser,
   TreeListParser
 } from '@libs/core';
-import { CONTRACT, ToastMessages } from '@libs/constants';
+import { CONFIG, ToastMessages } from '@libs/constants';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import {
   BeamApiRes,
@@ -34,12 +35,11 @@ import axios from 'axios';
 import { notification } from 'antd';
 import { AC } from './action-creators';
 import batcher from './batcher';
-import { apiEventManager } from './repo-response-handlers';
 import { RC, RequestSchema } from './request-schemas';
 import { parseToBeam, parseToGroth } from '../utils/string-handlers';
-import { cbErrorHandler, outputParser, thunkCatch } from './error-handlers';
+import { cbErrorHandler, thunkCatch } from './error-handlers';
 
-const api = new BeamAPI<RequestSchema['params']>(CONTRACT.CID);
+const api = new BeamAPI<RequestSchema['params']>(CONFIG.CID);
 
 type Thunk<T> = (...args: T[]) => (
   dispatch: AppThunkDispatch, getState: () => RootState
@@ -73,8 +73,8 @@ async function getOutput<T>(
   return outputParser<T>(res, dispatch);
 }
 
-export const thunks:ThunkObject = {
-  connectExtension: () => async (dispatch) => {
+const thunks:ThunkObject = {
+  connectExtension: (api) => async (dispatch) => {
     try {
       await api.extensionConnect(messageBeam);
       if (!api.isHeadless()) {
@@ -101,12 +101,12 @@ export const thunks:ThunkObject = {
   },
 
   connectBeamApi:
-    (apiHost?:string) => async (dispatch) => {
+    (api) => async (dispatch) => {
       try {
         if (api.isApiLoaded()) return;
-        await loadAPI(apiHost);
+        await loadAPI(undefined);
         await initContract(wasm);
-        api.loadApiEventManager(apiEventManager(dispatch));
+        // api.loadApiEventManager(apiEventManager);
         const action = RC.viewContracts();
         const output = await getOutput<ContractsResp>(action, dispatch);
         if (output) {
@@ -144,21 +144,21 @@ export const thunks:ThunkObject = {
   },
 
   getLocalRepoBranches: (local: string, remote:string) => async (dispatch) => {
-    const url = `${CONTRACT.HOST}/git/init`;
+    const url = `${CONFIG.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
     } catch (error) { thunkCatch(error, dispatch); }
   },
 
   cloneRepo: (local: string, remote:string) => async (dispatch) => {
-    const url = `${CONTRACT.HOST}/git/init`;
+    const url = `${CONFIG.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
     } catch (error) { thunkCatch(error, dispatch); }
   },
 
   setCommits: (local: string, remote:string) => async (dispatch) => {
-    const url = `${CONTRACT.HOST}/git/init`;
+    const url = `${CONFIG.HOST}/git/init`;
     try {
       await axios.post(url, { local, remote }, { headers });
     } catch (error) { thunkCatch(error, dispatch); }
@@ -265,7 +265,7 @@ export const thunks:ThunkObject = {
         });
       }
       const commitTree = await new CommitMapParser({
-        id, metas, api, pathname, expect: 'commit'
+        id, metas, callApi, pathname, expect: 'commit'
       })
         .buildCommitTree();
 
@@ -286,7 +286,7 @@ export const thunks:ThunkObject = {
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
-        id, metas, api, key, pathname
+        id, metas, callApi, key, pathname
       };
       const updated = await new TreeListParser(
         { ...parserProps, expect: 'tree' }
@@ -355,7 +355,7 @@ export const thunks:ThunkObject = {
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {
-        id: repoId, metas, api, pathname
+        id: repoId, metas, callApi, pathname
       };
       const output = await new TreeBlobParser(
         { ...parserProps, expect: 'blob' }

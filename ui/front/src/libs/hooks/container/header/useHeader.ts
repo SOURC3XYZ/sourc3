@@ -1,53 +1,14 @@
-import { useObjectState } from '@libs/hooks/shared';
-import { ChangeEvent } from 'react';
+import { useUserAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 
-type UseHeaderProps = {
-  pkey:string;
-  isOnLending: boolean;
-  connectToExtention: () => void;
-  createRepos: (repo_name:string) => void;
-};
+const useHeader = () => {
+  const pkey = useSelector((state) => state.app.pkey);
 
-const initialState = {
-  isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
-};
-
-const useHeader = ({
-  pkey,
-  connectToExtention,
-  createRepos
-}:UseHeaderProps) => {
-  const isPkey = Boolean(pkey);
-
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
-  const { isModalVisible, inputRepoName } = state;
-
-  const onConnect = connectToExtention;
-
-  const showModal = () => setState({ isModalVisible: true });
-
-  const handleCancel = () => setState({ isModalVisible: false });
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement>
-  ) => setState({ inputRepoName: e.target.value });
-
-  const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
-  };
+  const { connectExtension: onConnect } = useUserAction();
 
   return {
-    isPkey,
-    isModalVisible,
-    inputRepoName,
-    onConnect,
-    showModal,
-    handleOk,
-    handleCancel,
-    handleChange
+    pkey,
+    onConnect
   };
 };
 

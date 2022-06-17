@@ -2,12 +2,12 @@
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
-#include "upgradable3/contract_impl.h"
+#include "Shaders/upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
 
-using namespace git_remote_beam;
+using namespace sourc3;
 namespace {
 template <Tag Tg, class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
@@ -59,11 +59,13 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-void git_remote_beam::OnUpgraded(uint32_t /*nPrevVersion*/) {
+namespace Upgradable3 { // NOLINT
+void OnUpgraded(uint32_t /*nPrevVersion*/) {
 }
 
-uint32_t git_remote_beam::get_CurrentVersion() {  // NOLINT
+uint32_t get_CurrentVersion() {  // NOLINT
     return 1;
+}
 }
 
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT

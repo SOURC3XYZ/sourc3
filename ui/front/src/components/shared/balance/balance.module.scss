@@ -1,0 +1,42 @@
+@import '@styles/vars.scss';
+
+.wrapper{
+    margin-right: 20px;
+    button {
+        color: black !important;
+        border: none;
+        background-color: rgba(0,0,0, 0.1);
+        border-radius: 8px;
+        span{
+            color: black !important;
+            font-family: 'PublicSans-Medium' !important;
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px !important;
+            line-height: 16px !important;
+            letter-spacing: 0.1px;
+        }
+        &:hover{
+            background-color: $color-orage;
+            color: white !important;
+        }
+    }
+}
+.button {color: black;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    font-size: 16px;
+    font-family: 'PublicSans-Regular';
+    font-weight: 400;
+    // padding: 16px 32px;
+&:hover{
+    background-color: transparent;
+    color: black;
+}
+}
+.dropdown{
+    ul{
+        border-radius: 16px;
+    }
+}

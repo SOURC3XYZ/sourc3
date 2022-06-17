@@ -33,6 +33,7 @@ public:
 
     SimpleWalletClient(const Options& options)
         : resolver_(ioc_), stream_(ioc_), options_(options) {
+        PrintVersion();
     }
 
     ~SimpleWalletClient() {
@@ -79,7 +80,7 @@ private:
     const std::string& GetRepoID();
     std::string CallAPI(std::string&& request);
     std::string ReadAPI();
-
+    void PrintVersion();
 private:
     net::io_context ioc_;
     tcp::resolver resolver_;

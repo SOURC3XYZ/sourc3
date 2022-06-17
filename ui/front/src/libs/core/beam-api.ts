@@ -1,4 +1,4 @@
-import { CONTRACT, ToastMessages, WALLET } from '@libs/constants';
+import { CONFIG, ToastMessages, WALLET } from '@libs/constants';
 import {
   QObject, ApiResult, CallApiDesktop, ResultObject
 } from '@types';
@@ -10,6 +10,7 @@ type CallApiProps<T> = {
   callID: string;
   method: string;
   params: T;
+  isContractInit?: boolean
 };
 
 type MessageType = {
@@ -19,7 +20,7 @@ type MessageType = {
 
 type IpcMethod = 'get' | 'post' | 'put' | 'delete';
 
-const headlessNode = 'eu-node01.masternet.beam.mw:8200';
+const headlessNode = 'eu-node02.dappnet.beam.mw:8200';
 
 type BeamApiReqHandlers = {
   resolve: (value: ResultObject) => void,
@@ -47,7 +48,7 @@ export class BeamAPI<T> {
 
   private apiHost?: string;
 
-  private BEAM: null | BeamObject;
+  public BEAM: null | BeamObject;
 
   private contract: Array<number> | null;
 
@@ -266,13 +267,15 @@ export class BeamAPI<T> {
   );
 
   readonly callApi = (
-    { callID, method, params }: CallApiProps<T>
+    {
+      callID, method, params, isContractInit = false
+    }: CallApiProps<T>
   ): Promise<ResultObject> => {
     const id = [callID, this.callIndex++].join('-');
     const modifiedParams = { ...params } as Modified<T>;
 
     if (this.isNoContractMethod(method)) {
-      if (this.contract) {
+      if (this.contract && isContractInit) {
         modifiedParams.contract = this.contract;
       }
       if (params && 'args' in params) {
@@ -344,12 +347,12 @@ export class BeamAPI<T> {
     reject:BeamApiReqHandlers['reject'],
     hash: string
   ) => {
-    const oReq = new XMLHttpRequest();
-    oReq.open('GET', [CONTRACT.IPFS_HOST, 'ipfs', hash].join('/'), true);
-    oReq.responseType = 'blob';
-    oReq.setRequestHeader('Access-Control-Allow-Origin', '*');
-    oReq.onload = async function () {
-      const blob = oReq.response as Blob;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', [CONFIG.IPFS_HOST, 'ipfs', hash].join('/'), true);
+    xhr.responseType = 'blob';
+    xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+    xhr.onload = async function () {
+      const blob = xhr.response as Blob;
       const buffer = await blob.arrayBuffer();
       const result = {} as ResultObject;
       result.data = Array.from(new Uint8Array(buffer));
@@ -362,7 +365,10 @@ export class BeamAPI<T> {
       );
     };
 
-    oReq.send();
+    xhr.onloadend = function () {
+      if (xhr.status === 404) { reject(new Error('hash not found')); }
+    };
+    xhr.send();
   };
 
   public readonly callIPC = (

@@ -1,6 +1,7 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useRepoAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
-import { RepoId, UpdateProps } from '@types';
 import { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -8,20 +9,17 @@ type LocationState = {
   repoParams:string;
 };
 
-type useUserReposProps = {
-  currentId: RepoId | null;
-  getRepoData: (
-    id: RepoId, errHandler: (e: Error) => void
-  ) => (resolve: () => void) => void;
-  updateTree: (
-    id: RepoId, errHandler: (e: Error) =>void
-  ) => (props: Omit<UpdateProps, 'id'>) => void;
-};
+const useUserRepos = () => {
+  const {
+    id: currentId, branches, filesMap, tree, prevReposHref, repoMetas
+  } = useSelector(({ repo }) => repo);
 
-const useUserRepos = ({
-  currentId, getRepoData, updateTree
-}:useUserReposProps) => {
+  const [callApi, isLoading, callApiErr] = useCallApi();
+
   const setError = useAsyncError();
+  const {
+    getRepo, updateTree, getFileData, killTree
+  } = useRepoAction();
   const location = useParams<'repoParams'>() as LocationState;
   const { repoParams } = location;
   const [id, repoName] = repoParams.split('&');
@@ -31,17 +29,27 @@ const useUserRepos = ({
   const [isLoaded, setIsLoaded] = useState(currentId === numId);
 
   const loadingHandler = useCallback(() => {
-    loadingData(getRepoData(numId, setError))
+    loadingData(getRepo(numId, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));
   }, []);
 
   return {
     id: numId,
+    branches,
     isLoaded,
     repoName,
+    filesMap,
+    tree,
+    prevReposHref,
+    repoMetas,
+    callApi,
+    isLoading,
+    callApiErr,
     updateTree: update,
-    loadingHandler
+    killTree,
+    loadingHandler,
+    getFileData
   };
 };
 

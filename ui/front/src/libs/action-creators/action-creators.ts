@@ -28,6 +28,13 @@ export const AC = {
     payload
   } as const),
 
+  setCommits: (
+    payload: Map<string, BranchCommit> | null
+  ) => ({
+    type: ACTIONS.SET_COMMITS_MAP,
+    payload
+  }),
+
   setWalletConnection: (payload: boolean) => ({
     type: ACTIONS.SET_WALLET_CONNECTION,
     payload
@@ -94,11 +101,6 @@ export const AC = {
     payload
   } as const),
 
-  setRepoRefs: (payload: Branch[]) => ({
-    type: ACTIONS.REPO_REFS,
-    payload
-  } as const),
-
   setCommitData: (payload: BranchCommit | null) => ({
     type: ACTIONS.COMMIT,
     payload
@@ -121,11 +123,6 @@ export const AC = {
 
   setCommitList: (payload: Commit[]) => ({
     type: ACTIONS.SET_COMMITS_LIST,
-    payload
-  } as const),
-
-  setCommitRefList: (payload: BranchCommit[]) => ({
-    type: ACTIONS.SET_BRANCH_REF_LIST,
     payload
   } as const),
 
@@ -171,6 +168,11 @@ export const AC = {
 
   setProjectsList: (payload: Project[]) => ({
     type: ACTIONS.SET_PROJECTS,
+    payload
+  } as const),
+
+  setBranchRefList: (payload: Branch[]) => ({
+    type: ACTIONS.SET_BRANCH_REF_LIST,
     payload
   } as const)
 };

@@ -1,31 +1,34 @@
 import { useProjectRepos } from '@libs/hooks/container/organization';
-import Title from 'antd/lib/typography/Title';
-import { useMemo } from 'react';
-import { Nav, Search } from '@components/shared';
-import { BeamButton } from '../beam-button';
-import styles from './projects.module.scss';
-import { RepoList } from '../all-repos';
-import { CreateModal } from '../create-modal';
+import {
+  EntityWrapper,
+  EntityList,
+  CreateModal,
+  RepoItem
+} from '@components/shared';
 
 const placeholder = 'Enter your repository name';
 
 function ProjectRepos() {
   const {
-    orgName,
+    projectName,
     path,
     type,
     pkey,
     searchText,
-    isModal,
     id,
     items,
     page,
-    deleteRepos,
+    modalApi,
+    deleteRepo
+  } = useProjectRepos();
+
+  const {
+    isModal,
     setInputText,
     showModal,
     closeModal,
     handleOk
-  } = useProjectRepos();
+  } = modalApi;
 
   const navItems = [
     {
@@ -40,49 +43,44 @@ function ProjectRepos() {
     }
   ];
 
-  const projectManager = useMemo(() => (
-    <div className={styles.repoHeader}>
-      {pkey && <Nav type={type} items={navItems} />}
+  const listItem = (item: typeof items[number]) => (
+    <RepoItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      deleteRepo={deleteRepo}
+    />
+  );
 
-      <div className={styles.manage}>
-        <div className={styles.searchWrapper}>
-          <Search
-            text={searchText}
-            setInputText={setInputText}
-            placeholder="Search by organization name or ID"
-          />
-        </div>
-        {pkey && (
-          <div className={styles.buttonWrapper}>
-            <BeamButton callback={showModal}>
-              Add new
-            </BeamButton>
-          </div>
-        )}
-      </div>
-
-      <CreateModal
-        isModalVisible={isModal}
-        handleCreate={handleOk}
-        handleCancel={closeModal}
-        placeholder={placeholder}
-      />
-    </div>
-  ), [searchText, pkey, isModal]);
   return (
-    <div className={styles.content}>
-      <Title level={3}>{`${orgName} repositories`}</Title>
-      {projectManager}
-      <RepoList
-        path={path}
-        page={page}
-        route="project"
-        items={items}
-        deleteRepos={deleteRepos}
-        type={type}
-        searchText={searchText}
-      />
-    </div>
+    <EntityWrapper
+      title={`${projectName} repos`}
+      type={type}
+      pkey={pkey}
+      searchText={searchText}
+      navItems={navItems}
+      placeholder={placeholder}
+      setInputText={setInputText}
+      showModal={showModal}
+    >
+      <>
+        <CreateModal
+          isModalVisible={isModal}
+          placeholder="Enter your repository name"
+          handleCreate={handleOk}
+          handleCancel={closeModal}
+        />
+        <EntityList
+          searchText={searchText}
+          renderItem={listItem}
+          route={`project/${id}`}
+          path={path}
+          page={page}
+          items={items}
+          type={type}
+        />
+      </>
+    </EntityWrapper>
   );
 }
 

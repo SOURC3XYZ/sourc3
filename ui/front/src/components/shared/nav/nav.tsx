@@ -3,7 +3,7 @@ import { Menu } from 'antd';
 import { Link } from 'react-router-dom';
 import style from './nav.module.scss';
 
-type NavItem = {
+export type NavItem = {
   key: string,
   to: string,
   text: string

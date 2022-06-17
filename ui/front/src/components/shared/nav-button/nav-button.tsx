@@ -1,46 +1,32 @@
-import { Button } from 'antd';
-import { Link } from 'react-router-dom';
-import styles from './button.module.css';
+import { CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
+import style from './button.module.scss';
 
 type buttonProps = {
+  name: string;
+  isDisabled?:boolean;
   link?: string;
-  name?: string;
-  onClick?:()=>void
-  isDisabled?: boolean
-  type?:
-  'link' |
-  'text' |
-  'ghost' |
-  'default' |
-  'primary' |
-  'dashed'
-  | undefined
+  onClick?: () => void
+  inlineStyles?: CSSProperties
+  active?: boolean
 };
-const NavButton = ({
-  link, name, onClick, isDisabled, type
-}:buttonProps) => (
-  <div className={isDisabled
-    ? `${styles.button} ${styles.disabled}` : `${styles.button}`}
-  >
-    {link ? (
-      <Button
-        type={type || 'default'}
-        onClick={onClick}
-      >
-        <Link
-          to={link}
-        >
-          {name}
-        </Link>
-      </Button>
-    ) : (
-      <Button
-        type={type || 'default'}
-        onClick={onClick}
-      >
-        { name }
-      </Button>
-    )}
-  </div>
-);
+function NavButton({
+  name, link, inlineStyles, isDisabled, onClick, active
+}:buttonProps) {
+  const navigate = useNavigate();
+
+  const onClickHandler = () => link && navigate(link);
+  return (
+    <button
+      disabled={isDisabled}
+      style={inlineStyles}
+      className={active ? style.button : style.buttonSecond}
+      type="button"
+      onClick={onClick || onClickHandler}
+    >
+      { name }
+    </button>
+
+  );
+}
 export default NavButton;

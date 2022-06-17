@@ -1,0 +1,15 @@
+.content {
+    width: 100%;
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2.5rem;
+    h3{
+        font-family: "PublicSans-Medium";
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .content {
+        padding: 0 5px;
+    }
+}

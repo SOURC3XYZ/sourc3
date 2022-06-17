@@ -169,4 +169,21 @@ std::string SimpleWalletClient::ReadAPI() {
     data_.erase(0, n);
     return line;
 }
+
+void SimpleWalletClient::PrintVersion() {
+    auto msg = json::value{
+        {JsonRpcHeader, JsonRpcVersion},
+        {"id", 1},
+        {"method", "get_version"},
+    };
+    auto response = CallAPI(json::serialize(msg));
+    auto r = json::parse(response);
+    if (auto* res = r.as_object().if_contains("result"); res) {
+        std::cerr << "Connected to Beam Wallet API "
+                  << res->as_object()["beam_version"].as_string().c_str()
+                  << " ("
+                  << res->as_object()["beam_branch_name"].as_string().c_str()
+                  << ")" << std::endl;
+    }
+}
 }  // namespace sourc3

@@ -4,7 +4,12 @@
 	-webkit-app-region: no-drag;
 } */
 
-body{
+:global #root {
+  height: 100%;
+}
+
+
+body {
   overflow-y: scroll !important;
   width: unset !important;
 }
@@ -28,6 +33,7 @@ body::-webkit-scrollbar-track {
 body::-webkit-scrollbar-button {
   display: none;
 }
+
 body::-webkit-scrollbar-corner {
   background-color: transparent;
   display: none;

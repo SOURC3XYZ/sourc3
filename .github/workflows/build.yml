@@ -22,7 +22,6 @@ jobs:
             PLATFORM_NAME: linux
           - os: macos-10.15
             PLATFORM_NAME: mac
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -39,11 +38,11 @@ jobs:
         github_token: ${{secrets.INSTALLER_TOKEN}}
         workflow: build.yml
         workflow_conclusion: success
-        branch: master
+        branch: dappnet
         path: downloads
         repo: BeamMW/beam
         platform_name: ${{matrix.PLATFORM_NAME}}
-        net_name: masternet
+        net_name: dappnet
         search_artifacts: true
 ###############################################################################
 # Create Build Environment
@@ -142,8 +141,7 @@ jobs:
       shell: bash
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-dappnet" >> $GITHUB_ENV
         
     - name: Change version for Electron
       shell: bash
@@ -187,8 +185,9 @@ jobs:
         path: |
           ui/front/node_modules
           ui/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
@@ -309,7 +308,7 @@ jobs:
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/git-remote-sourc3.exe
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/build/git-remote-sourc3.exe
         cp remote_helper/sourc3-remote.cfg ui/sourc3-remote.cfg
 
     - name: Build electron
@@ -325,7 +324,7 @@ jobs:
         cd ui/dist
         wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
         chmod a+x appimagetool-x86_64.AppImage
-        filename=$(ls | grep client-master | grep AppImage)
+        filename=$(ls | grep client-dappnet | grep AppImage)
         ./$filename --appimage-extract
         cd squashfs-root/usr/lib
         for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so

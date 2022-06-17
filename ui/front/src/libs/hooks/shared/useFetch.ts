@@ -1,3 +1,4 @@
+import { PromiseArg } from '@types';
 import { useEffect } from 'react';
 import useObjectState from './useObjectState';
 

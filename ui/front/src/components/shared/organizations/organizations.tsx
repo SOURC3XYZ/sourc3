@@ -1,15 +1,12 @@
 import {
-  BeamButton, CreateModal, Nav, Search
+  CreateModal,
+  EntityList,
+  EntityWrapper
 } from '@components/shared';
-import { useMemo } from 'react';
-import { Typography } from 'antd';
 import { useOrganization } from '@libs/hooks/container/organization';
-import styles from './organizations.module.scss';
-import { OrgList } from './list';
+import OrgListItem from './org-list-item';
 
-const { Title } = Typography;
-
-const placeholder = 'Enter your organization name';
+const placeholder = 'Search by organization name or ID';
 
 function Organizations() {
   const {
@@ -19,12 +16,16 @@ function Organizations() {
     page,
     path,
     pkey,
+    modalApi
+  } = useOrganization();
+
+  const {
     isModal,
     showModal,
     closeModal,
     setInputText,
     handleOk
-  } = useOrganization();
+  } = modalApi;
 
   const navItems = [
     {
@@ -39,48 +40,45 @@ function Organizations() {
     }
   ];
 
-  const repoManager = useMemo(() => (
-    <div className={styles.repoHeader}>
-      {pkey && <Nav type={type} items={navItems} />}
+  const listItems = (item: typeof items[number]) => (
+    <OrgListItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      type={type}
 
-      <div className={styles.manage}>
-        <div className={styles.searchWrapper}>
-          <Search
-            text={searchText}
-            setInputText={setInputText}
-            placeholder="Search by organization name or ID"
-          />
-        </div>
-        {pkey && (
-          <div className={styles.buttonWrapper}>
-            <BeamButton callback={showModal}>
-              Add new
-            </BeamButton>
-          </div>
-        )}
-      </div>
-
-      <CreateModal
-        isModalVisible={isModal}
-        placeholder={placeholder}
-        handleCreate={handleOk}
-        handleCancel={closeModal}
-      />
-    </div>
-  ), [searchText, pkey, isModal]);
+    />
+  );
 
   return (
-    <div className={styles.content}>
-      <Title level={3}>Organizations</Title>
-      {repoManager}
-      <OrgList
-        items={items}
-        searchText={searchText}
-        path={path}
-        type={type}
-        page={page}
-      />
-    </div>
+    <EntityWrapper
+      title="Organizations"
+      type={type}
+      pkey={pkey}
+      searchText={searchText}
+      navItems={navItems}
+      setInputText={setInputText}
+      placeholder={placeholder}
+      showModal={showModal}
+    >
+      <>
+        <CreateModal
+          isModalVisible={isModal}
+          placeholder="Enter your organization name"
+          handleCreate={handleOk}
+          handleCancel={closeModal}
+        />
+        <EntityList
+          searchText={searchText}
+          renderItem={listItems}
+          route="organizations"
+          path={path}
+          page={page}
+          items={items}
+          type={type}
+        />
+      </>
+    </EntityWrapper>
   );
 }
 

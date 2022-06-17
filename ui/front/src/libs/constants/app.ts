@@ -30,7 +30,8 @@ export enum ACTIONS {
   SET_REPO_FILE = 'SET_REPO_FILE',
   SET_TX_LIST = 'SET_TX_LIST',
   SET_ORGANIZATIONS = 'SET_ORGANIZATIONS',
-  SET_PROJECTS = 'SET_PROJECTS'
+  SET_PROJECTS = 'SET_PROJECTS',
+  SET_COMMITS_MAP = 'SET_COMMITS_MAP'
 }
 
 export enum ActionColor {
@@ -53,7 +54,9 @@ export enum Routes {
 }
 
 export enum LoadingMessages {
-  COMMITS = 'Building commit tree...',
+  COMMIT = 'Loading commit data...',
+  COMMIT_TREE = 'Building commit tree...',
+  BRANCHES = 'Loading branches...',
   TREE = 'Loading file tree...',
   FILE = 'Loading file...',
   HEADLESS = 'Loading decentralized application...'
@@ -63,5 +66,11 @@ export enum ToastMessages {
   EXT_ON_CONN_ERR = 'Web wallet is trying to connect at the moment',
   EXT_ERR_MSG = 'Extension not found. Please, install the extension from the website and reload the Sourc3',
   WALLET_CONNECTED = 'Web wallet connected!',
-  HEADLESS_CONNECTED = 'Headless wallet connected!'
+  HEADLESS_CONNECTED = 'Headless wallet connected!',
 }
+
+export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
+
+export enum RestoreStatus { SEED, PASS, OK, LOADING }
+
+export enum MODAL { NONE, CLONE, CREATE, ADD }

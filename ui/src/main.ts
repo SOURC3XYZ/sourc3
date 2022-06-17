@@ -7,6 +7,7 @@ import { IpcServer } from 'ipc-express';
 import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
+import crypto from 'crypto';
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
@@ -22,15 +23,33 @@ function CopyIfNotExists(src: string, dst: string) {
   }
 }
 
-// process.on('uncaughtException', (err) => {
-//   console.error(err.stack);
-//   console.log('Node NOT Exiting...');
-// });
+function GetHash(file: string, algo: string) {
+  const hashSum = crypto.createHash(algo);
+  const fileBuffer = fs.readFileSync(file);
+  hashSum.update(fileBuffer);
+  return hashSum.digest('hex');
+}
+
+function CopyIfNotEqualHash(src: string, dst: string) {
+  console.log(`Check ${src} to ${dst}`)
+  if (fs.existsSync(dst)) {
+    const dstHex = GetHash(dst, "sha256");
+    const srcHex = GetHash(src, "sha256");
+    if (srcHex != dstHex) {
+      fs.copyFileSync(src, dst);
+    }
+  } else {
+    fs.copyFileSync(src, dst);
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1024,
+    height: 786,
+    minWidth: 1024,
+    minHeight: 785,
+    resizable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -51,14 +70,9 @@ function createWindow() {
       if (!fs.existsSync(path.join(app.getPath('home'), '.local', 'bin'))) {
         fs.mkdirSync(path.join(app.getPath('home'), '.local', 'bin'));
       }
-      CopyIfNotExists(
+      CopyIfNotEqualHash(
         path.join(__dirname, '..', '..', '..', 'git-remote-sourc3'),
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
-      );
-    } else if (process.platform === 'win32') {
-      CopyIfNotExists(
-        path.join(__dirname, '..', '..', 'git-remote-sourc3.exe'),
-        path.join(__dirname, '..', '..', '..', 'git-remote-sourc3.exe')
       );
     } else if (process.platform === 'darwin') {
       console.log(app.getPath('exe'));
@@ -85,7 +99,7 @@ function createWindow() {
         return null;
       });
     });
-    CopyIfNotExists(
+    CopyIfNotEqualHash(
       path.join(__dirname, '..', 'front', 'dist', 'assets', 'app.wasm'),
       path.join(sourc3Path, 'app.wasm')
     );
@@ -95,7 +109,7 @@ function createWindow() {
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
   if (process.env['NODE_ENV'] === 'dev') {
-    win.loadURL('http://localhost:5000');
+    win.loadURL('http://localhost:5003');
     win.webContents.openDevTools();
   } else {
     win.setMenu(null);

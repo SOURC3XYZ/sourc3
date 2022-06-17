@@ -581,14 +581,14 @@ int main(int argc, char* argv[]) {
     }
     try {
         SimpleWalletClient::Options options;
-        po::options_description desc("PIT config options");
+        po::options_description desc("SOURC3 config options");
 
         desc.add_options()("api-host",
                            po::value<std::string>(&options.apiHost)
                                ->default_value("localhost"),
                            "Wallet API host")(
             "api-port",
-            po::value<std::string>(&options.apiPort)->default_value("10000"),
+            po::value<std::string>(&options.apiPort)->default_value("9100"),
             "Wallet API port")("api-target",
                                po::value<std::string>(&options.apiTarget)
                                    ->default_value("/api/wallet"),

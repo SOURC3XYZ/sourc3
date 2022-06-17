@@ -1,8 +1,8 @@
-import { AC, thunks } from '@libs/action-creators';
+import { useModal } from '@libs/hooks/shared';
 import { useSearch } from '@libs/hooks/shared/useSearch';
-import { useSelector, useDispatch } from '@libs/redux';
+import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
-import { useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { itemsFilter } from './selectors';
 
@@ -16,27 +16,17 @@ const useOrganization = () => {
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const path = pathname.split('organizations/')[0];
 
-  const dispatch = useDispatch();
+  const { setInputText, createOrganization } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
   const items = useSelector((state) => itemsFilter(state.entities.organizations, type, pkey));
   const searchText = useSelector((state) => state.entities.searchText);
 
   const elements = useSearch(searchText, items, ['organization_name', 'organization_id'], type);
 
-  const [isModal, setIsModal] = useState(false);
-
-  const setInputText = (txt: string) => {
-    dispatch(AC.setSearch(txt));
-  };
-
-  const showModal = () => setIsModal(true);
-
-  const closeModal = () => setIsModal(false);
-
-  const handleOk = (name: string) => {
-    closeModal();
-    dispatch(thunks.createOrganization(name));
-  };
+  const modalApi = useModal(
+    (txt: string) => setInputText(txt),
+    (name: string) => createOrganization(name)
+  );
 
   return {
     items: elements,
@@ -45,11 +35,7 @@ const useOrganization = () => {
     type,
     pkey,
     path,
-    isModal,
-    handleOk,
-    setInputText,
-    showModal,
-    closeModal
+    modalApi
   };
 };
 

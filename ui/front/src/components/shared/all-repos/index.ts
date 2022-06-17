@@ -1,2 +1,2 @@
 export { default as AllRepos } from './all-repos';
-export * from './content';
+export { default as RepoItem } from './repo-item';
