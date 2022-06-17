@@ -1,7 +1,7 @@
 {
-  "name": "sourc3-client-masternet",
+  "name": "sourc3-client-dappnet",
   "version": "1.0.0",
-  "description": "SOURC3 client for 'masternet'",
+  "description": "SOURC3 client for 'dappnet'",
   "main": "bundle/main.js",
   "scripts": {
     "start": "export NODE_ENV=dev; electron --inspect dist/main",
