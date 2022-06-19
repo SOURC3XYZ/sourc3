@@ -133,7 +133,7 @@ else()
     option(USE_HTTPS               "Enable HTTPS support. Can be set to a specific backend" ON)
     set(BUILD_TESTS OFF)
     set(BUILD_SHARED_LIBS OFF)
-    set(USE_BUNDLED_ZLIB ON)
+#    set(USE_BUNDLED_ZLIB ON)
     set(USE_SSH OFF)
     set(USE_HTTPS OFF)
 
