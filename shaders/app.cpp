@@ -1214,10 +1214,11 @@ void OnActionListRefs(const ContractID& cid) {
     uint32_t value_len = 0, key_len = sizeof(Key);
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len);
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<GitRef*>(buf.get());
         Env::DocGroup repo_object("");
+        value->name[value->name_length] = '\0';
         Env::DocAddText("name", value->name);
         Env::DocAddBlob("commit_hash", &value->commit_hash,
                         sizeof(value->commit_hash));
