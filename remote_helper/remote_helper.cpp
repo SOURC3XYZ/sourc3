@@ -423,6 +423,7 @@ public:
 
                 bool last = (done == objs.size());
                 wallet_client_.PushObjects(str_data, collector.m_refs, last);
+                return last == false; // continue
             });
         }
         {

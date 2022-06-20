@@ -75,12 +75,13 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector) {
 
     BOOST_TEST_CHECK(collector.m_objects.size() == 27);
 
-    collector.Serialize([&](const auto& buf, bool lastBlock) {
-        BOOST_TEST_CHECK(lastBlock == true);
+    collector.Serialize([&](const auto& buf, size_t done) {
+
         size_t size = sizeof(sourc3::ObjectsInfo);
         const auto* p =
             reinterpret_cast<const sourc3::ObjectsInfo*>(buf.data());
         BOOST_TEST_CHECK(p->objects_number == uint32_t(27));
+        BOOST_TEST_CHECK(done == p->objects_number);
         const auto* o = reinterpret_cast<const sourc3::GitObject*>(p + 1);
         for (uint32_t i = 0; i < p->objects_number; ++i) {
             size += sizeof(sourc3::GitObject) + o->data_size;
@@ -88,5 +89,6 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector) {
                 reinterpret_cast<const uint8_t*>(o + 1) + o->data_size);
         }
         BOOST_TEST_CHECK(size == buf.size());
+        return false;
     });
 }
