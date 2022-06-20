@@ -43,8 +43,9 @@ std::string SimpleWalletClient::PushObjects(const std::string& data,
                                           const std::vector<Ref>& refs,
                                             bool push_refs) {
     std::stringstream ss;
-    if (data.empty()) {
-        ss << "role=user,action=push_objects,data=" << data;
+    ss << "role=user,action=push_objects";
+    if (!data.empty()) {
+        ss << ",data=" << data;
     }
 
     if (push_refs) {
