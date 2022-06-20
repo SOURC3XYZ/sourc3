@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 SOURC3 Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include <boost/asio/connect.hpp>
@@ -8,6 +24,7 @@
 #include <iostream>
 #include <set>
 #include "utils.h"
+#include "object_collector.h"
 
 namespace sourc3 {
 constexpr const char JsonRpcHeader[] = "jsonrpc";
@@ -50,13 +67,13 @@ public:
         }
     }
 
-    std::string InvokeWallet(std::string args) {
-        args.append(",repo_id=")
-            .append(GetRepoID())
-            .append(",cid=")
-            .append(GetCID());
-        return InvokeShader(std::move(args));
-    }
+    std::string GetAllObjectsMetadata();
+    std::string GetObjectData(const std::string& obj_id);
+    std::string GetReferences();
+    std::string GetRepoMetadata();
+    std::string PushObjects(const std::string& data,
+                            const std::vector<Ref>& refs,
+                            bool push_refs = false);
 
     const std::string& GetRepoDir() const {
         return options_.repoPath;
@@ -72,6 +89,13 @@ public:
     }
 
 private:
+    std::string InvokeWallet(std::string args) {
+        args.append(",repo_id=")
+            .append(GetRepoID())
+            .append(",cid=")
+            .append(GetCID());
+        return InvokeShader(std::move(args));
+    }
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
     std::string ExtractResult(const std::string& response);

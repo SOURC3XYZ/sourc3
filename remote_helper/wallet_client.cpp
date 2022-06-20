@@ -1,3 +1,17 @@
+// Copyright 2021-2022 SOURC3 Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "wallet_client.h"
 #include <boost/json.hpp>
 #include <boost/asio.hpp>
@@ -6,6 +20,43 @@
 
 namespace sourc3 {
 namespace json = boost::json;
+
+std::string SimpleWalletClient::GetAllObjectsMetadata() {
+    return InvokeWallet("role=user,action=repo_get_meta");
+}
+
+std::string SimpleWalletClient::GetObjectData(const std::string& obj_id) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    return InvokeWallet(ss.str());
+}
+
+std::string SimpleWalletClient::GetReferences() {
+    return InvokeWallet("role=user,action=list_refs");
+}
+
+std::string SimpleWalletClient::GetRepoMetadata() {
+    return InvokeWallet("role=user,action=repo_get_meta");
+}
+
+std::string SimpleWalletClient::PushObjects(const std::string& data,
+                                          const std::vector<Ref>& refs,
+                                            bool push_refs) {
+    std::stringstream ss;
+    ss << "role=user,action=push_objects";
+    if (!data.empty()) {
+        ss << ",data=" << data;
+    }
+
+    if (push_refs) {
+        ss << ',';
+        for (const auto& r : refs) {
+            ss << "ref=" << r.name
+               << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+        }
+    }
+    return InvokeWallet(ss.str());
+}
 
 std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
     auto msg =
