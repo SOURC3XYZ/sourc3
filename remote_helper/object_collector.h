@@ -127,28 +127,30 @@ public:
             }
 
             ByteBuffer buf;
-            if (count > 0) {
-                // serializing
-                buf.resize(serialized_size +
-                           sizeof(ObjectsInfo));  // objects count size
-                auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
-                p->objects_number = count;
-                auto* ser_obj = reinterpret_cast<GitObject*>(p + 1);
-                for (size_t i = 0; i < count; ++i) {
-                    const auto& obj = m_objects[indecies[i]];
-                    ser_obj->data_size = static_cast<uint32_t>(obj.GetSize());
-                    ser_obj->type = obj.GetSerializeType();
-                    git_oid_cpy(&ser_obj->hash, &obj.oid);
-                    auto* data = reinterpret_cast<uint8_t*>(ser_obj + 1);
-                    std::copy_n(obj.GetData(), obj.GetSize(), data);
-                    ser_obj =
-                        reinterpret_cast<GitObject*>(data + obj.GetSize());
-                }
+            if (count == 0) {
+                func(buf, done);
+                break;
+            }
+
+            // serializing
+            buf.resize(serialized_size +
+                        sizeof(ObjectsInfo));  // objects count size
+            auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
+            p->objects_number = count;
+            auto* ser_obj = reinterpret_cast<GitObject*>(p + 1);
+            for (size_t i = 0; i < count; ++i) {
+                const auto& obj = m_objects[indecies[i]];
+                ser_obj->data_size = static_cast<uint32_t>(obj.GetSize());
+                ser_obj->type = obj.GetSerializeType();
+                git_oid_cpy(&ser_obj->hash, &obj.oid);
+                auto* data = reinterpret_cast<uint8_t*>(ser_obj + 1);
+                std::copy_n(obj.GetData(), obj.GetSize(), data);
+                ser_obj =
+                    reinterpret_cast<GitObject*>(data + obj.GetSize());
             }
 
             done += count;
-            func(buf, done);
-            if (count == 0) {
+            if (func(buf, done) == false) {
                 break;
             }
         }
