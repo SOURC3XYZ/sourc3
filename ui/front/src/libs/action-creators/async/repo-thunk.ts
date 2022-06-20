@@ -17,6 +17,8 @@ import batcher from '../batcher';
 import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
 
+const CASH_PREFIX = [CONFIG.NETWORK, CONFIG.CID].join('-');
+
 export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   const [,,getOutput] = contractCall(callApi);
 
@@ -27,7 +29,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   ):CustomAction => async (dispatch) => {
     try {
       dispatch(AC.setCommits(null));
-      const cache = await caches.open([CONFIG.CID, id].join('-'));
+      const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
@@ -74,7 +76,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     id, oid, key, resolve
   }: UpdateProps, errHandler: (err: Error) => void):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CONFIG.CID, id].join('-'));
+      const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
@@ -95,7 +97,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CONFIG.CID, repoId].join('-'));
+      const cache = await caches.open([CASH_PREFIX, repoId].join('-'));
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {

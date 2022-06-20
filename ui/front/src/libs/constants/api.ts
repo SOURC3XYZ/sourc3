@@ -1,13 +1,14 @@
 // 'http://localhost:5001/beam'
 export enum CONFIG {
   HOST = 'http://localhost:5001',
+  NETWORK = 'dappnet',
   CID = '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3',
   // '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3' - DEV
   // ec90c6258019107543e0726c415f8b92c78805afcdb1336a61345b97486d2832 - DEMO
   // '7aaec975d0348348d82e72bd66d508ac93cb6f9e683bd136d2a879f41c32e8d8'
   // 'fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10',
   // IPFS_HOST = 'http://3.209.99.179:8070'
-  IPFS_HOST = 'https://proxi-beam.herokuapp.com',
+  IPFS_HOST = 'https://proxi-beam.herokuapp.com/ipfs',
   ASSET_ID = 0,
   IPFS_TIMEOUT = 5000
 }
