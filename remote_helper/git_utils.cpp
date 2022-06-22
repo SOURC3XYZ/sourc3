@@ -42,6 +42,12 @@ std::string ToString(const git_oid& oid) {
     git_oid_fmt(r.data(), &oid);
     return r;
 }
+
+git_oid FromString(const std::string& str) {
+    git_oid oid;
+    git_oid_fromstr(&oid, str.c_str());
+    return oid;
+}
 }  // namespace sourc3
 
 bool operator<(const git_oid& left, const git_oid& right) noexcept {

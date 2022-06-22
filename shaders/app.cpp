@@ -1107,7 +1107,7 @@ void OnActionPushState(const ContractID& cid) {
     char desired_hash[kIpfsAddressSize + 1];
     auto desired_len = Env::DocGetText("desired", expected_hash, _countof(expected_hash));
     if (desired_len != kIpfsAddressSize + 1) {
-        return OnError("there is no expected hash!");
+        return OnError("there is no desired hash!");
     }
     --desired_len;
 

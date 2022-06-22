@@ -26,4 +26,10 @@ std::string ToHex(const void* p, size_t size) {
     boost::algorithm::hex(pp, pp + size, std::back_inserter(res));
     return res;
 }
+
+ByteBuffer StringToByteBuffer(const std::string& str) {
+    ByteBuffer buffer(str.size());
+    std::move(str.begin(), str.end(), buffer.begin());
+    return buffer;
+}
 }  // namespace sourc3

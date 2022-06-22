@@ -83,6 +83,7 @@ struct RepoAccessor {
 }  // namespace git
 
 std::string ToString(const git_oid& oid);
+git_oid FromString(const std::string& str);
 }  // namespace sourc3
 
 bool operator<(const git_oid& left, const git_oid& right) noexcept;

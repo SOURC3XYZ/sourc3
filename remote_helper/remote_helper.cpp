@@ -42,8 +42,6 @@ using namespace sourc3;
 #define PROTO_NAME "sourc3"
 
 namespace {
-constexpr size_t kIpfsAddressSize = 46;
-
 class ProgressReporter {
 public:
     ProgressReporter(std::string_view title, size_t total)
@@ -121,6 +119,92 @@ vector<string_view> ParseArgs(std::string_view args_sv) {
         }
     }
     return args;
+}
+
+struct OidHasher {
+    std::hash<std::string> hasher;
+    size_t operator()(const git_oid& oid) const {
+        return hasher(ToString(oid));
+    }
+};
+
+using HashMapping = std::unordered_map<git_oid, std::string, OidHasher>;
+
+std::string CreateRefsFile(const std::vector<Ref>& refs,
+                           const HashMapping& mapping) {
+    std::string file;
+    for (const auto& ref : refs) {
+        file += ref.name + "\t" + mapping.at(ref.target) + "\t" +
+                ToString(ref.target) + "\n";
+    }
+    return file;
+}
+
+HashMapping ParseRefHashed(const std::string& refs_file) {
+    HashMapping mapping;
+    if (refs_file.empty()) {
+        return mapping;
+    }
+
+    std::istringstream ss(refs_file);
+    std::string ref_name;
+    std::string target_ipfs;
+    std::string target_oid;
+    while (ss >> ref_name) {
+        if (ref_name.empty()) {
+            break;
+        }
+        ss >> target_ipfs;
+        ss >> target_oid;
+        mapping[FromString(target_oid)] = std::move(target_ipfs);
+    }
+    return mapping;
+}
+
+std::string GetCommitMetaBlock(git_commit* commit,
+                               const HashMapping& oid_to_meta,
+                               const HashMapping& oid_to_ipfs) {
+    std::string block = oid_to_ipfs.at(*git_commit_id(commit)) + "\n";
+    block += oid_to_meta.at(*git_commit_tree_id(commit)) + "\n";
+    auto parents_count = git_commit_parentcount(commit);
+    for (size_t i = 0; i < parents_count; ++i) {
+        auto* parent_id = git_commit_parent_id(commit, i);
+        if (oid_to_meta.count(*parent_id) > 0) {
+            block += oid_to_meta.at(*parent_id) + "\n";
+        } else {
+            throw std::runtime_error{
+                "Something wrong with push, "
+                "we cannot find meta object for parent " +
+                ToString(*parent_id)};
+        }
+    }
+    return block;
+}
+
+std::string GetTreeMetaBlock(git_tree* tree, const HashMapping& oid_to_ipfs) {
+    std::string block = oid_to_ipfs.at(*git_tree_id(tree)) + "\n";
+    for (size_t i = 0, size = git_tree_entrycount(tree); i < size; ++i) {
+        block += oid_to_ipfs.at(
+                     *git_tree_entry_id(git_tree_entry_byindex(tree, i))) +
+                 "\n";
+    }
+    return block;
+}
+
+std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
+                         const ObjectInfo& obj, const HashMapping& oid_to_meta,
+                         const HashMapping& oid_to_ipfs) {
+    if (obj.type == GIT_OBJECT_COMMIT) {
+        git_commit* commit;
+        git_commit_lookup(&commit, *accessor.m_repo, &obj.oid);
+        return GetCommitMetaBlock(commit, oid_to_meta, oid_to_ipfs);
+    } else if (obj.type == GIT_OBJECT_TREE) {
+        git_tree* tree;
+        git_tree_lookup(&tree, *accessor.m_repo, &obj.oid);
+        return GetTreeMetaBlock(tree, oid_to_ipfs);
+    }
+
+    return "";
 }
 
 }  // namespace
@@ -349,6 +433,29 @@ public:
                                   });
             objs.erase(it, objs.end());
         }
+        {
+            auto non_blob = std::partition(
+                objs.begin(), objs.end(), [](const ObjectInfo& obj) {
+                    return obj.type == GIT_OBJECT_BLOB;
+                });
+            auto commits =
+                std::partition(non_blob, objs.end(), [](const ObjectInfo& obj) {
+                    return obj.type == GIT_OBJECT_TREE;
+                });
+            std::sort(
+                commits, objs.end(),
+                [&collector](const ObjectInfo& lhs, const ObjectInfo& rhs) {
+                    git_commit* rhs_commit;
+                    git_commit_lookup(&rhs_commit, *collector.m_repo, &rhs.oid);
+                    size_t parents_count = git_commit_parentcount(rhs_commit);
+                    for (size_t i = 0; i < parents_count; ++i) {
+                        if (*git_commit_parent_id(rhs_commit, i) == lhs.oid) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+        }
 
         for (auto& obj : collector.m_objects) {
             if (uploaded_objects.find(obj.oid) != uploaded_objects.end()) {
@@ -364,66 +471,66 @@ public:
             objs.erase(it, objs.end());
         }
 
+        State prev_state;
+        {
+            auto state = json::parse(wallet_client_.LoadActualState());
+            if (!state.is_object()) {
+                cerr << "Cannot parse object state JSON: \'" << state << "\'"
+                     << endl;
+                return CommandResult::Failed;
+            }
+            auto& state_obj = state.as_object();
+            if (!state_obj.contains("state")) {
+                cerr << "Repo state not consists all objects.";
+                if (state_obj.contains("error")) {
+                    cerr << " Error: " << state_obj["error"];
+                }
+                cerr << std::endl;
+                return CommandResult::Failed;
+            }
+            prev_state.hash = state_obj["state"].as_string();
+        }
+
+        HashMapping oid_to_meta =
+            ParseRefHashed(wallet_client_.LoadObjectFromIPFS(prev_state.hash));
+        HashMapping oid_to_ipfs;
         {
             auto progress = MakeProgress("Uploading objects to IPFS",
                                          collector.m_objects.size());
             size_t i = 0;
             for (auto& obj : collector.m_objects) {
-                if (obj.selected) {
-                    continue;
-                }
-
-                if (obj.GetSize() > kIpfsAddressSize) {
-                    auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
-                                                               obj.GetSize());
-                    auto r = json::parse(res);
-                    auto hash_str =
-                        r.as_object()["result"].as_object()["hash"].as_string();
-                    obj.ipfsHash =
-                        ByteBuffer(hash_str.cbegin(), hash_str.cend());
+                auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
+                                                           obj.GetSize());
+                auto r = json::parse(res);
+                auto hash_str =
+                    r.as_object()["result"].as_object()["hash"].as_string();
+                obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
+                oid_to_ipfs[obj.oid] = hash_str;
+                std::string meta_object =
+                    GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
+                if (!meta_object.empty()) {
+                    auto meta_buffer = StringToByteBuffer(meta_object);
+                    auto hash = wallet_client_.SaveObjectToIPFS(
+                        meta_buffer.data(), meta_buffer.size());
+                    oid_to_meta[obj.oid] = hash;
                 }
                 if (progress) {
                     progress->UpdateProgress(++i);
                 }
             }
         }
-
-        std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {
-            return left.GetSize() > right.GetSize();
-        });
-
+        std::string new_refs_content =
+            CreateRefsFile(collector.m_refs, oid_to_meta);
+        State new_state;
+        auto new_refs_buffer = StringToByteBuffer(new_refs_content);
+        new_state.hash = wallet_client_.SaveObjectToIPFS(
+            new_refs_buffer.data(), new_refs_buffer.size());
         {
-            auto progress =
-                MakeProgress("Uploading metadata to blockchain", objs.size());
-            collector.Serialize([&](const auto& buf, size_t done) {
-                std::string str_data;
-                if (!buf.empty()) {
-                    // log
-                    //{
-                    //    const auto* p =
-                    //        reinterpret_cast<const ObjectsInfo*>(buf.data());
-                    //    const auto* cur =
-                    //        reinterpret_cast<const GitObject*>(p + 1);
-                    //    for (uint32_t i = 0; i < p->objects_number; ++i) {
-                    //        size_t s = cur->data_size;
-                    //        std::cerr << to_string(cur->hash) << '\t' << s
-                    //                  << '\t' << (int)cur->type << '\n';
-                    //        ++cur;
-                    //        cur = reinterpret_cast<const GitObject*>(
-                    //            reinterpret_cast<const uint8_t*>(cur) + s);
-                    //    }
-                    //    std::cerr << std::endl;
-                    //}
-                    str_data = ToHex(buf.data(), buf.size());
-                }
-
-                if (progress) {
-                    progress->UpdateProgress(done);
-                }
-
-                bool last = (done == objs.size());
-                wallet_client_.PushObjects(str_data, collector.m_refs, last);
-            });
+            auto progress = MakeProgress("Uploading metadata to blockchain", 1);
+            wallet_client_.PushObjects(prev_state, new_state, objs.size());
+            if (progress) {
+                progress->Done();
+            }
         }
         {
             auto progress =

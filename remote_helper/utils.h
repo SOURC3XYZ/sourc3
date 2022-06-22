@@ -24,5 +24,6 @@ namespace sourc3 {
 using ByteBuffer = std::vector<uint8_t>;
 
 std::string ToHex(const void* p, size_t size);
+ByteBuffer StringToByteBuffer(const std::string& str);
 
 }  // namespace sourc3
