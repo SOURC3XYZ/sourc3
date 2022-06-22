@@ -348,7 +348,7 @@ export class BeamAPI<T> {
     hash: string
   ) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', [CONFIG.IPFS_HOST, 'ipfs', hash].join('/'), true);
+    xhr.open('GET', [CONFIG.IPFS_HOST, 'ipfs', CONFIG.NETWORK, hash].join('/'), true);
     xhr.responseType = 'blob';
     xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
     xhr.onload = async function () {

@@ -91,9 +91,7 @@ export class BeamApiDesktop<T> {
 
   public readonly loadAPI = async (): Promise<BeamApiDesktop<T>> => this;
 
-  readonly initContract = async (
-    shader: string
-  ) => {
+  readonly initContract = async (shader: string) => {
     const contract = await fetch(shader)
       .then((response) => response.arrayBuffer());
     this.initShader(contract);
