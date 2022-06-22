@@ -488,7 +488,8 @@ public:
                 cerr << std::endl;
                 return CommandResult::Failed;
             }
-            prev_state.hash = state_obj["state"].as_string();
+            auto state_str = state_obj["state"].as_string();
+            prev_state.hash = std::string(state_str.begin(), state_str.end());
         }
 
         HashMapping oid_to_meta =
