@@ -82,62 +82,78 @@ uint32_t get_CurrentVersion() {  // NOLINT
 }
 }
 
-BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
+BEAM_EXPORT void Method_3(const method::PushState& params) { // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-
     CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
                                              Repo::Permissions::kPush);
-
-    auto* obj =
-        reinterpret_cast<const method::PushObjects::PackedObject*>(&params + 1);
-    for (uint32_t i = 0; i < params.objects_number; ++i) {
-        GitObject::Meta meta;
-        meta.type = GitObject::Meta::Type(obj->type);
-        meta.hash = obj->hash;
-        meta.id = repo_info->cur_objs_number++;
-        meta.data_size = obj->data_size;
-        GitObject::Meta::Key meta_key(params.repo_id, meta.id);
-        GitObject::Data::Key data_key(params.repo_id, obj->hash);
-        Env::Halt_if(Env::LoadVar(&data_key, sizeof(data_key), nullptr, 0,
-                                  KeyTag::Internal) !=
-                     0u);  // halt if object exists
-        Env::SaveVar(&data_key, sizeof(data_key), obj + 1, obj->data_size,
-                     KeyTag::Internal);
-
-        Env::SaveVar(&meta_key, sizeof(meta_key), &meta, sizeof(meta),
-                     KeyTag::Internal);
-        auto size = obj->data_size;
-        ++obj;  // skip header
-        obj = reinterpret_cast<const method::PushObjects::PackedObject*>(
-            reinterpret_cast<const uint8_t*>(obj) +
-            size);  // move to next object
-    }
-
+    Env::Halt_if(Env::Memcmp(params.expected_state, repo_info->cur_state, kIpfsAddressSize) != 0);
+    Env::Memcpy(repo_info->cur_state, params.desired_state, kIpfsAddressSize);
+    repo_info->cur_objs_number += params.new_objects;
     Repo::Key key_repo(repo_info->repo_id);
     SaveNamedObject(key_repo, repo_info);
-
     Env::AddSig(params.user);
 }
 
-BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
-    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-
-    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
-                                             Repo::Permissions::kPush);
-
-    auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
-    for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
-        auto size = ref->name_length;
-        GitRef::Key key(params.repo_id, ref->name, ref->name_length);
-        Env::SaveVar(&key, sizeof(key), ref, sizeof(GitRef) + size,
-                     KeyTag::Internal);
-        ++ref;  // skip
-        ref = reinterpret_cast<const GitRef*>(
-            reinterpret_cast<const uint8_t*>(ref) + size);  // move to next ref
-    }
-
-    Env::AddSig(params.user);
+BEAM_EXPORT void Method_4(const method::LoadState&) { // NOLINT
+    // No-op
 }
+
+//BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
+//    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+//
+//    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
+//                                             Repo::Permissions::kPush);
+//
+//    auto* obj =
+//        reinterpret_cast<const method::PushObjects::PackedObject*>(&params + 1);
+//    for (uint32_t i = 0; i < params.objects_number; ++i) {
+//        GitObject::Meta meta;
+//        meta.type = GitObject::Meta::Type(obj->type);
+//        meta.hash = obj->hash;
+//        meta.id = repo_info->cur_objs_number++;
+//        meta.data_size = obj->data_size;
+//        GitObject::Meta::Key meta_key(params.repo_id, meta.id);
+//        GitObject::Data::Key data_key(params.repo_id, obj->hash);
+//        Env::Halt_if(Env::LoadVar(&data_key, sizeof(data_key), nullptr, 0,
+//                                  KeyTag::Internal) !=
+//                     0u);  // halt if object exists
+//        Env::SaveVar(&data_key, sizeof(data_key), obj + 1, obj->data_size,
+//                     KeyTag::Internal);
+//
+//        Env::SaveVar(&meta_key, sizeof(meta_key), &meta, sizeof(meta),
+//                     KeyTag::Internal);
+//        auto size = obj->data_size;
+//        ++obj;  // skip header
+//        obj = reinterpret_cast<const method::PushObjects::PackedObject*>(
+//            reinterpret_cast<const uint8_t*>(obj) +
+//            size);  // move to next object
+//    }
+//
+//    Repo::Key key_repo(repo_info->repo_id);
+//    SaveNamedObject(key_repo, repo_info);
+//
+//    Env::AddSig(params.user);
+//}
+//
+//BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
+//    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+//
+//    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
+//                                             Repo::Permissions::kPush);
+//
+//    auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
+//    for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
+//        auto size = ref->name_length;
+//        GitRef::Key key(params.repo_id, ref->name, ref->name_length);
+//        Env::SaveVar(&key, sizeof(key), ref, sizeof(GitRef) + size,
+//                     KeyTag::Internal);
+//        ++ref;  // skip
+//        ref = reinterpret_cast<const GitRef*>(
+//            reinterpret_cast<const uint8_t*>(ref) + size);  // move to next ref
+//    }
+//
+//    Env::AddSig(params.user);
+//}
 
 BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     std::unique_ptr<Organization> org(static_cast<Organization*>(

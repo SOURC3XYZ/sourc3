@@ -21,6 +21,8 @@
 #include "Shaders/upgradable3/contract.h"
 
 namespace sourc3 {
+constexpr size_t kIpfsAddressSize = 46;
+
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -139,6 +141,7 @@ struct Repo {
     Id repo_id;
     size_t cur_objs_number;
     PubKey owner;
+    char cur_state[kIpfsAddressSize];
     size_t name_len;
     char name[];
 };
@@ -250,6 +253,22 @@ struct Initial {
     Upgradable3::Settings m_Stgs;
 };
 
+struct PushState {
+    static const uint32_t kMethod = 3;
+    uint64_t repo_id;
+    PubKey user;
+    char expected_state[kIpfsAddressSize];
+    char desired_state[kIpfsAddressSize];
+    uint32_t new_objects;
+};
+
+struct LoadState { // In case of need
+    static const uint32_t kMethod = 4;
+    uint64_t repo_id;
+    char hash[kIpfsAddressSize];
+};
+
+// WILL NOT BE USED BY THIS VERSION OF CONTRACT
 struct PushObjects {
     static const uint32_t kMethod = 3;
     struct PackedObject {
@@ -264,6 +283,7 @@ struct PushObjects {
     // packed objects after this
 };
 
+// WILL NOT BE USED BY THIS VERSION OF CONTRACT
 struct PushRefs {
     static const uint32_t kMethod = 4;
     uint64_t repo_id;

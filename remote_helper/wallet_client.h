@@ -25,10 +25,11 @@
 #include <set>
 #include "utils.h"
 #include "object_collector.h"
+#include "contract_state.hpp"
 
 namespace sourc3 {
-constexpr const char JsonRpcHeader[] = "jsonrpc";
-constexpr const char JsonRpcVersion[] = "2.0";
+constexpr const char kJsonRpcHeader[] = "jsonrpc";
+constexpr const char kJsonRpcVersion[] = "2.0";
 
 namespace beast = boost::beast;  // from <boost/beast.hpp>
 namespace http = beast::http;    // from <boost/beast/http.hpp>
@@ -71,16 +72,19 @@ public:
     std::string GetObjectData(const std::string& obj_id);
     std::string GetReferences();
     std::string GetRepoMetadata();
-    std::string PushObjects(const std::string& data,
-                            const std::vector<Ref>& refs,
-                            bool push_refs = false);
+    std::string PushObjects(const State& expected_state,
+                            const State& desired_state,
+                            uint32_t new_object_count);
+    std::string LoadActualState();
 
     const std::string& GetRepoDir() const {
         return options_.repoPath;
     }
 
-    std::string LoadObjectFromIPFS(std::string&& hash);
+    std::string LoadObjectFromIPFS(std::string hash);
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
+    std::string GetIPFSHash(const ObjectInfo& obj);
+    std::string GetIPFSHash(const uint8_t* data, size_t size);
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
     bool WaitForCompletion(WaitFunc&&);

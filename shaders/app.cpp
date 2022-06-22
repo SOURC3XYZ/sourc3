@@ -1092,6 +1092,74 @@ void OnActionRemoveUserParams(const ContractID& cid) {
                         /*nCharge=*/0);
 }
 
+
+void OnActionPushState(const ContractID& cid) {
+    using sourc3::Repo;
+    using sourc3::kIpfsAddressSize;
+    using sourc3::method::PushState;
+    char expected_hash[kIpfsAddressSize + 1];
+    auto expected_len = Env::DocGetText("expected", expected_hash, _countof(expected_hash));
+    if (expected_len != kIpfsAddressSize + 1) {
+        return OnError("there is no expected hash!");
+    }
+    --expected_len;
+
+    char desired_hash[kIpfsAddressSize + 1];
+    auto desired_len = Env::DocGetText("desired", expected_hash, _countof(expected_hash));
+    if (desired_len != kIpfsAddressSize + 1) {
+        return OnError("there is no expected hash!");
+    }
+    --desired_len;
+
+    PushState request;
+    Env::Memcpy(request.expected_state, expected_hash, expected_len);
+    Env::Memcpy(request.desired_state, desired_hash, desired_len);
+    Env::DocGet("repo_id", request.repo_id);
+    Env::DocGet("objects", request.new_objects);
+    UserKey user_key(cid);
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+    user_key.Get(request.user);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/PushState::kMethod,
+                        /*pArgs=*/&request,
+                        /*nArgs=*/sizeof(request),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"Pushing state",
+                        /*nCharge=*/0);
+}
+
+void OnActionLoadState(const ContractID& cid) {
+    // TODO: add load state to contract and app
+    // No-op for now
+}
+
+void OnActionGetState(const ContractID& cid) {
+    using sourc3::Repo;
+    using RepoKey = Env::Key_T<Repo::Key>;
+    RepoKey key;
+    _POD_(key.m_Prefix.m_Cid) = cid;
+    Env::DocGet("repo_id", key.m_KeyInContract.repo_id);
+    uint32_t value_len = 0, key_len = sizeof(RepoKey);
+    for (Env::VarReader reader(key, key);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Repo*>(buf.get());
+        Env::DocGroup repo_object("");
+        Env::DocAddNum("repo_id", value->repo_id);
+        Env::DocAddText("repo_name", value->name);
+        Env::DocAddNum("project_id", value->project_id);
+        Env::DocAddNum64("cur_objects", value->cur_objs_number);
+        Env::DocAddBlob_T("repo_owner", value->owner);
+        Env::DocAddBlob("state", value->cur_state, sourc3::kIpfsAddressSize);
+        break;
+    }
+}
+
 void OnActionPushObjects(const ContractID& cid) {
     using sourc3::GitRef;
     using sourc3::method::PushObjects;
@@ -1631,6 +1699,16 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
+                Env::DocGroup gr_method("push_state");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("expected", "IPFS hash of expected state");
+                Env::DocAddText("desired", "IPFS hash of desired state");
+                Env::DocAddText("objects", "Number of new objects");
+                Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("pid", "uint32_t");
+            }
+            {
                 Env::DocGroup gr_method("push_objects");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
@@ -1673,6 +1751,11 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("obj_id", "Object hash");
+            }
+            {
+                Env::DocGroup gr_method("repo_get_state");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
             }
             {
                 Env::DocGroup gr_method("repo_get_meta");
@@ -1808,6 +1891,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"add_user_params", OnActionAddUserParams},
         {"modify_user_params", OnActionModifyUserParams},
         {"remove_user_params", OnActionRemoveUserParams},
+        {"push_state", OnActionPushState},
         {"push_objects", OnActionPushObjects},
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},
@@ -1815,6 +1899,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"project_id_by_name", OnActionProjectByName},
         {"organization_id_by_name", OnActionOrganizationByName},
         {"repo_get_data", OnActionGetRepoData},
+        {"repo_get_state", OnActionGetState},
         {"repo_get_meta", OnActionGetRepoMeta},
         {"repo_get_commit", OnActionGetCommit},
         {"repo_get_commit_from_data", OnActionGetCommitFromData},

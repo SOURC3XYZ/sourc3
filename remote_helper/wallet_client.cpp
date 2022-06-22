@@ -39,27 +39,18 @@ std::string SimpleWalletClient::GetRepoMetadata() {
     return InvokeWallet("role=user,action=repo_get_meta");
 }
 
-std::string SimpleWalletClient::PushObjects(const std::string& data,
-                                          const std::vector<Ref>& refs,
-                                            bool push_refs) {
+std::string SimpleWalletClient::PushObjects(const State& expected_state,
+                                            const State& desired_state,
+                                            uint32_t new_object_count) {
     std::stringstream ss;
-    if (data.empty()) {
-        ss << "role=user,action=push_objects,data=" << data;
-    }
-
-    if (push_refs) {
-        ss << ',';
-        for (const auto& r : refs) {
-            ss << "ref=" << r.name
-               << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
-        }
-    }
+    ss << "role=user,action=push_state,expected=" << expected_state.hash
+       << ",desired=" << desired_state.hash << ",objects=" << new_object_count;
     return InvokeWallet(ss.str());
 }
 
-std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
+std::string SimpleWalletClient::LoadObjectFromIPFS(std::string hash) {
     auto msg =
-        json::value{{JsonRpcHeader, JsonRpcVersion},
+        json::value{{kJsonRpcHeader, kJsonRpcVersion},
                     {"id", 1},
                     {"method", "ipfs_get"},
                     {"params", {{"hash", std::move(hash)}, {"timeout", 5000}}}};
@@ -68,7 +59,7 @@ std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
 
 std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data,
                                                  size_t size) {
-    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
                            {"id", 1},
                            {"method", "ipfs_add"},
                            {"params",
@@ -78,9 +69,20 @@ std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data,
     return CallAPI(json::serialize(msg));
 }
 
+std::string SimpleWalletClient::GetIPFSHash(const uint8_t* data, size_t size) {
+    auto msg = json::value{
+        {kJsonRpcHeader, kJsonRpcVersion},
+        {"id", 1},
+        {"method", "ipfs_hash"},
+        {"params",
+         {{"data", json::array(data, data + size)}, {"timeout", 5000}}}};
+    return CallAPI(json::serialize(msg));
+}
+
 bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func) {
-    if (transactions_.empty())
+    if (transactions_.empty()) {
         return true;  // ok
+    }
 
     SubUnsubEvents(true);
     BOOST_SCOPE_EXIT_ALL(&, this) {
@@ -95,8 +97,8 @@ bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func) {
 
         for (auto& val : res["txs"].as_array()) {
             auto& tx = val.as_object();
-            std::string txID = tx["txId"].as_string().c_str();
-            auto it = transactions_.find(txID);
+            std::string tx_id = tx["txId"].as_string().c_str();
+            auto it = transactions_.find(tx_id);
             if (it == transactions_.end()) {
                 continue;
             }
@@ -110,7 +112,7 @@ bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func) {
                 return false;
             } else if (status == 3) {
                 func(++done, "");
-                transactions_.erase(txID);
+                transactions_.erase(tx_id);
             }
         }
     }
@@ -118,7 +120,7 @@ bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func) {
 }
 
 std::string SimpleWalletClient::SubUnsubEvents(bool sub) {
-    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
                            {"id", 1},
                            {"method", "ev_subunsub"},
                            {"params",
@@ -157,7 +159,7 @@ std::string SimpleWalletClient::ExtractResult(const std::string& response) {
 std::string SimpleWalletClient::InvokeShader(const std::string& args) {
     // std::cerr << "Args: " << args << std::endl;
     auto msg = json::value{
-        {JsonRpcHeader, JsonRpcVersion},
+        {kJsonRpcHeader, kJsonRpcVersion},
         {"id", 1},
         {"method", "invoke_contract"},
         {"params", {{"contract_file", options_.appPath}, {"args", args}}}};
@@ -222,7 +224,7 @@ std::string SimpleWalletClient::ReadAPI() {
 
 void SimpleWalletClient::PrintVersion() {
     auto msg = json::value{
-        {JsonRpcHeader, JsonRpcVersion},
+        {kJsonRpcHeader, kJsonRpcVersion},
         {"id", 1},
         {"method", "get_version"},
     };
@@ -236,4 +238,13 @@ void SimpleWalletClient::PrintVersion() {
                   << ")" << std::endl;
     }
 }
+
+std::string SimpleWalletClient::LoadActualState() {
+    return InvokeWallet("role=user,action=repo_get_state");
+}
+
+std::string SimpleWalletClient::GetIPFSHash(const ObjectInfo& obj) {
+    return GetIPFSHash(obj.GetData(), obj.GetSize());
+}
+
 }  // namespace sourc3
