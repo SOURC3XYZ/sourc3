@@ -637,8 +637,8 @@ int main(int argc, char* argv[]) {
                     cout << endl;
                     continue;
                 } else {
-                    cerr << "Unexpected blank line" << endl;
-                    return -1;
+                    // end of the command sequence
+                    return 0;
                 }
             }
 
