@@ -20,21 +20,25 @@ type RepoStatusRes = {
   pending: boolean
 };
 
-function PendingIndicator({ id }:PendingIndicatorProps) {
+function PendingIndicator(props:PendingIndicatorProps) {
   const [pending, setPending] = useState<PendingStatus>(PendingStatus.ERROR);
+
+  const { id } = props;
 
   const url = useMemo(() => {
     const key = `pending-repo-${CONFIG.CID}-${id}`;
     return [CONFIG.IPFS_HOST, 'repo', CONFIG.NETWORK, key].join('/');
   }, []);
 
-  const { error, data } = useFetch<RepoStatusRes>(url);
+  const options = useMemo(() => ({}), [props]);
+
+  const { data } = useFetch<RepoStatusRes>(url, options);
 
   useEffect(() => {
     if (typeof data?.pending === 'boolean') {
       setPending(data.pending ? PendingStatus.IN_PIN : PendingStatus.PINNED);
     } else setPending(PendingStatus.ERROR);
-  }, [data, error]);
+  }, [data]);
 
   const backgroundColor = useMemo(() => {
     switch (pending) {

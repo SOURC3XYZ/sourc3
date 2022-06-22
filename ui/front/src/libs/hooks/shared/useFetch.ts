@@ -2,7 +2,8 @@ import { useEffect, useReducer, useRef } from 'react';
 
 interface State<T> {
   data?: T
-  error?: Error
+  error?: Error,
+  loading?:boolean
 }
 
 type Action<T> =
@@ -10,7 +11,7 @@ type Action<T> =
   | { type: 'fetched'; payload: T }
   | { type: 'error'; payload: Error };
 
-function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
+function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boolean): State<T> {
   const cancelRequest = useRef<boolean>(false);
 
   const initialState: State<T> = {
@@ -39,7 +40,7 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
     cancelRequest.current = false;
 
     const fetchData = async () => {
-      dispatch({ type: 'loading' });
+      if (loading) dispatch({ type: 'loading' });
 
       try {
         const response = await fetch(url, options);
@@ -59,7 +60,7 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit): State<T> {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, options]);
 
   return state;
 }
