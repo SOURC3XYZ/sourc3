@@ -37,13 +37,6 @@ function Balance() {
       <Menu.Item>
         <Button type="link" onClick={showModals} className={styles.button}>Receive</Button>
       </Menu.Item>
-      <Menu.Item>
-        <Button type="link" className={styles.button}>
-          <Link type="link" to="manager">
-            Get More
-          </Link>
-        </Button>
-      </Menu.Item>
     </Menu>
   );
 
@@ -55,7 +48,7 @@ function Balance() {
         trigger={['click']}
         overlayClassName={styles.dropdown}
       >
-        <Button>
+        <Button className={styles.button}>
           {balance}
           {' '}
           SC3

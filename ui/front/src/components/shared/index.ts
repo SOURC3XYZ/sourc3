@@ -26,3 +26,4 @@ export * from './create-modal';
 export * from './entity';
 export * from './auth-btn-block';
 export * from './add-org';
+export * from './selectPopup';

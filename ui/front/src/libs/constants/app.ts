@@ -79,4 +79,4 @@ export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
 
 export enum RestoreStatus { SEED, PASS, OK, LOADING }
 
-export enum MODAL { NONE, CLONE, CREATE, ADD }
+export enum MODAL { NONE, REPOS, CLONE, ORGANIZATION, PROJECT, ADD }

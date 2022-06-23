@@ -64,6 +64,8 @@ function Projects() {
     >
       <>
         <CreateModal
+          title="Add new project to organization"
+          label="Project name"
           isModalVisible={isModal}
           placeholder="Enter your project name"
           handleCreate={handleOk}

@@ -1,12 +1,13 @@
 .wrapper{
-  width: 525px;
-    background-color: #fff;
+    width: auto;
+    background-color: transparent;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     padding: 0 10px;
-    button{
-      color:black !important;
+    .button{
+      color:black;
+      height: 36px !important;
     }
 
 }

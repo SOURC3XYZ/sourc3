@@ -15,7 +15,7 @@
     width: 100%;
     justify-content: space-between;
 
-    span {
+   & span {
       color: #fff;
       font-family: PublicSans-Bold;
       font-size: 18px;
@@ -73,8 +73,8 @@
 
 .connect {
   display: flex;
-  width: 425px;
-  margin-right: 40px;
+  // width: 425px;
+  // margin-right: 40px;
   justify-content: space-between;
 
   input {

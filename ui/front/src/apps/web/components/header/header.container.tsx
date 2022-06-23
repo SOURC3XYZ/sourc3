@@ -56,12 +56,22 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         />
       )}
       { !desktop ? (
-        <ConnectBtn
-          pkey={pkey}
-          onConnect={onConnect}
-        />
+        <>
+          {' '}
+          {pkey && (
+            <ProfileBlock
+              pKey={pkey}
+            />
+          )}
+          <ConnectBtn
+            pkey={pkey}
+            onConnect={onConnect}
+          />
+        </>
       ) : (
         <ProfileBlock
+          balance
+          profile
           pKey={pkey}
         />
       ) }
