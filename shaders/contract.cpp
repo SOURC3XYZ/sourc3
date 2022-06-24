@@ -89,6 +89,7 @@ BEAM_EXPORT void Method_3(const method::PushState& params) { // NOLINT
     Env::Halt_if(Env::Memcmp(params.expected_state, repo_info->cur_state, kIpfsAddressSize) != 0);
     Env::Memcpy(repo_info->cur_state, params.desired_state, kIpfsAddressSize);
     repo_info->cur_objs_number += params.new_objects;
+    repo_info->cur_metas_number += params.new_metas;
     Repo::Key key_repo(repo_info->repo_id);
     SaveNamedObject(key_repo, repo_info);
     Env::AddSig(params.user);

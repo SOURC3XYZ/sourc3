@@ -68,14 +68,12 @@ public:
         }
     }
 
-    std::string GetAllObjectsMetadata();
-    std::string GetObjectData(const std::string& obj_id);
-    std::string GetReferences();
-    std::string GetRepoMetadata();
     std::string PushObjects(const State& expected_state,
                             const State& desired_state,
-                            uint32_t new_object_count);
+                            uint32_t new_object_count,
+                            uint32_t new_metas_count);
     std::string LoadActualState();
+    uint64_t GetUploadedObjectCount();
 
     const std::string& GetRepoDir() const {
         return options_.repoPath;

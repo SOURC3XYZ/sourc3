@@ -89,6 +89,7 @@ struct Refs {
 
 struct Ref {
     std::string name;
+    std::string ipfs_hash;
     git_oid target;
 };
 

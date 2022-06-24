@@ -140,6 +140,28 @@ std::string CreateRefsFile(const std::vector<Ref>& refs,
     return file;
 }
 
+std::vector<Ref> ParseRefs(const std::string& refs_file) {
+    std::vector<Ref> refs;
+    if (refs_file.empty()) {
+        return refs;
+    }
+
+    std::istringstream ss(refs_file);
+    std::string ref_name;
+    std::string target_ipfs;
+    std::string target_oid;
+    while (ss >> ref_name) {
+        if (ref_name.empty()) {
+            break;
+        }
+        ss >> target_ipfs;
+        ss >> target_oid;
+        refs.push_back(
+            Ref{std::move(ref_name), target_ipfs, FromString(target_oid)});
+    }
+    return refs;
+}
+
 HashMapping ParseRefHashed(const std::string& refs_file) {
     HashMapping mapping;
     if (refs_file.empty()) {
@@ -164,7 +186,9 @@ HashMapping ParseRefHashed(const std::string& refs_file) {
 std::string GetCommitMetaBlock(git_commit* commit,
                                const HashMapping& oid_to_meta,
                                const HashMapping& oid_to_ipfs) {
-    std::string block = oid_to_ipfs.at(*git_commit_id(commit)) + "\n";
+    const auto* commit_id = git_commit_id(commit);
+    std::string block = oid_to_ipfs.at(*commit_id) + "\n";
+    block += ToString(*commit_id) + "\n";
     block += oid_to_meta.at(*git_commit_tree_id(commit)) + "\n";
     auto parents_count = git_commit_parentcount(commit);
     for (size_t i = 0; i < parents_count; ++i) {
@@ -182,11 +206,13 @@ std::string GetCommitMetaBlock(git_commit* commit,
 }
 
 std::string GetTreeMetaBlock(git_tree* tree, const HashMapping& oid_to_ipfs) {
-    std::string block = oid_to_ipfs.at(*git_tree_id(tree)) + "\n";
+    const auto* tree_id = git_tree_id(tree);
+    std::string block = oid_to_ipfs.at(*tree_id) + "\n";
+    block += ToString(*tree_id) + "\n";
     for (size_t i = 0, size = git_tree_entrycount(tree); i < size; ++i) {
-        block += oid_to_ipfs.at(
-                     *git_tree_entry_id(git_tree_entry_byindex(tree, i))) +
-                 "\n";
+        const auto& entry_id =
+            *git_tree_entry_id(git_tree_entry_byindex(tree, i));
+        block += oid_to_ipfs.at(entry_id) + "\n" + ToString(entry_id) + "\n";
     }
     return block;
 }
@@ -205,6 +231,34 @@ std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
     }
 
     return "";
+}
+
+std::string GetStringFromIPFS(const std::string& hash,
+                              SimpleWalletClient& wallet_client) {
+    auto res = json::parse(wallet_client.LoadObjectFromIPFS(hash));
+    if (!res.is_object() || !res.as_object().contains("result")) {
+        throw std::runtime_error{""};
+    }
+    auto data = res.as_object()["result"].as_object()["data"].as_string();
+    return std::string(data.begin(), data.end());
+}
+
+GitObject CreateObject(int8_t type, git_oid hash, std::string content) {
+    ByteBuffer buf(content.size() + sizeof(GitObject));
+    auto* obj = reinterpret_cast<GitObject*>(buf.data());
+    obj->hash = std::move(hash);
+    obj->type = type;
+    obj->data_size = content.size();
+    std::move(content.begin(), content.end(), buf.begin() + sizeof(GitObject));
+    return *obj;
+}
+
+ByteBuffer GetDataFromObject(const GitObject& obj) {
+    ByteBuffer data;
+    data.reserve(obj.data_size);
+    auto* obj_data = reinterpret_cast<const uint8_t*>(&obj + sizeof(GitObject));
+    std::move(obj_data, obj_data + obj.data_size, std::back_inserter(data));
+    return data;
 }
 
 }  // namespace
@@ -263,27 +317,16 @@ public:
 
         git::RepoAccessor accessor(wallet_client_.GetRepoDir());
         size_t total_objects = 0;
-        std::vector<GitObject> objects;
+
+        std::vector<GitObject> objects = GetUploadedObjects(RequestRefs());
         {
             auto progress = MakeProgress("Enumerating objects", 0);
-            // hack Collect objects metainfo
-            auto res = wallet_client_.GetAllObjectsMetadata();
-            auto root = json::parse(res);
-
-            for (auto& obj_val : root.as_object()["objects"].as_array()) {
+            for (const auto& obj : objects) {
                 if (progress) {
                     progress->UpdateProgress(++total_objects);
                 }
-
-                auto& o = objects.emplace_back();
-                auto& obj = obj_val.as_object();
-                o.data_size = obj["object_size"].to_number<uint32_t>();
-                o.type = static_cast<int8_t>(
-                    obj["object_type"].to_number<uint32_t>());
-                std::string s = obj["object_hash"].as_string().c_str();
-                git_oid_fromstr(&o.hash, s.c_str());
-                if (git_odb_exists(*accessor.m_odb, &o.hash) != 0) {
-                    received_objects.insert(s);
+                if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
+                    received_objects.insert(ToString(obj.hash));
                 }
             }
         }
@@ -296,8 +339,9 @@ public:
             auto it_to_receive = object_hashes.begin();
             const auto& object_to_receive = *it_to_receive;
 
-            auto res = wallet_client_.GetObjectData(object_to_receive);
-            auto root = json::parse(res);
+            // TODO:
+//            auto res = "";  // wallet_client_.GetObjectData(object_to_receive);
+//            auto root = json::parse(res);
             git_oid oid;
             git_oid_fromstr(&oid, object_to_receive.data());
 
@@ -313,35 +357,7 @@ public:
             }
             received_objects.insert(object_to_receive);
 
-            auto data = root.as_object()["object_data"].as_string();
-
-            ByteBuffer buf;
-            if (it->IsIPFSObject()) {
-                auto hash = FromHex(data);
-                auto responce = wallet_client_.LoadObjectFromIPFS(
-                    std::string(hash.cbegin(), hash.cend()));
-                auto r = json::parse(responce);
-                if (r.as_object().find("result") == r.as_object().end()) {
-                    cerr << "message: "
-                         << r.as_object()["error"]
-                                .as_object()["message"]
-                                .as_string()
-                         << "\ndata:    "
-                         << r.as_object()["error"]
-                                .as_object()["data"]
-                                .as_string()
-                         << endl;
-                    return CommandResult::Failed;
-                }
-                auto d = r.as_object()["result"].as_object()["data"].as_array();
-                buf.reserve(d.size());
-                for (auto&& v : d) {
-                    buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
-                }
-            } else {
-                buf = FromHex(data);
-            }
-
+            auto buf = GetDataFromObject(*it);
             git_oid res_oid;
             auto type = it->GetObjectType();
             git_oid r;
@@ -409,8 +425,8 @@ public:
             git_oid_cpy(&lr, git_reference_target(*local_ref));
         }
 
-        auto uploaded_objects = GetUploadedObjects();
         auto remote_refs = RequestRefs();
+        auto uploaded_objects = GetOidsFromObjects(GetUploadedObjects(remote_refs));
         std::vector<git_oid> merge_bases;
         for (const auto& remote_ref : remote_refs) {
             for (const auto& local_ref : local_refs) {
@@ -445,7 +461,7 @@ public:
             std::sort(
                 commits, objs.end(),
                 [&collector](const ObjectInfo& lhs, const ObjectInfo& rhs) {
-                    git_commit* rhs_commit;
+                    git_commit* rhs_commit;  // TODO: RAII
                     git_commit_lookup(&rhs_commit, *collector.m_repo, &rhs.oid);
                     size_t parents_count = git_commit_parentcount(rhs_commit);
                     for (size_t i = 0; i < parents_count; ++i) {
@@ -495,18 +511,27 @@ public:
         HashMapping oid_to_meta =
             ParseRefHashed(wallet_client_.LoadObjectFromIPFS(prev_state.hash));
         HashMapping oid_to_ipfs;
+        uint32_t new_objects = 0;
+        uint32_t new_metas = 0;
         {
             auto progress = MakeProgress("Uploading objects to IPFS",
                                          collector.m_objects.size());
             size_t i = 0;
             for (auto& obj : collector.m_objects) {
+                if (obj.type == GIT_OBJECT_BLOB) {
+                    ++new_objects;
+                } else {
+                    ++new_metas;
+                }
+
                 auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
                                                            obj.GetSize());
                 auto r = json::parse(res);
                 auto hash_str =
                     r.as_object()["result"].as_object()["hash"].as_string();
                 obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
-                oid_to_ipfs[obj.oid] = hash_str;
+                oid_to_ipfs[obj.oid] =
+                    std::string(hash_str.cbegin(), hash_str.cend());
                 std::string meta_object =
                     GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
                 if (!meta_object.empty()) {
@@ -528,7 +553,8 @@ public:
             new_refs_buffer.data(), new_refs_buffer.size());
         {
             auto progress = MakeProgress("Uploading metadata to blockchain", 1);
-            wallet_client_.PushObjects(prev_state, new_state, objs.size());
+            wallet_client_.PushObjects(prev_state, new_state, new_objects,
+                                       new_metas);
             if (progress) {
                 progress->Done();
             }
@@ -575,38 +601,32 @@ private:
     }
 
     std::vector<Ref> RequestRefs() {
-        std::vector<Ref> refs;
-        auto res = wallet_client_.GetReferences();
-        if (!res.empty()) {
-            auto root = json::parse(res);
-            for (auto& rv : root.as_object()["refs"].as_array()) {
-                auto& ref = refs.emplace_back();
-                auto& r = rv.as_object();
-                ref.name = r["name"].as_string().c_str();
-                git_oid_fromstr(&ref.target,
-                                r["commit_hash"].as_string().c_str());
+        auto actual_state = json::parse(wallet_client_.LoadActualState());
+        auto actual_state_str = actual_state.as_object()["hash"].as_string();
+        auto ref_file = json::parse(wallet_client_.LoadObjectFromIPFS(
+            std::string(actual_state_str.data(), actual_state_str.size())));
+
+        if (ref_file.is_object() && ref_file.as_object().contains("result")) {
+            auto d =
+                ref_file.as_object()["result"].as_object()["data"].as_array();
+            ByteBuffer buf;
+            buf.reserve(d.size());
+            for (auto&& v : d) {
+                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
             }
+            return ParseRefs(ByteBufferToString(buf));
         }
-        return refs;
+        return {};
     }
 
-    std::set<git_oid> GetUploadedObjects() {
-        std::set<git_oid> uploaded_objects;
-
-        auto progress = MakeProgress("Enumerating uploaded objects", 0);
-        // hack Collect objects metainfo
-        auto res = wallet_client_.GetRepoMetadata();
-        auto root = json::parse(res);
-        for (auto& obj : root.as_object()["objects"].as_array()) {
-            auto s = obj.as_object()["object_hash"].as_string();
-            git_oid oid;
-            git_oid_fromstr(&oid, s.c_str());
-            uploaded_objects.insert(oid);
-            if (progress) {
-                progress->UpdateProgress(uploaded_objects.size());
-            }
+    std::vector<GitObject> GetUploadedObjects(const std::vector<Ref>& refs) {
+        std::vector<GitObject> objects;
+        for (const auto& ref : refs) {
+            auto ref_objects = GetAllObjects(ref.ipfs_hash);
+            std::move(ref_objects.begin(), ref_objects.end(),
+                      std::back_inserter(objects));
         }
-        return uploaded_objects;
+        return objects;
     }
 
 private:
@@ -668,6 +688,72 @@ private:
     };
 
     Options options_;
+
+    std::vector<GitObject> GetAllObjects(const std::string& root_ipfs_hash) {
+        std::vector<GitObject> objects;
+        auto res = GetStringFromIPFS(root_ipfs_hash, wallet_client_);
+        std::istringstream ss(res);
+        std::string commit_hash;
+        ss >> commit_hash;
+        std::string commit_oid;
+        ss >> commit_oid;
+        std::string tree_meta_hash;
+        ss >> tree_meta_hash;
+        std::vector<std::string> parent_meta_hashes;
+        std::string hash;
+        while (ss >> hash) {
+            if (hash.empty()) {
+                break;
+            }
+            parent_meta_hashes.push_back(std::move(hash));
+        }
+        auto commit_content = GetStringFromIPFS(commit_hash, wallet_client_);
+        objects.push_back(CreateObject(GIT_OBJECT_COMMIT, FromString(commit_oid),
+                                       std::move(commit_content)));
+        auto tree_objects = GetObjectsFromTreeMeta(tree_meta_hash);
+        std::move(tree_objects.begin(), tree_objects.end(),
+                  std::back_inserter(objects));
+        for (auto&& parent_hash : parent_meta_hashes) {
+            auto parent_objects = GetAllObjects(parent_hash);
+            std::move(parent_objects.begin(), parent_objects.end(),
+                      std::back_inserter(objects));
+        }
+        return objects;
+    }
+
+    std::vector<GitObject> GetObjectsFromTreeMeta(
+        const std::string& tree_meta_hash) {
+        std::vector<GitObject> objects;
+        auto meta = GetStringFromIPFS(tree_meta_hash, wallet_client_);
+        std::string tree_hash;
+        std::string tree_oid;
+        std::istringstream ss(meta);
+        ss >> tree_hash;
+        ss >> tree_oid;
+        auto tree_content = GetStringFromIPFS(tree_hash, wallet_client_);
+        objects.push_back(CreateObject(GIT_OBJECT_TREE, FromString(tree_oid),
+                                       tree_content));
+        std::string file_hash;
+        while (ss >> file_hash) {
+            if (file_hash.empty()) {
+                break;
+            }
+            auto file_content = GetStringFromIPFS(file_hash, wallet_client_);
+            ss >> file_hash;
+            objects.push_back(CreateObject(GIT_OBJECT_BLOB, FromString(file_hash),
+                                 file_content));
+        }
+        return objects;
+    }
+
+    std::set<git_oid> GetOidsFromObjects(
+        const std::vector<GitObject>& objects) {
+        std::set<git_oid> oids;
+        for (const auto& object : objects) {
+            oids.insert(object.hash);
+        }
+        return oids;
+    }
 };
 
 int main(int argc, char* argv[]) {

@@ -32,4 +32,8 @@ ByteBuffer StringToByteBuffer(const std::string& str) {
     std::move(str.begin(), str.end(), buffer.begin());
     return buffer;
 }
+
+std::string ByteBufferToString(const ByteBuffer& buffer) {
+    return std::string(buffer.begin(), buffer.end());
+}
 }  // namespace sourc3

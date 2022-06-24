@@ -21,30 +21,14 @@
 namespace sourc3 {
 namespace json = boost::json;
 
-std::string SimpleWalletClient::GetAllObjectsMetadata() {
-    return InvokeWallet("role=user,action=repo_get_meta");
-}
-
-std::string SimpleWalletClient::GetObjectData(const std::string& obj_id) {
-    std::stringstream ss;
-    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
-    return InvokeWallet(ss.str());
-}
-
-std::string SimpleWalletClient::GetReferences() {
-    return InvokeWallet("role=user,action=list_refs");
-}
-
-std::string SimpleWalletClient::GetRepoMetadata() {
-    return InvokeWallet("role=user,action=repo_get_meta");
-}
-
 std::string SimpleWalletClient::PushObjects(const State& expected_state,
                                             const State& desired_state,
-                                            uint32_t new_object_count) {
+                                            uint32_t new_object_count,
+                                            uint32_t new_metas_count) {
     std::stringstream ss;
     ss << "role=user,action=push_state,expected=" << expected_state.hash
-       << ",desired=" << desired_state.hash << ",objects=" << new_object_count;
+       << ",desired=" << desired_state.hash << ",objects=" << new_object_count
+       << ",metas=" << new_metas_count;
     return InvokeWallet(ss.str());
 }
 
@@ -245,6 +229,17 @@ std::string SimpleWalletClient::LoadActualState() {
 
 std::string SimpleWalletClient::GetIPFSHash(const ObjectInfo& obj) {
     return GetIPFSHash(obj.GetData(), obj.GetSize());
+}
+
+uint64_t SimpleWalletClient::GetUploadedObjectCount() {
+    auto res = json::parse(InvokeWallet("role=user,action=repo_get_statistic"));
+    if (!res.is_object() || !res.as_object().contains("cur_objects") ||
+        !res.as_object().contains("cur_metas")) {
+        return 0;
+    }
+    auto res_obj = res.as_object();
+    return res_obj["cur_objects"].as_uint64() +
+           res_obj["cur_metas"].as_uint64();
 }
 
 }  // namespace sourc3

@@ -139,7 +139,8 @@ struct Repo {
     Project::Id project_id;
     Hash256 name_hash;
     Id repo_id;
-    size_t cur_objs_number;
+    uint64_t cur_objs_number;
+    uint64_t cur_metas_number;
     PubKey owner;
     char cur_state[kIpfsAddressSize];
     size_t name_len;
@@ -259,7 +260,8 @@ struct PushState {
     PubKey user;
     char expected_state[kIpfsAddressSize];
     char desired_state[kIpfsAddressSize];
-    uint32_t new_objects;
+    uint64_t new_objects;
+    uint64_t new_metas;
 };
 
 struct LoadState { // In case of need

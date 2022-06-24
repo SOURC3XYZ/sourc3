@@ -475,6 +475,7 @@ void OnActionListProjectRepos(const ContractID& cid) {
             Env::DocAddText("repo_name", value->name);
             Env::DocAddNum("project_id", value->project_id);
             Env::DocAddNum64("cur_objects", value->cur_objs_number);
+            Env::DocAddNum64("cur_metas", value->cur_metas_number);
             Env::DocAddBlob_T("repo_owner", value->owner);
             value_len = 0;
         }
@@ -971,6 +972,7 @@ void OnActionAllRepos(const ContractID& cid) {
         Env::DocAddText("repo_name", value->name);
         Env::DocAddNum("project_id", value->project_id);
         Env::DocAddNum64("cur_objects", value->cur_objs_number);
+        Env::DocAddNum64("cur_metas", value->cur_metas_number);
         Env::DocAddBlob_T("repo_owner", value->owner);
         value_len = 0;
     }
@@ -1116,6 +1118,7 @@ void OnActionPushState(const ContractID& cid) {
     Env::Memcpy(request.desired_state, desired_hash, desired_len);
     Env::DocGet("repo_id", request.repo_id);
     Env::DocGet("objects", request.new_objects);
+    Env::DocGet("metas", request.new_metas);
     UserKey user_key(cid);
     SigRequest sig;
     user_key.FillSigRequest(sig);
@@ -1154,8 +1157,28 @@ void OnActionGetState(const ContractID& cid) {
         Env::DocAddText("repo_name", value->name);
         Env::DocAddNum("project_id", value->project_id);
         Env::DocAddNum64("cur_objects", value->cur_objs_number);
+        Env::DocAddNum64("cur_metas", value->cur_metas_number);
         Env::DocAddBlob_T("repo_owner", value->owner);
         Env::DocAddBlob("state", value->cur_state, sourc3::kIpfsAddressSize);
+        break;
+    }
+}
+
+void OnActionRepoGetStatistic(const ContractID& cid) {
+    using sourc3::Repo;
+    using RepoKey = Env::Key_T<Repo::Key>;
+    RepoKey key;
+    _POD_(key.m_Prefix.m_Cid) = cid;
+    Env::DocGet("repo_id", key.m_KeyInContract.repo_id);
+    uint32_t value_len = 0, key_len = sizeof(RepoKey);
+    for (Env::VarReader reader(key, key);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Repo*>(buf.get());
+        Env::DocGroup repo_object("");
+        Env::DocAddNum64("cur_objects", value->cur_objs_number);
+        Env::DocAddNum64("cur_metas", value->cur_metas_number);
         break;
     }
 }
@@ -1705,6 +1728,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("expected", "IPFS hash of expected state");
                 Env::DocAddText("desired", "IPFS hash of desired state");
                 Env::DocAddText("objects", "Number of new objects");
+                Env::DocAddText("metas", "Number of new metas");
                 Env::DocAddText("user", "User PubKey");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -1767,6 +1791,11 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("obj_id", "Object hash");
+            }
+            {
+                Env::DocGroup gr_method("repo_get_statistic");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
             }
             {
                 Env::DocGroup gr_method("repo_get_commit_from_data");
@@ -1902,6 +1931,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"repo_get_state", OnActionGetState},
         {"repo_get_meta", OnActionGetRepoMeta},
         {"repo_get_commit", OnActionGetCommit},
+        {"repo_get_statistic", OnActionRepoGetStatistic},
         {"repo_get_commit_from_data", OnActionGetCommitFromData},
         {"repo_get_tree", OnActionGetTree},
         {"repo_get_tree_from_data", OnActionGetTreeFromData},
