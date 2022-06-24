@@ -11,6 +11,7 @@ import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
 import { actualTime, clipString, dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
+import PendingIndicator from './pending-indicator';
 
 type ListItemProps = {
   item: RepoType;
@@ -94,7 +95,7 @@ function RepoItem({
           className={styles.time}
         >
           {time}
-
+          <PendingIndicator id={item.repo_id} />
         </span>,
         (
           <Dropdown

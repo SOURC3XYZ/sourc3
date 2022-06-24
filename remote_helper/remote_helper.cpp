@@ -261,6 +261,14 @@ ByteBuffer GetDataFromObject(const GitObject& obj) {
     return data;
 }
 
+json::value ParseJsonAndTest(json::string_view sv) {
+    auto r = json::parse(sv);
+    if (const auto* error = r.as_object().if_contains("error"); error) {
+        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+    }
+    return r;
+}
+
 }  // namespace
 
 class RemoteHelper {
@@ -339,9 +347,6 @@ public:
             auto it_to_receive = object_hashes.begin();
             const auto& object_to_receive = *it_to_receive;
 
-            // TODO:
-//            auto res = "";  // wallet_client_.GetObjectData(object_to_receive);
-//            auto root = json::parse(res);
             git_oid oid;
             git_oid_fromstr(&oid, object_to_receive.data());
 
@@ -823,8 +828,8 @@ int main(int argc, char* argv[]) {
                     cout << endl;
                     continue;
                 } else {
-                    cerr << "Unexpected blank line" << endl;
-                    return -1;
+                    // end of the command sequence
+                    return 0;
                 }
             }
 

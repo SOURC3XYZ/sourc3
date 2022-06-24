@@ -5,23 +5,25 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useCallback } from 'react';
+import { NavButton } from '../nav-button';
 import styles from './add.module.scss';
 import { CloneModal } from './content';
 import { CreateModal } from './content/create-modal';
 
 function AddButton() {
-  const { createRepo } = useUserAsync();
+//   const { cloneRepo } = useUserAsync();
   const {
     modal,
     showModal,
     handleCancel,
     handleOk,
-    cloneRepo
+    cloneRepo,
+    createRepo
   } = useAddButton();
 
   const data = [
-    { title: 'Clone repository', mode: MODAL.CLONE },
     { title: 'Create new Repository', mode: MODAL.CREATE },
+    { title: 'Clone repository', mode: MODAL.CLONE },
     { title: 'Add existing repository', mode: MODAL.ADD }
   ];
 
@@ -54,7 +56,7 @@ function AddButton() {
         const onClick = () => showModal(mode);
         return (
           <Menu.Item key={`menu-item-${title}`}>
-            <Button type="link" onClick={onClick}>{title}</Button>
+            <Button type="link" onClick={onClick} className={styles.button}>{title}</Button>
           </Menu.Item>
         );
       })}
@@ -62,16 +64,27 @@ function AddButton() {
   );
 
   return (
-    <>
+    <div className={styles.dropdown}>
       <ModalView />
       <div className={styles.wrapper}>
-        <Dropdown overlay={menu} placement="bottomCenter" trigger={['click']}>
-          <Button className={styles.addButton}>
-            Add
-          </Button>
+        <Dropdown
+          overlay={menu}
+          placement="bottomCenter"
+          trigger={['click']}
+          overlayClassName={styles.dropdown}
+        >
+          <NavButton
+            active
+            name="Add new"
+            inlineStyles={{
+              width: '106px',
+              height: '36px',
+              padding: 'inherit'
+            }}
+          />
         </Dropdown>
       </div>
-    </>
+    </div>
   );
 }
 

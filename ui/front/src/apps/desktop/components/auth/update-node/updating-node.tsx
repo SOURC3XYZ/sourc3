@@ -1,4 +1,4 @@
-import useFetch from '@libs/hooks/shared/useFetch';
+import useFetch from '@libs/hooks/shared/useTimeoutFetch';
 import { PromiseArg } from '@types';
 import { Progress, Typography } from 'antd';
 import { useEffect } from 'react';

@@ -69,8 +69,14 @@ export enum ToastMessages {
   HEADLESS_CONNECTED = 'Headless wallet connected!',
 }
 
+export enum COLORS {
+  GREEN = '#3FD05A',
+  ORANGE = '#FF791F',
+  RED = '#FF3346'
+}
+
 export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
 
 export enum RestoreStatus { SEED, PASS, OK, LOADING }
 
-export enum MODAL { NONE, CLONE, CREATE, ADD }
+export enum MODAL { NONE, REPOS, CLONE, ORGANIZATION, PROJECT, ADD }

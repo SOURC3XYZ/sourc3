@@ -126,14 +126,16 @@ public:
                     break;
                 }
             }
+
+            ByteBuffer buf;
             if (count == 0) {
+                func(buf, done);
                 break;
             }
 
             // serializing
-            ByteBuffer buf;
             buf.resize(serialized_size +
-                       sizeof(ObjectsInfo));  // objects count size
+                        sizeof(ObjectsInfo));  // objects count size
             auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
             p->objects_number = count;
             auto* ser_obj = reinterpret_cast<GitObject*>(p + 1);
@@ -144,10 +146,14 @@ public:
                 git_oid_cpy(&ser_obj->hash, &obj.oid);
                 auto* data = reinterpret_cast<uint8_t*>(ser_obj + 1);
                 std::copy_n(obj.GetData(), obj.GetSize(), data);
-                ser_obj = reinterpret_cast<GitObject*>(data + obj.GetSize());
+                ser_obj =
+                    reinterpret_cast<GitObject*>(data + obj.GetSize());
             }
+
             done += count;
-            func(buf, done);
+            if (func(buf, done) == false) {
+                break;
+            }
         }
     }
 

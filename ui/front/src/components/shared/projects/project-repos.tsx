@@ -65,6 +65,8 @@ function ProjectRepos() {
     >
       <>
         <CreateModal
+          title="Add project repository"
+          label="Repository name"
           isModalVisible={isModal}
           placeholder="Enter your repository name"
           handleCreate={handleOk}

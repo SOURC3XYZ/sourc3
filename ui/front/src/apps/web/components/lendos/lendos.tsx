@@ -18,10 +18,10 @@ function Lendos() {
           <h1>
             Building
             <br />
-            the Web3-way
+            the Web3-way.
           </h1>
           <p>
-            SOURC3 is a decentralized software development platform, enabling self-sovereignty and recognizing contribution.
+            Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development.
           </p>
           <button style={{ cursor: 'pointer' }} onClick={onClick} type="button">Explore</button>
         </div>

@@ -1,47 +1,110 @@
 import { MODAL } from '@libs/constants';
+import { itemsFilter } from '@libs/hooks/container/organization/selectors';
 import { useAddButton } from '@libs/hooks/container/wallet';
-import useUserAsync from '@libs/hooks/thunk/useEntitiesAction';
+import { useSelector } from '@libs/redux';
+// import useUserAsync from '@libs/hooks/thunk/useEntitiesAction';
 import {
   Button, Menu, Dropdown
 } from 'antd';
-import { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './add.module.scss';
-import { CloneModal } from './content';
-import { CreateModal } from './content/create-modal';
+import { CreateRepos } from './content';
+import { CreateOrg } from './content/create-org';
+import { CreateProject } from './content/create-project';
 
 function AddButton() {
-  const { createRepo } = useUserAsync();
   const {
     modal,
     showModal,
     handleCancel,
-    handleOk,
-    cloneRepo
+    handleOk
   } = useAddButton();
 
-  const data = [
-    { title: 'Add new organization '},
-    { title: 'Add new project to organization'},
-    { title: 'Add new user'},
-    { title: 'Add new project for user'}
+  const pkey = useSelector((state) => state.app.pkey);
+
+  const items = useSelector((
+    state
+  ) => itemsFilter(state.entities.organizations, 'my', pkey));
+
+  const dataDefault = [
+    {
+      title: 'Add new organization', mode: MODAL.ORGANIZATION, id: 'org'
+    },
+    {
+      title: 'Add new project to organization', mode: MODAL.PROJECT, id: 'project', isDisabled: true
+    },
+    {
+      title: 'Add new repository to project', mode: MODAL.REPOS, id: 'repos', isDisabled: true
+    },
+    { title: 'Add new user', isDisabled: true },
+    { title: 'Add new project for user', isDisabled: true }
   ];
+
+  const [data, setData] = useState(dataDefault);
+
+  const { project } = useSelector(
+    ({ entities }) => ({ project: entities.projects })
+  );
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  const [isInitialRenderProj, setIsInitialRenderProj] = useState(true);
+
+  // todo Jenk: useCallback
+  useEffect(() => {
+    if (isInitialRender) {
+      if (items.length > 0) {
+        const newData = data.map((item) => {
+          if (item.id === 'project') {
+            item.isDisabled = false;
+          }
+          return item;
+        });
+        setData(newData);
+        setIsInitialRender(false);
+      }
+    }
+  }, [items, isInitialRender]);
+
+  useEffect(() => {
+    if (isInitialRenderProj) {
+      if (project.length > 0) {
+        const myOrg = project.filter(
+          (org) => items.some((item) => item.organization_id === org.organization_id)
+        );
+        if (myOrg.length > 0) {
+          const newData = data.map((item) => {
+            if (item.id === 'repos') {
+              item.isDisabled = false;
+            }
+            return item;
+          });
+          setData(newData);
+          setIsInitialRenderProj(false);
+        }
+      }
+    }
+  }, [project, isInitialRenderProj]);
 
   const ModalView = useCallback(():JSX.Element | null => {
     switch (modal) {
-      case MODAL.CLONE:
+      case MODAL.ORGANIZATION:
         return (
-          <CloneModal
-            handleOk={handleOk}
+          <CreateOrg
             handleCancel={handleCancel}
-            cloneRepo={cloneRepo}
+            closePopup={handleOk}
           />
         );
-      case MODAL.CREATE:
+      case MODAL.PROJECT:
         return (
-          <CreateModal
-            handleOk={handleOk}
+          <CreateProject
             handleCancel={handleCancel}
-            createRepo={createRepo}
+            closePopup={handleOk}
+          />
+        );
+      case MODAL.REPOS:
+        return (
+          <CreateRepos
+            handleCancel={handleCancel}
+            closePopup={handleOk}
           />
         );
       default:
@@ -51,11 +114,18 @@ function AddButton() {
 
   const menu = (
     <Menu>
-      {data.map(({ title, mode }) => {
+      {data.map(({ title, mode, isDisabled }) => {
         const onClick = () => showModal(mode);
         return (
           <Menu.Item key={`menu-item-${title}`}>
-            <Button type="link" onClick={onClick} className={styles.button}>{title}</Button>
+            <Button
+              disabled={isDisabled}
+              type="link"
+              onClick={onClick}
+              className={styles.button}
+            >
+              {title}
+            </Button>
           </Menu.Item>
         );
       })}
@@ -66,6 +136,7 @@ function AddButton() {
     <div className={styles.dropdown}>
       <ModalView />
       <div className={styles.wrapper}>
+        {' '}
         <Dropdown
           overlay={menu}
           placement="bottomCenter"
@@ -76,6 +147,7 @@ function AddButton() {
             Add
           </Button>
         </Dropdown>
+
       </div>
     </div>
   );

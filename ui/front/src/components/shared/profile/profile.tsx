@@ -22,21 +22,34 @@ function Profile({ pKey }:profileType) {
   const handleOk = () => {
     handleCancel();
   };
+
   const data = [
     { title: 'Profile', onClick: showModal },
-    { title: 'My repositories' },
-    { title: 'Settings' },
-    { title: 'Help' },
-    { title: 'Support' },
-    { title: 'Twitter' },
-    { title: 'Discord' },
-    { title: 'Logout' }
+    { title: 'My repositories', isDisabled: true },
+    { title: 'Settings', isDisabled: true },
+    { title: 'Help', isDisabled: true },
+    { title: 'Support', isDisabled: true },
+    { title: 'Twitter', link: 'https://twitter.com/SOURC3xyz' },
+    { title: 'Discord', link: 'https://discord.gg/nqTTMXrhMc' },
+    { title: 'Logout', link: '/' }
   ];
   const menu = (
     <Menu>
-      {data.map(({ title, onClick }) => (
+      {data.map(({
+        title, onClick, link, isDisabled
+      }) => (
         <Menu.Item key={`menu-item-${title}`}>
-          <Button type="link" className={styles.button} onClick={onClick}>{title}</Button>
+          <Button
+            type="link"
+            className={styles.button}
+            href={link}
+            onClick={onClick}
+            disabled={isDisabled}
+            target={link}
+          >
+            {title}
+
+          </Button>
         </Menu.Item>
       ))}
     </Menu>

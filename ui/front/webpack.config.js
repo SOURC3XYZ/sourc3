@@ -36,10 +36,11 @@ const build = {
     publicPath: env === 'production' && mode === 'desktop' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: 'eval-source-map',
-  // optimization: {
-  //   nodeEnv: 'production'
-  // },
+  // devtool: 'eval-source-map',
+  optimization: {
+    // nodeEnv: 'production'
+    minimize: env === 'production'
+  },
   resolve: {
     extensions: ['.ts', '.js', '.tsx', '.scss'],
     plugins: [new TsconfigPathsPlugin()],
@@ -186,4 +187,6 @@ const build = {
     // })
   ]
 };
+
+if (env === 'development') build.devtool = 'eval-source-map'
 module.exports = build;

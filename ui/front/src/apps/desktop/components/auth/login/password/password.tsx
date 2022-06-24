@@ -27,6 +27,8 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
         onChange={onInput}
         value={pass}
         type="password"
+        password
+        onKeyDown={(e) => (e.key === 'Enter' && onSubmit())}
       />
 
       <Button type="link" className={styles.forgot} onClick={() => (setIsPopup(true))}>
