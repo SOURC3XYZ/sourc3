@@ -130,6 +130,14 @@ struct OidHasher {
 
 using HashMapping = std::unordered_map<git_oid, std::string, OidHasher>;
 
+json::value ParseJsonAndTest(json::string_view sv) {
+    auto r = json::parse(sv);
+    if (const auto* error = r.as_object().if_contains("error"); error) {
+        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+    }
+    return r;
+}
+
 std::string CreateRefsFile(const std::vector<Ref>& refs,
                            const HashMapping& mapping) {
     std::string file;
@@ -235,7 +243,7 @@ std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
 
 std::string GetStringFromIPFS(const std::string& hash,
                               SimpleWalletClient& wallet_client) {
-    auto res = json::parse(wallet_client.LoadObjectFromIPFS(hash));
+    auto res = ParseJsonAndTest(wallet_client.LoadObjectFromIPFS(hash));
     if (!res.is_object() || !res.as_object().contains("result")) {
         throw std::runtime_error{""};
     }
@@ -259,14 +267,6 @@ ByteBuffer GetDataFromObject(const GitObject& obj) {
     auto* obj_data = reinterpret_cast<const uint8_t*>(&obj + sizeof(GitObject));
     std::move(obj_data, obj_data + obj.data_size, std::back_inserter(data));
     return data;
-}
-
-json::value ParseJsonAndTest(json::string_view sv) {
-    auto r = json::parse(sv);
-    if (const auto* error = r.as_object().if_contains("error"); error) {
-        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
-    }
-    return r;
 }
 
 }  // namespace
@@ -494,7 +494,7 @@ public:
 
         State prev_state;
         {
-            auto state = json::parse(wallet_client_.LoadActualState());
+            auto state = ParseJsonAndTest(wallet_client_.LoadActualState());
             if (!state.is_object()) {
                 cerr << "Cannot parse object state JSON: \'" << state << "\'"
                      << endl;
@@ -531,7 +531,7 @@ public:
 
                 auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
                                                            obj.GetSize());
-                auto r = json::parse(res);
+                auto r = ParseJsonAndTest(res);
                 auto hash_str =
                     r.as_object()["result"].as_object()["hash"].as_string();
                 obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
@@ -606,9 +606,9 @@ private:
     }
 
     std::vector<Ref> RequestRefs() {
-        auto actual_state = json::parse(wallet_client_.LoadActualState());
+        auto actual_state = ParseJsonAndTest(wallet_client_.LoadActualState());
         auto actual_state_str = actual_state.as_object()["hash"].as_string();
-        auto ref_file = json::parse(wallet_client_.LoadObjectFromIPFS(
+        auto ref_file = ParseJsonAndTest(wallet_client_.LoadObjectFromIPFS(
             std::string(actual_state_str.data(), actual_state_str.size())));
 
         if (ref_file.is_object() && ref_file.as_object().contains("result")) {
