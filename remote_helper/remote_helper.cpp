@@ -31,6 +31,7 @@
 
 #include "object_collector.h"
 #include "utils.h"
+#include "git_utils.h"
 #include "version.h"
 #include "wallet_client.h"
 
@@ -191,16 +192,17 @@ HashMapping ParseRefHashed(const std::string& refs_file) {
     return mapping;
 }
 
-std::string GetCommitMetaBlock(git_commit* commit,
+std::string GetCommitMetaBlock(const git::Commit& commit,
                                const HashMapping& oid_to_meta,
                                const HashMapping& oid_to_ipfs) {
-    const auto* commit_id = git_commit_id(commit);
+    git_commit* raw_commit = *commit;
+    const auto* commit_id = git_commit_id(raw_commit);
     std::string block = oid_to_ipfs.at(*commit_id) + "\n";
     block += ToString(*commit_id) + "\n";
-    block += oid_to_meta.at(*git_commit_tree_id(commit)) + "\n";
-    auto parents_count = git_commit_parentcount(commit);
+    block += oid_to_meta.at(*git_commit_tree_id(raw_commit)) + "\n";
+    auto parents_count = git_commit_parentcount(raw_commit);
     for (size_t i = 0; i < parents_count; ++i) {
-        auto* parent_id = git_commit_parent_id(commit, i);
+        auto* parent_id = git_commit_parent_id(raw_commit, i);
         if (oid_to_meta.count(*parent_id) > 0) {
             block += oid_to_meta.at(*parent_id) + "\n";
         } else {
@@ -213,13 +215,15 @@ std::string GetCommitMetaBlock(git_commit* commit,
     return block;
 }
 
-std::string GetTreeMetaBlock(git_tree* tree, const HashMapping& oid_to_ipfs) {
-    const auto* tree_id = git_tree_id(tree);
+std::string GetTreeMetaBlock(const git::Tree& tree,
+                             const HashMapping& oid_to_ipfs) {
+    git_tree* raw_tree = *tree;
+    const auto* tree_id = git_tree_id(raw_tree);
     std::string block = oid_to_ipfs.at(*tree_id) + "\n";
     block += ToString(*tree_id) + "\n";
-    for (size_t i = 0, size = git_tree_entrycount(tree); i < size; ++i) {
+    for (size_t i = 0, size = git_tree_entrycount(raw_tree); i < size; ++i) {
         const auto& entry_id =
-            *git_tree_entry_id(git_tree_entry_byindex(tree, i));
+            *git_tree_entry_id(git_tree_entry_byindex(raw_tree, i));
         block += oid_to_ipfs.at(entry_id) + "\n" + ToString(entry_id) + "\n";
     }
     return block;
@@ -229,12 +233,12 @@ std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
                          const ObjectInfo& obj, const HashMapping& oid_to_meta,
                          const HashMapping& oid_to_ipfs) {
     if (obj.type == GIT_OBJECT_COMMIT) {
-        git_commit* commit;
-        git_commit_lookup(&commit, *accessor.m_repo, &obj.oid);
+        git::Commit commit;
+        git_commit_lookup(commit.Addr(), *accessor.m_repo, &obj.oid);
         return GetCommitMetaBlock(commit, oid_to_meta, oid_to_ipfs);
     } else if (obj.type == GIT_OBJECT_TREE) {
-        git_tree* tree;
-        git_tree_lookup(&tree, *accessor.m_repo, &obj.oid);
+        git::Tree tree;
+        git_tree_lookup(tree.Addr(), *accessor.m_repo, &obj.oid);
         return GetTreeMetaBlock(tree, oid_to_ipfs);
     }
 
@@ -466,11 +470,11 @@ public:
             std::sort(
                 commits, objs.end(),
                 [&collector](const ObjectInfo& lhs, const ObjectInfo& rhs) {
-                    git_commit* rhs_commit;  // TODO: RAII
-                    git_commit_lookup(&rhs_commit, *collector.m_repo, &rhs.oid);
-                    size_t parents_count = git_commit_parentcount(rhs_commit);
+                    git::Commit rhs_commit;
+                    git_commit_lookup(rhs_commit.Addr(), *collector.m_repo, &rhs.oid);
+                    size_t parents_count = git_commit_parentcount(*rhs_commit);
                     for (size_t i = 0; i < parents_count; ++i) {
-                        if (*git_commit_parent_id(rhs_commit, i) == lhs.oid) {
+                        if (*git_commit_parent_id(*rhs_commit, i) == lhs.oid) {
                             return true;
                         }
                     }
