@@ -1,6 +1,8 @@
 import { useAsyncError } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
+import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { splitUrl } from './helpers';
 
 type LocationState = {
   branchName: string;
@@ -18,15 +20,19 @@ const useCommitsTree = ({ goTo }: UseCommitsTreeProps) => {
   const { pathname } = location;
   const { branchName } = useParams<'branchName'>() as LocationState;
 
-  const goToBranch = (newBranch: string) => goTo(`commits/${newBranch}`);
+  const { params } = splitUrl(`commits/${branchName}`, pathname);
+
+  const branchParsed = useMemo(() => branchName.replaceAll('-', '/'), [branchName]);
+
+  const goToBranch = (newBranch: string) => goTo(`commits/${newBranch.replaceAll('/', '-')}`);
 
   const goToCommit = (hash: string) => goTo(`commit/tree/${hash}`);
 
   const loading = !!repoMap && !!commitsMap;
 
   return {
-    pathname,
-    branchName,
+    params,
+    branchName: branchParsed,
     loading,
     commitsMap,
     repoMap,

@@ -71,8 +71,8 @@ export enum ToastMessages {
 
 export enum COLORS {
   GREEN = '#3FD05A',
-  ORANGE = '#FF791F',
-  RED = '#FF3346'
+  ORANGE = '#FFBD2E',
+  RED = '#EA0000'
 }
 
 export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }

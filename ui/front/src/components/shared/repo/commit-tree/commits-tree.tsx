@@ -33,21 +33,13 @@ export type UpperMenuProps = {
   prevReposHref: string | null;
 };
 
-const splitUrl = (branch: string, fullUrl: string) => {
-  const [baseUrl, params] = fullUrl.split(branch);
-  return {
-    baseUrl: `${baseUrl}${branch}`,
-    params: params.split('/').filter((el) => el)
-  };
-};
-
 function CommitsTree({
   branches,
   goTo,
   prevReposHref
 }: UpperMenuProps) {
   const {
-    pathname,
+    params,
     branchName,
     loading,
     commitsMap,
@@ -55,8 +47,6 @@ function CommitsTree({
     goToBranch,
     goToCommit
   } = useCommitsTree({ goTo });
-
-  const { params } = splitUrl(`commits/${branchName}`, pathname);
 
   const RefsPreloadFallback = useCallback(() => (
     <Preload

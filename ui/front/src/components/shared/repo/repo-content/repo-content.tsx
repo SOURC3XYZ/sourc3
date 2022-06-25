@@ -34,10 +34,10 @@ export type UpperMenuProps = {
 function RepoContent({
   id,
   branches,
-  goTo,
   tree,
   filesMap,
   prevReposHref,
+  goTo,
   killTree,
   updateTree,
   getFileData
