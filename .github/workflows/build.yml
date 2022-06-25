@@ -240,7 +240,7 @@ jobs:
       run: |
         cd ui
         if [ -d "./node_modules/nodegit" ]; then
-          sed -i '/perl .\Configure %3 no-shared no-ssl2 no-ssl3 no-comp --prefix="%cd%\.." --openssldir="%cd%\.." || goto :error/c\perl .\Configure %3 no-shared no-ssl2 no-ssl3 no-tests no-comp --prefix="%cd%\.." --openssldir="%cd%\.." || goto :error' node_modules/nodegit/utils/build-openssl.bat
+          sed 's/nmake test/REM nmake test/g' node_modules/nodegit/utils/build-openssl.bat
         fi
 
     - name: Rebuild modules [windows-2019]
