@@ -134,7 +134,8 @@ using HashMapping = std::unordered_map<git_oid, std::string, OidHasher>;
 json::value ParseJsonAndTest(json::string_view sv) {
     auto r = json::parse(sv);
     if (const auto* error = r.as_object().if_contains("error"); error) {
-        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+        throw std::runtime_error(
+            error->as_object().at("message").as_string().c_str());
     }
     return r;
 }
@@ -435,7 +436,8 @@ public:
         }
 
         auto remote_refs = RequestRefs();
-        auto uploaded_objects = GetOidsFromObjects(GetUploadedObjects(remote_refs));
+        auto uploaded_objects =
+            GetOidsFromObjects(GetUploadedObjects(remote_refs));
         std::vector<git_oid> merge_bases;
         for (const auto& remote_ref : remote_refs) {
             for (const auto& local_ref : local_refs) {
@@ -471,7 +473,8 @@ public:
                 commits, objs.end(),
                 [&collector](const ObjectInfo& lhs, const ObjectInfo& rhs) {
                     git::Commit rhs_commit;
-                    git_commit_lookup(rhs_commit.Addr(), *collector.m_repo, &rhs.oid);
+                    git_commit_lookup(rhs_commit.Addr(), *collector.m_repo,
+                                      &rhs.oid);
                     size_t parents_count = git_commit_parentcount(*rhs_commit);
                     for (size_t i = 0; i < parents_count; ++i) {
                         if (*git_commit_parent_id(*rhs_commit, i) == lhs.oid) {
@@ -717,7 +720,8 @@ private:
             parent_meta_hashes.push_back(std::move(hash));
         }
         auto commit_content = GetStringFromIPFS(commit_hash, wallet_client_);
-        objects.push_back(CreateObject(GIT_OBJECT_COMMIT, FromString(commit_oid),
+        objects.push_back(CreateObject(GIT_OBJECT_COMMIT,
+                                       FromString(commit_oid),
                                        std::move(commit_content)));
         auto tree_objects = GetObjectsFromTreeMeta(tree_meta_hash);
         std::move(tree_objects.begin(), tree_objects.end(),
@@ -740,8 +744,8 @@ private:
         ss >> tree_hash;
         ss >> tree_oid;
         auto tree_content = GetStringFromIPFS(tree_hash, wallet_client_);
-        objects.push_back(CreateObject(GIT_OBJECT_TREE, FromString(tree_oid),
-                                       tree_content));
+        objects.push_back(
+            CreateObject(GIT_OBJECT_TREE, FromString(tree_oid), tree_content));
         std::string file_hash;
         while (ss >> file_hash) {
             if (file_hash.empty()) {
@@ -749,8 +753,8 @@ private:
             }
             auto file_content = GetStringFromIPFS(file_hash, wallet_client_);
             ss >> file_hash;
-            objects.push_back(CreateObject(GIT_OBJECT_BLOB, FromString(file_hash),
-                                 file_content));
+            objects.push_back(CreateObject(
+                GIT_OBJECT_BLOB, FromString(file_hash), file_content));
         }
         return objects;
     }

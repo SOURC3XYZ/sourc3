@@ -53,16 +53,6 @@ std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data,
     return CallAPI(json::serialize(msg));
 }
 
-std::string SimpleWalletClient::GetIPFSHash(const uint8_t* data, size_t size) {
-    auto msg = json::value{
-        {kJsonRpcHeader, kJsonRpcVersion},
-        {"id", 1},
-        {"method", "ipfs_hash"},
-        {"params",
-         {{"data", json::array(data, data + size)}, {"timeout", 5000}}}};
-    return CallAPI(json::serialize(msg));
-}
-
 bool SimpleWalletClient::WaitForCompletion(WaitFunc&& func) {
     if (transactions_.empty()) {
         return true;  // ok
@@ -225,10 +215,6 @@ void SimpleWalletClient::PrintVersion() {
 
 std::string SimpleWalletClient::LoadActualState() {
     return InvokeWallet("role=user,action=repo_get_state");
-}
-
-std::string SimpleWalletClient::GetIPFSHash(const ObjectInfo& obj) {
-    return GetIPFSHash(obj.GetData(), obj.GetSize());
 }
 
 uint64_t SimpleWalletClient::GetUploadedObjectCount() {

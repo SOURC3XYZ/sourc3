@@ -34,7 +34,7 @@ constexpr const char kJsonRpcVersion[] = "2.0";
 namespace beast = boost::beast;  // from <boost/beast.hpp>
 namespace http = beast::http;    // from <boost/beast/http.hpp>
 namespace net = boost::asio;     // from <boost/asio.hpp>
-using tcp = net::ip::tcp;        // from <boost/asio/ip/tcp.hpp>
+using Tcp = net::ip::tcp;        // from <boost/asio/ip/tcp.hpp>
 
 class SimpleWalletClient {
 public:
@@ -49,7 +49,7 @@ public:
         bool useIPFS = true;
     };
 
-    SimpleWalletClient(const Options& options)
+    explicit SimpleWalletClient(const Options& options)
         : resolver_(ioc_), stream_(ioc_), options_(options) {
         PrintVersion();
     }
@@ -58,7 +58,7 @@ public:
         // Gracefully close the socket
         if (connected_) {
             beast::error_code ec;
-            stream_.socket().shutdown(tcp::socket::shutdown_both, ec);
+            stream_.socket().shutdown(Tcp::socket::shutdown_both, ec);
 
             if (ec && ec != beast::errc::not_connected) {
                 // doesn't throw, simply report
@@ -81,8 +81,6 @@ public:
 
     std::string LoadObjectFromIPFS(std::string hash);
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
-    std::string GetIPFSHash(const ObjectInfo& obj);
-    std::string GetIPFSHash(const uint8_t* data, size_t size);
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
     bool WaitForCompletion(WaitFunc&&);
@@ -107,9 +105,10 @@ private:
     std::string CallAPI(std::string&& request);
     std::string ReadAPI();
     void PrintVersion();
+
 private:
     net::io_context ioc_;
-    tcp::resolver resolver_;
+    Tcp::resolver resolver_;
     beast::tcp_stream stream_;
     bool connected_ = false;
     const Options& options_;
