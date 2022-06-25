@@ -240,10 +240,7 @@ jobs:
       run: |
         cd ui
         if [ -d "./node_modules/nodegit" ]; then
-          cd node_modules/nodegit/utils
-          perl -0777 -i -pe 's/await execPromise\("make test"(.*?){ pipeOutput: true }\);//igs' acquireOpenSSL.js
-          echo "$(cat acquireOpenSSL.js | grep 'make test')"
-          cd ../../..
+          sed -i '/perl .\Configure %3 no-shared no-ssl2 no-ssl3 no-comp --prefix="%cd%\.." --openssldir="%cd%\.." || goto :error/c\perl .\Configure %3 no-shared no-ssl2 no-ssl3 no-tests no-comp --prefix="%cd%\.." --openssldir="%cd%\.." || goto :error' node_modules/nodegit/utils/build-openssl.bat
         fi
 
     - name: Rebuild modules [windows-2019]
