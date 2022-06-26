@@ -135,6 +135,23 @@ jobs:
         cmake -G "Visual Studio 16 2019" -A x64 -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CONFIGURATION_TYPES:STRING=$BUILD_CONFIG -DSOURC3_USE_STATIC=ON -DSOURC3_USE_STATIC_RUNTIME=On -DSTATIC_CRT=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
 
 ###############################################################################
+# Build
+###############################################################################
+    - name: Build [macos-10.15]
+      if: matrix.os == 'macos-10.15'
+      run: cmake --build . --parallel --config $BUILD_TYPE
+
+    - name: Build [ubuntu all]
+      shell: bash
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
+      run: make -j$(nproc)
+
+    - name: Build [windows]
+      shell: bash
+      if: matrix.os == 'windows-2019'
+      run: cmake --build . --config $BUILD_CONFIG --parallel
+
+###############################################################################
 # Save version
 ###############################################################################
     - name: Save version info
@@ -265,24 +282,6 @@ jobs:
         fi
 
         ./node_modules/.bin/electron-rebuild
-
-
-###############################################################################
-# Build
-###############################################################################
-    - name: Build [macos-10.15]
-      if: matrix.os == 'macos-10.15'
-      run: cmake --build . --parallel --config $BUILD_TYPE
-
-    - name: Build [ubuntu all]
-      shell: bash
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
-      run: make -j$(nproc)
-
-    - name: Build [windows]
-      shell: bash
-      if: matrix.os == 'windows-2019'
-      run: cmake --build . --config $BUILD_CONFIG --parallel
 
 ###############################################################################
 # Test
