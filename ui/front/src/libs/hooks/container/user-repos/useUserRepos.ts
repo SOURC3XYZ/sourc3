@@ -2,7 +2,7 @@ import { useAsyncError, useCallApi } from '@libs/hooks/shared';
 import { useRepoAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 type LocationState = {
@@ -32,6 +32,11 @@ const useUserRepos = () => {
     loadingData(getRepo(numId, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));
+  }, []);
+
+  useEffect(() => () => {
+    const cancelCommitPendingEvent = new Event('stop-commit-pending');
+    window.dispatchEvent(cancelCommitPendingEvent);
   }, []);
 
   return {

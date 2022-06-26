@@ -28,6 +28,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
+      let stopPending = false;
+      window.addEventListener('stop-commit-pending', () => { stopPending = true; }, { once: true });
       dispatch(AC.setCommits(null));
       const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
@@ -40,7 +42,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
       }
       dispatch(AC.setRepoMeta(metas));
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
-      if (branches) {
+      if (branches && !stopPending) {
         if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
         if (resolve) resolve();
 
@@ -68,7 +70,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
             AC.setRepoMap(commitTree)
           ]);
         }
-      }
+      } throw new Error('commit pending stopped');
     } catch (error) { errHandler(error as Error); }
   };
 
