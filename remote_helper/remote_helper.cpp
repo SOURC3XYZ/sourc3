@@ -28,6 +28,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 #include "object_collector.h"
 #include "utils.h"
