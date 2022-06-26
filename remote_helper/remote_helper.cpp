@@ -201,8 +201,8 @@ std::string GetCommitMetaBlock(const git::Commit& commit,
     std::string block = oid_to_ipfs.at(*commit_id) + "\n";
     block += ToString(*commit_id) + "\n";
     block += oid_to_meta.at(*git_commit_tree_id(raw_commit)) + "\n";
-    auto parents_count = git_commit_parentcount(raw_commit);
-    for (size_t i = 0; i < parents_count; ++i) {
+    uint parents_count = git_commit_parentcount(raw_commit);
+    for (uint i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
         if (oid_to_meta.count(*parent_id) > 0) {
             block += oid_to_meta.at(*parent_id) + "\n";
@@ -261,7 +261,7 @@ GitObject CreateObject(int8_t type, git_oid hash, std::string content) {
     auto* obj = reinterpret_cast<GitObject*>(buf.data());
     obj->hash = std::move(hash);
     obj->type = type;
-    obj->data_size = content.size();
+    obj->data_size = static_cast<uint32_t>(content.size());
     std::move(content.begin(), content.end(), buf.begin() + sizeof(GitObject));
     return *obj;
 }
@@ -475,8 +475,8 @@ public:
                     git::Commit rhs_commit;
                     git_commit_lookup(rhs_commit.Addr(), *collector.m_repo,
                                       &rhs.oid);
-                    size_t parents_count = git_commit_parentcount(*rhs_commit);
-                    for (size_t i = 0; i < parents_count; ++i) {
+                    uint parents_count = git_commit_parentcount(*rhs_commit);
+                    for (uint i = 0; i < parents_count; ++i) {
                         if (*git_commit_parent_id(*rhs_commit, i) == lhs.oid) {
                             return true;
                         }
