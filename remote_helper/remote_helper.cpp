@@ -64,6 +64,11 @@ public:
         ShowProgress("\r");
     }
 
+    void AddProgress(size_t done) {
+        done_ += done;
+        ShowProgress("\r");
+    }
+
     void Done() {
         StopProgress("done");
     }
@@ -635,10 +640,15 @@ private:
 
     std::vector<GitObject> GetUploadedObjects(const std::vector<Ref>& refs) {
         std::vector<GitObject> objects;
+        auto progress = MakeProgress("Enumerate uploaded objects",
+                                     wallet_client_.GetUploadedObjectCount());
         for (const auto& ref : refs) {
-            auto ref_objects = GetAllObjects(ref.ipfs_hash);
+            auto ref_objects = GetAllObjects(ref.ipfs_hash, progress);
             std::move(ref_objects.begin(), ref_objects.end(),
                       std::back_inserter(objects));
+        }
+        if (progress) {
+            progress->Done();
         }
         return objects;
     }
@@ -703,7 +713,9 @@ private:
 
     Options options_;
 
-    std::vector<GitObject> GetAllObjects(const std::string& root_ipfs_hash) {
+    std::vector<GitObject> GetAllObjects(
+        const std::string& root_ipfs_hash,
+        std::optional<ProgressReporter>& progress) {
         std::vector<GitObject> objects;
         auto res = GetStringFromIPFS(root_ipfs_hash, wallet_client_);
         std::istringstream ss(res);
@@ -725,11 +737,14 @@ private:
         objects.push_back(CreateObject(GIT_OBJECT_COMMIT,
                                        FromString(commit_oid),
                                        std::move(commit_content)));
-        auto tree_objects = GetObjectsFromTreeMeta(tree_meta_hash);
+        if (progress) {
+            progress->AddProgress(1);
+        }
+        auto tree_objects = GetObjectsFromTreeMeta(tree_meta_hash, progress);
         std::move(tree_objects.begin(), tree_objects.end(),
                   std::back_inserter(objects));
         for (auto&& parent_hash : parent_meta_hashes) {
-            auto parent_objects = GetAllObjects(parent_hash);
+            auto parent_objects = GetAllObjects(parent_hash, progress);
             std::move(parent_objects.begin(), parent_objects.end(),
                       std::back_inserter(objects));
         }
@@ -737,7 +752,8 @@ private:
     }
 
     std::vector<GitObject> GetObjectsFromTreeMeta(
-        const std::string& tree_meta_hash) {
+        const std::string& tree_meta_hash,
+        std::optional<ProgressReporter>& progress) {
         std::vector<GitObject> objects;
         auto meta = GetStringFromIPFS(tree_meta_hash, wallet_client_);
         std::string tree_hash;
@@ -748,6 +764,9 @@ private:
         auto tree_content = GetStringFromIPFS(tree_hash, wallet_client_);
         objects.push_back(
             CreateObject(GIT_OBJECT_TREE, FromString(tree_oid), tree_content));
+        if (progress) {
+            progress->AddProgress(1);
+        }
         std::string file_hash;
         while (ss >> file_hash) {
             if (file_hash.empty()) {
@@ -757,6 +776,9 @@ private:
             ss >> file_hash;
             objects.push_back(CreateObject(
                 GIT_OBJECT_BLOB, FromString(file_hash), file_content));
+            if (progress) {
+                progress->AddProgress(1);
+            }
         }
         return objects;
     }
