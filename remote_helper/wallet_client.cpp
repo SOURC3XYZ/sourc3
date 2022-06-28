@@ -26,8 +26,10 @@ std::string SimpleWalletClient::PushObjects(const State& expected_state,
                                             uint32_t new_object_count,
                                             uint32_t new_metas_count) {
     std::stringstream ss;
-    ss << "role=user,action=push_state,expected=" << expected_state.hash
-       << ",desired=" << desired_state.hash << ",objects=" << new_object_count
+    auto desired_hash = ToHex(desired_state.hash.c_str(), desired_state.hash.size());
+    auto expected_hash = ToHex(expected_state.hash.c_str(), expected_state.hash.size());
+    ss << "role=user,action=push_state,expected=" << expected_hash
+       << ",desired=" << desired_hash << ",objects=" << new_object_count
        << ",metas=" << new_metas_count;
     return InvokeWallet(ss.str());
 }
