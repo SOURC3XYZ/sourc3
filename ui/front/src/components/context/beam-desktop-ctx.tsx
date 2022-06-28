@@ -39,7 +39,7 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
     await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
       const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
       if (!finded) throw new Error(`no specified cid (${api.cid})`);
-      return dispatch(AC.setIsConnected(!!finded));
+      return [AC.setIsConnected(!!finded)];
     }, true);
   };
 

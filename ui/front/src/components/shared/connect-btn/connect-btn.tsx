@@ -1,20 +1,27 @@
 import { BeamButton } from '@components/shared';
 import { ToastMessages } from '@libs/constants';
 import { textEllipsis } from '@libs/utils';
-import { NotificationPlacement } from '@types';
+import { NotificationPlacement, User } from '@types';
 import { notification } from 'antd';
 import { useEffect, useMemo } from 'react';
 import styles from './connect-btn.module.scss';
 
+const WORD_COUNT = 7;
+
+const CONNECT = 'connect';
+
 type ConnectBtnProps = {
   pkey: string;
+  users: User[];
   onConnect: () => void;
 };
 
-function ConnectBtn({ pkey, onConnect }:ConnectBtnProps) {
-  const connectInner = useMemo(() => (
-    pkey ? textEllipsis(pkey, 7, { ellipsis: '' }) : 'connect'
-  ), [pkey]);
+function ConnectBtn({ pkey, users, onConnect }:ConnectBtnProps) {
+  const connectInner = useMemo(() => {
+    const foundActive = users.find((el) => el.active);
+    if (pkey) return textEllipsis(foundActive?.name || pkey, WORD_COUNT, { ellipsis: '' });
+    return CONNECT;
+  }, [pkey]);
 
   const onConnectHandler = () => {
     if (!pkey)onConnect();

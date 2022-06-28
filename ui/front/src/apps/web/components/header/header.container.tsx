@@ -20,6 +20,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const containerProps = useHeader();
   const {
     pkey,
+    users,
     onConnect
   } = containerProps;
 
@@ -57,7 +58,6 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       )}
       { !desktop ? (
         <>
-          {' '}
           {pkey && (
             <ProfileBlock
               pKey={pkey}
@@ -65,6 +65,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
           )}
           <ConnectBtn
             pkey={pkey}
+            users={users}
             onConnect={onConnect}
           />
         </>

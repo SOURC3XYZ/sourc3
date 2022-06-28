@@ -1,6 +1,6 @@
 import { CONFIG, ToastMessages, WALLET } from '@libs/constants';
 import {
-  QObject, ApiResult, CallApiDesktop, ResultObject
+  QObject, ApiResult, CallApiDesktop, ResultObject, User
 } from '@types';
 import { QWebChannel } from 'qwebchannel';
 
@@ -16,6 +16,7 @@ type CallApiProps<T> = {
 type MessageType = {
   type: string;
   response: ResultObject
+  items: User[]
 };
 
 type IpcMethod = 'get' | 'post' | 'put' | 'delete';
@@ -36,13 +37,13 @@ type BeamObject = {
   appid?: any,
 };
 
+type ExtensionResolveObj = { api: QObject, users: User[] };
+
 type Modified<T> = T & {
   contract: Array<number>, args: string | ArgsObjectType, hash?:string };
 
 export class BeamAPI<T> {
   public readonly cid: string;
-
-  private isHeadlessOnConnect = false;
 
   private callIndex: number = 0;
 
@@ -56,7 +57,9 @@ export class BeamAPI<T> {
 
   private eventManager:any;
 
-  private walletConnectResolve: ((obj: QObject) => void) | null = null;
+  private setPidEventManager: ((items: User[]) => void) | null = null;
+
+  private walletConnectResolve: ((obj: ExtensionResolveObj) => void) | null = null;
 
   constructor(cid: string) {
     this.cid = cid;
@@ -69,6 +72,9 @@ export class BeamAPI<T> {
   public readonly messageResponses = (e:MessageEvent<MessageType>) => {
     switch (e.data.type) {
       case 'ipc-control-res':
+      case 'set-pid':
+        if (this.setPidEventManager) return this.setPidEventManager(e.data.items);
+        return null;
       case 'api-events':
         return this.responseCbackHandler(e.data.response);
       case 'apiInjected':
@@ -97,6 +103,10 @@ export class BeamAPI<T> {
 
   public readonly loadApiEventManager = (eventManager: any) => {
     this.eventManager = eventManager;
+  };
+
+  public readonly loadSetPidEventManager = (setPidEventManager: any) => {
+    this.setPidEventManager = setPidEventManager;
   };
 
   public readonly isApiLoaded = () => Boolean(this.BEAM);
@@ -155,22 +165,21 @@ export class BeamAPI<T> {
     if (window.BeamApi) {
       await window.BeamApi
         .callWalletApiResult(this.onApiResult);
-      const activeUser = await window.BeamApi.localStorage();
-      console.log(activeUser);
-      if (this.walletConnectResolve) this.walletConnectResolve(window.BeamApi);
+      const users = (await window.BeamApi.localStorage()).activePid;
+      console.log(users);
+      if (this.walletConnectResolve) this.walletConnectResolve({ api: window.BeamApi, users });
     }
   };
 
   private readonly connectToWebWallet = (
     message: { [key: string]: string }
-  ) => new Promise<QObject>((resolve) => {
+  ) => new Promise<ExtensionResolveObj>((resolve) => {
     // const updMessage = { ...message, is_reconnect: !!window.BeamApi };
     this.walletConnectResolve = resolve;
     window.postMessage(message, window.origin);
   });
 
   readonly connectHeadless = async () => {
-    this.isHeadlessOnConnect = true;
     const beam = await this.createHeadlessAPI('current', '', 'SOURC3', this.onApiResult);
     return beam;
   };
@@ -234,18 +243,16 @@ export class BeamAPI<T> {
       throw new Error(ToastMessages.EXT_ERR_MSG);
     }
 
-    // if (this.walletConnectResolve) {
-    //   throw new Error(ToastMessages.EXT_ON_CONN_ERR);
-    // }
-
-    const api = await this.connectToWebWallet(message);
+    const { api, users } = await this.connectToWebWallet(message);
     if (api && this.isHeadless()) {
       this.BEAM?.api.delete();
       await new Promise((resolve) => {
         this.BEAM?.client.stopWallet(resolve);
       });
     }
+
     this.BEAM = { api };
+    return users; // TODO very bad
   };
 
   readonly initContract = async (

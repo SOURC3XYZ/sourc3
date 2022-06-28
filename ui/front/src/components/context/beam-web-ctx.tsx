@@ -1,6 +1,6 @@
 import { CONFIG } from '@libs/constants';
 import { BeamAPI } from '@libs/core';
-import { ContractsResp } from '@types';
+import { ContractsResp, PKeyRes, User } from '@types';
 import wasm from '@assets/app.wasm';
 import {
   useCallback, useMemo, useRef
@@ -40,21 +40,37 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
     );
   }, [api]);
 
+  const setPidEventManager = useCallback((dispatch: AppThunkDispatch) => (users: User[]) => {
+    if (!api.isHeadless()) {
+      const foundActive = users.find((el) => el.active);
+      if (foundActive) {
+        dispatch(AC.setUsers(users));
+        query<PKeyRes>(
+          dispatch,
+          RC.getPublicKey(foundActive.id),
+          (output) => ([AC.setPublicKey(output.key)])
+        );
+      }
+    }
+  }, [api]);
+
   const isWebHeadless = () => api.isDapps() || api.isElectron();
 
   const setIsConnected = async (dispatch: AppThunkDispatch) => {
     await api.loadAPI();
     await api.initContract(wasm);
     api.loadApiEventManager(apiEventManager(dispatch));
+    api.loadSetPidEventManager(setPidEventManager(dispatch));
     await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
       const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
       if (!finded) throw new Error(`no specified cid (${api.cid})`);
-      return dispatch(AC.setIsConnected(!!finded));
+      return [AC.setIsConnected(!!finded)];
     }, true);
   };
 
   const connectExtension = async (dispatch: AppThunkDispatch) => {
-    await api.extensionConnect(messageBeam);
+    const activeUser = await api.extensionConnect(messageBeam);
+    dispatch(AC.setUsers(activeUser));
     if (!api.isHeadless()) {
       await api.initContract(wasm);
       await query<ContractsResp>(
@@ -63,9 +79,8 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
         (output) => {
           const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
           if (!finded) throw new Error(`no specified cid (${api.cid})`);
-          return dispatch(AC.setIsConnected(!!finded));
+          return [AC.setIsConnected(!!finded)];
         },
-
         true
       );
       api.loadApiEventManager(apiEventManager(dispatch));

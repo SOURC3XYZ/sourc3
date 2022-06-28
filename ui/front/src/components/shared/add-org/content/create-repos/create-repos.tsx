@@ -18,6 +18,8 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
   const [inputName, setInputName] = useState('');
   const { createRepo } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
+
   const handleChange = (e:any) => setInputName(e.target?.value);
 
   const organizations = useSelector((
@@ -35,7 +37,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
   console.log(projects);
 
   const handleOk = (name:string, id:number) => {
-    createRepo(name, id);
+    createRepo(name, id, pid);
     closePopup();
   };
 

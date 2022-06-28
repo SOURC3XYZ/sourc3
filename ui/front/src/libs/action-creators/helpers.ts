@@ -1,11 +1,19 @@
 import { AppThunkDispatch } from '@libs/redux';
 import {
-  BeamApiRes, CallApiProps, CallBeamApi, CallIPCType, ContractResp, ContractResult, EventResult, IPCResult
+  BeamApiRes,
+  CallApiProps,
+  CallBeamApi,
+  CallIPCType,
+  ContractResp,
+  ContractResult,
+  EventResult,
+  IPCResult
 } from '@types';
 import {
   thunkCatch,
   ActionCreators, RequestSchema, AC, RC, errorHandler
 } from '@libs/action-creators';
+import batcher from './batcher';
 
 type HelperCallbackType<T, C> = C extends ActionCreators
   ? (output: BeamApiRes<IPCResult<T>>) => ActionCreators
@@ -79,12 +87,15 @@ export const contractCall = (callApi: CallBeamApi) => {
   const contractQuery = async <T>(
     dispatch: AppThunkDispatch,
     action: RequestSchema,
-    callback: (output: T) => ActionCreators,
+    callback: (output: T) => ActionCreators[] | void,
     isContract = false
   ) => {
     try {
       const output = await getOutput<T>(action, dispatch, isContract);
-      if (output) dispatch(callback(output as T));
+      if (output) {
+        const actions = callback(output as T);
+        if (actions?.length) batcher(dispatch, actions);
+      }
     } catch (error) { thunkCatch(error, dispatch); }
   };
 

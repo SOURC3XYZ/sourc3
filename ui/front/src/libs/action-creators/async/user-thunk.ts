@@ -64,7 +64,7 @@ export const userThunk = ({
       await query<PKeyRes>(
         dispatch,
         RC.getPublicKey(),
-        (output) => dispatch(AC.setPublicKey(output.key))
+        (output) => [AC.setPublicKey(output.key)]
       );
     } catch (error:any) {
       notification.error({
@@ -86,7 +86,7 @@ export const userThunk = ({
         await query<PKeyRes>(
           dispatch,
           RC.getPublicKey(),
-          (output) => dispatch(AC.setPublicKey(output.key))
+          (output) => [AC.setPublicKey(output.key)]
         );
       } else {
         notification.open({
@@ -107,7 +107,7 @@ export const userThunk = ({
       await query<PKeyRes>(
         dispatch,
         RC.getPublicKey(),
-        (output) => dispatch(AC.setPublicKey(output.key))
+        (output) => [AC.setPublicKey(output.key)]
       );
     } catch (error) { thunkCatch(error, dispatch); }
   };

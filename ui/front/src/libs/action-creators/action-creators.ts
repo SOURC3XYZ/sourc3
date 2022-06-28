@@ -17,7 +17,8 @@ import {
   MetaHash,
   TxInfo,
   Organization,
-  Project
+  Project,
+  User
 } from '@types';
 
 export const AC = {
@@ -32,6 +33,11 @@ export const AC = {
     payload: Map<string, BranchCommit> | null
   ) => ({
     type: ACTIONS.SET_COMMITS_MAP,
+    payload
+  }),
+
+  setUsers: (payload: User[]) => ({
+    type: ACTIONS.SET_USERS,
     payload
   }),
 

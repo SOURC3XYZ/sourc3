@@ -35,11 +35,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
-      if (metaArray) {
-        metaArray.objects.forEach((el) => {
-          metas.set(el.object_hash, el);
-        });
-      }
+      if (metaArray) metaArray.objects.forEach((el) => metas.set(el.object_hash, el));
+
       dispatch(AC.setRepoMeta(metas));
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
       if (branches && !stopPending) {
@@ -70,7 +67,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
             AC.setRepoMap(commitTree)
           ]);
         }
-      } throw new Error('commit pending stopped');
+      }
+      if (stopPending) throw new Error('commit pending stopped');
     } catch (error) { errHandler(error as Error); }
   };
 

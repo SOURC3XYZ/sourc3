@@ -24,6 +24,8 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
   const [inputName, setInputName] = useState('');
   const { createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
+
   const handleChange = (e:any) => setInputName(e.target?.value);
 
   const organizations = useSelector((
@@ -32,7 +34,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
   const [idOrg, setIdOrg] = useState(organizations[0].organization_id);
 
   const handleOk = (name:string, id:number) => {
-    createProject(name, id);
+    createProject(name, id, pid);
     closePopup();
   };
 

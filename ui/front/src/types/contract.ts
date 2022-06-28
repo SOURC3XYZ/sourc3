@@ -94,6 +94,8 @@ export type BranchCommit = {
   create_time_tz_offset_min: number
 };
 
+export type User = { active: boolean, avatar: number, id: number, name: string };
+
 export interface RepoCommitResp extends ContractResp {
   commit: BranchCommit;
 }

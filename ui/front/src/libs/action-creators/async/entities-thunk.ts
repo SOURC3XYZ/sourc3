@@ -54,14 +54,14 @@ export const entitiesThunk = (callApi: CallBeamApi) => {
   const getOrganizations = ():CustomAction => async (dispatch) => contractQuery(
     dispatch,
     RC.getOrganizations(),
-    (output:OrganizationsResp) => dispatch(AC.setOrganizationsList(output.organizations))
+    (output:OrganizationsResp) => [AC.setOrganizationsList(output.organizations)]
   );
 
   const getProjects = ():CustomAction => async (dispatch) => {
     contractQuery(
       dispatch,
       RC.getProjects(),
-      (output:ProjectsResp) => dispatch(AC.setProjectsList(output.projects))
+      (output:ProjectsResp) => [AC.setProjectsList(output.projects)]
     );
   };
 

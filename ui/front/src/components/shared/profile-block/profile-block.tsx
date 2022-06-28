@@ -1,8 +1,8 @@
 import { AddButtonOrg, Balance, Profile } from '@components/shared';
-import styles from './profile-block.scss';
+import styles from './profile-block.module.scss';
 
 type HeaderPropsType = {
-  pKey?:string,
+  pKey:string,
   profile?: boolean,
   balance?: boolean,
 };
