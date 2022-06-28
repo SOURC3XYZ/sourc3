@@ -495,7 +495,7 @@ private:
 
         auto progress = MakeProgress("Enumerating uploaded objects", 0);
         // hack Collect objects metainfo
-        auto res = wallet_client_.GetRepoMetadata();
+        auto res = wallet_client_.GetAllObjectsMetadata();
         auto root = ParseJsonAndTest(res);
         for (auto& obj : root.as_object()["objects"].as_array()) {
             auto s = obj.as_object()["object_hash"].as_string();

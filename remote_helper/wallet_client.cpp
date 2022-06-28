@@ -35,10 +35,6 @@ std::string SimpleWalletClient::GetReferences() {
     return InvokeWallet("role=user,action=list_refs");
 }
 
-std::string SimpleWalletClient::GetRepoMetadata() {
-    return InvokeWallet("role=user,action=repo_get_meta");
-}
-
 std::string SimpleWalletClient::PushObjects(const std::string& data,
                                           const std::vector<Ref>& refs,
                                             bool push_refs) {

@@ -70,7 +70,6 @@ public:
     std::string GetAllObjectsMetadata();
     std::string GetObjectData(const std::string& obj_id);
     std::string GetReferences();
-    std::string GetRepoMetadata();
     std::string PushObjects(const std::string& data,
                             const std::vector<Ref>& refs,
                             bool push_refs = false);
