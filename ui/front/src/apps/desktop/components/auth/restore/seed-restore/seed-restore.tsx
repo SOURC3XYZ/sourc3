@@ -21,7 +21,7 @@ function SeedRestore({
   useEffect(() => {
     setIsDisabled(errors.some((el:boolean) => el === false));
   }, [errors]);
-
+  const REGEXP_SEED = /(\w+;){12}/;
   const validateDecor = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -34,9 +34,11 @@ function SeedRestore({
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const seedArr = e.target.value.split(';');
-    if (seedArr.length === WALLET.SEED_PHRASE_COUNT) {
-      validatePasted(seedArr);
+    const seedArr = e.clipboardData.getData('text');
+    if (REGEXP_SEED.test(seedArr)) {
+      const seedPaste = seedArr.split(';').slice(0, WALLET.SEED_PHRASE_COUNT);
+      e.preventDefault();
+      validatePasted(seedPaste);
     }
   };
   return (
@@ -44,7 +46,7 @@ function SeedRestore({
       <BackButton onClick={back} />
       <h2>Restore account</h2>
       <p className={styles.description}>
-        Type in or paste your secret phrase .
+        Type in or paste your secret phrase.
       </p>
       <SeedList
         data={seed}

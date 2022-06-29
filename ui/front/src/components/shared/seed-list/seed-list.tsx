@@ -27,6 +27,7 @@ function SeedList({
         <input
           readOnly={readOnly}
           required
+          autoFocus={i === 0}
           defaultValue={el ?? ''}
           data-index={i}
           type="text"

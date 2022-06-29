@@ -45,7 +45,7 @@ function Profile({ pKey }:profileType) {
             href={link}
             onClick={onClick}
             disabled={isDisabled}
-            target={link}
+            target="_blank"
           >
             {title}
 
