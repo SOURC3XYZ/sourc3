@@ -1139,54 +1139,31 @@ void OnActionLoadState(const ContractID& cid) {
 }
 
 void OnActionGetState(const ContractID& cid) {
-//    using sourc3::Repo;
-//    using RepoKey = Env::Key_T<Repo::Key>;
-//    RepoKey key;
-//    _POD_(key.m_Prefix.m_Cid) = cid;
-//    Env::DocGet("repo_id", key.m_KeyInContract.repo_id);
-//    Env::DocAddNum("repo_id", key.m_KeyInContract.repo_id);
-//
-//    uint32_t value_len = 0, key_len = 0;
     using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
-    RepoKey start, end;
-    _POD_(start.m_Prefix.m_Cid) = cid;
-    _POD_(end) = start;
-    end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
-
-    Repo::Id repo_id;
-    Env::DocGet("repo_id", repo_id);
     RepoKey key;
-    uint32_t value_len = 0, key_len = sizeof(RepoKey);
-    for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Repo*>(buf.get());
-        if (value->repo_id == repo_id) {
-            Env::DocAddBlob("hash", value->cur_state,
-                            sourc3::kIpfsAddressSize);
-            break;
-        }
-        value_len = 0;
-    }
+    _POD_(key.m_Prefix.m_Cid) = cid;
+    uint64_t repo_id = 0;
+    Env::DocGet("repo_id", repo_id);
+    key.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
 
-//    Env::VarReader reader(key, key);
-//    if (reader.MoveNext(nullptr, key_len, nullptr, value_len, 0)) {
-//        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-//        reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
-//        auto* value = reinterpret_cast<Repo*>(buf.get());
-//        Env::DocGroup repo_object("");
-//        Env::DocAddNum("repo_id", value->repo_id);
-//        Env::DocAddText("repo_name", value->name);
-//        Env::DocAddNum("project_id", value->project_id);
-//        Env::DocAddNum64("cur_objects", value->cur_objs_number);
-//        Env::DocAddNum64("cur_metas", value->cur_metas_number);
-//        Env::DocAddBlob_T("repo_owner", value->owner);
-//        Env::DocAddBlob("state", value->cur_state, sourc3::kIpfsAddressSize);
-//    } else {
-//        return OnError("no repo:(");
-//    }
+    uint32_t value_len = 0, key_len = 0;
+
+    Env::VarReader reader(key, key);
+    if (reader.MoveNext(nullptr, key_len, nullptr, value_len, 0)) {
+        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
+        reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<Repo*>(buf.get());
+        Env::DocAddNum("repo_id", value->repo_id);
+        Env::DocAddText("repo_name", value->name);
+        Env::DocAddNum("project_id", value->project_id);
+        Env::DocAddNum64("cur_objects", value->cur_objs_number);
+        Env::DocAddNum64("cur_metas", value->cur_metas_number);
+        Env::DocAddBlob_T("repo_owner", value->owner);
+        Env::DocAddBlob("hash", value->cur_state, sourc3::kIpfsAddressSize);
+    } else {
+        return OnError("no repo");
+    }
 }
 
 void OnActionRepoGetStatistic(const ContractID& cid) {
@@ -1201,7 +1178,6 @@ void OnActionRepoGetStatistic(const ContractID& cid) {
         auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<Repo*>(buf.get());
-        Env::DocGroup repo_object("");
         Env::DocAddNum64("cur_objects", value->cur_objs_number);
         Env::DocAddNum64("cur_metas", value->cur_metas_number);
         break;
