@@ -12,10 +12,12 @@ interface SeedListProps {
   listConfirm?: boolean;
   onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   validatePasted?: (e: React.ClipboardEvent<HTMLDivElement>) => void
+  next: () => void
 }
 
 function SeedList({
-  data, errors, isShuffle, isSlice, listGenerated, listConfirm, readOnly, onInput, validatePasted
+  data, errors, isShuffle, isSlice, listGenerated, listConfirm,
+  readOnly, onInput, validatePasted, next
 }:SeedListProps) {
   const shuffleIndexes = React.useMemo(() => shuffle(data), []);
   const validatedSeedWord = (el: string | null, i:number) => {
@@ -32,6 +34,7 @@ function SeedList({
           data-index={i}
           type="text"
           onInput={onInput}
+          onKeyDown={(e) => (e.key === 'Enter' && next())}
         />
       </li>
     );

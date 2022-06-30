@@ -1,7 +1,7 @@
 .button{
     box-sizing: border-box;
     width: 72px;
-    border: none;
+    border: 1px solid transparent;;
     outline: none;
     background: transparent;
     cursor: pointer;
@@ -15,4 +15,12 @@
         position: absolute;
         left: 30px;
           top: 65px;
+          &:focus{
+            background-color: transparent;
+            color: #EA6A13;
+            border-color: #EA6A13;
+        }
+        &:hover{
+          color: #EA6A13;
+      }
 }

@@ -87,7 +87,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           defaultValue={idProject}
           value={idProject}
           onChange={handleChangeProject}
-          title="Select organization"
+          title="Select project"
         >
           {projects?.map(({ project_id, project_name }) => (
             <Select.Option
@@ -100,7 +100,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           ))}
         </SelectPopup>
         <InputCustom
-          label="Project name"
+          label="Repository name"
           type="text"
           value={inputName}
           onChange={handleChange}

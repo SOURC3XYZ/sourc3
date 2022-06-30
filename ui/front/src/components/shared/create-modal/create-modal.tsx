@@ -33,6 +33,7 @@ function CreateModal({
 
   const handleOk = () => {
     handleCreate(inputName);
+    setInputName('');
     closePopup();
   };
 

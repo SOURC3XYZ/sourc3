@@ -53,6 +53,7 @@ function SeedRestore({
         errors={errors}
         onInput={validateDecor}
         validatePasted={handlePaste}
+        next={next}
       />
       <div className={styles.btnBlock}>
         <NavButton

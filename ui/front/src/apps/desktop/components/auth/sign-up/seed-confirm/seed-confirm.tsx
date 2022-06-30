@@ -80,6 +80,7 @@ function SeedConfirm({ seedGenerated, next, back }:SeedConfirmType) {
           data={seed}
           errors={errors}
           onInput={validateDecor}
+          next={next}
         />
         <div className={styles.btnBlock}>
           <AuthBtnBlock>
