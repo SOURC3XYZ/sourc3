@@ -534,7 +534,7 @@ public:
                              return c == '0';
                          })) {
             oid_to_meta = ParseRefHashed(
-                wallet_client_.LoadObjectFromIPFS(prev_state.hash));
+                GetStringFromIPFS(prev_state.hash, wallet_client_));
         }
 
         HashMapping oid_to_ipfs;
@@ -589,8 +589,8 @@ public:
                              .c_str();
         {
             auto progress = MakeProgress("Uploading metadata to blockchain", 1);
-            ParseJsonAndTest(wallet_client_.PushObjects(prev_state, new_state,
-                                                    new_objects, new_metas));
+            ParseJsonAndTest(wallet_client_.PushObjects(
+                prev_state, new_state, new_objects, new_metas));
             if (progress) {
                 progress->AddProgress(1);
             }
@@ -645,20 +645,8 @@ private:
                         })) {
             return {};
         }
-        auto ref_file = ParseJsonAndTest(wallet_client_.LoadObjectFromIPFS(
-            ByteBufferToString(FromHex(actual_state_str))));
-
-        if (ref_file.is_object() && ref_file.as_object().contains("result")) {
-            auto d =
-                ref_file.as_object()["result"].as_object()["data"].as_array();
-            ByteBuffer buf;
-            buf.reserve(d.size());
-            for (auto&& v : d) {
-                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
-            }
-            return ParseRefs(ByteBufferToString(buf));
-        }
-        return {};
+        return ParseRefs(GetStringFromIPFS(
+            ByteBufferToString(FromHex(actual_state_str)), wallet_client_));
     }
 
     std::vector<ObjectWithContent> GetUploadedObjects(
