@@ -110,6 +110,58 @@ struct ObjectWithContent : public GitObject {
     std::string content;
 };
 
+struct GitIdWithIPFS {
+    GitIdWithIPFS() = default;
+
+    GitIdWithIPFS(const git_oid oid, string ipfs)
+        : oid(std::move(oid)), ipfs(std::move(ipfs)) {
+    }
+
+    git_oid oid;
+    std::string ipfs;
+
+    std::string ToString() const {
+        return ipfs + "\n" + ::ToString(oid);
+    }
+
+    bool operator==(const GitIdWithIPFS& other) const {
+        return (oid == other.oid) && (ipfs == other.ipfs);
+    }
+};
+
+struct MetaBlock {
+    GitIdWithIPFS hash;
+
+    virtual ~MetaBlock() = default;
+
+    virtual std::string Serialize() const = 0;
+};
+
+struct CommitMetaBlock final : MetaBlock {
+    GitIdWithIPFS tree_hash;
+    std::vector<GitIdWithIPFS> parent_hashes;
+
+    string Serialize() const final {
+        std::string data = hash.ToString() + "\n" + tree_hash.ToString() + "\n";
+        for (const auto& parent : parent_hashes) {
+            data += parent.ToString() + "\n";
+        }
+        return data;
+    }
+};
+
+struct TreeMetaBlock final : MetaBlock {
+    std::vector<GitIdWithIPFS> entries;
+
+    string Serialize() const final {
+        std::string data = hash.ToString() + "\n";
+        for (const auto& entry : entries) {
+            data += entry.ToString() + "\n";
+        }
+        return data;
+    }
+};
+
 template <typename String>
 ByteBuffer FromHex(const String& s) {
     ByteBuffer res;
@@ -154,6 +206,9 @@ std::string CreateRefsFile(const std::vector<Ref>& refs,
                            const HashMapping& mapping) {
     std::string file;
     for (const auto& ref : refs) {
+        if (mapping.count(ref.target) == 0) {
+            throw std::runtime_error{"Some refs are not used!"};
+        }
         file += ref.name + "\t" + mapping.at(ref.target) + "\t" +
                 ToString(ref.target) + "\n";
     }
@@ -203,19 +258,25 @@ HashMapping ParseRefHashed(const std::string& refs_file) {
     return mapping;
 }
 
-std::string GetCommitMetaBlock(const git::Commit& commit,
-                               const HashMapping& oid_to_meta,
-                               const HashMapping& oid_to_ipfs) {
+std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(
+    const git::Commit& commit, const HashMapping& oid_to_meta,
+    const HashMapping& oid_to_ipfs) {
+    auto block = std::make_unique<CommitMetaBlock>();
     git_commit* raw_commit = *commit;
     const auto* commit_id = git_commit_id(raw_commit);
-    std::string block = oid_to_ipfs.at(*commit_id) + "\n";
-    block += ToString(*commit_id) + "\n";
-    block += oid_to_meta.at(*git_commit_tree_id(raw_commit)) + "\n";
+    block->hash.oid = *commit_id;
+    block->hash.ipfs = oid_to_ipfs.at(*commit_id);
+    if (oid_to_meta.count(*git_commit_tree_id(raw_commit)) == 0) {
+        throw std::runtime_error{"Cannot find tree meta on IPFS"};
+    }
+    block->tree_hash = {*git_commit_tree_id(raw_commit),
+                        oid_to_meta.at(*git_commit_tree_id(raw_commit))};
     unsigned int parents_count = git_commit_parentcount(raw_commit);
     for (unsigned int i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
         if (oid_to_meta.count(*parent_id) > 0) {
-            block += oid_to_meta.at(*parent_id) + "\n";
+            block->parent_hashes.emplace_back(*parent_id,
+                                              oid_to_meta.at(*parent_id));
         } else {
             throw std::runtime_error{
                 "Something wrong with push, "
@@ -226,23 +287,23 @@ std::string GetCommitMetaBlock(const git::Commit& commit,
     return block;
 }
 
-std::string GetTreeMetaBlock(const git::Tree& tree,
-                             const HashMapping& oid_to_ipfs) {
+std::unique_ptr<TreeMetaBlock> GetTreeMetaBlock(
+    const git::Tree& tree, const HashMapping& oid_to_ipfs) {
     git_tree* raw_tree = *tree;
     const auto* tree_id = git_tree_id(raw_tree);
-    std::string block = oid_to_ipfs.at(*tree_id) + "\n";
-    block += ToString(*tree_id) + "\n";
+    auto block = std::make_unique<TreeMetaBlock>();
+    block->hash = {*tree_id, oid_to_ipfs.at(*tree_id)};
     for (size_t i = 0, size = git_tree_entrycount(raw_tree); i < size; ++i) {
         const auto& entry_id =
             *git_tree_entry_id(git_tree_entry_byindex(raw_tree, i));
-        block += oid_to_ipfs.at(entry_id) + "\n" + ToString(entry_id) + "\n";
+        block->entries.emplace_back(entry_id, oid_to_ipfs.at(entry_id));
     }
     return block;
 }
 
-std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
-                         const ObjectInfo& obj, const HashMapping& oid_to_meta,
-                         const HashMapping& oid_to_ipfs) {
+std::unique_ptr<MetaBlock> GetMetaBlock(
+    const sourc3::git::RepoAccessor& accessor, const ObjectInfo& obj,
+    const HashMapping& oid_to_meta, const HashMapping& oid_to_ipfs) {
     if (obj.type == GIT_OBJECT_COMMIT) {
         git::Commit commit;
         git_commit_lookup(commit.Addr(), *accessor.m_repo, &obj.oid);
@@ -253,7 +314,7 @@ std::string GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
         return GetTreeMetaBlock(tree, oid_to_ipfs);
     }
 
-    return "";
+    return nullptr;
 }
 
 std::string GetStringFromIPFS(const std::string& hash,
@@ -424,11 +485,13 @@ public:
         ObjectCollector collector(wallet_client_.GetRepoDir());
         std::vector<Refs> refs;
         std::vector<git_oid> local_refs;
+        bool is_forced = false;
         for (size_t i = 1; i < args.size(); ++i) {
             auto& arg = args[i];
             auto p = arg.find(':');
             auto& r = refs.emplace_back();
             r.localRef = arg.substr(0, p);
+            is_forced = r.localRef[0] == '+';
             r.remoteRef = arg.substr(p + 1);
             git::Reference local_ref;
             if (git_reference_lookup(local_ref.Addr(), *collector.m_repo,
@@ -529,12 +592,16 @@ public:
         }
 
         HashMapping oid_to_meta;
+        std::vector<GitIdWithIPFS> prev_commits_parents;
         if (!std::all_of(prev_state.hash.begin(), prev_state.hash.end(),
                          [](char c) {
                              return c == '0';
                          })) {
-            oid_to_meta = ParseRefHashed(
-                GetStringFromIPFS(prev_state.hash, wallet_client_));
+            auto refs_file = GetStringFromIPFS(prev_state.hash, wallet_client_);
+            oid_to_meta = ParseRefHashed(refs_file);
+            for (const auto& [oid, hash] : oid_to_meta) {
+                prev_commits_parents.emplace_back(oid, hash);
+            }
         }
 
         HashMapping oid_to_ipfs;
@@ -559,10 +626,43 @@ public:
                 obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
                 oid_to_ipfs[obj.oid] =
                     std::string(hash_str.cbegin(), hash_str.cend());
-                std::string meta_object =
+                auto meta_object =
                     GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
-                if (!meta_object.empty()) {
-                    auto meta_buffer = StringToByteBuffer(meta_object);
+                if (meta_object != nullptr) {
+                    if (obj.type == GIT_OBJECT_COMMIT && !is_forced) {
+                        // We need to check linking of commits
+                        if (auto commit = dynamic_cast<CommitMetaBlock*>(
+                                meta_object.get())) {
+                            if (!std::all_of(
+                                    commit->parent_hashes.begin(),
+                                    commit->parent_hashes.end(),
+                                    [&prev_commits_parents](
+                                        const GitIdWithIPFS& obj) {
+                                        return std::any_of(
+                                            prev_commits_parents.begin(),
+                                            prev_commits_parents.end(),
+                                            [&obj](const GitIdWithIPFS& other) {
+                                                return other == obj;
+                                            });
+                                    })) {
+                                cerr << "Seems like commit history wrong "
+                                        "linked. "
+                                        "If you want to rewrite history, use "
+                                        "`--force` flag"
+                                     << endl;
+                                return CommandResult::Failed;
+                            }
+                            prev_commits_parents = commit->parent_hashes;
+                        } else {
+                            cerr << "Seems like logic was corrupted. Download "
+                                    "newer version of helper"
+                                 << endl;
+                            return CommandResult::Failed;
+                        }
+                    }
+
+                    auto meta_buffer =
+                        StringToByteBuffer(meta_object->Serialize());
                     auto meta_res =
                         ParseJsonAndTest(wallet_client_.SaveObjectToIPFS(
                             meta_buffer.data(), meta_buffer.size()));
