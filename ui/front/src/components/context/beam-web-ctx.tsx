@@ -1,5 +1,5 @@
 import { CONFIG } from '@libs/constants';
-import { BeamAPI } from '@libs/core';
+import { BeamWebAPI } from '@libs/core';
 import { ContractsResp, PKeyRes, User } from '@types';
 import wasm from '@assets/app.wasm';
 import {
@@ -25,7 +25,7 @@ const messageBeam = {
 };
 
 export function BeamWebApi({ children }:BeamWebCtxProps) {
-  const { current: api } = useRef(new BeamAPI(CONFIG.CID));
+  const { current: api } = useRef(new BeamWebAPI(CONFIG.CID));
 
   const [query] = contractCall(api.callApi);
 
@@ -87,14 +87,13 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
     }
   };
 
-  const contextObj = useMemo(() => (
-    {
-      setIsConnected,
-      callApi: api.callApi,
-      isWebHeadless,
-      connectExtension
-    }
-  ), [api.BEAM]);
+  const contextObj = useMemo(() => ({
+    setIsConnected,
+    callApi: api.callApi,
+    isWebHeadless,
+    connectExtension
+  }
+  ), [api]);
 
   return (
     <BeamWebApiContext.Provider value={contextObj}>

@@ -8,6 +8,7 @@ export enum CONFIG {
   // '7aaec975d0348348d82e72bd66d508ac93cb6f9e683bd136d2a879f41c32e8d8'
   // 'fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10',
   // IPFS_HOST = 'http://3.209.99.179:8070'
+  HEADLESS_NODE = 'eu-node02.dappnet.beam.mw:8200',
   IPFS_HOST = 'https://proxi-beam.herokuapp.com',
   ASSET_ID = 0,
   IPFS_TIMEOUT = 5000

@@ -13,9 +13,9 @@ import {
 } from '@types';
 import { AC } from '../action-creators';
 import { contractCall } from '../helpers';
-import { RC } from '../request-schemas';
+import { RC, RequestSchema } from '../request-schemas';
 
-export const entitiesThunk = (callApi: CallBeamApi) => {
+export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => {
   const [contractQuery, contractMutation, getOutput] = contractCall(callApi);
 
   const createRepo = (

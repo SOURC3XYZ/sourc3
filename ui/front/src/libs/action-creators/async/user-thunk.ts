@@ -77,7 +77,7 @@ export const userThunk = ({
 
   const connectBeamApi = ():CustomAction => async (dispatch) => {
     try {
-      if (!isWebHeadless) throw new Error('there is not web api');
+      if (!isWebHeadless || !setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
 
       await callApi(RC.subUnsub()); // subscribe to api events
@@ -100,6 +100,7 @@ export const userThunk = ({
 
   const connectElectronApi = ():CustomAction => async (dispatch) => {
     try {
+      if (!setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
 
       await callApi(RC.subUnsub()); // subscribe to api events

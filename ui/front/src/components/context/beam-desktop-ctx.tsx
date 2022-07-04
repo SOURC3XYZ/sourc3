@@ -21,7 +21,7 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
     const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
-    const { getWalletStatus } = userThunk(api);
+    const { getWalletStatus } = userThunk({ callApi: api.callApi });
 
     return apiManagerHelper(() => {
       dispatch(getRepos('all'));
@@ -43,13 +43,12 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
     }, true);
   };
 
-  const contextObj = useMemo(() => (
-    {
-      setIsConnected,
-      callApi: api.callApi,
-      callIPC: api.callIPC
-    }
-  ), [api.BEAM]);
+  const contextObj = useMemo(() => ({
+    setIsConnected,
+    callApi: api.callApi,
+    callIPC: api.callIPC
+  }
+  ), [api]);
 
   return (
     <BeamWebApiContext.Provider value={contextObj}>

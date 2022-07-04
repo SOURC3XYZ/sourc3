@@ -21,7 +21,7 @@ function ConnectBtn({ pkey, users, onConnect }:ConnectBtnProps) {
     const foundActive = users.find((el) => el.active);
     if (pkey) return textEllipsis(foundActive?.name || pkey, WORD_COUNT, { ellipsis: '' });
     return CONNECT;
-  }, [pkey]);
+  }, [pkey, users]);
 
   const onConnectHandler = () => {
     if (!pkey)onConnect();

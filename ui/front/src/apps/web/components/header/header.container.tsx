@@ -77,7 +77,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         />
       ) }
     </div>
-  ), [isOnLending, pkey]);
+  ), [isOnLending, pkey, users]);
 
   return (
     <header className={headerClassName}>
