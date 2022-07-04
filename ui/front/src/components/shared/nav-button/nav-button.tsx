@@ -20,6 +20,7 @@ function NavButton({
     <button
       disabled={isDisabled}
       style={inlineStyles}
+      autoFocus={active}
       className={active ? style.button : style.buttonSecond}
       type="button"
       onClick={onClick || onClickHandler}

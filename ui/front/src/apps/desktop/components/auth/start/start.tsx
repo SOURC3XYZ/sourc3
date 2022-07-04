@@ -43,6 +43,7 @@ function Start({ restore }:StartProps) {
             restore ? (
               <NavButton
                 name={btnNameLeft}
+                data-index={0}
                 onClick={() => (setIsPopup(true))}
                 active
               />
