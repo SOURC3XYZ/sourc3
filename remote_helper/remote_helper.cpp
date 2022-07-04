@@ -595,7 +595,7 @@ public:
         std::vector<GitIdWithIPFS> prev_commits_parents;
         if (!std::all_of(prev_state.hash.begin(), prev_state.hash.end(),
                          [](char c) {
-                             return c == '0';
+                             return c == '\0';
                          })) {
             auto refs_file = GetStringFromIPFS(prev_state.hash, wallet_client_);
             oid_to_meta = ParseRefHashed(refs_file);
@@ -629,7 +629,8 @@ public:
                 auto meta_object =
                     GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
                 if (meta_object != nullptr) {
-                    if (obj.type == GIT_OBJECT_COMMIT && !is_forced) {
+                    if (obj.type == GIT_OBJECT_COMMIT && !is_forced &&
+                        !prev_commits_parents.empty()) {
                         // We need to check linking of commits
                         if (auto commit = dynamic_cast<CommitMetaBlock*>(
                                 meta_object.get())) {
