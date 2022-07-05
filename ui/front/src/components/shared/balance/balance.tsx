@@ -2,7 +2,7 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Send from './send';
 import Receive from './receive';

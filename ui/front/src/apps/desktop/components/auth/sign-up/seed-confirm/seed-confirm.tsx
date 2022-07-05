@@ -1,6 +1,7 @@
 import { AuthBtnBlock, NavButton, SeedList } from '@components/shared';
 import { BackButton } from '@components/shared/back-button';
 import { WALLET } from '@libs/constants';
+import { useWalletAction } from '@libs/hooks/thunk';
 import React, { useEffect, useState } from 'react';
 import styles from './seed-confirm.module.scss';
 
@@ -53,6 +54,10 @@ function SeedConfirm({ seedGenerated, next, back }:SeedConfirmType) {
   const addSeed = (seedUpdate:string[]) => {
     setSeed(seedUpdate);
   };
+  const {
+    generateSeed
+  } = useWalletAction();
+
   const validateDecor = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const { index } = e.target.dataset as DOMStringMap;
@@ -62,10 +67,15 @@ function SeedConfirm({ seedGenerated, next, back }:SeedConfirmType) {
     seedCopy.splice(Number(index), 1, word);
     addSeed(seedCopy);
   };
+  console.log(seed);
+  const backGen = () => {
+    back();
+    generateSeed();
+  };
 
   return (
     <>
-      <BackButton onClick={back} />
+      <BackButton onClick={backGen} />
       <div className={styles.wrapper}>
         <h2>Confirmation</h2>
         <p className={styles.description}>

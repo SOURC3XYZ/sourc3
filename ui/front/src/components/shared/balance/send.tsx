@@ -94,7 +94,7 @@ function Send({
 
   return (
     <Modal
-      title="SEND BEAM"
+      title="SEND SC3"
       visible={visible}
       onCancel={handleCancel}
       footer={[
@@ -133,8 +133,8 @@ function Send({
           placeholder="0"
           suffix={(
             <>
-              <span className="beam">BEAM</span>
-              <Tooltip title={`Max available:${current} BEAM`}>
+              <span className="beam">SC3</span>
+              <Tooltip title={`Max available:${current} SC3`}>
                 <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
               </Tooltip>
 
@@ -157,9 +157,9 @@ function Send({
         />
 
       </label>
-      <Checkbox checked={offline} onChange={handleOffline}>
+      {/* <Checkbox checked={offline} onChange={handleOffline}>
         Offline
-      </Checkbox>
+      </Checkbox> */}
     </Modal>
   );
 }
