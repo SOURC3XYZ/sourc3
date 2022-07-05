@@ -14,9 +14,9 @@ type profileType = {
 function Profile({ pKey }:profileType) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const showModal = () => {
-    setVisible(true);
-  };
+  // const showModal = () => {
+  //   setVisible(true);
+  // };
 
   const handleCancel = () => {
     setVisible(false);
@@ -32,7 +32,7 @@ function Profile({ pKey }:profileType) {
     navigate('organizations/my/1');
   };
   const myRep = () => {
-    navigate('/repos/all/1');
+    navigate('/repos/my/1');
   };
 
   const data = [

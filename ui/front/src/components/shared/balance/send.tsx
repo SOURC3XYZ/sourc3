@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { useEffect } from 'react';
 import { useObjectState } from '@libs/hooks/shared';
-import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
+// import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { useUserAction } from '@libs/hooks/thunk';
 
 type SendPropsType = {
@@ -45,7 +45,7 @@ function Send({
     });
   };
 
-  const handleCancel = () => {
+  const handleClose = () => {
     setState({ visible: false });
     onClose();
   };
@@ -53,7 +53,7 @@ function Send({
     if (isVisible) {
       showModal();
     } else {
-      handleCancel();
+      handleClose();
     }
   }, [isVisible]);
 
@@ -71,7 +71,7 @@ function Send({
       return;
     }
     setWalletSendBeam(amount, address, comment, offline);
-    setState({ visible: false });
+    handleClose();
   };
 
   const handleAddressValue = (event:any) => {
@@ -88,17 +88,17 @@ function Send({
     setState({ comment: event?.target.value });
   };
 
-  const handleOffline = (e:CheckboxChangeEvent) => {
-    setState({ offline: e.target.checked });
-  };
+  // const handleOffline = (e:CheckboxChangeEvent) => {
+  //   setState({ offline: e.target.checked });
+  // };
 
   return (
     <Modal
       title="SEND SC3"
       visible={visible}
-      onCancel={handleCancel}
+      onCancel={handleClose}
       footer={[
-        <Button key="back" onClick={handleCancel}>
+        <Button key="back" onClick={handleClose}>
           Cancel
         </Button>,
         <Button key="submit" type="primary" onClick={handleOk}>
