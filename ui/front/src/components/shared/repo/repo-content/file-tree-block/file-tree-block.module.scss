@@ -1,7 +1,15 @@
+@import '@styles/vars.scss';
+
 .tree {
     margin-top: 15px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+
+    .cloudButton {
+        font-size: 1.3rem;
+        color: $color-blue;
+        cursor: pointer;
+    }
 
     .listItem.listItem {
         padding: 18px 25.33px;
