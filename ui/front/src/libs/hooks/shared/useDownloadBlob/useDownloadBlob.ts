@@ -12,7 +12,9 @@ type UseDownloadBlob = {
   id: number;
 };
 
-export const useDownloadBlob = ({ gitHash, name, id }:UseDownloadBlob) => {
+export const useDownloadBlob = ({
+  gitHash, name, id
+}:UseDownloadBlob) => {
   const [isOnLoad, setIsOnLoad] = useState(false);
 
   const [callApi] = useCallApi();

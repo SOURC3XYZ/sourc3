@@ -11,6 +11,11 @@
         cursor: pointer;
     }
 
+    .archiveFile {
+        color: #000000;
+        font-size: 1rem;
+    }
+
     .listItem.listItem {
         padding: 18px 25.33px;
 
@@ -18,11 +23,18 @@
             display: flex;
             align-items: center;
 
-            img {
-                width: 13.33px;
+            .fileIconImg {
                 height: auto;
                 display: block;
                 margin-right: 17.33px;
+            }
+
+            .archiveIcon {
+                font-size: 15px;
+            }
+
+            img {
+                width: 13.33px;
             }
 
             a {
