@@ -1437,7 +1437,7 @@ void OnActionGetCommit(const ContractID& cid) {
                          uncompressed.size(), 0) == 0) {
             AddCommit(commit, hash);
         }
-        Env::DocAddBlob("object_data", value->data, value_len);
+        Env::DocAddBlob("object_data", uncompressed.data(), uncompressed.size());
     } else {
         Env::DocAddBlob("object_data", nullptr, 0);
     }
