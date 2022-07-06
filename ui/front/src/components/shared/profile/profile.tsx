@@ -29,7 +29,7 @@ function Profile({ pKey }:profileType) {
     navigate('/');
   };
   const myOrg = () => {
-    navigate('organizations/my/1');
+    navigate('/organizations/my/1');
   };
   const myRep = () => {
     navigate('/repos/my/1');
