@@ -10,7 +10,7 @@ import {
   ProjectRepos
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import {
+import React, {
   useCallback, useMemo
 } from 'react';
 import { Footer } from 'antd/lib/layout/layout';
@@ -19,6 +19,9 @@ import { useWebMain } from '@libs/hooks/container/web-app';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
+import discordIcon from "../../../assets/icons/discordIcon.svg";
+import twitterIcon from "../../../assets/icons/twitterIcon.svg";
+import DownloadPage from "../../../components/shared/download-page/download-page";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -47,6 +50,14 @@ function Main() {
     {
       path: 'project/:projId/:type/:page',
       element: <ProjectRepos />
+    },
+    {
+      path: 'download',
+      element: <DownloadPage />
+    },
+    {
+      path: '404',
+      element: <FailPage />
     }
   ];
 
@@ -75,6 +86,11 @@ function Main() {
     </Routes>
   ), [isApiConnected]);
 
+  const SOCIAL = {
+    DISCORD: "https://discord.gg/FpE9VfB6",
+    TWITTER: "https://twitter.com/SOURC3xyz",
+    SOURC3: "https://www.sourc3.xyz",
+  };
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
@@ -91,11 +107,28 @@ function Main() {
             </div>
           </div>
           <Footer className={footerClassname}>
-            © 2022 by SOURC3
+            <div className={styles.content}>
+              <div className={styles.icons}>
+                <a href={SOCIAL.DISCORD}>
+                  <img src={discordIcon} alt="discordIcon" />
+                </a>
+                <a href={SOCIAL.TWITTER}>
+                  <img src={twitterIcon} alt="twitter" />
+                </a>
+              </div>
+              <div className={styles.item}>
+                <a href="#">
+                  <h4>Contact us</h4>
+                </a>
+                <a href={SOCIAL.SOURC3} target="_blank">
+                  <h4>© Sourc3</h4>
+                </a>
+              </div>
+              {/*<h4>© 2022 by SOURC3</h4>*/}
+            </div>
           </Footer>
         </>
       </ErrorBoundary>
-
     </PreloadComponent>
 
   );
