@@ -117,7 +117,7 @@ function Main() {
                 </a>
               </div>
               <div className={styles.item}>
-                <a href="#">
+                <a href="mailto:Hello@SOURC3.xyz">
                   <h4>Contact us</h4>
                 </a>
                 <a href={SOCIAL.SOURC3} target="_blank">
