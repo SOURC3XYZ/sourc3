@@ -179,9 +179,9 @@ const std::string& SimpleWalletClient::GetCID() {
 
 const std::string& SimpleWalletClient::GetRepoID() {
     if (repo_id_.empty()) {
-        std::string request = "role=user,action=repo_id_by_name,repo_name=";
+        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
         request.append(options_.repoName)
-            .append(",repo_owner=")
+            .append("\",repo_owner=")
             .append(options_.repoOwner)
             .append(",cid=")
             .append(GetCID());

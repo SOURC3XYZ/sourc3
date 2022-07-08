@@ -247,7 +247,7 @@ export function runWalletApi(
       `--use_http=${HTTP_MODE}`,
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
-      '--tcp_max_line=20256000',
+      '--tcp_max_line=2000256000',
       `--ipfs_repo=${ipfsPath}`
     ];
     const onData = (data: Buffer) => {

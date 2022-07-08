@@ -19,21 +19,6 @@ type HelperCallbackType<T, C> = C extends ActionCreators
   ? (output: BeamApiRes<IPCResult<T>>) => ActionCreators
   : (output: BeamApiRes<IPCResult<T>>) => void;
 
-// export function apiEventManager(dispatch: AppThunkDispatch) {
-//   return function ({ result }:BeamApiRes<EventResult>) {
-//     const isInSync = !result.is_in_sync
-//     || result.tip_height !== result.current_height;
-//     if (isInSync) return;
-//     // we're not in sync, wait
-
-//     dispatch(thunks.getAllRepos('all'));
-//     dispatch(thunks.getOrganizations());
-//     dispatch(thunks.getProjects());
-//     dispatch(thunks.getWalletStatus());
-//     dispatch(thunks.getTxList());
-//   };
-// }
-
 export function outputParser<T extends ContractResp>(
   res: BeamApiRes<ContractResult>,
   dispatch?: AppThunkDispatch
@@ -74,7 +59,7 @@ export const desktopCall = (callIPC: CallIPCType) => {
   return [get];
 };
 
-export const contractCall = (callApi: CallBeamApi) => {
+export const contractCall = (callApi: CallBeamApi<RequestSchema['params']>) => {
   async function getOutput<T>(
     props: CallApiProps<RequestSchema['params']>,
     dispatch: AppThunkDispatch,

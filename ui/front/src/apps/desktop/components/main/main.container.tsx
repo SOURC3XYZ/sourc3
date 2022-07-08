@@ -25,7 +25,7 @@ function App() {
   const data = [
     {
       path: '/',
-      element: <Navigate replace to="repos/all/1" />
+      element: <Navigate replace to="/repos/all/1" />
     },
     {
       path: 'repos/:type/:page',

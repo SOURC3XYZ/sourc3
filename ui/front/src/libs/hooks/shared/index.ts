@@ -7,3 +7,4 @@ export { default as useModal } from './useModal';
 export { default as useBackground } from './useBackground';
 export { default as useCallApi } from './useCallApi';
 export { default as useFetch } from './useFetch';
+export * from './useDownloadBlob';
