@@ -10,18 +10,14 @@ import {
   ProjectRepos
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import React, {
-  useCallback, useMemo
-} from 'react';
-import { Footer } from 'antd/lib/layout/layout';
+import { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
+import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
-import discordIcon from "../../../assets/icons/discordIcon.svg";
-import twitterIcon from "../../../assets/icons/twitterIcon.svg";
-import DownloadPage from "../../../components/shared/download-page/download-page";
+import DownloadPage from '../../../components/shared/download-page/download-page';
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -61,8 +57,6 @@ function Main() {
     }
   ];
 
-  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
-
   const fallback = (props:any) => {
     const updatedProps = { ...props, subTitle: props.message || 'no data' };
     return <FailPage {...updatedProps} isBtn />;
@@ -86,11 +80,6 @@ function Main() {
     </Routes>
   ), [isApiConnected]);
 
-  const SOCIAL = {
-    DISCORD: "https://discord.gg/FpE9VfB6",
-    TWITTER: "https://twitter.com/SOURC3xyz",
-    SOURC3: "https://www.sourc3.xyz",
-  };
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
@@ -106,27 +95,7 @@ function Main() {
               <Notifications />
             </div>
           </div>
-          <Footer className={footerClassname}>
-            <div className={styles.content}>
-              <div className={styles.icons}>
-                <a href={SOCIAL.DISCORD}>
-                  <img src={discordIcon} alt="discordIcon" />
-                </a>
-                <a href={SOCIAL.TWITTER}>
-                  <img src={twitterIcon} alt="twitter" />
-                </a>
-              </div>
-              <div className={styles.item}>
-                <a href="mailto:Hello@SOURC3.xyz">
-                  <h4>Contact us</h4>
-                </a>
-                <a href={SOCIAL.SOURC3} target="_blank">
-                  <h4>© Sourc3</h4>
-                </a>
-              </div>
-              {/*<h4>© 2022 by SOURC3</h4>*/}
-            </div>
-          </Footer>
+          <Footer isOnLending={isOnLending} />
         </>
       </ErrorBoundary>
     </PreloadComponent>

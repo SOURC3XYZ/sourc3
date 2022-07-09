@@ -8,3 +8,4 @@ export { default as useBackground } from './useBackground';
 export { default as useCallApi } from './useCallApi';
 export { default as useFetch } from './useFetch';
 export * from './useDownloadBlob';
+export * from './useExcludeRoute';

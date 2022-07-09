@@ -10,6 +10,7 @@ import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
+import { useNavigate } from 'react-router-dom';
 import { BeamWebApiContext } from './shared-context';
 
 type BeamWebCtxProps = {
@@ -25,7 +26,9 @@ const messageBeam = {
 };
 
 export function BeamWebApi({ children }:BeamWebCtxProps) {
-  const { current: api } = useRef(new BeamWebAPI(CONFIG.CID));
+  const navigate = useNavigate();
+
+  const { current: api } = useRef(new BeamWebAPI(CONFIG.CID, navigate));
 
   const [query] = contractCall(api.callApi);
 

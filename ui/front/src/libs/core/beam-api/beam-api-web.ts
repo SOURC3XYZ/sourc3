@@ -1,6 +1,7 @@
 import { RequestSchema } from '@libs/action-creators';
-import { CONFIG, ToastMessages, WALLET } from '@libs/constants';
+import { CONFIG, ToastMessages } from '@libs/constants';
 import { ResultObject, User } from '@types';
+import { NavigateFunction } from 'react-router-dom';
 import { BeamAPI, BeamApiMethods, BeamObject } from './beam-api-abstract';
 
 type CallApiProps<T> = {
@@ -28,8 +29,11 @@ export class BeamWebAPI extends BeamAPI<RequestSchema['params']> {
 
   private walletConnectResolve: ((obj: ExtensionResolveObj) => void) | null = null;
 
-  constructor(cid: string) {
+  private navigate: NavigateFunction;
+
+  constructor(cid: string, navigate: NavigateFunction) {
     super(cid);
+    this.navigate = navigate;
     window.addEventListener('message', this.messageResponses);
   }
 
@@ -151,7 +155,7 @@ export class BeamWebAPI extends BeamAPI<RequestSchema['params']> {
     [key: string]: string;
   }) => {
     if (!this.checkExtensionInstalled()) {
-      window.open(WALLET.EXT_DOWNLOAD);
+      this.navigate('/download');
       throw new Error(ToastMessages.EXT_ERR_MSG);
     }
 

@@ -3,7 +3,7 @@ import { CONFIG } from '@libs/constants';
 import { hexParser } from '@libs/utils';
 import { ObjectDataResp } from '@types';
 import { useCallback, useState } from 'react';
-import { useCallApi } from '..';
+import useCallApi from '@libs/hooks/shared/useCallApi';
 import { forceDownload } from './util';
 
 type UseDownloadBlob = {

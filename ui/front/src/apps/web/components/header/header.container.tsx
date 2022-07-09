@@ -21,6 +21,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const {
     pkey,
     users,
+    isVisible,
     onConnect
   } = containerProps;
 
@@ -79,14 +80,16 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
     </div>
   ), [isOnLending, pkey, users]);
 
-  return (
+  const header = useMemo(() => (isVisible ? (
     <header className={headerClassName}>
       <div className={styles.nav}>
         {headerElements}
         {searchElement}
       </div>
     </header>
-  );
+  ) : null), [isVisible, isOnLending]);
+
+  return header;
 }
 
 export default Header;
