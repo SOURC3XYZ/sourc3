@@ -68,6 +68,31 @@ const ShaderID kSid[] = {
 
 const Upgradable3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
+void CompensateFee(const ContractID& cid, Amount charge) {
+    const Amount kSelfCharge = 120000;
+
+    sourc3::method::Withdraw wargs;
+    wargs.amount = (charge + kSelfCharge) * 10;
+
+    FundsChange fc;
+    fc.m_Consume = 0;
+    fc.m_Amount = wargs.amount;
+    fc.m_Aid = 0;
+
+    Env::Key_T<int> key;
+    key.m_Prefix.m_Cid = cid;
+    key.m_KeyInContract = 0;
+    sourc3::ContractState cs;
+    Env::VarReader::Read_T(key, cs);
+    if (cs.faucet_balance < wargs.amount) {
+        Env::DocAddText("warning", "not enough money to compensate charge");
+        return;
+    }
+
+    Env::GenerateKernel(&cid, wargs.kMethod, &wargs, sizeof(wargs), &fc, 1,
+                        nullptr, 0, "Compensate charge", 0);
+}
+
 void OnActionCreateContract(const ContractID& unused) {
     MyKeyID kid;
     PubKey pk;
@@ -196,6 +221,8 @@ void OnActionCreateRepo(const ContractID& cid) {
     //    sizeof(CreateRepoParams))
     //    + Env::Cost::Cycle * 300; // should be enought
 
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateRepo::kMethod,
                         /*pArgs=*/request,
@@ -205,7 +232,7 @@ void OnActionCreateRepo(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"create repo",
-                        /*nCharge=*/10000000);
+                        /*nCharge=*/charge);
 }
 
 void OnActionModifyRepo(const ContractID& cid) {
@@ -235,6 +262,7 @@ void OnActionModifyRepo(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyRepo::kMethod,
                         /*pArgs=*/request,
@@ -272,6 +300,8 @@ void OnActionCreateProject(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateProject::kMethod,
                         /*pArgs=*/request,
@@ -281,7 +311,7 @@ void OnActionCreateProject(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"create project",
-                        /*nCharge=*/10000000);
+                        /*nCharge=*/charge);
 }
 
 void OnActionListProjects(const ContractID& cid) {
@@ -406,6 +436,7 @@ void OnActionModifyProject(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyProject::kMethod,
                         /*pArgs=*/request,
@@ -431,6 +462,7 @@ void OnActionRemoveProject(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveProject::kMethod,
                         /*pArgs=*/&request,
@@ -502,6 +534,8 @@ void OnActionCreateOrganization(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateOrganization::kMethod,
                         /*pArgs=*/request,
@@ -511,7 +545,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"create organization",
-                        /*nCharge=*/10000000);
+                        /*nCharge=*/charge);
 }
 
 void OnActionListOrganizations(const ContractID& cid) {
@@ -665,6 +699,7 @@ void OnActionModifyOrganization(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyOrganization::kMethod,
                         /*pArgs=*/request,
@@ -691,6 +726,7 @@ void OnActionRemoveOrganization(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveOrganization::kMethod,
                         /*pArgs=*/&request,
@@ -730,6 +766,7 @@ void OnActionAddProjectMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/AddProjectMember::kMethod,
                         /*pArgs=*/&request,
@@ -769,6 +806,7 @@ void OnActionModifyProjectMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyProjectMember::kMethod,
                         /*pArgs=*/&request,
@@ -799,6 +837,7 @@ void OnActionRemoveProjectMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveProjectMember::kMethod,
                         /*pArgs=*/&request,
@@ -838,6 +877,7 @@ void OnActionAddOrganizationMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/AddOrganizationMember::kMethod,
                         /*pArgs=*/&request,
@@ -877,6 +917,7 @@ void OnActionModifyOrganizationMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyOrganizationMember::kMethod,
                         /*pArgs=*/&request,
@@ -907,6 +948,7 @@ void OnActionRemoveOrganizationMember(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveOrganizationMember::kMethod,
                         /*pArgs=*/&request,
@@ -991,6 +1033,8 @@ void OnActionDeleteRepo(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveRepo::kMethod,
                         /*pArgs=*/&request,
@@ -1000,7 +1044,7 @@ void OnActionDeleteRepo(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"delete repo",
-                        /*nCharge=*/10000000);
+                        /*nCharge=*/charge);
 }
 
 void OnActionAddUserParams(const ContractID& cid) {
@@ -1024,6 +1068,7 @@ void OnActionAddUserParams(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/AddRepoMember::kMethod,
                         /*pArgs=*/&request,
@@ -1057,6 +1102,7 @@ void OnActionModifyUserParams(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyRepoMember::kMethod,
                         /*pArgs=*/&request,
@@ -1080,6 +1126,7 @@ void OnActionRemoveUserParams(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
+    CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/RemoveRepoMember::kMethod,
                         /*pArgs=*/&request,
@@ -1147,6 +1194,8 @@ void OnActionPushObjects(const ContractID& cid) {
         }
 
         user_key.Get(refs_params->user);
+        Amount charge = 10000000;
+        CompensateFee(cid, charge);
         Env::GenerateKernel(/*pCid=*/&cid,
                             /*iMethod=*/PushRefs::kMethod,
                             /*pArgs=*/refs_params,
@@ -1156,7 +1205,7 @@ void OnActionPushObjects(const ContractID& cid) {
                             /*pSig=*/&sig,
                             /*nSig=*/1,
                             /*szComment=*/"Pushing refs",
-                            /*nCharge=*/10000000);
+                            /*nCharge=*/charge);
     }
 
     // dump objects for debug
@@ -1181,6 +1230,8 @@ void OnActionPushObjects(const ContractID& cid) {
     }
 
     user_key.Get(params->user);
+    Amount charge = 20000000 + 100000 * params->objects_number;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/PushObjects::kMethod,
                         /*pArgs=*/params,
@@ -1190,7 +1241,7 @@ void OnActionPushObjects(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"Pushing objects",
-                        /*nCharge=*/20000000 + 100000 * params->objects_number);
+                        /*nCharge=*/charge);
 }
 
 void OnActionListRefs(const ContractID& cid) {
@@ -1473,6 +1524,26 @@ void OnActionGetTreeFromData(const ContractID&) {
             OnError("no tree in data");
         }
     });
+}
+
+void OnActionDeposit(const ContractID& cid) {
+    sourc3::method::Deposit args;
+    Env::DocGetNum64("amount", &args.amount);
+    FundsChange fc;
+    fc.m_Consume = 1;
+    fc.m_Aid = 0;
+    fc.m_Amount = args.amount;
+    Env::GenerateKernel(&cid, args.kMethod, &args, sizeof(args), &fc, 1,
+                        nullptr, 0, "Deposit", 0);
+}
+
+void OnActionViewBalance(const ContractID& cid) {
+    Env::Key_T<int> key;
+    key.m_Prefix.m_Cid = cid;
+    key.m_KeyInContract = 0;
+    sourc3::ContractState cs;
+    Env::VarReader::Read_T(key, cs);
+    Env::DocAddNum("balance", cs.faucet_balance);
 }
 
 void GetObjects(const ContractID& cid,
@@ -1788,6 +1859,15 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("pid", "uint32_t");
             }
+            {
+                Env::DocGroup gr_method("deposit");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("amount", "Amount");
+            }
+            {
+                Env::DocGroup gr_method("view_balance");
+                Env::DocAddText("cid", "ContractID");
+            }
         }
     }
 }
@@ -1834,6 +1914,8 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"remove_project_member", OnActionRemoveProjectMember},
         {"add_organization_member", OnActionAddOrganizationMember},
         {"modify_organization_member", OnActionModifyOrganizationMember},
+        {"deposit", OnActionDeposit},
+        {"view_balance", OnActionViewBalance},
         {"remove_organization_member", OnActionRemoveOrganizationMember}};
 
     ActionsMap valid_manager_actions = {
