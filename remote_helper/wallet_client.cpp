@@ -170,8 +170,16 @@ const std::string& SimpleWalletClient::GetCID() {
         assert(root.is_object());
         auto& contracts = root.as_object()["contracts"];
         if (contracts.is_array() && !contracts.as_array().empty()) {
-            cid_ =
-                contracts.as_array()[0].as_object()["cid"].as_string().c_str();
+            const auto& contracts_array = contracts.as_array();
+            int64_t max_height = 0;
+            for (size_t i = 0; i < contracts_array.size(); ++i) {
+                const auto& contract_obj = contracts_array[i].as_object();
+                auto cur_height = contract_obj.at("Height").as_int64();
+                if (cur_height > max_height) {
+                    cid_ = contract_obj.at("cid").as_string().c_str();
+                    max_height = cur_height;
+                }
+            }
         }
     }
     return cid_;
