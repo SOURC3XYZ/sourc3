@@ -74,3 +74,7 @@ done:
     Pop $1
     Pop $0
 !macroend
+
+!macro customUnInstall
+    RMDIR /r "$LOCALAPPDATA\..\Roaming\${APP_FILENAME}"
+!macroend

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { IpcClient } from 'ipc-express';
 import { ipcRenderer } from 'electron';
+import { loggerLevel } from "./middlewares";
 
 const ipc = new IpcClient(ipcRenderer);
 
@@ -63,7 +64,6 @@ process.once('loaded', () => {
   };
   window.addEventListener('message', async (evt:IpcRequestEvent) => {
     if (evt.data.type === IPCTypes.SELECT_DIRS) {
-      console.log('kek');
       ipcRenderer.send('select-dirs');
     }
     if (evt.data.type === IPCTypes.CONTROL_REQ) {
@@ -73,12 +73,12 @@ process.once('loaded', () => {
       } as BeamApiResponse;
       try {
         const res = await ipc[evt.data.method](evt.data.url, evt.data.body) as IpcResponse;
-        console.log(res);
+        loggerLevel("info", res);
         response.result = res.data.id ? res.data.result : { ipc: res.data };
         if (res.data.method) response.method = res.data.method;
       } catch (error) {
         const err = error as IpcError;
-        console.log('preload error: ', error);
+        loggerLevel("error", 'preload error: ' + error);
         response.error = { code: err.statusCode, message: err.data };
       }
       return sendToRenderProcess({ type: IPCTypes.CONTROL_RES, response });
@@ -86,7 +86,7 @@ process.once('loaded', () => {
   });
 
   ipcRenderer.on('ping', (_, message) => {
-    console.log('ping', message);
+    loggerLevel("info", 'ping ' + message);
     if (message.id?.match(/ev_/i)) {
       window.postMessage({
         type: 'api-events',

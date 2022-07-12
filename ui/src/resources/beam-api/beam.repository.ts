@@ -2,6 +2,7 @@ import { Socket } from 'net';
 import request from 'request';
 import { WALLET_API_PORT } from '../../common';
 import { IApiReq } from '../../types';
+import {loggerLevel} from "../../middlewares";
 
 let socket: Socket;
 let callIndex = 0;
@@ -45,7 +46,7 @@ export const onResponce = (response: string) => {
 
     return cback(answer);
   } catch (err) {
-    console.log(`Failed to parse Wallet API response\n\t${response}\n\t${err}`);
+    loggerLevel("info", `Failed to parse Wallet API response\n\t${response}\n\t${err}`);
     return null;
   }
 };
@@ -57,16 +58,16 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
   }
   socket = new Socket();
   socket.connect(Number(WALLET_API_PORT), '127.0.0.1', () => {
-    console.log('tcp сonnected');
+    loggerLevel("info", 'tcp сonnected');
     let acc = '';
 
     socket.on('close', () => {
-      console.log('tcp connection closed');
+      loggerLevel("info", 'tcp connection closed');
     });
 
     socket.on('error', async (data: Buffer) => {
       const str = data.toString('utf-8');
-      console.log('socket error: ', str);
+      loggerLevel("info", 'socket error: ' + str);
       if (str.includes("ECONNRESET")) {
         await tcpFactory();
       }
@@ -98,7 +99,7 @@ export async function reqTCP(req: IApiReq) {
     return new Promise((resolve) => {
       calls[req.id] = resolve;
     });
-  } console.log(message);
+  } loggerLevel("info", message);
   throw new Error(message);
 }
 
