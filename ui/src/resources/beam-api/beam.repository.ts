@@ -64,9 +64,12 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
       console.log('tcp connection closed');
     });
 
-    socket.on('error', (data: Buffer) => {
+    socket.on('error', async (data: Buffer) => {
       const str = data.toString('utf-8');
       console.log('socket error: ', str);
+      if (str.includes("ECONNRESET")) {
+        await tcpFactory();
+      }
     });
 
     socket.on('data', (data) => {

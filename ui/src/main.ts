@@ -118,7 +118,6 @@ function createWindow() {
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);
   win.webContents.on("before-input-event", (_, input) => {
-    console.log(`Input key: ${input}`);
     if (input.type === "keyDown" && input.key === "F12") {
       win.webContents.toggleDevTools();
 

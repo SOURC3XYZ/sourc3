@@ -234,6 +234,16 @@ jobs:
       with:
         perl-version: '5.34'
 
+    - name: Disable tests in rebuilding modules [windows-2019]
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cd ui
+        if [ -d "./node_modules/nodegit" ]; then
+          sed -i 's/nmake test/REM nmake test/g' node_modules/nodegit/utils/build-openssl.bat
+          sed -i 's/no-ssl2/no-ssl2 no-tests/g' node_modules/nodegit/utils/build-openssl.bat
+        fi
+
     - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
