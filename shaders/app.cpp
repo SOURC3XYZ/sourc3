@@ -70,9 +70,10 @@ const Upgradable3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
 void CompensateFee(const ContractID& cid, Amount charge) {
     const Amount kSelfCharge = 120000;
+    const Amount kDefaultCharge = 100000;
 
     sourc3::method::Withdraw wargs;
-    wargs.amount = (charge + kSelfCharge) * 10;
+    wargs.amount = ((charge ? charge : kDefaultCharge) + kSelfCharge) * 10;
 
     FundsChange fc;
     fc.m_Consume = 0;
