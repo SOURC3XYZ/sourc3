@@ -248,7 +248,9 @@ export function runWalletApi(
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
       '--tcp_max_line=2000256000',
-      `--ipfs_repo=${ipfsPath}`
+      `--ipfs_repo=${ipfsPath}`,
+      '--file_log_level=verbose',
+      '--log_level=verbose'
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
