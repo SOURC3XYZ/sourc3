@@ -117,6 +117,28 @@ function createWindow() {
   }
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);
+  win.webContents.on("before-input-event", (_, input) => {
+    console.log(`Input key: ${input}`);
+    if (input.type === "keyDown" && input.key === "F12") {
+      win.webContents.toggleDevTools();
+
+      win.webContents.on('devtools-opened', () => {
+        // Can't use win.webContents.devToolsWebContents.on("before-input-event") - it just doesn't intercept any events.
+        win.webContents.devToolsWebContents?.executeJavaScript(`
+            new Promise((resolve)=> {
+              addEventListener("keydown", (event) => {
+                if (event.key === "F12") {
+                  resolve();
+                }
+              }, { once: true });
+            })
+          `)
+          .then(() => {
+            win.webContents.toggleDevTools();
+          });
+      });
+    }
+  });
 }
 
 app.whenReady().then(() => {
