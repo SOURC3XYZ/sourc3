@@ -85,12 +85,12 @@ void CompensateFee(const ContractID& cid, Amount charge) {
     sourc3::ContractState cs;
     Env::VarReader::Read_T(key, cs);
     if (cs.faucet_balance < wargs.amount) {
-        Env::DocAddText("warning", "not enough money to compensate charge");
+        Env::DocAddText("warning", "not enough money to compensate fee");
         return;
     }
 
     Env::GenerateKernel(&cid, wargs.kMethod, &wargs, sizeof(wargs), &fc, 1,
-                        nullptr, 0, "Compensate charge", 0);
+                        nullptr, 0, "Compensate fee", 0);
 }
 
 void OnActionCreateContract(const ContractID& unused) {
