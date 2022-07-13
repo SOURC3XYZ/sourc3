@@ -5,7 +5,6 @@ on: [workflow_dispatch, push]
 env:
   BUILD_TYPE: Release
   BUILD_CONFIG: RelWithDebInfo
-  NODE_ENV: production
 
 jobs:
 ###############################################################################
@@ -204,7 +203,7 @@ jobs:
       shell: bash
       run: |
         cd ui/front
-        npm run build
+        NODE_ENV=production npm run build
 
     - name: Copy app
       shell: bash
