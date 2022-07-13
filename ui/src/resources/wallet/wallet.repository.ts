@@ -257,8 +257,7 @@ export function runWalletApi(
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
-      loggerLevel("info", 'stdout: ' + bufferString);
-      console.log('stdout: ' + bufferString);
+      loggerLevel("info", 'stdout: ' + data.toString('utf-8'));
       if (bufferString.match(successReg)) {
         resolve('wallet api started successfully');
       }
