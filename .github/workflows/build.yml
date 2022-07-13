@@ -5,7 +5,7 @@ on: [workflow_dispatch, push]
 env:
   BUILD_TYPE: Release
   BUILD_CONFIG: RelWithDebInfo
-  NODE_ENV: dev
+  NODE_ENV: production
 
 jobs:
 ###############################################################################
