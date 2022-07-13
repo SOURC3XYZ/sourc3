@@ -5,7 +5,6 @@ on: [workflow_dispatch, push]
 env:
   BUILD_TYPE: Release
   BUILD_CONFIG: RelWithDebInfo
-  NODE_ENV: dev
 
 jobs:
 ###############################################################################
@@ -176,25 +175,8 @@ jobs:
         tar xvf ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/node
         cp ./downloads/wasm-client* ./ui/front/dist
         sudo npm install --global yarn
-
-    - name: Cache node modules
-      uses: actions/cache@v3
-      id: cache-electron-modules
-      env:
-        cache-name: electron-node-modules
-      with:
-        path: |
-          ui/front/node_modules
-          ui/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-
+       
     - name: Install front dependencies
-      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       shell: bash
       run: |
         cd ui/front
@@ -204,7 +186,7 @@ jobs:
       shell: bash
       run: |
         cd ui/front
-        npm run build
+        NODE_ENV=production npm run build
 
     - name: Copy app
       shell: bash
@@ -213,30 +195,29 @@ jobs:
 
     - name: Install electron dependencies
       shell: bash
-      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
         npm i --legacy-peer-deps
 
     - name: Install dmg licence [macos-10.15]
       shell: bash
-      if: matrix.os == 'macos-10.15' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'macos-10.15'
       run: |
         cd ui
         npm i dmg-license
 
     - name: Install wasm [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       uses: ilammy/setup-nasm@v1
       
     - name: Set up perl [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: '5.34'
 
     - name: Disable tests in rebuilding modules [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       shell: bash
       run: |
         cd ui
@@ -246,7 +227,7 @@ jobs:
         fi
 
     - name: Rebuild modules [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       run: |
         cd ui
         .\node_modules\.bin\electron-rebuild.cmd
@@ -254,7 +235,7 @@ jobs:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
 
     - name: Rebuild modules [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os != 'windows-2019'
       run: |
         cd ui
 
