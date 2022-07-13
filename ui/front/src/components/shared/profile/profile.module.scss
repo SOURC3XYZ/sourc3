@@ -23,7 +23,7 @@
     text-align: left;
 &:hover{
     background-color: transparent;
-    color: $color-orage;
+    color: $color-orange;
 }
 }
 .dropdown{
@@ -31,7 +31,7 @@
         border-radius: 16px;
         li:hover{
             background-color: transparent;
-            color: $color-orage;
+            color: $color-orange;
         }
         li:nth-child(6), li:nth-child(8) {
             border-bottom: solid 1px rgba(0, 0, 0, 0.1);
