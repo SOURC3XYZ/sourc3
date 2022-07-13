@@ -593,7 +593,9 @@ int main(int argc, char* argv[]) {
             po::value<string>(&options.appPath)->default_value("app.wasm"),
             "Path to the app shader file")(
             "use-ipfs", po::value<bool>(&options.useIPFS)->default_value(true),
-            "Use IPFS to store large blobs");
+            "Use IPFS to store large blobs")(
+            "ipfs-timeout", po::value<int>(&options.ipfsTimeout)->default_value(50000),
+            "Timeout for IPFS requests");
         po::variables_map vm;
 #ifdef WIN32
         const auto* home_dir = std::getenv("USERPROFILE");
@@ -613,6 +615,7 @@ int main(int argc, char* argv[]) {
             po::store(po::parse_config_file(cfg, desc), vm);
         }
         vm.notify();
+        std::cerr << "Timeout: " << options.ipfsTimeout << std::endl;
         string_view sv(argv[2]);
         const string_view schema = PROTO_NAME "://";
         sv = sv.substr(schema.size());
