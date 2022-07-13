@@ -49,7 +49,7 @@ function Start({ restore }:StartProps) {
               />
             ) : (
               <NavButton
-                name="Sign in"
+                name="Sign in or restore"
                 link="/auth/login"
                 active
                 inlineStyles={{ color: '#000' }}

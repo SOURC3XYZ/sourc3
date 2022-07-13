@@ -10,6 +10,26 @@
 
 //   margin-bottom: 16px;
 // }
+@import '@styles/vars.scss';
+
+.restoreBlock{
+  display: flex;
+  justify-content:space-between;
+  color: $color-orange;
+  font-weight: 700;
+  font-size: 14px;
+  :global {
+    .ant-btn {
+      padding: 0;
+      height: auto;
+      font-weight: 700;
+      font-size: 14px;
+      span {
+        text-decoration: underline;
+      }
+    }
+  }
+}
 
 
 .wrapper {
@@ -28,11 +48,6 @@
   button{
     width: 278px;
   }
-}
-
-.forgot {
-  font-weight: 700;
-  font-size: 14px;
 }
 
 .wrapper {
