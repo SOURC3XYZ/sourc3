@@ -18,11 +18,9 @@ dotenv.config({
   path: envPath
 });
 
-export const {
-  PORT,
-  NODE_ENV,
-  WALLET,
-  WALLET_API_PORT,
-  BEAM_NODE_PORT,
-  HTTP_MODE
-} = process.env;
+export const PORT = 5001
+export const NODE_ENV = "development"
+export const WALLET = "http://127.0.0.1:9100/api/wallet"
+export const WALLET_API_PORT = 9100
+export const BEAM_NODE_PORT = 9105
+export const HTTP_MODE = 0
