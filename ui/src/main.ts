@@ -76,9 +76,8 @@ function createWindow() {
       //   path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       // );
     } else if (process.platform === 'darwin') {
-      loggerLevel("info", app.getPath('exe'));
-      const dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
-      const src = path.join(__dirname, '..', '..', '..', 'git-remote-sourc3');
+      const dst = path.join(app.getPath('exe'), '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
+      const src = path.join(app.getPath('exe'), '..', '..', '..', 'git-remote-sourc3');
       if (!fs.existsSync(dst)) {
         fs.symlinkSync(src, dst);
       }
