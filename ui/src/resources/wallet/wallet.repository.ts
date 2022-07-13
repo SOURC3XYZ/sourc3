@@ -159,7 +159,7 @@ export function startBeamNode(
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--file_log_level=verbose']);
+        '--log_level=debug']);
 
       node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
@@ -253,8 +253,7 @@ export function runWalletApi(
       '--enable_ipfs=true',
       '--tcp_max_line=2000256000',
       `--ipfs_repo=${ipfsPath}`,
-      '--file_log_level=verbose',
-      '--log_level=verbose'
+      '--log_level=debug'
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);

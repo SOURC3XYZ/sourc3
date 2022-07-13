@@ -13,12 +13,12 @@ const logger = createLogger({
     new transports.File({
       filename: path.join(app.getPath("logs"), 'error.log'),
       level: 'error',
-      format: format.combine(format.uncolorize(), format.json())
+      format: format.combine(format.uncolorize(), format.timestamp(), format.json())
     }),
     new transports.File({
       filename: path.join(app.getPath("logs"), 'info.log'),
       level: 'info',
-      format: format.combine(format.uncolorize(), format.json())
+      format: format.combine(format.uncolorize(), format.timestamp(), format.json())
     })
   ],
   exitOnError: false
