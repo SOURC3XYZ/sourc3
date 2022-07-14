@@ -46,7 +46,6 @@ public:
         std::string repoName;
         std::string repoPath = ".";
         bool useIPFS = true;
-        int ipfsTimeout = 50000;
     };
 
     SimpleWalletClient(const Options& options)

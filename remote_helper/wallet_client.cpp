@@ -59,7 +59,7 @@ std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
         json::value{{JsonRpcHeader, JsonRpcVersion},
                     {"id", 1},
                     {"method", "ipfs_get"},
-                    {"params", {{"hash", std::move(hash)}, {"timeout", options_.ipfsTimeout}}}};
+                    {"params", {{"hash", std::move(hash)}}}};
     return CallAPI(json::serialize(msg));
 }
 
