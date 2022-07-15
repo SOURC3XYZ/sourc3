@@ -12,23 +12,10 @@
 // }
 @import '@styles/vars.scss';
 
-.restoreBlock{
-  display: flex;
-  justify-content:space-between;
+.forgot {
   color: $color-orange;
   font-weight: 700;
   font-size: 14px;
-  :global {
-    .ant-btn {
-      padding: 0;
-      height: auto;
-      font-weight: 700;
-      font-size: 14px;
-      span {
-        text-decoration: underline;
-      }
-    }
-  }
 }
 
 
@@ -42,10 +29,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  button:not(:last-child){
+
+  button:not(:last-child) {
     margin-bottom: 16px;
   }
-  button{
+
+  button {
     width: 278px;
   }
 }
@@ -107,9 +96,9 @@
     max-width: 609px;
     margin-bottom: 40px;
     font-weight: 900;
-		font-size: 32px;
-		line-height: 37.6px;
-		font-family: PublicSans-Black;
+    font-size: 32px;
+    line-height: 37.6px;
+    font-family: PublicSans-Black;
 
     span {
       border-bottom: 5px solid #3FD05A;
@@ -157,7 +146,7 @@
       display: block;
       animation: fadein 7s alternate;
     }
-    
+
     .button {
       width: 154px;
       height: 52px;
@@ -186,10 +175,10 @@
   animation: fadein 10s alternate;
 }
 
-.backButton{
+.backButton {
   position: absolute;
-    top: 30px;
-    right: 616px;
+  top: 30px;
+  right: 616px;
 }
 
 @keyframes fadein {
@@ -228,6 +217,7 @@
       display: none !important;
     }
   }
+
   // .backButton{
   //   position: absolute;
   //     top: 30px;
@@ -247,10 +237,11 @@
       padding: 0 20px;
     }
   }
-  .backButton{
+
+  .backButton {
     position: absolute;
-      top: 30px;
-      right: 420px;
+    top: 30px;
+    right: 420px;
   }
 }
 
@@ -289,10 +280,11 @@
       }
     }
   }
-  .backButton{
+
+  .backButton {
     position: absolute;
-      top: 30px;
-      right: 250px;
+    top: 30px;
+    right: 250px;
   }
 }
 
