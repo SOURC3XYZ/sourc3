@@ -65,12 +65,9 @@ export const tcpFactory = () => new Promise<void>((resolve) => {
       loggerLevel("info", 'tcp connection closed');
     });
 
-    socket.on('error', async (data: Buffer) => {
+    socket.on('error', (data: Buffer) => {
       const str = data.toString('utf-8');
-      loggerLevel("info", 'socket error: ' + str);
-      if (str.includes("ECONNRESET")) {
-        await tcpFactory();
-      }
+      loggerLevel("error", 'socket error: ' + str);
     });
 
     socket.on('data', (data) => {

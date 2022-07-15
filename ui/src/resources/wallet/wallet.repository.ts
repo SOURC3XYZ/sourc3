@@ -116,8 +116,10 @@ export function exportOwnerKey(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      loggerLevel("info", 'stdout: ' + bufferString);
-      console.log('stdout: ' + bufferString);
+
+      if (bufferString.match(beamErrorReg)) {
+        loggerLevel("info", 'stdout: ' + bufferString);
+      }
 
       if (bufferString.match(ownerKeyReg)) {
         const key = bufferString
@@ -210,9 +212,7 @@ export function restoreExistedWallet(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      if (bufferString.match(beamErrorReg)) {
-        loggerLevel("error", 'CLI stdout: ' + bufferString);
-      }
+      loggerLevel("error", 'CLI stdout: ' + bufferString);
       if (bufferString.match(walletRestoreSuccessReg)) {
         seedRepository.findOne({ where: { seed } })
           .then((finded) => {
