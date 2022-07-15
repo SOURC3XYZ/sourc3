@@ -197,13 +197,13 @@ jobs:
       shell: bash
       run: |
         cd ui/front
-        npm ci --legacy-peer-deps
+        yarn --frozen-lockfile
 
     - name: Build front
       shell: bash
       run: |
         cd ui/front
-        NODE_ENV=production npm run build
+        NODE_ENV=production yarn build
 
     - name: Copy app
       shell: bash
@@ -215,7 +215,7 @@ jobs:
       if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
-        npm ci --legacy-peer-deps
+        yarn --frozen-lockfile
 
     - name: Install dmg licence [macos-10.15]
       shell: bash
