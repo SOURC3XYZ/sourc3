@@ -162,9 +162,9 @@ jobs:
         cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
-        
+
         npm install --global yarn
-        
+
     - name: Prepare for electron build [macos-10.15 && ubuntu all]
       shell: bash
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
@@ -197,13 +197,13 @@ jobs:
       shell: bash
       run: |
         cd ui/front
-        npm i --legacy-peer-deps
+        yarn --frozen-lockfile
 
     - name: Build front
       shell: bash
       run: |
         cd ui/front
-        NODE_ENV=production npm run build
+        NODE_ENV=production yarn build
 
     - name: Copy app
       shell: bash
@@ -215,7 +215,7 @@ jobs:
       if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
-        npm i --legacy-peer-deps
+        yarn --frozen-lockfile
 
     - name: Install dmg licence [macos-10.15]
       shell: bash
@@ -227,12 +227,22 @@ jobs:
     - name: Install wasm [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: ilammy/setup-nasm@v1
-      
+
     - name: Set up perl [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: '5.34'
+
+    - name: Disable tests in rebuilding modules [windows-2019]
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cd ui
+        if [ -d "./node_modules/nodegit" ]; then
+          sed -i 's/nmake test/REM nmake test/g' node_modules/nodegit/utils/build-openssl.bat
+          sed -i 's/no-ssl2/no-ssl2 no-tests/g' node_modules/nodegit/utils/build-openssl.bat
+        fi
 
     - name: Rebuild modules [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
@@ -459,7 +469,7 @@ jobs:
         name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
         if-no-files-found: error
-    
+
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'macos-10.15'
       with:
