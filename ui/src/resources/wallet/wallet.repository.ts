@@ -210,7 +210,9 @@ export function restoreExistedWallet(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      loggerLevel("info", 'stdout: ' + bufferString);
+      if (bufferString.match(beamErrorReg)) {
+        loggerLevel("error", 'CLI stdout: ' + bufferString);
+      }
       if (bufferString.match(walletRestoreSuccessReg)) {
         seedRepository.findOne({ where: { seed } })
           .then((finded) => {
@@ -257,7 +259,7 @@ export function runWalletApi(
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
-      loggerLevel("info", 'stdout: ' + data.toString('utf-8'));
+      loggerLevel("info", 'API stdout: ' + data.toString('utf-8'));
       if (bufferString.match(successReg)) {
         resolve('wallet api started successfully');
       }
