@@ -21,6 +21,7 @@ import {
   ipfsPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
+import { loggerLevel } from "../../middlewares";
 
 let currentProcess: ChildProcess | undefined;
 
@@ -54,7 +55,7 @@ export function deleteFile(filePath: string) {
     fs.unlinkSync(filePath);
     return true;
   } catch (err) {
-    console.error(err);
+    loggerLevel("error", err);
     return false;
   }
 }
@@ -67,7 +68,7 @@ export function readDirFile(
     (resolve) => {
       fs.readdir(directoryPath, (err, files) => {
         if (err) {
-          console.log(`Unable to scan directory: ${err}`);
+          loggerLevel("info", 'Unable to scan directory: ' + err);
           resolve(false);
         }
         const findedName = files.find((el) => el === fileName);
@@ -82,7 +83,7 @@ export function killApiServer(): Promise<string> {
     (resolve) => {
       if (currentProcess && !currentProcess.killed) {
         currentProcess.on('close', (code: number) => {
-          console.log(`child process exited with code ${code}`);
+          loggerLevel("info", 'child process exited with code ' + code);
           resolve(`child process exited with code ${code}`);
         });
         currentProcess.kill('SIGTERM');
@@ -95,7 +96,7 @@ export function setCurrentProcess(process?: ChildProcess) {
   if (currentProcess && !currentProcess.killed) {
     currentProcess.kill('SIGTERM');
     currentProcess.on('close', (code: number) => {
-      console.log(`child process exited with code ${code}`);
+      loggerLevel("info", 'child process exited with code ' + code);
       if (process) setCurrentProcess(process);
     });
   } else currentProcess = process;
@@ -115,7 +116,10 @@ export function exportOwnerKey(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      console.log(`stdout: ${bufferString}`);
+
+      if (bufferString.match(beamErrorReg)) {
+        loggerLevel("info", 'stdout: ' + bufferString);
+      }
 
       if (bufferString.match(ownerKeyReg)) {
         const key = bufferString
@@ -134,7 +138,7 @@ export function exportOwnerKey(
     };
 
     const onClose = (code: number | null) => {
-      console.log(`child process exited with code ${code}`);
+      loggerLevel("info", 'child process exited with code ' + code);
     };
 
     runSpawnProcess({
@@ -150,18 +154,19 @@ export function startBeamNode(
   return new Promise((resolve, reject) => {
     const beamNodePath = getExecutableFile(nodePath);
     if (beamNodePath) {
-      console.log('Beam node is: ', beamNodePath);
+      loggerLevel("info", 'Beam node is: ' + beamNodePath);
       const node = spawn(beamNodePath, [
         `--port=${BEAM_NODE_PORT}`,
         `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--file_log_level=verbose']);
+        '--log_level=debug']);
 
       node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
-        console.log(`Got node output: ${bufferString}`);
+        loggerLevel("info", 'node output: ' + bufferString);
+        console.log('node output: ' + bufferString);
         if (bufferString.match(nodeUpdatingReq)) {
           const str = String(bufferString.split('node')[1]);
           nodeUpdate = Number(/\d+/.exec(str));
@@ -172,11 +177,12 @@ export function startBeamNode(
 
       node.stderr.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
-        console.log(`Got node error: ${bufferString}`);
+        loggerLevel("info", 'node error: ' + bufferString);
+        console.log('node error: ' + bufferString);
       });
 
       app.on('window-all-closed', () => {
-        console.log('Kill node!');
+        loggerLevel("info", 'Kill node!');
         node.kill('SIGTERM');
       });
       return resolve(node);
@@ -206,7 +212,7 @@ export function restoreExistedWallet(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      console.log('stdout:', bufferString);
+      loggerLevel("error", 'CLI stdout: ' + bufferString);
       if (bufferString.match(walletRestoreSuccessReg)) {
         seedRepository.findOne({ where: { seed } })
           .then((finded) => {
@@ -248,11 +254,12 @@ export function runWalletApi(
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
       '--tcp_max_line=2000256000',
-      `--ipfs_repo=${ipfsPath}`
+      `--ipfs_repo=${ipfsPath}`,
+      '--log_level=debug'
     ];
     const onData = (data: Buffer) => {
       const bufferString = limitStr(data.toString('utf-8'), 300);
-      console.log(`stdout: ${bufferString}`);
+      loggerLevel("info", 'API stdout: ' + data.toString('utf-8'));
       if (bufferString.match(successReg)) {
         resolve('wallet api started successfully');
       }

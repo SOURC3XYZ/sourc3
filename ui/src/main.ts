@@ -8,6 +8,7 @@ import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
 import crypto from 'crypto';
+import { loggerLevel } from "./middlewares";
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
@@ -16,10 +17,10 @@ tryBDConnect(() => {
 
 function CopyIfNotExists(src: string, dst: string) {
   if (!fs.existsSync(dst)) {
-    console.log(`Copy from ${src} to ${dst}`);
+    loggerLevel("info", `Copy from ${src} to ${dst}`);
     fs.copyFileSync(src, dst);
   } else {
-    console.log(`Already has ${dst}`);
+    loggerLevel("info", `Already has ${dst}`);
   }
 }
 
@@ -31,7 +32,7 @@ function GetHash(file: string, algo: string) {
 }
 
 function CopyIfNotEqualHash(src: string, dst: string) {
-  console.log(`Check ${src} to ${dst}`)
+  loggerLevel("info", `Check copy ${src} to ${dst}`)
   if (fs.existsSync(dst)) {
     const dstHex = GetHash(dst, "sha256");
     const srcHex = GetHash(src, "sha256");
@@ -61,7 +62,7 @@ function createWindow() {
     const result = await dialog.showOpenDialog(win, {
       properties: ['openDirectory']
     });
-    console.log('directories selected', result.filePaths);
+    loggerLevel("info", 'directories selected' + result.filePaths);
     win.webContents.send('ping', result.filePaths[0]);
   });
   try {
@@ -75,9 +76,8 @@ function createWindow() {
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
     } else if (process.platform === 'darwin') {
-      console.log(app.getPath('exe'));
-      const dst = path.join(__dirname, '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
-      const src = path.join(__dirname, '..', '..', '..', 'git-remote-sourc3');
+      const dst = path.join(app.getPath('exe'), '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
+      const src = path.join(app.getPath('exe'), '..', '..', '..', 'git-remote-sourc3');
       if (!fs.existsSync(dst)) {
         fs.symlinkSync(src, dst);
       }
@@ -88,14 +88,14 @@ function createWindow() {
     const configPath = path.join(sourc3Path, 'sourc3-remote.cfg');
     CopyIfNotExists(path.join(__dirname, '..', '..', 'sourc3-remote.cfg'), configPath);
     fs.readFile(configPath, 'utf8', (err, data) => {
-      if (err) return console.log(err);
+      if (err) return loggerLevel("info", err);
       const result = data.replace(
         '# app-shader-file="app.wasm"',
         `app-shader-file=${path.join(sourc3Path, 'app.wasm')}`
       );
 
       return fs.writeFile(configPath, result, 'utf8', (error) => {
-        if (error) return console.log(error);
+        if (error) return loggerLevel("info", error);
         return null;
       });
     });
@@ -104,7 +104,7 @@ function createWindow() {
       path.join(sourc3Path, 'app.wasm')
     );
   } catch (error) {
-    console.error(error);
+    loggerLevel("error", error);
   }
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
@@ -118,7 +118,6 @@ function createWindow() {
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);
   win.webContents.on("before-input-event", (_, input) => {
-    console.log(`Input key: ${input}`);
     if (input.type === "keyDown" && input.key === "F12") {
       win.webContents.toggleDevTools();
 

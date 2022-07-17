@@ -49,6 +49,7 @@ struct ContractState {
     uint64_t last_repo_id;
     uint64_t last_organization_id;
     uint64_t last_project_id;
+    Amount faucet_balance;
 };
 
 struct Organization {
@@ -404,6 +405,16 @@ struct RemoveOrganizationMember {
     Organization::Id organization_id;
     PubKey member;
     PubKey caller;
+};
+
+struct Deposit {
+    static const uint32_t kMethod = 23;
+    Amount amount;
+};
+
+struct Withdraw {
+    static const uint32_t kMethod = 24;
+    Amount amount;
 };
 
 #pragma pack(pop)

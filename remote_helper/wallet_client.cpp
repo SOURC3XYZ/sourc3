@@ -59,7 +59,7 @@ std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
         json::value{{JsonRpcHeader, JsonRpcVersion},
                     {"id", 1},
                     {"method", "ipfs_get"},
-                    {"params", {{"hash", std::move(hash)}, {"timeout", 5000}}}};
+                    {"params", {{"hash", std::move(hash)}}}};
     return CallAPI(json::serialize(msg));
 }
 
@@ -170,16 +170,8 @@ const std::string& SimpleWalletClient::GetCID() {
         assert(root.is_object());
         auto& contracts = root.as_object()["contracts"];
         if (contracts.is_array() && !contracts.as_array().empty()) {
-            const auto& contracts_array = contracts.as_array();
-            int64_t max_height = 0;
-            for (size_t i = 0; i < contracts_array.size(); ++i) {
-                const auto& contract_obj = contracts_array[i].as_object();
-                auto cur_height = contract_obj.at("Height").as_int64();
-                if (cur_height > max_height) {
-                    cid_ = contract_obj.at("cid").as_string().c_str();
-                    max_height = cur_height;
-                }
-            }
+            cid_ =
+                contracts.as_array()[0].as_object()["cid"].as_string().c_str();
         }
     }
     return cid_;
