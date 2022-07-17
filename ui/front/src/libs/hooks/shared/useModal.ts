@@ -15,8 +15,7 @@ const useModal = (...[handleInput, submit]: UseCreateModalArgs) => {
 
   const handleOk = (name: string) => {
     closeModal();
-    submit(name);
-    console.log(name);
+    submit(`"${name}"`);
   };
 
   return {
