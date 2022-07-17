@@ -35,7 +35,7 @@ function Start({ restore }:StartProps) {
             {' '}
             <span>Web3</span>
             {' '}
-            Builds.
+            Builds
           </h2>
         </div>
         <div className={styles.btnNav}>

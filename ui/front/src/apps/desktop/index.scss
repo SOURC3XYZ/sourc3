@@ -4,37 +4,42 @@
 	-webkit-app-region: no-drag;
 } */
 
-:global #root {
+@import '@styles/vars.scss';
+
+[id~=root] {
   height: 100%;
 }
 
-
-body {
-  overflow-y: scroll !important;
-  width: unset !important;
+* {
+  user-select: none;
 }
 
-body::-webkit-scrollbar {
-  width: 11px;
-  height: 10px;
-}
+// body {
+//   overflow-y: scroll !important;
+//   width: unset !important;
+// }
 
-body::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 3px solid rgba(0, 0, 0, 0);
-  background-clip: padding-box;
-}
+// body::-webkit-scrollbar {
+//   width: 11px;
+//   height: 10px;
+// }
 
-body::-webkit-scrollbar-track {
-  background: transparent;
-}
+// body::-webkit-scrollbar-thumb {
+//   border-radius: 10px;
+//   background: $color-green;
+//   border: 3px solid rgba(0, 0, 0, 0);
+//   background-clip: padding-box;
+// }
 
-body::-webkit-scrollbar-button {
-  display: none;
-}
+// body::-webkit-scrollbar-track {
+//   background: transparent;
+// }
 
-body::-webkit-scrollbar-corner {
-  background-color: transparent;
-  display: none;
-}
+// body::-webkit-scrollbar-button {
+//   display: none;
+// }
+
+// body::-webkit-scrollbar-corner {
+//   background-color: transparent;
+//   display: none;
+// }

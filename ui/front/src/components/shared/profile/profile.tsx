@@ -1,8 +1,8 @@
-import avatar from '@assets/icons/icon-avatar.png';
 import {
   Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
+import Avatar from 'boring-avatars';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './profile.module.scss';
@@ -18,22 +18,11 @@ function Profile({ pKey }:profileType) {
   //   setVisible(true);
   // };
 
-  const handleCancel = () => {
-    setVisible(false);
-  };
-  const handleOk = () => {
-    handleCancel();
-  };
-
-  const logOut = () => {
-    navigate('/');
-  };
-  const myOrg = () => {
-    navigate('/organizations/my/1');
-  };
-  const myRep = () => {
-    navigate('/repos/my/1');
-  };
+  const handleCancel = () => setVisible(false);
+  const handleOk = () => handleCancel();
+  const logOut = () => navigate('/');
+  const myOrg = () => navigate('/organizations/my/1');
+  const myRep = () => navigate('/repos/my/1');
 
   const data = [
     { title: 'Profile', isDisabled: true },
@@ -78,7 +67,24 @@ function Profile({ pKey }:profileType) {
           overlayClassName={styles.dropdown}
         >
           <div>
-            <img src={avatar} alt="" />
+            <Avatar
+              size={40}
+              name={pKey}
+              variant="beam"
+              colors={[
+                '#FF791F',
+                '#3FD05A',
+                '#000000',
+                '#C271B4',
+                '#4DA2E6',
+                '#DDDDDD',
+                '#92A1C6',
+                '#146A7C',
+                '#F0AB3D',
+                '#C271B4',
+                '#C20D90'
+              ]}
+            />
           </div>
         </Dropdown>
       </div>
