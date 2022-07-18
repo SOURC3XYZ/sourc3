@@ -12,7 +12,7 @@ type AddModalType = {
   isModalVisible: boolean;
   handleCreate: (name:string) => void;
   handleCancel: () => void;
-  closePopup?: (() => void)
+  closePopup?: () => void;
   placeholder: string;
   label: string;
   title: string;
@@ -34,7 +34,7 @@ function CreateModal({
   const handleOk = () => {
     handleCreate(inputName);
     setInputName('');
-    closePopup();
+    if (closePopup) closePopup();
   };
 
   return (
