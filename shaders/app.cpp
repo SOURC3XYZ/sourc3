@@ -32,7 +32,10 @@ namespace Env {  // NOLINT
 #include "libgit2/full_git.h"
 
 namespace sourc3 {
-#include "contract_sid.i"
+    namespace v0 {
+        #include "contract_sid_v0.i"
+    }
+    #include "contract_sid.i"
 }
 
 namespace {
@@ -63,17 +66,18 @@ struct MyKeyID :public Env::KeyID {
 
 // Add new SID here after changing contract.cpp
 const ShaderID kSid[] = {
+        sourc3::v0::s_SID,
         sourc3::s_SID
 };
 
 const Upgradable3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
 
 void CompensateFee(const ContractID& cid, Amount charge) {
-    const Amount kSelfCharge = 120000;
-    const Amount kDefaultCharge = 100000;
+    constexpr Amount kSelfCharge = 120000;
+    constexpr Amount kDefaultCharge = 100000;
 
     sourc3::method::Withdraw wargs;
-    wargs.amount = ((charge ? charge : kDefaultCharge) + kSelfCharge) * 10;
+    wargs.amount = ((charge != 0u ? charge : kDefaultCharge) + kSelfCharge) * 10;
 
     FundsChange fc;
     fc.m_Consume = 0;

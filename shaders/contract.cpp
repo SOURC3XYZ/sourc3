@@ -384,7 +384,7 @@ BEAM_EXPORT void Method_22(const method::RemoveOrganizationMember& params) {  //
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_23(const method::Deposit& params) {
+BEAM_EXPORT void Method_23(const method::Deposit& params) { // NOLINT
     Env::FundsLock(0, params.amount);
     ContractState cs;
     Env::LoadVar_T(0, cs);
@@ -392,7 +392,7 @@ BEAM_EXPORT void Method_23(const method::Deposit& params) {
     Env::SaveVar_T(0, cs);
 }
 
-BEAM_EXPORT void Method_24(const method::Withdraw& params) {
+BEAM_EXPORT void Method_24(const method::Withdraw& params) { // NOLINT
     ContractState cs;
     Env::LoadVar_T(0, cs);
     Strict::Sub(cs.faucet_balance, params.amount);
