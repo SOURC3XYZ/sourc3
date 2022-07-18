@@ -6,7 +6,7 @@ import { CONFIG } from '@libs/constants';
 import { BeamApiDesktop } from '@libs/core';
 import { AppThunkDispatch } from '@libs/redux';
 import wasm from '@assets/app.wasm';
-import { ContractsResp } from '@types';
+import { ContractsResp, PKeyRes } from '@types';
 import { useCallback, useMemo, useRef } from 'react';
 import { BeamWebApiContext } from './shared-context';
 
@@ -37,9 +37,13 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
     await api.initContract(wasm);
     api.loadApiEventManager(apiEventManager(dispatch));
     await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
-      const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
-      if (!finded) throw new Error(`no specified cid (${api.cid})`);
-      return [AC.setIsConnected(!!finded)];
+      const found = output.contracts.find((el) => el.cid === api.cid) || 1;
+      if (!found) throw new Error(`no specified cid (${api.cid})`);
+      query<PKeyRes>(
+        dispatch,
+        RC.getPublicKey(),
+        (pKeyOutput) => [AC.setPublicKey(pKeyOutput.key), AC.setIsConnected(!!found)]
+      );
     }, true);
   };
 

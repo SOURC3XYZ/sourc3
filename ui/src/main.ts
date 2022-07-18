@@ -4,11 +4,11 @@ import {
 import path from 'path';
 import fs from 'fs';
 import { IpcServer } from 'ipc-express';
+import crypto from 'crypto';
 import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
-import crypto from 'crypto';
-import { loggerLevel } from "./middlewares";
+import { loggerLevel } from './middlewares';
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
@@ -17,10 +17,10 @@ tryBDConnect(() => {
 
 function CopyIfNotExists(src: string, dst: string) {
   if (!fs.existsSync(dst)) {
-    loggerLevel("info", `Copy from ${src} to ${dst}`);
+    loggerLevel('info', `Copy from ${src} to ${dst}`);
     fs.copyFileSync(src, dst);
   } else {
-    loggerLevel("info", `Already has ${dst}`);
+    loggerLevel('info', `Already has ${dst}`);
   }
 }
 
@@ -32,11 +32,11 @@ function GetHash(file: string, algo: string) {
 }
 
 function CopyIfNotEqualHash(src: string, dst: string) {
-  loggerLevel("info", `Check copy ${src} to ${dst}`)
+  loggerLevel('info', `Check copy ${src} to ${dst}`);
   if (fs.existsSync(dst)) {
-    const dstHex = GetHash(dst, "sha256");
-    const srcHex = GetHash(src, "sha256");
-    if (srcHex != dstHex) {
+    const dstHex = GetHash(dst, 'sha256');
+    const srcHex = GetHash(src, 'sha256');
+    if (srcHex !== dstHex) {
       fs.copyFileSync(src, dst);
     }
   } else {
@@ -62,7 +62,7 @@ function createWindow() {
     const result = await dialog.showOpenDialog(win, {
       properties: ['openDirectory']
     });
-    loggerLevel("info", 'directories selected' + result.filePaths);
+    loggerLevel('info', `directories selected${result.filePaths}`);
     win.webContents.send('ping', result.filePaths[0]);
   });
   try {
@@ -88,14 +88,14 @@ function createWindow() {
     const configPath = path.join(sourc3Path, 'sourc3-remote.cfg');
     CopyIfNotExists(path.join(__dirname, '..', '..', 'sourc3-remote.cfg'), configPath);
     fs.readFile(configPath, 'utf8', (err, data) => {
-      if (err) return loggerLevel("info", err);
+      if (err) return loggerLevel('info', err);
       const result = data.replace(
         '# app-shader-file="app.wasm"',
         `app-shader-file=${path.join(sourc3Path, 'app.wasm')}`
       );
 
       return fs.writeFile(configPath, result, 'utf8', (error) => {
-        if (error) return loggerLevel("info", error);
+        if (error) return loggerLevel('info', error);
         return null;
       });
     });
@@ -104,7 +104,7 @@ function createWindow() {
       path.join(sourc3Path, 'app.wasm')
     );
   } catch (error) {
-    loggerLevel("error", error);
+    loggerLevel('error', error);
   }
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
@@ -117,8 +117,8 @@ function createWindow() {
   }
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);
-  win.webContents.on("before-input-event", (_, input) => {
-    if (input.type === "keyDown" && input.key === "F12") {
+  win.webContents.on('before-input-event', (_, input) => {
+    if (input.type === 'keyDown' && input.key === 'F12') {
       win.webContents.toggleDevTools();
 
       win.webContents.on('devtools-opened', () => {

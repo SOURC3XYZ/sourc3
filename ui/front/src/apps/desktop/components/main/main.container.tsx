@@ -15,7 +15,7 @@ import styles from './main.module.scss';
 import { LocalRepos } from './content';
 
 function App() {
-  const { isApiConnected, balance } = useSelector((state) => {
+  const { isApiConnected } = useSelector((state) => {
     const { isApiConnected, balance } = state.app;
     return { isApiConnected, balance };
   });
@@ -79,8 +79,6 @@ function App() {
     return () => Component;
   }, [isApiConnected]);
 
-  console.log(balance);
-
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
@@ -89,7 +87,7 @@ function App() {
     >
       <ErrorBoundary fallback={fallback}>
         <>
-          <Header desktop balance={balance} />
+          <Header desktop />
           <div className={styles.wrapper}>
             <View />
             <Notifications />

@@ -1,4 +1,6 @@
-.wrapper{
+.wrapper {
+    min-height: calc(100% - 60px);
+    height: max-content;
     padding: 1rem;
     max-width: 74rem;
     margin: 0 auto;

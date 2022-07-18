@@ -12,7 +12,7 @@ export enum CONFIG {
   HEADLESS_NODE = 'eu-node02.dappnet.beam.mw:8200',
   IPFS_HOST = 'https://proxi-beam.herokuapp.com',
   ASSET_ID = 0,
-  IPFS_TIMEOUT = 5000,
+  IPFS_TIMEOUT = 20000,
   BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master'
 }
 // fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10

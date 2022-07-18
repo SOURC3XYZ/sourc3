@@ -104,12 +104,6 @@ export const userThunk = ({
       await setIsConnected(dispatch);
 
       await callApi(RC.subUnsub()); // subscribe to api events
-
-      await query<PKeyRes>(
-        dispatch,
-        RC.getPublicKey(),
-        (output) => [AC.setPublicKey(output.key)]
-      );
     } catch (error) { thunkCatch(error, dispatch); }
   };
 

@@ -59,11 +59,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       )}
       { !desktop ? (
         <>
-          {pkey && (
-            <ProfileBlock
-              pKey={pkey}
-            />
-          )}
+          {pkey && (<ProfileBlock pKey={pkey} />)}
           <ConnectBtn
             pkey={pkey}
             users={users}
@@ -87,7 +83,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         {searchElement}
       </div>
     </header>
-  ) : null), [isVisible, isOnLending]);
+  ) : null), [isVisible, pkey, isOnLending]);
 
   return header;
 }

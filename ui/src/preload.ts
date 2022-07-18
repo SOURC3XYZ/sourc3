@@ -77,7 +77,7 @@ process.once('loaded', () => {
         if (res.data.method) response.method = res.data.method;
       } catch (error) {
         const err = error as IpcError;
-        console.log('preload error: ' + error);
+        console.log(`preload error: ${error}`);
         response.error = { code: err.statusCode, message: err.data };
       }
       return sendToRenderProcess({ type: IPCTypes.CONTROL_RES, response });
@@ -85,7 +85,7 @@ process.once('loaded', () => {
   });
 
   ipcRenderer.on('ping', (_, message) => {
-    console.log('ping ' + message);
+    console.log(`ping ${message}`);
     if (message.id?.match(/ev_/i)) {
       window.postMessage({
         type: 'api-events',
