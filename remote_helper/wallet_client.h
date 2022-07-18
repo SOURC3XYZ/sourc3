@@ -99,7 +99,7 @@ private:
     void EnsureConnected();
     std::string ExtractResult(const std::string& response);
     std::string InvokeShader(const std::string& args);
-    const std::string& GetCID();
+    const char* GetCID() const;
     const std::string& GetRepoID();
     std::string CallAPI(std::string&& request);
     std::string ReadAPI();
@@ -111,7 +111,6 @@ private:
     bool connected_ = false;
     const Options& options_;
     std::string repo_id_;
-    std::string cid_;
     std::set<std::string> transactions_;
     std::string data_;
 };

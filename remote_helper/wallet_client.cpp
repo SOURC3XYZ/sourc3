@@ -162,19 +162,8 @@ std::string SimpleWalletClient::InvokeShader(const std::string& args) {
     return ExtractResult(CallAPI(json::serialize(msg)));
 }
 
-const std::string& SimpleWalletClient::GetCID() {
-    if (cid_.empty()) {
-        auto root =
-            json::parse(InvokeShader("role=manager,action=view_contracts"));
-
-        assert(root.is_object());
-        auto& contracts = root.as_object()["contracts"];
-        if (contracts.is_array() && !contracts.as_array().empty()) {
-            cid_ =
-                contracts.as_array()[0].as_object()["cid"].as_string().c_str();
-        }
-    }
-    return cid_;
+const char* SimpleWalletClient::GetCID() const {
+    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
 }
 
 const std::string& SimpleWalletClient::GetRepoID() {
