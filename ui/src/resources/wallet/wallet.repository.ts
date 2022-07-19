@@ -264,9 +264,10 @@ export function runWalletApi(
         killApiServer()
           .then(() => reject(new Error('Please, check your password')));
       } else if (bufferString.match(beamErrorReg)) {
-        throw new Error(`Wallet API start error: ${
-          bufferString
-        }. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
+        // TODO:
+//         throw new Error(`Wallet API start error: ${
+//           bufferString
+//         }. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
       }
     };
 
