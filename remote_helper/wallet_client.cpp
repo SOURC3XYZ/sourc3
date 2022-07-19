@@ -22,21 +22,28 @@ namespace sourc3 {
 namespace json = boost::json;
 
 std::string SimpleWalletClient::GetAllObjectsMetadata() {
-    return InvokeWallet("role=user,action=repo_get_meta");
+    return InvokeWallet("role=user,action=repo_get_meta", false);
 }
 
 std::string SimpleWalletClient::GetObjectData(const std::string& obj_id) {
     std::stringstream ss;
     ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
-    return InvokeWallet(ss.str());
+    return InvokeWallet(ss.str(), false);
+}
+
+std::string SimpleWalletClient::GetObjectDataAsync(const std::string& obj_id,
+                                                   net::yield_context yield) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    return InvokeWalletAsync(ss.str(), false, yield);
 }
 
 std::string SimpleWalletClient::GetReferences() {
-    return InvokeWallet("role=user,action=list_refs");
+    return InvokeWallet("role=user,action=list_refs", false);
 }
 
 std::string SimpleWalletClient::PushObjects(const std::string& data,
-                                          const std::vector<Ref>& refs,
+                                            const std::vector<Ref>& refs,
                                             bool push_refs) {
     std::stringstream ss;
     ss << "role=user,action=push_objects";
@@ -51,16 +58,24 @@ std::string SimpleWalletClient::PushObjects(const std::string& data,
                << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
         }
     }
-    return InvokeWallet(ss.str());
+    return InvokeWallet(ss.str(), true);
 }
 
 std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
-    auto msg =
-        json::value{{JsonRpcHeader, JsonRpcVersion},
-                    {"id", 1},
-                    {"method", "ipfs_get"},
-                    {"params", {{"hash", std::move(hash)}}}};
+    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+                           {"id", 1},
+                           {"method", "ipfs_get"},
+                           {"params", {{"hash", std::move(hash)}}}};
     return CallAPI(json::serialize(msg));
+}
+
+std::string SimpleWalletClient::LoadObjectFromIPFSAsync(
+    std::string&& hash, net::yield_context yield) {
+    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+                           {"id", 1},
+                           {"method", "ipfs_get"},
+                           {"params", {{"hash", std::move(hash)}}}};
+    return CallAPIAsync(json::serialize(msg), yield);
 }
 
 std::string SimpleWalletClient::SaveObjectToIPFS(const uint8_t* data,
@@ -137,6 +152,19 @@ void SimpleWalletClient::EnsureConnected() {
     connected_ = true;
 }
 
+void SimpleWalletClient::EnsureConnectedAsync(net::yield_context yield) {
+    if (connected_) {
+        return;
+    }
+
+    auto const results =
+        resolver_.async_resolve(options_.apiHost, options_.apiPort, yield);
+
+    // Make the connection on the IP address we get from a lookup
+    stream_.async_connect(results, yield);
+    connected_ = true;
+}
+
 std::string SimpleWalletClient::ExtractResult(const std::string& response) {
     auto r = json::parse(response);
     if (auto* txid = r.as_object()["result"].as_object().if_contains("txid");
@@ -151,15 +179,33 @@ std::string SimpleWalletClient::ExtractResult(const std::string& response) {
     return r.as_object()["result"].as_object()["output"].as_string().c_str();
 }
 
-std::string SimpleWalletClient::InvokeShader(const std::string& args) {
+std::string SimpleWalletClient::InvokeShader(const std::string& args,
+                                             bool create_tx) {
     // std::cerr << "Args: " << args << std::endl;
-    auto msg = json::value{
-        {JsonRpcHeader, JsonRpcVersion},
-        {"id", 1},
-        {"method", "invoke_contract"},
-        {"params", {{"contract_file", options_.appPath}, {"args", args}}}};
+    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+                           {"id", 1},
+                           {"method", "invoke_contract"},
+                           {"params",
+                            {{"contract_file", options_.appPath},
+                             {"args", args},
+                             {"create_tx", create_tx}}}};
 
     return ExtractResult(CallAPI(json::serialize(msg)));
+}
+
+std::string SimpleWalletClient::InvokeShaderAsync(const std::string& args,
+                                                  bool create_tx,
+                                                  net::yield_context yield) {
+    // std::cerr << "Args: " << args << std::endl;
+    auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
+                           {"id", 1},
+                           {"method", "invoke_contract"},
+                           {"params",
+                            {{"contract_file", options_.appPath},
+                             {"args", args},
+                             {"create_tx", create_tx}}}};
+
+    return ExtractResult(CallAPIAsync(json::serialize(msg), yield));
 }
 
 const char* SimpleWalletClient::GetCID() const {
@@ -175,7 +221,28 @@ const std::string& SimpleWalletClient::GetRepoID() {
             .append(",cid=")
             .append(GetCID());
 
-        auto root = json::parse(InvokeShader(request));
+        auto root = json::parse(InvokeShader(request, false));
+        assert(root.is_object());
+        if (auto it = root.as_object().find("repo_id");
+            it != root.as_object().end()) {
+            auto& id = *it;
+            repo_id_ = std::to_string(id.value().to_number<uint32_t>());
+        }
+    }
+    return repo_id_;
+}
+
+const std::string& SimpleWalletClient::GetRepoIDAsync(
+    net::yield_context yield) {
+    if (repo_id_.empty()) {
+        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
+        request.append(options_.repoName)
+            .append("\",repo_owner=")
+            .append(options_.repoOwner)
+            .append(",cid=")
+            .append(GetCID());
+
+        auto root = json::parse(InvokeShaderAsync(request, false, yield));
         assert(root.is_object());
         if (auto it = root.as_object().find("repo_id");
             it != root.as_object().end()) {
@@ -196,6 +263,19 @@ std::string SimpleWalletClient::CallAPI(std::string&& request) {
         return "";
     }
     return ReadAPI();
+}
+
+std::string SimpleWalletClient::CallAPIAsync(std::string request,
+                                             net::yield_context yield) {
+    EnsureConnectedAsync(yield);
+    request.push_back('\n');
+    size_t s = request.size();
+    size_t transferred =
+        boost::asio::async_write(stream_, boost::asio::buffer(request), yield);
+    if (s != transferred) {
+        return "";
+    }
+    return ReadAPIAsync(yield);
 }
 
 std::string SimpleWalletClient::ReadAPI() {

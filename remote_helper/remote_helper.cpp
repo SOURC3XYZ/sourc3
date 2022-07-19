@@ -18,6 +18,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/json.hpp>
 #include <boost/program_options.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/spawn.hpp>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -126,7 +128,8 @@ vector<string_view> ParseArgs(std::string_view args_sv) {
 json::value ParseJsonAndTest(json::string_view sv) {
     auto r = json::parse(sv);
     if (const auto* error = r.as_object().if_contains("error"); error) {
-        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+        throw std::runtime_error(
+            error->as_object().at("message").as_string().c_str());
     }
     return r;
 }
@@ -205,14 +208,23 @@ public:
                     obj["object_type"].to_number<uint32_t>());
                 std::string s = obj["object_hash"].as_string().c_str();
                 git_oid_fromstr(&o.hash, s.c_str());
+
                 if (git_odb_exists(*accessor.m_odb, &o.hash) != 0) {
                     received_objects.insert(s);
+                } else if (options_.cloning) {
+                    enuque_object(s);
+                    continue;
                 }
             }
         }
 
-        auto progress = MakeProgress("Receiving objects",
-                                     total_objects - received_objects.size());
+        auto to_receive = total_objects - received_objects.size();
+
+        if (to_receive == 0) {
+            return CommandResult::Batch;
+        }
+
+        auto progress = MakeProgress("Receiving objects", to_receive);
 
         size_t done = 0;
         while (!object_hashes.empty()) {
@@ -277,30 +289,32 @@ public:
                               type) < 0) {
                 return CommandResult::Failed;
             }
-            if (type == GIT_OBJECT_TREE) {
-                git::Tree tree;
-                git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
+            if (!options_.cloning) {
+                if (type == GIT_OBJECT_TREE) {
+                    git::Tree tree;
+                    git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
 
-                auto count = git_tree_entrycount(*tree);
-                for (size_t i = 0; i < count; ++i) {
-                    auto* entry = git_tree_entry_byindex(*tree, i);
-                    auto s = ToString(*git_tree_entry_id(entry));
-                    enuque_object(s);
-                }
-            } else if (type == GIT_OBJECT_COMMIT) {
-                git::Commit commit;
-                git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-                if (depth < options_.depth ||
-                    options_.depth == Options::kInfiniteDepth) {
-                    auto count = git_commit_parentcount(*commit);
-                    for (unsigned i = 0; i < count; ++i) {
-                        auto* id = git_commit_parent_id(*commit, i);
-                        auto s = ToString(*id);
+                    auto count = git_tree_entrycount(*tree);
+                    for (size_t i = 0; i < count; ++i) {
+                        auto* entry = git_tree_entry_byindex(*tree, i);
+                        auto s = ToString(*git_tree_entry_id(entry));
                         enuque_object(s);
                     }
-                    ++depth;
+                } else if (type == GIT_OBJECT_COMMIT) {
+                    git::Commit commit;
+                    git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+                    if (depth < options_.depth ||
+                        options_.depth == Options::kInfiniteDepth) {
+                        auto count = git_commit_parentcount(*commit);
+                        for (unsigned i = 0; i < count; ++i) {
+                            auto* id = git_commit_parent_id(*commit, i);
+                            auto s = ToString(*id);
+                            enuque_object(s);
+                        }
+                        ++depth;
+                    }
+                    enuque_object(ToString(*git_commit_tree_id(*commit)));
                 }
-                enuque_object(ToString(*git_commit_tree_id(*commit)));
             }
             if (progress) {
                 progress->UpdateProgress(++done);
@@ -309,6 +323,198 @@ public:
             object_hashes.erase(it_to_receive);
         }
         return CommandResult::Batch;
+    }
+
+    CommandResult DoFetchAsync(const vector<string_view>& args) {
+        std::deque<std::string> object_hashes;
+        object_hashes.emplace_back(args[1].data(), args[1].size());
+        size_t depth = 1;
+        std::set<std::string> received_objects;
+
+        auto enuque_object = [&](const std::string& oid) {
+            if (received_objects.find(oid) == received_objects.end()) {
+                object_hashes.emplace_back(oid);
+            }
+        };
+
+        git::RepoAccessor accessor(wallet_client_.GetRepoDir());
+        size_t total_objects = 0;
+        std::vector<GitObject> objects;
+        {
+            auto progress = MakeProgress("Enumerating objects", 0);
+            // hack Collect objects metainfo
+            auto res = wallet_client_.GetAllObjectsMetadata();
+            auto root = ParseJsonAndTest(res);
+            for (auto& obj_val : root.as_object()["objects"].as_array()) {
+                if (progress) {
+                    progress->UpdateProgress(++total_objects);
+                }
+
+                auto& o = objects.emplace_back();
+                auto& obj = obj_val.as_object();
+                o.data_size = obj["object_size"].to_number<uint32_t>();
+                o.type = static_cast<int8_t>(
+                    obj["object_type"].to_number<uint32_t>());
+                std::string s = obj["object_hash"].as_string().c_str();
+                git_oid_fromstr(&o.hash, s.c_str());
+
+                if (git_odb_exists(*accessor.m_odb, &o.hash) != 0) {
+                    received_objects.insert(s);
+                } else if (options_.cloning) {
+                    enuque_object(s);
+                    continue;
+                }
+            }
+        }
+
+        auto to_receive = total_objects - received_objects.size();
+        if (to_receive == 0) {
+            return CommandResult::Batch;
+        }
+
+        auto progress = MakeProgress("Receiving objects", to_receive);
+        size_t done = 0;
+        namespace ba = boost::asio;
+        ba::io_context& io_context = wallet_client_.ioc_;
+        boost::asio::steady_timer timer(io_context);
+
+        CommandResult result = CommandResult::Batch;
+        ba::spawn(io_context, [&](ba::yield_context yield) {
+            std::set<std::string> processing_hashes;
+            while (!object_hashes.empty() || !processing_hashes.empty()) {
+                if (object_hashes.empty() || processing_hashes.size() >= 400) {
+                    timer.expires_from_now(std::chrono::seconds(1));
+                    timer.async_wait(yield);
+                    continue;
+                }
+                auto it_to_receive = object_hashes.begin();
+                const auto& object_to_receive = *it_to_receive;
+                auto pit = processing_hashes.insert(object_to_receive);
+                if (pit.second == false) {
+                    object_hashes.erase(it_to_receive);
+                    continue;
+                }
+
+                ba::spawn(yield, [&, it2 = pit.first, obj = object_to_receive](
+                                     ba::yield_context yield2) {
+                    SimpleWalletClient wallet_client(
+                        wallet_client_.ioc_, wallet_client_.options_, yield2);
+                    auto res = wallet_client.GetObjectDataAsync(obj, yield2);
+                    auto root = ParseJsonAndTest(res);
+                    git_oid oid;
+                    git_oid_fromstr(&oid, obj.data());
+
+                    auto it = std::find_if(objects.begin(), objects.end(),
+                                           [&](auto&& o) {
+                                               return o.hash == oid;
+                                           });
+                    if (it == objects.end()) {
+                        received_objects.insert(obj);  // move to received
+                        processing_hashes.erase(it2);
+
+                        return;
+                    }
+
+                    auto data = root.as_object()["object_data"].as_string();
+
+                    ByteBuffer buf;
+                    if (it->IsIPFSObject()) {
+                        auto hash = FromHex(data);
+                        try {
+                            auto responce =
+                                wallet_client.LoadObjectFromIPFSAsync(
+                                    std::string(hash.cbegin(), hash.cend()),
+                                    yield2);
+                            auto r = ParseJsonAndTest(responce);
+                            if (r.as_object().find("result") ==
+                                r.as_object().end()) {
+                                cerr << "message: "
+                                     << r.as_object()["error"]
+                                            .as_object()["message"]
+                                            .as_string()
+                                     << "\ndata:    "
+                                     << r.as_object()["error"]
+                                            .as_object()["data"]
+                                            .as_string()
+                                     << endl;
+                                result = CommandResult::Failed;
+                                return;
+                            }
+                            auto d = r.as_object()["result"]
+                                         .as_object()["data"]
+                                         .as_array();
+                            buf.reserve(d.size());
+                            for (auto&& v : d) {
+                                buf.emplace_back(
+                                    static_cast<uint8_t>(v.get_int64()));
+                            }
+                        } catch (...) {
+                            object_hashes.emplace_back(obj);
+                            processing_hashes.erase(it2);
+                            return;
+                        }
+
+                    } else {
+                        buf = FromHex(data);
+                    }
+
+                    git_oid res_oid;
+                    auto type = it->GetObjectType();
+                    git_oid r;
+                    git_odb_hash(&r, buf.data(), buf.size(), type);
+                    if (r != oid) {
+                        // invalid hash
+                        result = CommandResult::Failed;
+                        return;
+                    }
+                    if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(),
+                                      buf.size(), type) < 0) {
+                        result = CommandResult::Failed;
+                        return;
+                    }
+                    if (!options_.cloning) {
+                        if (type == GIT_OBJECT_TREE) {
+                            git::Tree tree;
+                            git_tree_lookup(tree.Addr(), *accessor.m_repo,
+                                            &oid);
+
+                            auto count = git_tree_entrycount(*tree);
+                            for (size_t i = 0; i < count; ++i) {
+                                auto* entry = git_tree_entry_byindex(*tree, i);
+                                auto s = ToString(*git_tree_entry_id(entry));
+                                enuque_object(s);
+                            }
+                        } else if (type == GIT_OBJECT_COMMIT) {
+                            git::Commit commit;
+                            git_commit_lookup(commit.Addr(), *accessor.m_repo,
+                                              &oid);
+                            if (depth < options_.depth ||
+                                options_.depth == Options::kInfiniteDepth) {
+                                auto count = git_commit_parentcount(*commit);
+                                for (unsigned i = 0; i < count; ++i) {
+                                    auto* id = git_commit_parent_id(*commit, i);
+                                    auto s = ToString(*id);
+                                    enuque_object(s);
+                                }
+                                ++depth;
+                            }
+                            enuque_object(
+                                ToString(*git_commit_tree_id(*commit)));
+                        }
+                    }
+                    received_objects.insert(obj);
+                    if (progress) {
+                        progress->UpdateProgress(++done);
+                    }
+                    processing_hashes.erase(it2);
+                });
+                object_hashes.erase(it_to_receive);
+            }
+        });
+
+        io_context.run();
+
+        return result;
     }
 
     CommandResult DoPush(const vector<string_view>& args) {
@@ -430,7 +636,7 @@ public:
 
                 bool last = (done == objs.size());
                 wallet_client_.PushObjects(str_data, collector.m_refs, last);
-                return last == false; // continue
+                return last == false;  // continue
             });
         }
         {
@@ -523,7 +729,7 @@ private:
     Command commands_[5] = {{"capabilities", &RemoteHelper::DoCapabilities},
                             {"list", &RemoteHelper::DoList},
                             {"option", &RemoteHelper::DoOption},
-                            {"fetch", &RemoteHelper::DoFetch},
+                            {"fetch", &RemoteHelper::DoFetchAsync},
                             {"push", &RemoteHelper::DoPush}};
 
     struct Options {
@@ -532,20 +738,17 @@ private:
         static constexpr uint32_t kInfiniteDepth =
             (uint32_t)std::numeric_limits<int32_t>::max();
         bool progress = true;
+        bool cloning = false;
         int64_t verbosity = 0;
         uint32_t depth = kInfiniteDepth;
 
         SetResult Set(string_view option, string_view value) {
             if (option == "progress") {
-                if (value == "true") {
-                    progress = true;
-                } else if (value == "false") {
-                    progress = false;
-                } else {
-                    return SetResult::InvalidValue;
-                }
-                return SetResult::Ok;
-            } /* else if (option == "verbosity") {
+                return SetBool(progress, value);
+            } else if (option == "cloning") {
+                return SetBool(cloning, value);
+            }
+            /* else if (option == "verbosity") {
                  char* endPos;
                  auto v = std::strtol(value.data(), &endPos, 10);
                  if (endPos == value.data()) {
@@ -564,6 +767,17 @@ private:
              }*/
 
             return SetResult::Unsupported;
+        }
+
+        SetResult SetBool(bool& opt, string_view value) {
+            if (value == "true") {
+                opt = true;
+            } else if (value == "false") {
+                opt = false;
+            } else {
+                return SetResult::InvalidValue;
+            }
+            return SetResult::Ok;
         }
     };
 
@@ -626,7 +840,8 @@ int main(int argc, char* argv[]) {
         cerr << "     Remote: " << argv[1] << "\n        URL: " << argv[2]
              << "\nWorking dir: " << boost::filesystem::current_path()
              << "\nRepo folder: " << options.repoPath << endl;
-        SimpleWalletClient wallet_client{options};
+        net::io_context ioc;
+        SimpleWalletClient wallet_client{ioc, options};
         RemoteHelper helper{wallet_client};
         git::Init init;
         string input;

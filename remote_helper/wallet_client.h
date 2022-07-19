@@ -21,6 +21,8 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/spawn.hpp>
 #include <iostream>
 #include <set>
 #include "utils.h"
@@ -48,9 +50,14 @@ public:
         bool useIPFS = true;
     };
 
-    SimpleWalletClient(const Options& options)
-        : resolver_(ioc_), stream_(ioc_), options_(options) {
-        PrintVersion();
+    SimpleWalletClient(net::io_context& ioc, const Options& options,
+                       boost::optional<net::yield_context> yield = boost::none)
+        : ioc_(ioc),
+          resolver_(ioc_),
+          stream_(ioc_),
+          options_(options),
+          yield_(yield) {
+        // PrintVersion();
     }
 
     ~SimpleWalletClient() {
@@ -69,6 +76,8 @@ public:
 
     std::string GetAllObjectsMetadata();
     std::string GetObjectData(const std::string& obj_id);
+    std::string GetObjectDataAsync(const std::string& obj_id,
+                                   net::yield_context yield);
     std::string GetReferences();
     std::string PushObjects(const std::string& data,
                             const std::vector<Ref>& refs,
@@ -79,6 +88,8 @@ public:
     }
 
     std::string LoadObjectFromIPFS(std::string&& hash);
+    std::string LoadObjectFromIPFSAsync(std::string&& hash,
+                                        net::yield_context yield);
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
@@ -88,24 +99,40 @@ public:
     }
 
 private:
-    std::string InvokeWallet(std::string args) {
+    std::string InvokeWallet(std::string args, bool create_tx) {
         args.append(",repo_id=")
             .append(GetRepoID())
             .append(",cid=")
             .append(GetCID());
-        return InvokeShader(std::move(args));
+        return InvokeShader(std::move(args), create_tx);
     }
+    std::string InvokeWalletAsync(std::string args, bool create_tx,
+                                  net::yield_context yield) {
+        args.append(",repo_id=")
+            .append(GetRepoIDAsync(yield))
+            .append(",cid=")
+            .append(GetCID());
+        return InvokeShaderAsync(std::move(args), create_tx, yield);
+    }
+
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
+    void EnsureConnectedAsync(net::yield_context yield);
     std::string ExtractResult(const std::string& response);
-    std::string InvokeShader(const std::string& args);
+    std::string InvokeShader(const std::string& args, bool create_tx);
+    std::string InvokeShaderAsync(const std::string& args, bool create_tx,
+                                  net::yield_context yield);
     const char* GetCID() const;
     const std::string& GetRepoID();
+    const std::string& GetRepoIDAsync(net::yield_context yield);
     std::string CallAPI(std::string&& request);
+    std::string CallAPIAsync(std::string request, net::yield_context yield);
     std::string ReadAPI();
+    std::string ReadAPIAsync(net::yield_context yield);
     void PrintVersion();
-private:
-    net::io_context ioc_;
+    // private:
+public:
+    net::io_context& ioc_;
     tcp::resolver resolver_;
     beast::tcp_stream stream_;
     bool connected_ = false;
@@ -113,5 +140,6 @@ private:
     std::string repo_id_;
     std::set<std::string> transactions_;
     std::string data_;
+    boost::optional<net::yield_context> yield_ = boost::none;
 };
 }  // namespace sourc3
