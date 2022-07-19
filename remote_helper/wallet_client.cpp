@@ -36,7 +36,7 @@ std::string SimpleWalletClient::GetReferences() {
 }
 
 std::string SimpleWalletClient::PushObjects(const std::string& data,
-                                          const std::vector<Ref>& refs,
+                                            const std::vector<Ref>& refs,
                                             bool push_refs) {
     std::stringstream ss;
     ss << "role=user,action=push_objects";
@@ -45,9 +45,8 @@ std::string SimpleWalletClient::PushObjects(const std::string& data,
     }
 
     if (push_refs) {
-        ss << ',';
         for (const auto& r : refs) {
-            ss << "ref=" << r.name
+            ss << ",ref=" << r.name
                << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
         }
     }
