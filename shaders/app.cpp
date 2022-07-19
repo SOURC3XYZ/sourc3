@@ -1153,21 +1153,11 @@ void OnActionPushObjects(const ContractID& cid) {
     using sourc3::method::PushObjects;
     using sourc3::method::PushRefs;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
-    if (data_len == 0u) {
-        return OnError("there is no data to push");
-    }
-    size_t args_size;
-    args_size = sizeof(PushObjects) + data_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* params = reinterpret_cast<PushObjects*>(buf.get());
-    auto* p = reinterpret_cast<uint8_t*>(&params->objects_number);
-    if (Env::DocGetBlob("data", p, data_len) != data_len) {
-        return OnError("failed to read push data");
-    }
-    if (!Env::DocGet("repo_id", params->repo_id)) {
+
+    sourc3::Repo::Id repo_id;
+    if (!Env::DocGet("repo_id", repo_id)) {
         return OnError("failed to read 'repo_id'");
     }
-    Env::DocAddNum("repo_id", params->repo_id);
 
     UserKey user_key(cid);
     SigRequest sig;
@@ -1183,7 +1173,7 @@ void OnActionPushObjects(const ContractID& cid) {
         auto ref_args_size = sizeof(PushRefs) + sizeof(GitRef) + name_len;
         auto res_memory = std::make_unique<uint8_t[]>(ref_args_size);
         auto* refs_params = reinterpret_cast<PushRefs*>(res_memory.get());
-        refs_params->repo_id = params->repo_id;
+        refs_params->repo_id = repo_id;
         refs_params->refs_info.refs_number = refs_count;
         auto* ref = reinterpret_cast<GitRef*>(refs_params + 1);
         if (Env::DocGetBlob("ref_target", &ref->commit_hash,
@@ -1216,6 +1206,23 @@ void OnActionPushObjects(const ContractID& cid) {
                             /*szComment=*/"Pushing refs",
                             /*nCharge=*/charge);
     }
+
+    if (data_len == 0) {
+        return Env::DocAddText("warning", "No data to push, push only refs");
+    }
+
+    size_t args_size;
+    args_size = sizeof(PushObjects) + data_len;
+    auto buf = std::make_unique<uint8_t[]>(args_size);
+    auto* params = reinterpret_cast<PushObjects*>(buf.get());
+    auto* p = reinterpret_cast<uint8_t*>(&params->objects_number);
+    if (Env::DocGetBlob("data", p, data_len) != data_len) {
+        return OnError("failed to read push data");
+    }
+    if (!Env::DocGet("repo_id", params->repo_id)) {
+        return OnError("failed to read 'repo_id'");
+    }
+    Env::DocAddNum("repo_id", params->repo_id);
 
     // dump objects for debug
     Env::DocGroup gr("objects");
