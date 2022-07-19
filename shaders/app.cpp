@@ -35,8 +35,11 @@ namespace sourc3 {
     namespace v0 {
         #include "contract_sid_v0.i"
     }
+    namespace v1 {
+        #include "contract_sid_v1.i"
+    }
     #include "contract_sid.i"
-}
+    }
 
 namespace {
 using ActionFunc = void (*)(const ContractID&);
@@ -67,6 +70,7 @@ struct MyKeyID :public Env::KeyID {
 // Add new SID here after changing contract.cpp
 const ShaderID kSid[] = {
         sourc3::v0::s_SID,
+        sourc3::v1::s_SID,
         sourc3::s_SID
 };
 
