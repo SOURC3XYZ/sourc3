@@ -2,6 +2,7 @@ import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
 import { LoadingMessages } from '@libs/constants';
 import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
+import { useCustomEvent } from '@libs/hooks/shared';
 import {
   Branch,
   DataNode,
@@ -12,10 +13,10 @@ import {
 import { Col, Row } from 'antd';
 import { useCallback, useMemo } from 'react';
 import { RepoMeta } from '../repo-meta';
+import styles from '../repo.module.scss';
 import { FileText } from './file-text';
 import { FileTreeBlock } from './file-tree-block';
 import { UpperMenu } from './upper-menu';
-import styles from '../repo.module.scss';
 
 export type UpperMenuProps = {
   id: RepoId;
@@ -54,6 +55,11 @@ function RepoContent({
     goToCommitTree,
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
+
+  useCustomEvent(
+    'check-repo-status',
+    (data) => console.log('DATA_CUSTOM', data)
+  );
 
   const content = useMemo(() => (
     type === 'blob'

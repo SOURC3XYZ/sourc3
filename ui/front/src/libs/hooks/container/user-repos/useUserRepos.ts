@@ -31,6 +31,7 @@ const useUserRepos = () => {
   const [isLoaded, setIsLoaded] = useState(currentId === numId);
 
   const loadingHandler = useCallback(() => {
+    if (isLoaded) setIsLoaded(false);
     loadingData(getRepo(numId, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));

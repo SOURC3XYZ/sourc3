@@ -1,3 +1,7 @@
+import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { FailPage } from '@components/shared/fail-page';
+import { Preload } from '@components/shared/preload';
+import { LoadingMessages } from '@libs/constants';
 import { useCommitsTree } from '@libs/hooks/container/user-repos';
 import {
   actualTime, dateCreator, getDateFromMs, getDay, getMsFromDays
@@ -9,19 +13,15 @@ import {
   List,
   RepoId
 } from '@types';
+import { Skeleton } from 'antd';
 import Avatar from 'boring-avatars';
 import {
   useCallback, useEffect, useMemo, useState
 } from 'react';
-import { Preload } from '@components/shared/preload';
-import { LoadingMessages } from '@libs/constants';
-import { FailPage } from '@components/shared/fail-page';
-import { Link } from 'react-router-dom';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Skeleton } from 'antd';
-import styles from '../repo.module.scss';
+import { Link } from 'react-router-dom';
 import { UpperMenu } from '../repo-content/upper-menu';
+import styles from '../repo.module.scss';
 
 const ITEMS_COUNT = 5;
 
@@ -135,17 +135,18 @@ function CommitsTree({
     return <FailPage {...updatedProps} isBtn />;
   };
 
-  const loadMoreData = ():void => {
+  const loadMoreData = useCallback(():void => {
     if (commitsBlock && commitsBlock.length) {
-      const { length } = data;
-      if (!length) setTimeout(() => setData(commitsBlock.slice(0, ITEMS_COUNT)));
-      else {
-        setTimeout(() => setData(
-          (prev) => [...prev, ...commitsBlock.slice(length, length + ITEMS_COUNT)]
-        ));
-      }
+      setTimeout(() => {
+        const { length } = data;
+        if (!length) return setData(commitsBlock.slice(0, ITEMS_COUNT));
+        const lastIndex = length - 1;
+        return setData(
+          (prev) => [...prev, ...commitsBlock.slice(lastIndex, lastIndex + ITEMS_COUNT)]
+        );
+      });
     }
-  };
+  }, [commitsBlock, data]);
 
   useEffect(loadMoreData, [commitsBlock]);
 

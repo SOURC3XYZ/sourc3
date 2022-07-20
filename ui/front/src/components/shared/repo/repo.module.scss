@@ -8,6 +8,11 @@
     padding: 2.5rem;
     position: relative;
     flex-grow: 1;
+    :global {
+        button[class^=back-button] {
+            position: static;
+        }
+    }
 }
 
 
