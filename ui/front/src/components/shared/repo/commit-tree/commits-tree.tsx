@@ -148,7 +148,10 @@ function CommitsTree({
     }
   }, [commitsBlock, data]);
 
-  useEffect(loadMoreData, [commitsBlock]);
+  useEffect(() => {
+    if (data.length) setData([]);
+    loadMoreData();
+  }, [commitsBlock]);
 
   useEffect(() => setData([]), [branchName]);
 
