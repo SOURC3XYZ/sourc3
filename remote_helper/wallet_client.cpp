@@ -286,6 +286,14 @@ std::string SimpleWalletClient::ReadAPI() {
     return line;
 }
 
+std::string SimpleWalletClient::ReadAPIAsync(net::yield_context yield) {
+    auto n = boost::asio::async_read_until(
+        stream_, boost::asio::dynamic_buffer(data_), '\n', yield);
+    auto line = data_.substr(0, n);
+    data_.erase(0, n);
+    return line;
+}
+
 void SimpleWalletClient::PrintVersion() {
     auto msg = json::value{
         {JsonRpcHeader, JsonRpcVersion},
