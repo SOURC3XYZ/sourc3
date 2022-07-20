@@ -11,15 +11,17 @@ type LocationState = {
 
 const useUserRepos = () => {
   const {
-    id: currentId, branches, filesMap, tree, prevReposHref, repoMetas
+    id: currentId, branches, commitsMap, filesMap, tree, prevReposHref, repoMetas
   } = useSelector(({ repo }) => repo);
 
   const [callApi, isLoading, callApiErr] = useCallApi();
 
   const setError = useAsyncError();
+
   const {
     getRepo, updateTree, getFileData, killTree
   } = useRepoAction();
+
   const location = useParams<'repoParams'>() as LocationState;
   const { repoParams } = location;
   const [id, repoName] = repoParams.split('&');
@@ -48,6 +50,7 @@ const useUserRepos = () => {
     tree,
     prevReposHref,
     repoMetas,
+    commitsMap,
     callApi,
     isLoading,
     callApiErr,

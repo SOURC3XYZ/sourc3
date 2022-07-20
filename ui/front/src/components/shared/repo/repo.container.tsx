@@ -12,19 +12,20 @@ import { CommitsTree } from './commit-tree';
 import { RepoContent } from './repo-content';
 
 import styles from './repo.module.scss';
+import { ReloadBtn } from './reload-btn';
 
 function UserRepos() {
   const containerProps = useUserRepos();
 
   const {
-    isLoaded, repoName, loadingHandler
+    isLoaded, repoName, commitsMap, loadingHandler
   } = containerProps;
 
   const navigate = useNavigate();
 
   const goTo = (path: string) => navigate(path);
 
-  const fallback = (props:any) => {
+  const fallback = (props: any) => {
     const updatedProps = { ...props, subTitle: 'no data' };
     return <FailPage {...updatedProps} isBtn />;
   };
@@ -36,9 +37,15 @@ function UserRepos() {
     />
   ), []);
 
+  const isLoadedReload = !!(commitsMap && isLoaded);
+
   return (
     <div className={styles.wrapper}>
-      <Title level={3}>{repoName}</Title>
+      <div className={styles.titleWrapper}>
+        <Title className={styles.title} level={3}>{repoName}</Title>
+        <ReloadBtn isLoaded={isLoadedReload} loadingHandler={loadingHandler} />
+      </div>
+
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
           isLoaded={isLoaded}

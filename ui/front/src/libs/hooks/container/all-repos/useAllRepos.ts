@@ -10,12 +10,6 @@ type LocationState = {
   type: RepoListType
 };
 
-// pkey,
-// repos,
-// searchText,
-// deleteRepos,
-// setInputText,
-
 const useAllRepos = () => {
   const pkey = useSelector((state) => state.app.pkey);
   const { repos, searchText } = useSelector(
