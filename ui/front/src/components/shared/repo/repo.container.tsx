@@ -15,7 +15,7 @@ function UserRepos() {
   const containerProps = useUserRepos();
 
   const {
-    isLoaded, repoName, commitsMap, loadingHandler
+    isLoaded, repoName, commitsMap, loadingHandler, startLoading
   } = containerProps;
 
   const navigate = useNavigate();
@@ -36,6 +36,7 @@ function UserRepos() {
 
   const back = useCallback(() => navigate(-1), []);
 
+
   const isLoadedReload = !!(commitsMap && isLoaded);
 
   return (
@@ -43,7 +44,7 @@ function UserRepos() {
       <BackButton onClick={back} />
       <div className={styles.titleWrapper}>
         <Title className={styles.title} level={3}>{repoName}</Title>
-        <ReloadBtn isLoaded={isLoadedReload} loadingHandler={loadingHandler} />
+        <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
       </div>
 
       <ErrorBoundary fallback={fallback}>

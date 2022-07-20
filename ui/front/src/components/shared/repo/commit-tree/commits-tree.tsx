@@ -113,6 +113,7 @@ function CommitsTree({
   const [data, setData] = useState<JSX.Element[]>([]);
 
   const commitsBlock = useMemo(() => {
+    if (data.length) setData([]);
     if (repoMap) {
       const commits = repoMap.get(branchName);
       if (!commits) return null;
@@ -152,8 +153,6 @@ function CommitsTree({
     if (data.length) setData([]);
     loadMoreData();
   }, [commitsBlock]);
-
-  useEffect(() => setData([]), [branchName]);
 
   return (
     <>

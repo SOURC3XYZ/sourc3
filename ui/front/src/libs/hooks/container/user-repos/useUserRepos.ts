@@ -31,7 +31,6 @@ const useUserRepos = () => {
   const [isLoaded, setIsLoaded] = useState(currentId === numId);
 
   const loadingHandler = useCallback(() => {
-    if (isLoaded) setIsLoaded(false);
     loadingData(getRepo(numId, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));
@@ -41,6 +40,8 @@ const useUserRepos = () => {
     const cancelCommitPendingEvent = new Event('stop-commit-pending');
     window.dispatchEvent(cancelCommitPendingEvent);
   }, []);
+
+  const startLoading = useCallback(() => setIsLoaded(false), []);
 
   return {
     id: numId,
@@ -54,8 +55,10 @@ const useUserRepos = () => {
     commitsMap,
     callApi,
     isLoading,
+    setIsLoaded,
     callApiErr,
     updateTree: update,
+    startLoading,
     killTree,
     loadingHandler,
     getFileData

@@ -11,6 +11,9 @@
     :global {
         button[class^=back-button] {
             position: static;
+            &:focus{
+                border-color: transparent;
+            }
         }
     }
 }
