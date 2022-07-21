@@ -79,7 +79,8 @@
       "beam-res/**",
       ".env",
       "git-remote-sourc3*",
-      "sourc3-remote.cfg"
+      "sourc3-remote.cfg",
+      "environment.plist"
     ],
     "mac": {
       "hardenedRuntime": true,
