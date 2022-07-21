@@ -90,6 +90,15 @@ jobs:
         echo "BOOST_ROOT=c:\boost_prebuild" >> $GITHUB_ENV
 
 ###############################################################################
+# Save version
+###############################################################################
+    - name: Save version info
+      shell: bash
+      run: |
+        echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-dappnet" >> $GITHUB_ENV
+
+###############################################################################
 # Prepare electron build
 ###############################################################################
     - name: Prepare for electron build [windows-2019]
