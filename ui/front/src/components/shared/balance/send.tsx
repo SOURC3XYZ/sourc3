@@ -26,7 +26,7 @@ function Send({
   const initialState = {
     visible: false,
     address: '',
-    amount: 0,
+    amount: '',
     comment: '',
     offline: false
   };
@@ -38,7 +38,7 @@ function Send({
   const showModal = () => {
     setState({
       address: '',
-      amount: 0,
+      amount: '',
       comment: '',
       visible: true,
       offline: false
