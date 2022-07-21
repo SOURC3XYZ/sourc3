@@ -27,6 +27,7 @@ target_link_libraries(helper_lib
 		Boost::regex
 		Boost::context
 		Boost::coroutine
+		Boost::thread
 )
 
 target_link_libraries(${TARGET_NAME} 
