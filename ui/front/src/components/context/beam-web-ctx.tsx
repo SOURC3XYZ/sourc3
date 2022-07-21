@@ -1,15 +1,16 @@
-import { CONFIG } from '@libs/constants';
-import { BeamWebAPI } from '@libs/core';
-import { ContractsResp, PKeyRes, User } from '@types';
 import wasm from '@assets/app.wasm';
-import {
-  useCallback, useMemo, useRef
-} from 'react';
-import { AppThunkDispatch } from '@libs/redux';
 import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
+import { CONFIG } from '@libs/constants';
+import { BeamWebAPI } from '@libs/core';
+import { useCustomEvent } from '@libs/hooks/shared';
+import { AppThunkDispatch } from '@libs/redux';
+import { ContractsResp, PKeyRes, User } from '@types';
+import {
+  useCallback, useMemo, useRef
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BeamWebApiContext } from './shared-context';
 
@@ -28,12 +29,15 @@ const messageBeam = {
 export function BeamWebApi({ children }:BeamWebCtxProps) {
   const navigate = useNavigate();
 
+  const messageToRepo = useCustomEvent('check-repo-status');
+
   const { current: api } = useRef(new BeamWebAPI(CONFIG.CID, navigate));
 
   const [query] = contractCall(api.callApi);
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
     const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
+    messageToRepo();
     return apiManagerHelper(
       () => {
         dispatch(getRepos('all'));

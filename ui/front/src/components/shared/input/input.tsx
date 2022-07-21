@@ -1,5 +1,5 @@
 import { IconEyeOpen, IconEyeCrossed } from '@components/svg';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import styles from './input.module.scss';
 
 interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -18,10 +18,6 @@ function InputCustom({
     setPasswordShown(!passwordShown);
   };
   const ref = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    ref?.current?.focus();
-  }, []);
   return (
     password ? (
       <div className={styles.wrapper}>

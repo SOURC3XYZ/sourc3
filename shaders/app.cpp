@@ -32,11 +32,22 @@ namespace Env {  // NOLINT
 #include "libgit2/full_git.h"
 
 namespace sourc3 {
-    namespace v0 {
-        #include "contract_sid_v0.i"
-    }
-    #include "contract_sid.i"
-}
+namespace v0 {
+// SID: 5ca7c7e30f066942e47d803a4e016ca9ff08ccbcb84384662525b8bfe07246eb
+static const ShaderID s_SID = {  // NOLINT
+    0x5c, 0xa7, 0xc7, 0xe3, 0x0f, 0x06, 0x69, 0x42, 0xe4, 0x7d, 0x80,
+    0x3a, 0x4e, 0x01, 0x6c, 0xa9, 0xff, 0x08, 0xcc, 0xbc, 0xb8, 0x43,
+    0x84, 0x66, 0x25, 0x25, 0xb8, 0xbf, 0xe0, 0x72, 0x46, 0xeb};
+}  // namespace v0
+namespace v1 {
+// SID: ea1765cc92875862660dea1e15cc342281bf0c840b0f9928ccfc8f7e8eeb0048
+static const ShaderID s_SID = {  // NOLINT
+    0xea, 0x17, 0x65, 0xcc, 0x92, 0x87, 0x58, 0x62, 0x66, 0x0d, 0xea,
+    0x1e, 0x15, 0xcc, 0x34, 0x22, 0x81, 0xbf, 0x0c, 0x84, 0x0b, 0x0f,
+    0x99, 0x28, 0xcc, 0xfc, 0x8f, 0x7e, 0x8e, 0xeb, 0x00, 0x48};
+}  // namespace v1
+#include "contract_sid.i"
+}  // namespace sourc3
 
 namespace {
 using ActionFunc = void (*)(const ContractID&);
@@ -60,24 +71,23 @@ auto FindIfContains(const std::string_view str,
 
 const char kAdminSeed[] = "admin-sourc3";
 
-struct MyKeyID :public Env::KeyID {
-  MyKeyID() :Env::KeyID(&kAdminSeed, sizeof(kAdminSeed)) {}
+struct MyKeyID : public Env::KeyID {
+    MyKeyID() : Env::KeyID(&kAdminSeed, sizeof(kAdminSeed)) {
+    }
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {
-        sourc3::v0::s_SID,
-        sourc3::s_SID
-};
+const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID, sourc3::s_SID};
 
-const Upgradable3::Manager::VerInfo kVerInfo = { kSid, _countof(kSid) };
+const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
 void CompensateFee(const ContractID& cid, Amount charge) {
     constexpr Amount kSelfCharge = 120000;
     constexpr Amount kDefaultCharge = 100000;
 
     sourc3::method::Withdraw wargs;
-    wargs.amount = ((charge != 0u ? charge : kDefaultCharge) + kSelfCharge) * 10;
+    wargs.amount =
+        ((charge != 0u ? charge : kDefaultCharge) + kSelfCharge) * 10;
 
     FundsChange fc;
     fc.m_Consume = 0;
@@ -106,17 +116,20 @@ void OnActionCreateContract(const ContractID& unused) {
     sourc3::method::Initial arg;
     if (!kVerInfo.FillDeployArgs(arg.m_Stgs, &pk)) {
         return;
-}
+    }
 
-    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0, "Deploy sourc3 contract", Upgradable3::Manager::get_ChargeDeploy()*2);
+    Env::GenerateKernel(nullptr, 0, &arg, sizeof(arg), nullptr, 0, nullptr, 0,
+                        "Deploy sourc3 contract",
+                        Upgradable3::Manager::get_ChargeDeploy() * 2);
 }
 
 void OnActionScheduleUpgrade(const ContractID& cid) {
-    Height hTarget; // NOLINT
+    Height hTarget;  // NOLINT
     Env::DocGetNum64("hTarget", &hTarget);
 
     MyKeyID kid;
-    Upgradable3::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid, kid, hTarget);
+    Upgradable3::Manager::MultiSigRitual::Perform_ScheduleUpgrade(kVerInfo, cid,
+                                                                  kid, hTarget);
 }
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
@@ -1149,21 +1162,11 @@ void OnActionPushObjects(const ContractID& cid) {
     using sourc3::method::PushObjects;
     using sourc3::method::PushRefs;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
-    if (data_len == 0u) {
-        return OnError("there is no data to push");
-    }
-    size_t args_size;
-    args_size = sizeof(PushObjects) + data_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* params = reinterpret_cast<PushObjects*>(buf.get());
-    auto* p = reinterpret_cast<uint8_t*>(&params->objects_number);
-    if (Env::DocGetBlob("data", p, data_len) != data_len) {
-        return OnError("failed to read push data");
-    }
-    if (!Env::DocGet("repo_id", params->repo_id)) {
+
+    sourc3::Repo::Id repo_id;
+    if (!Env::DocGet("repo_id", repo_id)) {
         return OnError("failed to read 'repo_id'");
     }
-    Env::DocAddNum("repo_id", params->repo_id);
 
     UserKey user_key(cid);
     SigRequest sig;
@@ -1179,7 +1182,7 @@ void OnActionPushObjects(const ContractID& cid) {
         auto ref_args_size = sizeof(PushRefs) + sizeof(GitRef) + name_len;
         auto res_memory = std::make_unique<uint8_t[]>(ref_args_size);
         auto* refs_params = reinterpret_cast<PushRefs*>(res_memory.get());
-        refs_params->repo_id = params->repo_id;
+        refs_params->repo_id = repo_id;
         refs_params->refs_info.refs_number = refs_count;
         auto* ref = reinterpret_cast<GitRef*>(refs_params + 1);
         if (Env::DocGetBlob("ref_target", &ref->commit_hash,
@@ -1212,6 +1215,23 @@ void OnActionPushObjects(const ContractID& cid) {
                             /*szComment=*/"Pushing refs",
                             /*nCharge=*/charge);
     }
+
+    if (data_len == 0) {
+        return Env::DocAddText("warning", "No data to push, push only refs");
+    }
+
+    size_t args_size;
+    args_size = sizeof(PushObjects) + data_len;
+    auto buf = std::make_unique<uint8_t[]>(args_size);
+    auto* params = reinterpret_cast<PushObjects*>(buf.get());
+    auto* p = reinterpret_cast<uint8_t*>(&params->objects_number);
+    if (Env::DocGetBlob("data", p, data_len) != data_len) {
+        return OnError("failed to read push data");
+    }
+    if (!Env::DocGet("repo_id", params->repo_id)) {
+        return OnError("failed to read 'repo_id'");
+    }
+    Env::DocAddNum("repo_id", params->repo_id);
 
     // dump objects for debug
     Env::DocGroup gr("objects");
@@ -1366,8 +1386,7 @@ void OnActionGetRepoData(const ContractID& cid) {
     }
 }
 
-void AddCommit(const mygit2::git_commit& commit,
-               const sourc3::GitOid& hash) {
+void AddCommit(const mygit2::git_commit& commit, const sourc3::GitOid& hash) {
     Env::DocGroup commit_obj("commit");
     char oid_buffer[GIT_OID_HEXSZ + 1];
     oid_buffer[GIT_OID_HEXSZ] = '\0';
@@ -1422,9 +1441,8 @@ void AddTree(const mygit2::git_tree& tree) {
     Env::Heap_Free(tree.entries.ptr);
 }
 
-void ParseObjectData(
-    const std::function<void(sourc3::GitObject::Data*, size_t,
-                             sourc3::GitOid)>& handler) {
+void ParseObjectData(const std::function<void(sourc3::GitObject::Data*, size_t,
+                                              sourc3::GitOid)>& handler) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
@@ -1470,13 +1488,13 @@ void OnActionGetCommit(const ContractID& cid) {
 
 void OnActionGetCommitFromData(const ContractID&) {
     using sourc3::GitObject;
-    ParseObjectData([](GitObject::Data* value, size_t value_len,
-                       sourc3::GitOid hash) {
-        mygit2::git_commit commit{};
-        if (commit_parse(&commit, value->data, value_len, 0) == 0) {
-            AddCommit(commit, hash);
-        }
-    });
+    ParseObjectData(
+        [](GitObject::Data* value, size_t value_len, sourc3::GitOid hash) {
+            mygit2::git_commit commit{};
+            if (commit_parse(&commit, value->data, value_len, 0) == 0) {
+                AddCommit(commit, hash);
+            }
+        });
 }
 
 void OnActionGetTree(const ContractID& cid) {
@@ -1551,8 +1569,7 @@ void OnActionViewBalance(const ContractID& cid) {
     Env::DocAddNum("balance", cs.faucet_balance);
 }
 
-void GetObjects(const ContractID& cid,
-                sourc3::GitObject::Meta::Type type) {
+void GetObjects(const ContractID& cid, sourc3::GitObject::Meta::Type type) {
     using sourc3::GitObject;
     using sourc3::Repo;
     auto [start, end, key] = PrepareGetObject(cid);

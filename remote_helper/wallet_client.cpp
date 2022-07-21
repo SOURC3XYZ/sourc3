@@ -52,9 +52,8 @@ std::string SimpleWalletClient::PushObjects(const std::string& data,
     }
 
     if (push_refs) {
-        ss << ',';
         for (const auto& r : refs) {
-            ss << "ref=" << r.name
+            ss << ",ref=" << r.name
                << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
         }
     }

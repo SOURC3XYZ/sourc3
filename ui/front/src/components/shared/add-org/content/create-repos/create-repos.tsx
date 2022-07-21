@@ -34,10 +34,8 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
 
   const [idProject, setIdProject] = useState('');
 
-  console.log(projects);
-
   const handleOk = (name:string, id:number) => {
-    createRepo(name, id, pid);
+    createRepo(`"${name}"`, id, pid);
     closePopup();
   };
 
@@ -48,8 +46,6 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
     setIdProject(value);
   };
 
-  console.log(idOrg);
-  console.log(idProject);
   return (
     <Popup
       title="Add new repository to project"

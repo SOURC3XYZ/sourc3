@@ -36,8 +36,8 @@ function PendingIndicator(props:PendingIndicatorProps) {
 
   useEffect(() => {
     if (typeof data?.pending === 'boolean') {
-      setPending(data.pending ? PendingStatus.IN_PIN : PendingStatus.PINNED);
-    } else setPending(PendingStatus.ERROR);
+      return setPending(data.pending ? PendingStatus.IN_PIN : PendingStatus.PINNED);
+    } return setPending(PendingStatus.ERROR);
   }, [data]);
 
   const backgroundColor = useMemo(() => {

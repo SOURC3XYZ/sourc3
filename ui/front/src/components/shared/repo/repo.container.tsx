@@ -1,30 +1,28 @@
-import {
-  FailPage, Preload
-} from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useUserRepos } from '@libs/hooks/container/user-repos';
-import { useCallback } from 'react';
+import { BackButton, FailPage, Preload } from '@components/shared';
 import { LoadingMessages } from '@libs/constants';
+import { useUserRepos } from '@libs/hooks/container/user-repos';
 import Title from 'antd/lib/typography/Title';
+import { useCallback } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { CommitContent } from './commit-content';
 import { CommitsTree } from './commit-tree';
+import { ReloadBtn } from './reload-btn';
 import { RepoContent } from './repo-content';
-
 import styles from './repo.module.scss';
 
 function UserRepos() {
   const containerProps = useUserRepos();
 
   const {
-    isLoaded, repoName, loadingHandler
+    isLoaded, repoName, commitsMap, loadingHandler, startLoading
   } = containerProps;
 
   const navigate = useNavigate();
 
   const goTo = (path: string) => navigate(path);
 
-  const fallback = (props:any) => {
+  const fallback = (props: any) => {
     const updatedProps = { ...props, subTitle: 'no data' };
     return <FailPage {...updatedProps} isBtn />;
   };
@@ -36,9 +34,19 @@ function UserRepos() {
     />
   ), []);
 
+  const back = useCallback(() => navigate(-1), []);
+
+
+  const isLoadedReload = !!(commitsMap && isLoaded);
+
   return (
     <div className={styles.wrapper}>
-      <Title level={3}>{repoName}</Title>
+      <BackButton onClick={back} />
+      <div className={styles.titleWrapper}>
+        <Title className={styles.title} level={3}>{repoName}</Title>
+        <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
+      </div>
+
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
           isLoaded={isLoaded}

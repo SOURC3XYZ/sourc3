@@ -1,3 +1,5 @@
+@import '@styles/vars.scss';
+
 .wrapper {
     height: 100%;
     width: 100%;
@@ -6,6 +8,32 @@
     padding: 2.5rem;
     position: relative;
     flex-grow: 1;
+    :global {
+        button[class^=back-button] {
+            position: static;
+            &:focus{
+                border-color: transparent;
+            }
+        }
+    }
+}
+
+
+.reloadBtn {
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: $color-blue;
+}
+
+.titleWrapper {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    .title {
+        padding-right: 0.5rem;
+        margin-bottom: 0;
+    }
 }
 
 .preload {

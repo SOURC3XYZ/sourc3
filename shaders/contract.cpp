@@ -57,7 +57,7 @@ bool ObjectExists(const typename T::Id& id) {
     typename T::Key key(id);
     return Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
 }
-}  // namespace 
+}  // namespace
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
     params.m_Stgs.TestNumApprovers();
@@ -73,14 +73,21 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-namespace Upgradable3 { // NOLINT
-void OnUpgraded(uint32_t /*nPrevVersion*/) {
+namespace Upgradable3 {  // NOLINT
+void OnUpgraded(uint32_t n_prev_version) {
+    // TODO: temporary code to set faucet balance to 0, delete next upgrade
+    if (n_prev_version == 1) {
+        ContractState cs;
+        Env::LoadVar_T(0, cs);
+        cs.faucet_balance = 0;
+        Env::SaveVar_T(0, cs);
+    }
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 1;
+    return 2;
 }
-}
+}  // namespace Upgradable3
 
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
@@ -298,7 +305,7 @@ BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
                                                     params.repo_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
                                              Repo::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
@@ -331,7 +338,7 @@ BEAM_EXPORT void Method_18(const method::ModifyProjectMember& params) {  // NOLI
     Members<Tag::kProjectMember, Project>::Key member_key(params.member,
                                                           params.project_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kProjectMember, Project>(
         params.caller, params.project_id, Project::Permissions::kModifyMember);
     Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
@@ -365,7 +372,7 @@ BEAM_EXPORT void Method_21(const method::ModifyOrganizationMember& params) {  //
     Members<Tag::kOrganizationMember, Organization>::Key member_key(
         params.member, params.organization_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
+                              KeyTag::Internal) == 0u);
     CheckPermissions<Tag::kOrganizationMember, Organization>(
         params.caller, params.organization_id,
         Organization::Permissions::kModifyMember);
@@ -384,7 +391,7 @@ BEAM_EXPORT void Method_22(const method::RemoveOrganizationMember& params) {  //
     Env::AddSig(params.caller);
 }
 
-BEAM_EXPORT void Method_23(const method::Deposit& params) { // NOLINT
+BEAM_EXPORT void Method_23(const method::Deposit& params) {  // NOLINT
     Env::FundsLock(0, params.amount);
     ContractState cs;
     Env::LoadVar_T(0, cs);
@@ -392,7 +399,7 @@ BEAM_EXPORT void Method_23(const method::Deposit& params) { // NOLINT
     Env::SaveVar_T(0, cs);
 }
 
-BEAM_EXPORT void Method_24(const method::Withdraw& params) { // NOLINT
+BEAM_EXPORT void Method_24(const method::Withdraw& params) {  // NOLINT
     ContractState cs;
     Env::LoadVar_T(0, cs);
     Strict::Sub(cs.faucet_balance, params.amount);

@@ -13,6 +13,7 @@
     "web": "export WEB=1; export NODE_ENV=development; webpack serve --mode development",
     "web:win": "set WEB=1&&webpack serve --mode development",
     "build:web": "export WEB=1; webpack --mode production",
+    "build:web:win": "set WEB=1&&webpack --mode production",
     "electron": "electron ."
   },
   "homepage": "./",
