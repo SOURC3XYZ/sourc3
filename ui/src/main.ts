@@ -76,7 +76,8 @@ function createWindow() {
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
     } else if (process.platform === 'darwin') {
-      CopyIfNotExists(path.join(app.getPath('exe'), '..', '..', '..', 'environment.plist'), "~/Library/LaunchAgents/environment.plist");
+      CopyIfNotExists(path.join(app.getPath('exe'), '..', '..', '..', 'environment.plist'),
+          path.join(app.getPath('home'), "Library/LaunchAgents/environment.plist"));
 
       // const dst = path.join(app.getPath('exe'), '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
       // const src = path.join(app.getPath('exe'), '..', '..', '..', 'git-remote-sourc3');
