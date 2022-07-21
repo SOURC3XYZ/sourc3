@@ -34,7 +34,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
   const [idOrg, setIdOrg] = useState(organizations[0].organization_id);
 
   const handleOk = (name:string, id:number) => {
-    createProject(name, id, pid);
+    createProject(`"${name}"`, id, pid);
     closePopup();
   };
 
@@ -42,11 +42,16 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
     setIdOrg(value);
   };
 
+  const handleCanceled = () => {
+    handleCancel();
+    setInputName('');
+  };
+
   return (
     <Popup
       title="Add new project to organization"
       visible
-      onCancel={handleCancel}
+      onCancel={handleCanceled}
       confirmButton={(
         <NavButton
           key="all-repos-addBtn"

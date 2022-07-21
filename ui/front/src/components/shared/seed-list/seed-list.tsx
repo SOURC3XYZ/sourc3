@@ -30,7 +30,7 @@ function SeedList({
           readOnly={readOnly}
           required
           autoFocus={i === 0}
-          defaultValue={el ?? ''}
+          value={el ?? ''}
           data-index={i}
           type="text"
           onInput={onInput}

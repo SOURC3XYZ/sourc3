@@ -37,11 +37,16 @@ function CreateModal({
     if (closePopup) closePopup();
   };
 
+  const handleCanceled = () => {
+    handleCancel();
+    setInputName('');
+  };
+
   return (
     <Popup
       title={title}
       visible={isModalVisible}
-      onCancel={handleCancel}
+      onCancel={handleCanceled}
       confirmButton={(
         <NavButton
           key="all-repos-addBtn"
