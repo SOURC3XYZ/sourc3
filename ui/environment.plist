@@ -9,7 +9,7 @@
     <string>sh</string>
     <string>-c</string>
     <string>
-    launchctl setenv PATH $PATH:/Applications/sourc3-client-dappnet
+    launchctl setenv PATH $PATH:/Applications/sourc3-client-dappnet.app/Contents/Resources
     </string>
 
   </array>
