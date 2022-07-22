@@ -11,6 +11,8 @@ target_sources(helper_lib
 		object_collector.cpp
 		utils.cpp
 		wallet_client.cpp
+		beam_wallet_client.cpp
+		eth_wallet_client.cpp
 )
 
 target_include_directories(helper_lib PUBLIC ${LIBGIT2_INCLUDES})
