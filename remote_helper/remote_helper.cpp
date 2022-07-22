@@ -326,14 +326,14 @@ public:
     }
 
     CommandResult DoFetchAsync(const vector<string_view>& args) {
-        std::deque<std::string> object_hashes;
-        object_hashes.emplace_back(args[1].data(), args[1].size());
+        std::set<std::string> object_hashes;
+        object_hashes.emplace(args[1].data(), args[1].size());
         size_t depth = 1;
         std::set<std::string> received_objects;
 
         auto enuque_object = [&](const std::string& oid) {
             if (received_objects.find(oid) == received_objects.end()) {
-                object_hashes.emplace_back(oid);
+                object_hashes.emplace(oid);
             }
         };
 
@@ -383,7 +383,7 @@ public:
             std::set<std::string> processing_hashes;
             while (!object_hashes.empty() || !processing_hashes.empty()) {
                 if (object_hashes.empty() || processing_hashes.size() >= 400) {
-                    timer.expires_from_now(std::chrono::seconds(1));
+                    timer.expires_from_now(std::chrono::milliseconds(100));
                     timer.async_wait(yield);
                     continue;
                 }
@@ -449,7 +449,7 @@ public:
                                     static_cast<uint8_t>(v.get_int64()));
                             }
                         } catch (...) {
-                            object_hashes.emplace_back(obj);
+                            object_hashes.emplace(obj);
                             processing_hashes.erase(it2);
                             return;
                         }
