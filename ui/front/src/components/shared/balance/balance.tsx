@@ -46,6 +46,7 @@ function Balance() {
         placement="bottomCenter"
         trigger={['click']}
         overlayClassName={styles.dropdown}
+        overlayStyle={{ position: 'fixed' }}
       >
         <Button className={styles.button}>
           {balance}

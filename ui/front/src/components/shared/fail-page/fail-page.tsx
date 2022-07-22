@@ -44,7 +44,7 @@ function FailPage({
 
         <h1>Page not found</h1>
         <p>
-          The page you are looking for was mover, removed,
+          The page you are looking for was moved, removed,
           <span>renamed or never existed</span>
 
         </p>

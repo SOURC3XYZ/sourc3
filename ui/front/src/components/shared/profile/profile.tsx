@@ -65,6 +65,7 @@ function Profile({ pKey }:profileType) {
           placement="bottomCenter"
           trigger={['click']}
           overlayClassName={styles.dropdown}
+          overlayStyle={{ position: 'fixed' }}
         >
           <div>
             <Avatar
