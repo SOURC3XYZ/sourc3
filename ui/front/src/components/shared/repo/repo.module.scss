@@ -1,4 +1,4 @@
-@import '@styles/vars.scss';
+@import "@styles/vars.scss";
 
 .wrapper {
     height: 100%;
@@ -8,16 +8,21 @@
     padding: 2.5rem;
     position: relative;
     flex-grow: 1;
+
     :global {
-        button[class^=back-button] {
+        button[class^="back-button"] {
             position: static;
-            &:focus{
+
+            &:focus {
                 border-color: transparent;
             }
         }
+
+        [class*="section"] {
+            height: 100%;
+        }
     }
 }
-
 
 .reloadBtn {
     font-size: 1.1rem;
@@ -30,6 +35,7 @@
     justify-content: start;
     align-items: center;
     margin-bottom: 0.5rem;
+
     .title {
         padding-right: 0.5rem;
         margin-bottom: 0;
