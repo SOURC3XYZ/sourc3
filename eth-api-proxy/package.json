@@ -1,0 +1,16 @@
+{
+  "name": "eth-api-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "jayson": "^3.6.6",
+    "web3": "^1.7.4"
+  }
+}

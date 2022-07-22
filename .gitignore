@@ -5,3 +5,5 @@ node_modules
 .idea
 # Local Netlify folder
 .netlify
+/eth-api-proxy/.env
+/eth-api-proxy/.vscode
