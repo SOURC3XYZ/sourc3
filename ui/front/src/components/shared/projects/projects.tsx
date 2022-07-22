@@ -60,44 +60,42 @@ function Projects() {
 
   const style = {
     position: 'relative',
-    left: '11.3%',
-    top: '0.7rem'
+    left: '0',
+    top: '-137px'
   };
 
   return (
-    <>
-      <BackButton inlineStyles={style} onClick={back} />
-      <EntityWrapper
-        title={`${orgName} projects`}
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      >
-        <>
-          <CreateModal
-            title="Add new project to organization"
-            label="Project name"
-            isModalVisible={isModal}
-            placeholder="Enter your project name"
-            handleCreate={handleOk}
-            handleCancel={closeModal}
-          />
-          <EntityList
-            searchText={searchText}
-            renderItem={listItem}
-            route={`projects/${id}`}
-            path={path}
-            page={page}
-            items={items}
-            type={type}
-          />
-        </>
-      </EntityWrapper>
-    </>
+    <EntityWrapper
+      title={`${orgName} projects`}
+      type={type}
+      pkey={pkey}
+      searchText={searchText}
+      navItems={navItems}
+      setInputText={setInputText}
+      placeholder={placeholder}
+      showModal={showModal}
+    >
+      <>
+        <BackButton inlineStyles={style} onClick={back} />
+        <CreateModal
+          title="Add new project to organization"
+          label="Project name"
+          isModalVisible={isModal}
+          placeholder="Enter your project name"
+          handleCreate={handleOk}
+          handleCancel={closeModal}
+        />
+        <EntityList
+          searchText={searchText}
+          renderItem={listItem}
+          route={`projects/${id}`}
+          path={path}
+          page={page}
+          items={items}
+          type={type}
+        />
+      </>
+    </EntityWrapper>
   );
 }
 
