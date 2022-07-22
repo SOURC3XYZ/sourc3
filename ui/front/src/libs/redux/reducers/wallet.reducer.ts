@@ -32,7 +32,7 @@ const reducer = (
     }
     case ACTIONS.SET_GENERATED_SEED: {
       newState.seedPhrase = action.payload as IWallet['seedPhrase'];
-      console.log(newState.seedPhrase);
+      // console.log(newState.seedPhrase);
       return newState;
     }
     case ACTIONS.SET_SEED_TO_VALIDATION: {
@@ -40,7 +40,6 @@ const reducer = (
         ...state.seed2Validation,
         ...action.payload as IWallet['seed2Validation']
       };
-      console.log(newState.seedPhrase);
       return newState;
     }
     default:

@@ -61,46 +61,42 @@ function ProjectRepos() {
 
   const style = {
     position: 'relative',
-    left: '11.3%',
-    top: '0.7rem'
+    left: '0',
+    top: '-137px'
   };
 
   return (
-    <>
-      {' '}
-      <BackButton inlineStyles={style} onClick={back} />
-      <EntityWrapper
-        title={`${projectName} repos`}
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        placeholder={placeholder}
-        setInputText={setInputText}
-        showModal={showModal}
-      >
-        <>
-          <CreateModal
-            title="Add project repository"
-            label="Repository name"
-            isModalVisible={isModal}
-            placeholder="Enter your repository name"
-            handleCreate={handleOk}
-            handleCancel={closeModal}
-          />
-          <EntityList
-            searchText={searchText}
-            renderItem={listItem}
-            route={`project/${id}`}
-            path={path}
-            page={page}
-            items={items}
-            type={type}
-          />
-        </>
-      </EntityWrapper>
-
-    </>
+    <EntityWrapper
+      title={`${projectName} repos`}
+      type={type}
+      pkey={pkey}
+      searchText={searchText}
+      navItems={navItems}
+      placeholder={placeholder}
+      setInputText={setInputText}
+      showModal={showModal}
+    >
+      <>
+        <BackButton inlineStyles={style} onClick={back} />
+        <CreateModal
+          title="Add project repository"
+          label="Repository name"
+          isModalVisible={isModal}
+          placeholder="Enter your repository name"
+          handleCreate={handleOk}
+          handleCancel={closeModal}
+        />
+        <EntityList
+          searchText={searchText}
+          renderItem={listItem}
+          route={`project/${id}`}
+          path={path}
+          page={page}
+          items={items}
+          type={type}
+        />
+      </>
+    </EntityWrapper>
   );
 }
 
