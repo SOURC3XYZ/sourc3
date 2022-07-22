@@ -10,18 +10,17 @@ import {
   ProjectRepos
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import {
-  useCallback, useMemo
-} from 'react';
-import { Footer } from 'antd/lib/layout/layout';
+import { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
-import { useWebApp } from '@libs/hooks/container/web-app';
+import { useWebMain } from '@libs/hooks/container/web-app';
+import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
+import DownloadPage from '../../../components/shared/download-page/download-page';
 
 function Main() {
-  const { isApiConnected, isOnLending, connectBeamApi } = useWebApp();
+  const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
 
   const routesData = [
     {
@@ -47,10 +46,16 @@ function Main() {
     {
       path: 'project/:projId/:type/:page',
       element: <ProjectRepos />
+    },
+    {
+      path: 'download',
+      element: <DownloadPage />
+    },
+    {
+      path: '404',
+      element: <FailPage />
     }
   ];
-
-  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
 
   const fallback = (props:any) => {
     const updatedProps = { ...props, subTitle: props.message || 'no data' };
@@ -90,12 +95,9 @@ function Main() {
               <Notifications />
             </div>
           </div>
-          <Footer className={footerClassname}>
-            © 2022 by SOURC3
-          </Footer>
+          <Footer isOnLending={isOnLending} />
         </>
       </ErrorBoundary>
-
     </PreloadComponent>
 
   );

@@ -1,0 +1,25 @@
+.button{
+    box-sizing: border-box;
+    width: 72px;
+    border: 1px solid transparent;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+    color: #FF791F;
+    font-family: PublicSans-Bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+        position: absolute;
+        left: 30px;
+          top: 65px;
+          &:focus{
+            background-color: transparent;
+            color: #EA6A13;
+        }
+        &:hover{
+          color: #EA6A13;
+      }
+}

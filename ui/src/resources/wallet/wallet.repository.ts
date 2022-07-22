@@ -7,13 +7,12 @@ import fs from 'fs';
 import { getRepository } from 'typeorm';
 import { app } from 'electron';
 import {
-  BEAM_NODE_PORT, HTTP_MODE, IPFS_BOOTSRAP, WALLET_API_PORT
+  BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT
 } from '../../common';
 import { Seed } from '../../entities';
 import {
   cliPath,
   getExecutableFile,
-  limitStr,
   nodeDBPath,
   nodePath,
   walletApiPath,
@@ -21,6 +20,7 @@ import {
   ipfsPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
+import { loggerLevel } from '../../middlewares';
 
 let currentProcess: ChildProcess | undefined;
 
@@ -28,6 +28,7 @@ let nodeUpdate = 0;
 
 const successReg = /server/i;
 const errorReg = /Please check your password/i;
+const beamErrorReg = /^E /i;
 const ownerKeyReg = /Owner Viewer key/i;
 const walletRestoreSuccessReg = /generated:/i;
 const walletRestoreErrorReg = /provide a valid seed phrase for the wallet./i;
@@ -35,10 +36,9 @@ const nodeUpdatingReq = /Updating node/i;
 const notInitializedReg = /Please initialize your wallet first/i;
 
 const peers = [
-  'eu-node01.masternet.beam.mw:8100',
-  'eu-node02.masternet.beam.mw:8100',
-  'eu-node03.masternet.beam.mw:8100',
-  'eu-node04.masternet.beam.mw:8100'
+  'eu-node01.dappnet.beam.mw:8100',
+  'eu-node02.dappnet.beam.mw:8100',
+  'eu-node03.dappnet.beam.mw:8100'
 ];
 
 export function getNodeUpdate() {
@@ -54,7 +54,7 @@ export function deleteFile(filePath: string) {
     fs.unlinkSync(filePath);
     return true;
   } catch (err) {
-    console.error(err);
+    loggerLevel('error', err);
     return false;
   }
 }
@@ -67,7 +67,7 @@ export function readDirFile(
     (resolve) => {
       fs.readdir(directoryPath, (err, files) => {
         if (err) {
-          console.log(`Unable to scan directory: ${err}`);
+          loggerLevel('info', `Unable to scan directory: ${err}`);
           resolve(false);
         }
         const findedName = files.find((el) => el === fileName);
@@ -82,7 +82,7 @@ export function killApiServer(): Promise<string> {
     (resolve) => {
       if (currentProcess && !currentProcess.killed) {
         currentProcess.on('close', (code: number) => {
-          console.log(`child process exited with code ${code}`);
+          loggerLevel('info', `child process exited with code ${code}`);
           resolve(`child process exited with code ${code}`);
         });
         currentProcess.kill('SIGTERM');
@@ -95,7 +95,7 @@ export function setCurrentProcess(process?: ChildProcess) {
   if (currentProcess && !currentProcess.killed) {
     currentProcess.kill('SIGTERM');
     currentProcess.on('close', (code: number) => {
-      console.log(`child process exited with code ${code}`);
+      loggerLevel('info', `child process exited with code ${code}`);
       if (process) setCurrentProcess(process);
     });
   } else currentProcess = process;
@@ -115,7 +115,8 @@ export function exportOwnerKey(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      console.log(`stdout: ${bufferString}`);
+
+      if (bufferString.match(beamErrorReg)) loggerLevel('info', `stdout: ${bufferString}`);
 
       if (bufferString.match(ownerKeyReg)) {
         const key = bufferString
@@ -134,7 +135,7 @@ export function exportOwnerKey(
     };
 
     const onClose = (code: number | null) => {
-      console.log(`child process exited with code ${code}`);
+      loggerLevel('info', `child process exited with code ${code}`);
     };
 
     runSpawnProcess({
@@ -150,31 +151,35 @@ export function startBeamNode(
   return new Promise((resolve, reject) => {
     const beamNodePath = getExecutableFile(nodePath);
     if (beamNodePath) {
-      console.log('Beam node is: ', beamNodePath);
+      loggerLevel('info', `Beam node is: ${beamNodePath}`);
       const node = spawn(beamNodePath, [
         `--port=${BEAM_NODE_PORT}`,
         `--peer=${peers.join(',')}`,
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--file_log_level=verbose']);
+        '--log_level=debug']);
 
       node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
-        console.log(`Got node output: ${bufferString}`);
+        loggerLevel('info', `node output: ${bufferString}`);
+        console.log(`node output: ${bufferString}`);
         if (bufferString.match(nodeUpdatingReq)) {
           const str = String(bufferString.split('node')[1]);
           nodeUpdate = Number(/\d+/.exec(str));
+        } else if (bufferString.match(beamErrorReg)) {
+          throw new Error(`Node error: ${bufferString}. Try to start on port: ${BEAM_NODE_PORT}`);
         }
       });
 
       node.stderr.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
-        console.log(`Got node error: ${bufferString}`);
+        loggerLevel('info', `node error: ${bufferString}`);
+        console.log(`node error: ${bufferString}`);
       });
 
       app.on('window-all-closed', () => {
-        console.log('Kill node!');
+        loggerLevel('info', 'Kill node!');
         node.kill('SIGTERM');
       });
       return resolve(node);
@@ -204,7 +209,7 @@ export function restoreExistedWallet(
 
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
-      console.log('stdout:', bufferString);
+      loggerLevel('error', `CLI stdout: ${bufferString}`);
       if (bufferString.match(walletRestoreSuccessReg)) {
         seedRepository.findOne({ where: { seed } })
           .then((finded) => {
@@ -245,19 +250,24 @@ export function runWalletApi(
       `--use_http=${HTTP_MODE}`,
       `--wallet_path=${walletDBPath}`,
       '--enable_ipfs=true',
-      '--tcp_max_line=20256000',
+      '--tcp_max_line=2000256000',
       `--ipfs_repo=${ipfsPath}`,
-      `--ipfs_bootstrap=/ip4/3.209.99.179/tcp/8100/p2p/${IPFS_BOOTSRAP}`
+      '--log_level=debug'
     ];
     const onData = (data: Buffer) => {
-      const bufferString = limitStr(data.toString('utf-8'), 300);
-      console.log(`stdout: ${bufferString}`);
+      const bufferString = data.toString('utf-8');
+      loggerLevel('info', `API stdout: ${data.toString('utf-8')}`);
       if (bufferString.match(successReg)) {
         resolve('wallet api started successfully');
       }
       if (bufferString.match(errorReg)) {
         killApiServer()
           .then(() => reject(new Error('Please, check your password')));
+      } else if (bufferString.match(beamErrorReg)) {
+        // TODO:
+//         throw new Error(`Wallet API start error: ${
+//           bufferString
+//         }. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
       }
     };
 

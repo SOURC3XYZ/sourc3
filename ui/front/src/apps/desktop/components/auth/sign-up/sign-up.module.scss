@@ -1,0 +1,45 @@
+.wrapper {
+	margin: 0 auto;
+	width: 100%;
+	text-align: center;
+
+  h2 {
+    margin: 0;
+    padding: 0 0 22px;
+    font-weight: 900;
+		font-size: 32px;
+		line-height: 37.6px;
+		font-family: PublicSans-Black;
+  }
+
+  .description {
+    text-align: center;
+    padding: 0 20px;
+    margin-bottom: 58px;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: PublicSans-Regular;
+    color: #000000;
+    opacity: 0.5;
+  }
+
+  .btnBlock {
+    max-width: 275px;
+    width: 100%;
+    margin: 0 auto;
+
+    button:hover {
+      color: #fff;
+    }
+  }
+
+}
+
+.syncStatusWrapper {
+  margin: 0 auto;
+  max-width: 315px;
+  text-align: center;
+  width: 100%;
+  padding-bottom: 30px;
+}

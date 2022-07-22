@@ -1,11 +1,22 @@
+.element {
+    margin-right: 2px;
+}
+
 .title {
+    composes: element;
     font-family: PublicSans-Bold;
     font-size: 1rem;
     color: #000000;
 }
 
 .message.message.message.message {
+    // composes: element;
     font-family: PublicSans-Regular;
     font-size: 1rem;
     color: #000000;
+}
+
+.info {
+    display: flex;
+    flex-wrap: wrap;
 }

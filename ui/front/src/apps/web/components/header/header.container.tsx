@@ -1,6 +1,7 @@
 import {
   AutocompeteSearch,
-  ConnectBtn
+  ConnectBtn,
+  ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
 import img from '@assets/img/source-header-logo.svg';
@@ -9,16 +10,18 @@ import { useMemo } from 'react';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
-  isOnLending: boolean,
+  isOnLending?: boolean,
+  desktop?: boolean,
 };
 
-function Header({ isOnLending }:HeaderPropsType) {
+function Header({ isOnLending, desktop }:HeaderPropsType) {
   // const textColorClass = isOnLending ? styles.textColor : styles.textColorActive;
 
   const containerProps = useHeader();
-
   const {
     pkey,
+    users,
+    isVisible,
     onConnect
   } = containerProps;
 
@@ -54,18 +57,35 @@ function Header({ isOnLending }:HeaderPropsType) {
           placeholder="Search"
         />
       )}
-      <ConnectBtn pkey={pkey} onConnect={onConnect} />
+      { !desktop ? (
+        <>
+          {pkey && (<ProfileBlock pKey={pkey} />)}
+          <ConnectBtn
+            pkey={pkey}
+            users={users}
+            onConnect={onConnect}
+          />
+        </>
+      ) : (
+        <ProfileBlock
+          balance
+          profile
+          pKey={pkey}
+        />
+      ) }
     </div>
-  ), [isOnLending, pkey]);
+  ), [isOnLending, pkey, users]);
 
-  return (
+  const header = useMemo(() => (isVisible ? (
     <header className={headerClassName}>
       <div className={styles.nav}>
         {headerElements}
         {searchElement}
       </div>
     </header>
-  );
+  ) : null), [isVisible, pkey, isOnLending]);
+
+  return header;
 }
 
 export default Header;

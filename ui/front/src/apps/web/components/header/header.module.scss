@@ -14,8 +14,8 @@
     align-items: center;
     width: 100%;
     justify-content: space-between;
-
-    span {
+    padding: 0 44px;
+   & span {
       color: #fff;
       font-family: PublicSans-Bold;
       font-size: 18px;
@@ -58,7 +58,8 @@
   display: flex;
   list-style: none;
   max-width: 300px;
-  font-weight: 600;
+  font-weight: 800;
+  font-family: "PublicSans-Bold";
   font-size: 18px;
   line-height: 20px;
   margin-bottom: 0px;
@@ -72,8 +73,8 @@
 
 .connect {
   display: flex;
-  width: 425px;
-  margin-right: 40px;
+  // width: 425px;
+  // margin-right: 40px;
   justify-content: space-between;
 
   input {

@@ -40,7 +40,6 @@ export const getNodeUpdateService = () => getNodeUpdate();
 export const enterUser = async (password: string): Promise<ProcessStatus> => {
   try {
     const ownerKey = await exportOwnerKey(password);
-    console.log('owner key: ', ownerKey);
     const nodeProcess = await startBeamNode(ownerKey, password);
     const runWallet = await runWalletApi(password, nodeProcess);
     return { isOk: true, message: runWallet };

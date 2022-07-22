@@ -2,23 +2,26 @@ import { createLogger, format, transports } from 'winston';
 import { Request, Response, NextFunction } from 'express';
 import { finished } from 'stream';
 import { limitStr } from '../../utils';
+import path from 'path';
+import { app } from 'electron';
 
 const logger = createLogger({
   level: 'silly',
-  format: format.combine(format.colorize(), format.cli()),
+  format: format.combine(format.colorize(), format.timestamp(), format.cli()),
   transports: [
     new transports.Console(),
     new transports.File({
-      filename: 'error.log',
+      filename: path.join(app.getPath("logs"), 'error.log'),
       level: 'error',
-      format: format.combine(format.uncolorize(), format.json())
+      format: format.combine(format.uncolorize(), format.timestamp(), format.json())
     }),
     new transports.File({
-      filename: 'info.log',
+      filename: path.join(app.getPath("logs"), 'info.log'),
       level: 'info',
-      format: format.combine(format.uncolorize(), format.json())
+      format: format.combine(format.uncolorize(), format.timestamp(), format.json())
     })
-  ]
+  ],
+  exitOnError: false
 });
 
 export const logerRequests = (
@@ -57,3 +60,7 @@ export const uncaughtExceptionLogger = (error:Error, origin:string):void => {
 export const unhandledRejectionLogger = (message: string):void => {
   logger.error(`Unhandled rejection detected: ${message}`);
 };
+
+export const loggerLevel = (level: string, message: any): void => {
+  logger.log(level, message);
+}

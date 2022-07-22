@@ -23,7 +23,10 @@ function Nav({ type, items }:NavProps) {
 
   return (
     <div className={style.nav}>
-      <Menu defaultSelectedKeys={[type]} mode="horizontal">
+      <Menu
+        selectedKeys={[type]}
+        mode="horizontal"
+      >
         {itemsRender}
       </Menu>
     </div>

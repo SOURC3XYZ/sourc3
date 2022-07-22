@@ -1,19 +1,14 @@
 import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
-import { entitiesThunk } from '@libs/action-creators/async';
+import { entitiesThunk, userThunk } from '@libs/action-creators/async';
 import { CONFIG } from '@libs/constants';
 import { BeamApiDesktop } from '@libs/core';
 import { AppThunkDispatch } from '@libs/redux';
 import wasm from '@assets/app.wasm';
-import {
-  BeamApiContext, ContractsResp
-} from '@types';
-import {
-  createContext, useCallback, useMemo, useRef
-} from 'react';
-
-const BeamWebApiContext = createContext<BeamApiContext>(null);
+import { ContractsResp, PKeyRes } from '@types';
+import { useCallback, useMemo, useRef } from 'react';
+import { BeamWebApiContext } from './shared-context';
 
 type BeamWebCtxProps = {
   children: JSX.Element
@@ -26,14 +21,15 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
     const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
+    const { getWalletStatus } = userThunk({ callApi: api.callApi });
 
     return apiManagerHelper(() => {
       dispatch(getRepos('all'));
       dispatch(getOrganizations());
       dispatch(getProjects());
+      dispatch(getWalletStatus());
+      // dispatch(thunks.getTxList());
     });
-    // dispatch(thunks.getWalletStatus());
-    // dispatch(thunks.getTxList());
   }, [api]);
 
   const setIsConnected = async (dispatch: AppThunkDispatch) => {
@@ -41,19 +37,22 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
     await api.initContract(wasm);
     api.loadApiEventManager(apiEventManager(dispatch));
     await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
-      const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
-      if (!finded) throw new Error(`no specified cid (${api.cid})`);
-      return dispatch(AC.setIsConnected(!!finded));
-    });
+      const found = output.contracts.find((el) => el.cid === api.cid) || 1;
+      if (!found) throw new Error(`no specified cid (${api.cid})`);
+      query<PKeyRes>(
+        dispatch,
+        RC.getPublicKey(),
+        (pKeyOutput) => [AC.setPublicKey(pKeyOutput.key), AC.setIsConnected(!!found)]
+      );
+    }, true);
   };
 
-  const contextObj = useMemo(() => (
-    {
-      setIsConnected,
-      callApi: api.callApi,
-      callIPC: api.callIPC
-    }
-  ), [api.BEAM]);
+  const contextObj = useMemo(() => ({
+    setIsConnected,
+    callApi: api.callApi,
+    callIPC: api.callIPC
+  }
+  ), [api]);
 
   return (
     <BeamWebApiContext.Provider value={contextObj}>

@@ -18,6 +18,7 @@ const useOrganization = () => {
 
   const { setInputText, createOrganization } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
   const items = useSelector((state) => itemsFilter(state.entities.organizations, type, pkey));
   const searchText = useSelector((state) => state.entities.searchText);
 
@@ -25,7 +26,7 @@ const useOrganization = () => {
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
-    (name: string) => createOrganization(name)
+    (name: string) => createOrganization(name, pid)
   );
 
   return {

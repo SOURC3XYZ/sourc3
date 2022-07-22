@@ -16,7 +16,7 @@
 
       img {
         display: block;
-        margin-top: 130px;
+        margin-top: 10vh;
         animation: fadein 3s alternate;
       }
     }
@@ -46,6 +46,7 @@
     .intro::before {
       position: absolute;
       content: '';
+      top: 20px;
       left: -91px;
       background: url('@assets/img/left-half-ring.png');
       width: 60px;
@@ -57,12 +58,13 @@
     .intro {
       position: relative;
       width: max-content;
-      margin: 117px auto;
+      margin: 10vh auto;
 
       h1 {
         color: white;
+        font-family: "VisbyHeavy";
+        // font-weight: 500;
         font-size: 80px;
-        font-weight: 900;
         line-height: 90px;
         max-width: 609px;
         height: 180px;
@@ -81,7 +83,7 @@
       p:after {
         position: absolute;
         content: '';
-        bottom: -105px;
+        bottom: -80px;
         right: -105px;
         background: url('@assets/img/right-half-ring.png');
         width: 121px;
@@ -98,7 +100,7 @@
         box-sizing: border-box;
         border-radius: 8px;
         color: black;
-        font-family: PublicSans-Regular;
+        font-family: PublicSans-ExtraBold;
         font-size: 20px;
         line-height: 20px;
         font-weight: 600;
@@ -110,7 +112,7 @@
     background: url('@assets/img/rect.png');
     position: absolute;
     content: '';
-    bottom: -165px;
+    bottom: -15vh;
     left: -42px;
     width: 84px;
     height: 84px;

@@ -6,8 +6,6 @@ import styles from './lendos.module.scss';
 function Lendos() {
   const navigate = useNavigate();
   const onClick = () => navigate('/repos/all/1', { replace: false });
-
-  console.log(img);
   return (
     <div className={styles.bg}>
       <div className={styles.wrapper}>
@@ -21,7 +19,7 @@ function Lendos() {
             the Web3-way
           </h1>
           <p>
-            SOURC3 is a decentralized software development platform, enabling self-sovereignty and recognizing contribution.
+            Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development
           </p>
           <button style={{ cursor: 'pointer' }} onClick={onClick} type="button">Explore</button>
         </div>

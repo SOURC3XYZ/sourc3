@@ -1,4 +1,17 @@
-﻿
+// Copyright 2021-2022 SOURC3 Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #define _CRT_SECURE_NO_WARNINGS  // getenv
 #include <algorithm>
 #include <boost/algorithm/hex.hpp>
@@ -110,6 +123,14 @@ vector<string_view> ParseArgs(std::string_view args_sv) {
     return args;
 }
 
+json::value ParseJsonAndTest(json::string_view sv) {
+    auto r = json::parse(sv);
+    if (const auto* error = r.as_object().if_contains("error"); error) {
+        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+    }
+    return r;
+}
+
 }  // namespace
 
 class RemoteHelper {
@@ -170,10 +191,8 @@ public:
         {
             auto progress = MakeProgress("Enumerating objects", 0);
             // hack Collect objects metainfo
-            auto res =
-                wallet_client_.InvokeWallet("role=user,action=repo_get_meta");
-            auto root = json::parse(res);
-
+            auto res = wallet_client_.GetAllObjectsMetadata();
+            auto root = ParseJsonAndTest(res);
             for (auto& obj_val : root.as_object()["objects"].as_array()) {
                 if (progress) {
                     progress->UpdateProgress(++total_objects);
@@ -199,11 +218,9 @@ public:
         while (!object_hashes.empty()) {
             auto it_to_receive = object_hashes.begin();
             const auto& object_to_receive = *it_to_receive;
-            std::stringstream ss;
-            ss << "role=user,action=repo_get_data,obj_id=" << object_to_receive;
 
-            auto res = wallet_client_.InvokeWallet(ss.str());
-            auto root = json::parse(res);
+            auto res = wallet_client_.GetObjectData(object_to_receive);
+            auto root = ParseJsonAndTest(res);
             git_oid oid;
             git_oid_fromstr(&oid, object_to_receive.data());
 
@@ -226,7 +243,7 @@ public:
                 auto hash = FromHex(data);
                 auto responce = wallet_client_.LoadObjectFromIPFS(
                     std::string(hash.cbegin(), hash.cend()));
-                auto r = json::parse(responce);
+                auto r = ParseJsonAndTest(responce);
                 if (r.as_object().find("result") == r.as_object().end()) {
                     cerr << "message: "
                          << r.as_object()["error"]
@@ -366,7 +383,7 @@ public:
                 if (obj.GetSize() > kIpfsAddressSize) {
                     auto res = wallet_client_.SaveObjectToIPFS(obj.GetData(),
                                                                obj.GetSize());
-                    auto r = json::parse(res);
+                    auto r = ParseJsonAndTest(res);
                     auto hash_str =
                         r.as_object()["result"].as_object()["hash"].as_string();
                     obj.ipfsHash =
@@ -386,7 +403,7 @@ public:
             auto progress =
                 MakeProgress("Uploading metadata to blockchain", objs.size());
             collector.Serialize([&](const auto& buf, size_t done) {
-                std::stringstream ss;
+                std::string str_data;
                 if (!buf.empty()) {
                     // log
                     //{
@@ -404,9 +421,7 @@ public:
                     //    }
                     //    std::cerr << std::endl;
                     //}
-                    auto str_data = ToHex(buf.data(), buf.size());
-
-                    ss << "role=user,action=push_objects,data=" << str_data;
+                    str_data = ToHex(buf.data(), buf.size());
                 }
 
                 if (progress) {
@@ -414,14 +429,8 @@ public:
                 }
 
                 bool last = (done == objs.size());
-                if (last) {
-                    ss << ',';
-                    for (const auto& r : collector.m_refs) {
-                        ss << "ref=" << r.name << ",ref_target="
-                           << ToHex(&r.target, sizeof(r.target));
-                    }
-                }
-                wallet_client_.InvokeWallet(ss.str());
+                wallet_client_.PushObjects(str_data, collector.m_refs, last);
+                return last == false; // continue
             });
         }
         {
@@ -466,13 +475,10 @@ private:
     }
 
     std::vector<Ref> RequestRefs() {
-        std::stringstream ss;
-        ss << "role=user,action=list_refs";
-
         std::vector<Ref> refs;
-        auto res = wallet_client_.InvokeWallet(ss.str());
+        auto res = wallet_client_.GetReferences();
         if (!res.empty()) {
-            auto root = json::parse(res);
+            auto root = ParseJsonAndTest(res);
             for (auto& rv : root.as_object()["refs"].as_array()) {
                 auto& ref = refs.emplace_back();
                 auto& r = rv.as_object();
@@ -489,9 +495,8 @@ private:
 
         auto progress = MakeProgress("Enumerating uploaded objects", 0);
         // hack Collect objects metainfo
-        auto res =
-            wallet_client_.InvokeWallet("role=user,action=repo_get_meta");
-        auto root = json::parse(res);
+        auto res = wallet_client_.GetAllObjectsMetadata();
+        auto root = ParseJsonAndTest(res);
         for (auto& obj : root.as_object()["objects"].as_array()) {
             auto s = obj.as_object()["object_hash"].as_string();
             git_oid oid;
@@ -579,7 +584,7 @@ int main(int argc, char* argv[]) {
                                ->default_value("localhost"),
                            "Wallet API host")(
             "api-port",
-            po::value<std::string>(&options.apiPort)->default_value("10000"),
+            po::value<std::string>(&options.apiPort)->default_value("9100"),
             "Wallet API port")("api-target",
                                po::value<std::string>(&options.apiTarget)
                                    ->default_value("/api/wallet"),
@@ -632,8 +637,8 @@ int main(int argc, char* argv[]) {
                     cout << endl;
                     continue;
                 } else {
-                    cerr << "Unexpected blank line" << endl;
-                    return -1;
+                    // end of the command sequence
+                    return 0;
                 }
             }
 

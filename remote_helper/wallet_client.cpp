@@ -1,3 +1,17 @@
+// Copyright 2021-2022 SOURC3 Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "wallet_client.h"
 #include <boost/json.hpp>
 #include <boost/asio.hpp>
@@ -7,12 +21,44 @@
 namespace sourc3 {
 namespace json = boost::json;
 
+std::string SimpleWalletClient::GetAllObjectsMetadata() {
+    return InvokeWallet("role=user,action=repo_get_meta");
+}
+
+std::string SimpleWalletClient::GetObjectData(const std::string& obj_id) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    return InvokeWallet(ss.str());
+}
+
+std::string SimpleWalletClient::GetReferences() {
+    return InvokeWallet("role=user,action=list_refs");
+}
+
+std::string SimpleWalletClient::PushObjects(const std::string& data,
+                                            const std::vector<Ref>& refs,
+                                            bool push_refs) {
+    std::stringstream ss;
+    ss << "role=user,action=push_objects";
+    if (!data.empty()) {
+        ss << ",data=" << data;
+    }
+
+    if (push_refs) {
+        for (const auto& r : refs) {
+            ss << ",ref=" << r.name
+               << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+        }
+    }
+    return InvokeWallet(ss.str());
+}
+
 std::string SimpleWalletClient::LoadObjectFromIPFS(std::string&& hash) {
     auto msg =
         json::value{{JsonRpcHeader, JsonRpcVersion},
                     {"id", 1},
                     {"method", "ipfs_get"},
-                    {"params", {{"hash", std::move(hash)}, {"timeout", 5000}}}};
+                    {"params", {{"hash", std::move(hash)}}}};
     return CallAPI(json::serialize(msg));
 }
 
@@ -115,26 +161,15 @@ std::string SimpleWalletClient::InvokeShader(const std::string& args) {
     return ExtractResult(CallAPI(json::serialize(msg)));
 }
 
-const std::string& SimpleWalletClient::GetCID() {
-    if (cid_.empty()) {
-        auto root =
-            json::parse(InvokeShader("role=manager,action=view_contracts"));
-
-        assert(root.is_object());
-        auto& contracts = root.as_object()["contracts"];
-        if (contracts.is_array() && !contracts.as_array().empty()) {
-            cid_ =
-                contracts.as_array()[0].as_object()["cid"].as_string().c_str();
-        }
-    }
-    return cid_;
+const char* SimpleWalletClient::GetCID() const {
+    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
 }
 
 const std::string& SimpleWalletClient::GetRepoID() {
     if (repo_id_.empty()) {
-        std::string request = "role=user,action=repo_id_by_name,repo_name=";
+        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
         request.append(options_.repoName)
-            .append(",repo_owner=")
+            .append("\",repo_owner=")
             .append(options_.repoOwner)
             .append(",cid=")
             .append(GetCID());
@@ -168,5 +203,22 @@ std::string SimpleWalletClient::ReadAPI() {
     auto line = data_.substr(0, n);
     data_.erase(0, n);
     return line;
+}
+
+void SimpleWalletClient::PrintVersion() {
+    auto msg = json::value{
+        {JsonRpcHeader, JsonRpcVersion},
+        {"id", 1},
+        {"method", "get_version"},
+    };
+    auto response = CallAPI(json::serialize(msg));
+    auto r = json::parse(response);
+    if (auto* res = r.as_object().if_contains("result"); res) {
+        std::cerr << "Connected to Beam Wallet API "
+                  << res->as_object()["beam_version"].as_string().c_str()
+                  << " ("
+                  << res->as_object()["beam_branch_name"].as_string().c_str()
+                  << ")" << std::endl;
+    }
 }
 }  // namespace sourc3

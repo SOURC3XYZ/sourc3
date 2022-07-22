@@ -9,8 +9,9 @@ import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { useSelector } from '@libs/redux';
-import { textEllipsis } from '@libs/utils';
+import { actualTime, clipString, dateCreator } from '@libs/utils';
 import styles from './list-item.module.scss';
+import PendingIndicator from './pending-indicator';
 
 type ListItemProps = {
   item: RepoType;
@@ -57,7 +58,9 @@ function RepoItem({
     message.info(key);
   };
 
-  const link = `${path}repo/${repo_id}&${repo_name}/tree/`;
+  const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
+    item.masterBranch ? clipString(item.masterBranch?.name) : ''
+  }`;
 
   const menuRender = (
     <Menu onClick={onClick}>
@@ -72,6 +75,16 @@ function RepoItem({
     </Menu>
   );
 
+  const time = item.lastCommit
+    ? `${dateCreator(actualTime(item.lastCommit))} ago`
+    : 'empty';
+
+  const handleRepoLink:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    if (!item.masterBranch) e.preventDefault();
+  };
+
+  const titleClassname = item.masterBranch ? styles.title : styles.titleDisabled;
+
   return (
     <List.Item
       className={styles.listItem}
@@ -81,8 +94,8 @@ function RepoItem({
           key={`repo-${item.repo_id}`}
           className={styles.time}
         >
-          {`owner: ${textEllipsis(repo_owner, 7, { ellipsis: '' })}`}
-
+          {time}
+          <PendingIndicator id={item.repo_id} />
         </span>,
         (
           <Dropdown
@@ -97,8 +110,8 @@ function RepoItem({
     >
       <List.Item.Meta
         title={(
-          <div className={styles.title}>
-            <Link to={link} state={{ id: repo_id }}>
+          <div className={titleClassname}>
+            <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
               <Excretion name={repo_name} inputText={searchText} />
             </Link>
           </div>

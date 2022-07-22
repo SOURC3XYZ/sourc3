@@ -1,9 +1,12 @@
 import {
   CreateModal,
   EntityList,
-  EntityWrapper
+  EntityWrapper,
+  BackButton
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectListItem from './project-list-item';
 
 const placeholder = 'Enter name of your project';
@@ -51,35 +54,50 @@ function Projects() {
     />
   );
 
+  const navigate = useNavigate();
+
+  const back = useCallback(() => navigate(-1), []);
+
+  const style = {
+    position: 'relative',
+    left: '11.3%',
+    top: '0.7rem'
+  };
+
   return (
-    <EntityWrapper
-      title={`${orgName} projects`}
-      type={type}
-      pkey={pkey}
-      searchText={searchText}
-      navItems={navItems}
-      setInputText={setInputText}
-      placeholder={placeholder}
-      showModal={showModal}
-    >
-      <>
-        <CreateModal
-          isModalVisible={isModal}
-          placeholder="Enter your project name"
-          handleCreate={handleOk}
-          handleCancel={closeModal}
-        />
-        <EntityList
-          searchText={searchText}
-          renderItem={listItem}
-          route={`projects/${id}`}
-          path={path}
-          page={page}
-          items={items}
-          type={type}
-        />
-      </>
-    </EntityWrapper>
+    <>
+      <BackButton inlineStyles={style} onClick={back} />
+      <EntityWrapper
+        title={`${orgName} projects`}
+        type={type}
+        pkey={pkey}
+        searchText={searchText}
+        navItems={navItems}
+        setInputText={setInputText}
+        placeholder={placeholder}
+        showModal={showModal}
+      >
+        <>
+          <CreateModal
+            title="Add new project to organization"
+            label="Project name"
+            isModalVisible={isModal}
+            placeholder="Enter your project name"
+            handleCreate={handleOk}
+            handleCancel={closeModal}
+          />
+          <EntityList
+            searchText={searchText}
+            renderItem={listItem}
+            route={`projects/${id}`}
+            path={path}
+            page={page}
+            items={items}
+            type={type}
+          />
+        </>
+      </EntityWrapper>
+    </>
   );
 }
 

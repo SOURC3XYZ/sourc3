@@ -28,6 +28,8 @@ export type RepoType = {
   repo_owner: string;
   project_id: number;
   cur_objects: number;
+  masterBranch: Branch;
+  lastCommit: BranchCommit | null;
 };
 
 export interface ReposResp extends ContractResp {
@@ -84,7 +86,15 @@ export type BranchCommit = {
   committer_email:string
   object_data: string
   parents: CommitData[]
+  commit_time_positive: number
+  commit_time_sec: number
+  commit_time_tz_offset_min: number
+  create_time_positive: number
+  create_time_sec: number
+  create_time_tz_offset_min: number
 };
+
+export type User = { active: boolean, avatar: number, id: number, name: string };
 
 export interface RepoCommitResp extends ContractResp {
   commit: BranchCommit;

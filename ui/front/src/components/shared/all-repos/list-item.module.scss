@@ -9,6 +9,15 @@
 
 }
 
+.pending {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
 .title {
     margin-bottom: 8px;
 
@@ -18,6 +27,15 @@
         color: #000000;
     }
 }
+
+.titleDisabled {
+    composes: title;
+
+    * {
+        color: rgba(0, 0, 0, 0.4);
+    }
+}
+
 
 .subtitle {
     .idField {

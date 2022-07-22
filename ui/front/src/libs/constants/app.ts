@@ -30,7 +30,9 @@ export enum ACTIONS {
   SET_REPO_FILE = 'SET_REPO_FILE',
   SET_TX_LIST = 'SET_TX_LIST',
   SET_ORGANIZATIONS = 'SET_ORGANIZATIONS',
-  SET_PROJECTS = 'SET_PROJECTS'
+  SET_PROJECTS = 'SET_PROJECTS',
+  SET_COMMITS_MAP = 'SET_COMMITS_MAP',
+  SET_USERS = 'SET_USERS'
 }
 
 export enum ActionColor {
@@ -53,7 +55,9 @@ export enum Routes {
 }
 
 export enum LoadingMessages {
-  COMMITS = 'Building commit tree...',
+  COMMIT = 'Loading commit data...',
+  COMMIT_TREE = 'Building commit tree...',
+  BRANCHES = 'Loading branches...',
   TREE = 'Loading file tree...',
   FILE = 'Loading file...',
   HEADLESS = 'Loading decentralized application...'
@@ -65,3 +69,15 @@ export enum ToastMessages {
   WALLET_CONNECTED = 'Web wallet connected!',
   HEADLESS_CONNECTED = 'Headless wallet connected!',
 }
+
+export enum COLORS {
+  GREEN = '#3FD05A',
+  ORANGE = '#FFBD2E',
+  RED = '#EA0000'
+}
+
+export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
+
+export enum RestoreStatus { SEED, PASS, OK, LOADING }
+
+export enum MODAL { NONE, REPOS, CLONE, ORGANIZATION, PROJECT, ADD }
