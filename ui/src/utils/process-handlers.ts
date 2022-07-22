@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from 'child_process';
 
 import { app } from 'electron';
 import {loggerLevel} from "../middlewares";
+import {configPath} from "../common";
 
 type BufferHandler = (data: Buffer) => undefined | void;
 
@@ -24,7 +25,7 @@ export const runSpawnProcess = (
   const {
     path, args, detached, onData, onError, onClose, setCurrentProcess
   } = params;
-  const childProcess = spawn(path, args, { detached });
+  const childProcess = spawn(path, args, { detached: detached, cwd: configPath });
 
   if (onData) childProcess.stdout.on('data', onData);
 
