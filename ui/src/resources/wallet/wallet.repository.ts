@@ -7,7 +7,7 @@ import fs from 'fs';
 import { getRepository } from 'typeorm';
 import { app } from 'electron';
 import {
-  BEAM_NODE_PORT, HTTP_MODE, WALLET_API_PORT
+  BEAM_NODE_PORT, configPath, HTTP_MODE, WALLET_API_PORT
 } from '../../common';
 import { Seed } from '../../entities';
 import {
@@ -158,7 +158,7 @@ export function startBeamNode(
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--log_level=debug']);
+        '--log_level=debug'], {cwd: configPath});
 
       node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
