@@ -65,7 +65,8 @@ void EthWalletClient::EnsureConnected() {
         return;
     }
 
-    auto const results = resolver_.resolve(options().ethApiHost, options().ethApiPort);
+    auto const results =
+        resolver_.resolve(options().ethApiHost, options().ethApiPort);
 
     // Make the connection on the IP address we get from a lookup
     stream_.connect(results);
@@ -74,23 +75,32 @@ void EthWalletClient::EnsureConnected() {
 
 std::string EthWalletClient::CallEthAPI(std::string&& request) {
     EnsureConnected();
-    request.push_back('\n');
-    size_t s = request.size();
-    size_t transferred =
-        boost::asio::write(stream_, boost::asio::buffer(request));
-    if (s != transferred) {
-        return "";
-    }
-    return ReadEthAPI();
-}
 
-std::string EthWalletClient::ReadEthAPI() {
-    auto n = boost::asio::read_until(stream_,
-                                     boost::asio::dynamic_buffer(data_), '\n');
+    // Set up an HTTP POST request message
+    constexpr int kHttpVersion = 11;
+    // TODO: set in the options?
+    constexpr auto kTarget = "/";
+    http::request<http::string_body> req{http::verb::post, kTarget,
+                                         kHttpVersion};
+    req.set(http::field::host, options().ethApiHost);
+    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    req.set(http::field::content_type, "application/json");
+    req.body() = request; 
+    req.prepare_payload();
 
-    auto line = data_.substr(0, n);
-    data_.erase(0, n);
-    return line;
+    // Send the HTTP request to the remote host
+    http::write(stream_, req);
+
+    // This buffer is used for reading and must be persisted
+    beast::flat_buffer buffer;
+
+    // Declare a container to hold the response
+    http::response<http::dynamic_body> res;
+
+    // Receive the HTTP response
+    http::read(stream_, buffer, res);
+
+    return boost::beast::buffers_to_string(res.body().data());
 }
 
 const std::string& EthWalletClient::GetRepoID() {

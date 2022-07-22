@@ -66,7 +66,6 @@ public:
 private:
     void EnsureConnected();
     std::string CallEthAPI(std::string&& request);
-    std::string ReadEthAPI();
 
     const std::string& GetRepoID();
     void PrintVersion();
