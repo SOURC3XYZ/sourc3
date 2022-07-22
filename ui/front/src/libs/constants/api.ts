@@ -10,7 +10,7 @@ export enum CONFIG {
   // 'fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10',
   // IPFS_HOST = 'http://3.209.99.179:8070'
   HEADLESS_NODE = 'eu-node02.dappnet.beam.mw:8200',
-  IPFS_HOST = 'https://proxi-beam.herokuapp.com',
+  IPFS_HOST = 'https://cache.sourc3.xyz',
   ASSET_ID = 0,
   IPFS_TIMEOUT = 20000,
   BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master'
