@@ -1,11 +1,12 @@
 .section {
   position: relative;
   height: 75vh;
-  width: 100vw;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   .text {
     position: relative;
     display: flex;
@@ -15,14 +16,16 @@
     width: 100%;
     text-align: center;
     margin: 0 auto;
-    h1{
+
+    h1 {
       font-family: 'PublicSans-ExtraBold';
       font-style: normal;
       font-weight: 800;
       font-size: 32px;
       line-height: 38px;
     }
-    p{
+
+    p {
       font-family: 'PublicSans-Regular';
       font-style: normal;
       font-weight: 400;
@@ -31,11 +34,13 @@
       text-align: center;
       color: #000000;
       margin: 16px 0 59px 0;
-      span{
+
+      span {
         display: block;
       }
     }
-    button{
+
+    button {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -52,6 +57,7 @@
       color: #FFFFFF;
       cursor: pointer;
     }
+
     .img {
       img {
         position: absolute;
@@ -88,11 +94,13 @@
           top: -31%;
           left: 21%;
         }
+
         &:nth-child(5) {
           animation: fadein 2s ease-in alternate;
           right: 10%;
           bottom: -45%;
         }
+
         &:nth-child(6) {
           animation: fadein 2s ease-in alternate;
           right: 8%;
@@ -116,10 +124,11 @@
     opacity: 1;
   }
 }
+
 @media only screen and (max-width: 1199px) {
-  .section{
-    footer{
-      .content{
+  .section {
+    footer {
+      .content {
         div {
           padding: 16px 15px 20px 15px;
         }
@@ -127,30 +136,36 @@
     }
   }
 }
+
 @media only screen and (max-width: 600px) {
-  .section{
-    .text{
-      p{
-        span{
+  .section {
+    .text {
+      p {
+        span {
           display: inline;
         }
       }
+
       .img {
         img {
           &:nth-child(2) {
             bottom: -33%;
             left: 3%;
           }
+
           &:nth-child(3) {
             top: -120%;
             left: 0;
           }
+
           &:nth-child(4) {
             display: none;
           }
+
           &:nth-child(5) {
             bottom: -60%;
           }
+
           &:nth-child(6) {
             top: -75%;
           }
