@@ -76,11 +76,7 @@ function createWindow() {
         path.join(app.getPath('home'), '.local', 'bin', 'git-remote-sourc3')
       );
     } else if (process.platform === 'darwin') {
-      const dst = path.join(app.getPath('exe'), '..', '..', '..', 'Contents', 'MacOS', 'git-remote-sourc3');
-      const src = path.join(app.getPath('exe'), '..', '..', '..', 'git-remote-sourc3');
-      if (!fs.existsSync(dst)) {
-        fs.symlinkSync(src, dst);
-      }
+      // TODO: Place logic for MacOS here
     }
     if (!fs.existsSync(sourc3Path)) {
       fs.mkdirSync(sourc3Path);
