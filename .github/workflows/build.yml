@@ -102,6 +102,7 @@ jobs:
         echo "BOOST_LIBRARYDIR=${{runner.workspace}}/boost_prebuild/lib/" >> $GITHUB_ENV
     
     - name: Beam Shader SDK
+      if: ${{false}} 
       shell: bash
       run: |
         WORKSPACE='${{runner.workspace}}'
