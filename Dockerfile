@@ -1,7 +1,7 @@
-FROM node:16.4.2 AS builder
+FROM node:16.16.0 AS builder
 WORKDIR /usr/src/app-build
 COPY ./ui/front/ .
-RUN  npm install && npm run build:web
+RUN  yarn install && npm run build:web
 
 FROM nginx:latest
 WORKDIR /usr/share/nginx/html
