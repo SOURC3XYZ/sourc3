@@ -142,7 +142,10 @@ void OnActionScheduleUpgrade(const ContractID& cid) {
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
     MyKeyID kid;
-    Upgradable3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
+    uint32_t charge_extra = 0;
+    Env::DocGetNum32("nChargeExtra", &charge_extra);
+    Upgradable3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid,
+                                                                  charge_extra);
 }
 
 void OnActionMyAdminKey(const ContractID& cid) {
