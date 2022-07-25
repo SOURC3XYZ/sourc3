@@ -3,7 +3,7 @@ import { BackButton, FailPage, Preload } from '@components/shared';
 import { LoadingMessages } from '@libs/constants';
 import { useUserRepos } from '@libs/hooks/container/user-repos';
 import Title from 'antd/lib/typography/Title';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { CommitContent } from './commit-content';
 import { CommitsTree } from './commit-tree';
@@ -36,11 +36,17 @@ function UserRepos() {
 
   const back = useCallback(() => navigate(-1), []);
 
+  const isElectron = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  }, []);
+
   const isLoadedReload = !!(commitsMap && isLoaded);
 
   return (
     <div className={styles.wrapper}>
-      <BackButton onClick={back} />
+      {isElectron ? <BackButton onClick={back} /> : null}
+
       <div className={styles.titleWrapper}>
         <Title className={styles.title} level={3}>{repoName}</Title>
         <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
