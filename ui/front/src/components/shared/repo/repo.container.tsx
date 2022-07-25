@@ -36,7 +36,6 @@ function UserRepos() {
 
   const back = useCallback(() => navigate(-1), []);
 
-
   const isLoadedReload = !!(commitsMap && isLoaded);
 
   return (
