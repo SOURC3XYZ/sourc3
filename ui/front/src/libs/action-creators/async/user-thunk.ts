@@ -27,11 +27,10 @@ export const userThunk = ({
   const [query] = contractCall(callApi);
 
   const checkTxStatus = (callback: SetPropertiesType<TxResponse>):CustomAction => () => (
-    { result: { comment, status_string } }: BeamApiRes<TxResult>
+    { result }: BeamApiRes<TxResult>
   ) => {
     callback({
-      message: comment,
-      status_string
+      ...result
     });
   };
 
@@ -43,8 +42,7 @@ export const userThunk = ({
       const res = await callApi(RC.getTxStatus(txId));
       if (res.result) {
         callback({
-          message: res.result.comment,
-          status_string: res.result.status_string
+          ...res.result
         });
       }
     } catch (error) { thunkCatch(error, dispatch); }

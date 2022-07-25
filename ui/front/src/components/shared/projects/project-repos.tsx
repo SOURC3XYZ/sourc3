@@ -7,7 +7,7 @@ import {
   BackButton
 } from '@components/shared';
 import { useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 const placeholder = 'Enter your repository name';
 
@@ -59,10 +59,15 @@ function ProjectRepos() {
 
   const back = useCallback(() => navigate(-1), []);
 
+  const isElectron = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  }, []);
+
   const style = {
     position: 'relative',
     left: '0',
-    top: '-137px'
+    top: '-150px'
   };
 
   return (
@@ -77,7 +82,7 @@ function ProjectRepos() {
       showModal={showModal}
     >
       <>
-        <BackButton inlineStyles={style} onClick={back} />
+        {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
         <CreateModal
           title="Add project repository"
           label="Repository name"

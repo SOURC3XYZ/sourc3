@@ -29,8 +29,12 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   ):CustomAction => async (dispatch) => {
     try {
       let stopPending = false;
-      window.addEventListener('stop-commit-pending', () => { stopPending = true; }, { once: true });
-      dispatch(AC.setCommits(null));
+      const stopPendingHandler = () => { stopPending = true; };
+      window.addEventListener('stop-commit-pending', stopPendingHandler, { once: true });
+      batcher(dispatch, [
+        AC.setCommits(null),
+        AC.setTreeData(null)
+      ]);
       const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
@@ -69,6 +73,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
         }
       }
       if (stopPending) throw new Error('commit pending stopped');
+      window.removeEventListener('stop-commit-pending', stopPendingHandler);
     } catch (error) { errHandler(error as Error); }
   };
 

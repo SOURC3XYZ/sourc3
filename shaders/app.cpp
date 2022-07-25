@@ -46,6 +46,13 @@ static const ShaderID s_SID = {  // NOLINT
     0x1e, 0x15, 0xcc, 0x34, 0x22, 0x81, 0xbf, 0x0c, 0x84, 0x0b, 0x0f,
     0x99, 0x28, 0xcc, 0xfc, 0x8f, 0x7e, 0x8e, 0xeb, 0x00, 0x48};
 }  // namespace v1
+namespace v2 {
+// SID: 2318cf637149d6b47a4801329f985f276d497dbbf221aebdd49a5916c2ccaf3d
+static const ShaderID s_SID = {  // NOLINT
+    0x23, 0x18, 0xcf, 0x63, 0x71, 0x49, 0xd6, 0xb4, 0x7a, 0x48, 0x01,
+    0x32, 0x9f, 0x98, 0x5f, 0x27, 0x6d, 0x49, 0x7d, 0xbb, 0xf2, 0x21,
+    0xae, 0xbd, 0xd4, 0x9a, 0x59, 0x16, 0xc2, 0xcc, 0xaf, 0x3d};
+}  // namespace v2
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -77,7 +84,8 @@ struct MyKeyID : public Env::KeyID {
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID, sourc3::s_SID};
+const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID,
+                         sourc3::v2::s_SID, sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
@@ -134,7 +142,10 @@ void OnActionScheduleUpgrade(const ContractID& cid) {
 
 void OnActionExplicitUpgrade(const ContractID& cid) {
     MyKeyID kid;
-    Upgradable3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid);
+    uint32_t charge_extra = 0;
+    Env::DocGetNum32("nChargeExtra", &charge_extra);
+    Upgradable3::Manager::MultiSigRitual::Perform_ExplicitUpgrade(cid,
+                                                                  charge_extra);
 }
 
 void OnActionMyAdminKey(const ContractID& cid) {

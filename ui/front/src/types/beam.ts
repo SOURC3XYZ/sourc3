@@ -89,7 +89,7 @@ export type CallApiProps<T> = {
 };
 
 export type TxResponse = {
-  message: string;
+  comment: string;
   status_string: string;
 };
 
