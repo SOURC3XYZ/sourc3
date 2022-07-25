@@ -85,7 +85,7 @@ void OnUpgraded(uint32_t n_prev_version) {
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 2;
+    return 3;
 }
 }  // namespace Upgradable3
 
