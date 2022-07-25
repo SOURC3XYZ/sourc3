@@ -137,12 +137,12 @@ export const AC = {
     payload
   } as const),
 
-  setRepoId: (payload: RepoId) => ({
+  setRepoId: (payload: RepoId | null) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
   } as const),
 
-  setPreviousReposPage: (payload: string) => ({
+  setPreviousReposPage: (payload: string | null) => ({
     type: ACTIONS.SET_PREV_REPO_HREF,
     payload
   } as const),

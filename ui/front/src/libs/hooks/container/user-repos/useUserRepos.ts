@@ -19,7 +19,7 @@ const useUserRepos = () => {
   const setError = useAsyncError();
 
   const {
-    getRepo, updateTree, getFileData, killTree
+    getRepo, updateTree, getFileData, killTree, clearRepo
   } = useRepoAction();
 
   const location = useParams<'repoParams'>() as LocationState;
@@ -39,6 +39,7 @@ const useUserRepos = () => {
   useEffect(() => () => {
     const cancelCommitPendingEvent = new Event('stop-commit-pending');
     window.dispatchEvent(cancelCommitPendingEvent);
+    clearRepo();
   }, []);
 
   const startLoading = useCallback(() => setIsLoaded(false), []);
@@ -53,10 +54,10 @@ const useUserRepos = () => {
     prevReposHref,
     repoMetas,
     commitsMap,
+    callApiErr,
     callApi,
     isLoading,
     setIsLoaded,
-    callApiErr,
     updateTree: update,
     startLoading,
     killTree,
