@@ -25,6 +25,10 @@ std::string EthWalletClient::PushObjects(const State& expected_state,
                                          const State& desired_state,
                                          uint32_t new_object_count,
                                          uint32_t new_metas_count) {
+    auto desired_hash =
+        ToHex(desired_state.hash.c_str(), desired_state.hash.size());
+    auto expected_hash =
+        ToHex(expected_state.hash.c_str(), expected_state.hash.size());
     auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
                            {"id", 1},
                            {"method", "pushState"},
@@ -32,8 +36,8 @@ std::string EthWalletClient::PushObjects(const State& expected_state,
                             {{"repoId", GetRepoID()},
                              {"objsCount", new_object_count},
                              {"metasCount", new_metas_count},
-                             {"expectedState", expected_state.hash},
-                             {"state", desired_state.hash}}}};
+                             {"expectedState", expected_hash},
+                             {"state", desired_hash}}}};
 
     auto r = json::parse(CallEthAPI(json::serialize(msg)));
 
@@ -117,7 +121,7 @@ const std::string& EthWalletClient::GetRepoID() {
 
         if (auto it = root.as_object().find("result");
             it != root.as_object().end()) {
-            repo_id_ = (*it).value().get_string();
+            repo_id_ = (*it).value().as_string().c_str();
         }
     }
     return repo_id_;
@@ -152,7 +156,9 @@ std::string EthWalletClient::LoadActualState() {
         auto& result = (*it).value().as_object();
 
         if (result.contains(kStateHashKey)) {
-            return std::string(result[kStateHashKey].get_string());
+            // TODO: change
+            result.emplace("hash", result[kStateHashKey].as_string().c_str());
+            return json::serialize(result);
         }
     }
     throw std::runtime_error("Invalid response of the loadState method");
