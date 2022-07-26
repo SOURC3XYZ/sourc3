@@ -912,7 +912,6 @@ int main(int argc, char* argv[]) {
         return -1;
     }
     try {
-        Sleep(10000);
         SimpleWalletClient::Options options;
         po::options_description desc("SOURC3 config options");
 
@@ -937,7 +936,7 @@ int main(int argc, char* argv[]) {
                 ->default_value("localhost"),
             "eth API host")(
             "eth-api-port",
-            po::value<std::string>(&options.ethApiPort)->default_value("9100"));
+            po::value<std::string>(&options.ethApiPort)->default_value("9105"));
         po::variables_map vm;
 #ifdef WIN32
         const auto* home_dir = std::getenv("USERPROFILE");
@@ -975,19 +974,6 @@ int main(int argc, char* argv[]) {
              << "\nRepo folder: " << options.repoPath << endl;
         auto wallet_client =
             SimpleWalletClient::CreateInstance(network_name, options);
-
-        // TEST
-        wallet_client->GetRepoDir();
-        wallet_client->GetTransactionCount();
-        std::cerr << wallet_client->GetUploadedObjectCount() << std::endl;
-        std::cerr << wallet_client->LoadActualState() << std::endl;
-        wallet_client->PushObjects({"c9abd0bef3e14bdf651583d7c43c2843e82d3871"},
-                                   {"c9abd0bef3e14bdf651583d7c43c2843e82d3871"},
-                                   35, 26);
-
-        if (true)
-            throw std::runtime_error("Test finished!");
-        // END TEST
 
         RemoteHelper helper{*wallet_client.get()};
         git::Init init;
