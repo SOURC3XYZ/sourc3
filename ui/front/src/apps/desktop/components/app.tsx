@@ -1,5 +1,6 @@
 import { ErrorAlert } from '@components/shared';
 import { AC } from '@libs/action-creators';
+import { useWalletAction } from '@libs/hooks/thunk';
 import { useDispatch, useSelector } from '@libs/redux';
 import { useMemo } from 'react';
 import {
@@ -14,12 +15,15 @@ function App() {
 
   const dispatch = useDispatch();
 
+  const { killWalletApi } = useWalletAction();
+
   const resetErr = () => dispatch(AC.setError(null));
 
   const navigate = useNavigate();
 
   const onClick = () => {
     resetErr();
+    killWalletApi();
     navigate('/');
   };
 
