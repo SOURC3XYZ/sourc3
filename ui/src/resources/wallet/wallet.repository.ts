@@ -6,6 +6,7 @@ import { spawn, ChildProcess } from 'child_process';
 import fs from 'fs';
 import { getRepository } from 'typeorm';
 import { app } from 'electron';
+import https from 'https';
 import {
   BEAM_NODE_PORT, configPath, HTTP_MODE, WALLET_API_PORT
 } from '../../common';
@@ -17,7 +18,9 @@ import {
   nodePath,
   walletApiPath,
   walletDBPath,
-  ipfsPath
+  ipfsPath,
+  isExistsSync,
+  recoveryBinPath
 } from '../../utils';
 import { runSpawnProcess } from '../../utils/process-handlers';
 import { loggerLevel } from '../../middlewares';
@@ -32,14 +35,14 @@ const beamErrorReg = /^E /i;
 const ownerKeyReg = /Owner Viewer key/i;
 const walletRestoreSuccessReg = /generated:/i;
 const walletRestoreErrorReg = /provide a valid seed phrase for the wallet./i;
-const nodeUpdatingReq = /Updating node/i;
+const nodeUpdatingReq = /Importing recovery data/i;
 const notInitializedReg = /Please initialize your wallet first/i;
 
 const peers = [
   'eu-node01.dappnet.beam.mw:8100',
   'eu-node02.dappnet.beam.mw:8100',
   'eu-node03.dappnet.beam.mw:8100'
-];
+] as const;
 
 export function getNodeUpdate() {
   return nodeUpdate;
@@ -70,8 +73,8 @@ export function readDirFile(
           loggerLevel('info', `Unable to scan directory: ${err}`);
           resolve(false);
         }
-        const findedName = files.find((el) => el === fileName);
-        return resolve(!!findedName);
+        const foundName = files.find((el) => el === fileName);
+        return resolve(!!foundName);
       });
     }
   );
@@ -80,6 +83,7 @@ export function readDirFile(
 export function killApiServer(): Promise<string> {
   return new Promise(
     (resolve) => {
+      nodeUpdate = 0;
       if (currentProcess && !currentProcess.killed) {
         currentProcess.on('close', (code: number) => {
           loggerLevel('info', `child process exited with code ${code}`);
@@ -99,6 +103,58 @@ export function setCurrentProcess(process?: ChildProcess) {
       if (process) setCurrentProcess(process);
     });
   } else currentProcess = process;
+}
+
+export function recoveryDonwload() {
+  return new Promise<void>((resolve, reject) => {
+    if (fs.existsSync(recoveryBinPath)) deleteFile(recoveryBinPath);
+    const file = fs.createWriteStream(recoveryBinPath);
+    https
+      .get('https://mobile-restore.beam.mw/dappnet/dappnet_recovery.bin', (response) => {
+        response.on('error', (err) => reject(err));
+        response.pipe(file);
+        return file.on('finish', () => {
+          file.close();
+          resolve();
+        });
+      });
+  });
+}
+
+export function importRecovery(password:string) {
+  return new Promise<void>((resolve, reject) => {
+    const cliWalletPath = getExecutableFile(cliPath);
+    if (!cliWalletPath) return reject(new Error('cli-wallet not found'));
+
+    const args = [
+      'import_recovery',
+      '--pass', password,
+      '--file_location', recoveryBinPath,
+      '--wallet_path', walletDBPath,
+      '-n', peers[0] as string
+    ];
+
+    const onData = (data: Buffer) => {
+      const bufferString = data.toString('utf-8');
+      loggerLevel('info', `node output: ${bufferString}`);
+      console.log(`node output: ${bufferString}`);
+      if (bufferString.match(nodeUpdatingReq)) {
+        const { length, [length - 1]: last } = bufferString.split('data');
+        const num = Number(/\d+/.exec(String(last)));
+        nodeUpdate = num;
+      }
+    };
+
+    const onClose = (code: number | null) => {
+      loggerLevel('info', `child process exited with code ${code}`);
+      if (nodeUpdate < 100) nodeUpdate = 100;
+      if (code) resolve();
+    };
+
+    runSpawnProcess({
+      path: cliWalletPath, args, onData, onClose
+    });
+  });
 }
 
 export function exportOwnerKey(
@@ -158,7 +214,7 @@ export function startBeamNode(
         '--owner_key', ownerKey,
         '--storage', nodeDBPath,
         '--pass', password,
-        '--log_level=debug'], {cwd: configPath});
+        '--log_level=debug'], { cwd: configPath });
 
       node.stdout.on('data', (data: Buffer) => {
         const bufferString = data.toString('utf-8');
@@ -236,15 +292,20 @@ export function restoreExistedWallet(
 }
 
 export function runWalletApi(
-  password: string,
-  nodeProcess: ChildProcess
+  password: string
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (!isExistsSync(walletDBPath) || !fs.existsSync(recoveryBinPath)) {
+      return reject(
+        new Error('Please initialize your wallet first...')
+      );
+    }
+
     const walletApiExe = getExecutableFile(walletApiPath);
     if (!walletApiExe) return reject(new Error('Wallet api not found'));
 
     const args = [
-      '-n', `127.0.0.1:${BEAM_NODE_PORT}`,
+      '-n', peers[0],
       '-p', `${WALLET_API_PORT}`,
       `--pass=${password}`,
       `--use_http=${HTTP_MODE}`,
@@ -252,12 +313,15 @@ export function runWalletApi(
       '--enable_ipfs=true',
       '--tcp_max_line=2000256000',
       `--ipfs_repo=${ipfsPath}`,
-      '--log_level=debug'
+      '--log_level=debug',
+      '--request_bodies=true'
     ];
+
     const onData = (data: Buffer) => {
       const bufferString = data.toString('utf-8');
       loggerLevel('info', `API stdout: ${data.toString('utf-8')}`);
       if (bufferString.match(successReg)) {
+        if (nodeUpdate < 100) nodeUpdate = 100;
         resolve('wallet api started successfully');
       }
       if (bufferString.match(errorReg)) {
@@ -265,21 +329,15 @@ export function runWalletApi(
           .then(() => reject(new Error('Please, check your password')));
       } else if (bufferString.match(beamErrorReg)) {
         // TODO:
-//         throw new Error(`Wallet API start error: ${
-//           bufferString
-//         }. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
+        //         throw new Error(`Wallet API start error: ${
+        //           bufferString
+        //         }. Try to start on port: ${WALLET_API_PORT} and connect to node on: ${BEAM_NODE_PORT}`);
       }
     };
-
-    const onClose = () => {
-      nodeProcess.kill('SIGTERM');
-    };
-
     runSpawnProcess({
       path: walletApiExe,
       args,
       onData,
-      onClose,
       setCurrentProcess
     });
   });

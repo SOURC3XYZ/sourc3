@@ -28,7 +28,7 @@ export const walletThunk = (callIPC: CallIPCType) => {
     } catch (error) { thunkCatch(error, dispatch); }
   };
 
-  const sendParams2Service = (
+  const restoreWallet = (
     seed: string[],
     password:string,
     callback: (err?: Error) => void
@@ -38,13 +38,14 @@ export const walletThunk = (callIPC: CallIPCType) => {
       password
     };
     const restoreUrl = '/wallet/restore';
-    const startUrl = '/wallet/start';
-
-    try {
-      await callIPC(restoreUrl, 'post', body);
-      await callIPC(startUrl, 'post', { password });
-      return callback();
-    } catch (error) { return callback(error as Error); }
+    // const startUrl = '/wallet/start';
+    setTimeout(() => {
+      try {
+        callIPC(restoreUrl, 'post', body);
+        // await callIPC(startUrl, 'post', { password });
+        return callback();
+      } catch (error) { return callback(error as Error); }
+    }, 1000);
   };
 
   const startWalletApi = (
@@ -109,7 +110,7 @@ export const walletThunk = (callIPC: CallIPCType) => {
   return {
     getSyncStatus,
     mountWallet,
-    sendParams2Service,
+    restoreWallet,
     startWalletApi,
     killBeamApi,
     generateSeed,

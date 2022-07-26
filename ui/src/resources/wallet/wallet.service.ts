@@ -2,12 +2,12 @@
 import { Seed } from '../../entities';
 import {
   checkRunningApi,
-  exportOwnerKey,
   getNodeUpdate,
+  importRecovery,
   killApiServer,
+  recoveryDonwload,
   restoreExistedWallet,
-  runWalletApi,
-  startBeamNode
+  runWalletApi
 } from './wallet.repository';
 
 type ProcessStatus = {
@@ -23,7 +23,11 @@ export const restoreWallet = async (
   password: string
 ): Promise<ProcessStatus> => {
   try {
+    await recoveryDonwload();
     const restored = await restoreExistedWallet(seed, password);
+    await importRecovery(password);
+    await runWalletApi(password);
+
     return {
       restored,
       isOk: true,
@@ -39,9 +43,7 @@ export const getNodeUpdateService = () => getNodeUpdate();
 
 export const enterUser = async (password: string): Promise<ProcessStatus> => {
   try {
-    const ownerKey = await exportOwnerKey(password);
-    const nodeProcess = await startBeamNode(ownerKey, password);
-    const runWallet = await runWalletApi(password, nodeProcess);
+    const runWallet = await runWalletApi(password);
     return { isOk: true, message: runWallet };
   } catch (error) {
     const { message } = error as Error;

@@ -24,8 +24,8 @@ const useWalletAction = () => {
 
   const generateSeed = () => dispatch(thunks.generateSeed());
 
-  const restoreWallet = (...args: ArgumentTypes<typeof thunks.sendParams2Service>) => {
-    dispatch(thunks.sendParams2Service(...args));
+  const restoreWallet = (...args: ArgumentTypes<typeof thunks.restoreWallet>) => {
+    dispatch(thunks.restoreWallet(...args));
   };
 
   const clearSeed2Validation = (seed: string[], errors: boolean[]) => {
