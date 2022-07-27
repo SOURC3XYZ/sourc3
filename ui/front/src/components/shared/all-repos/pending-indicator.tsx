@@ -1,7 +1,7 @@
 import { COLORS, CONFIG } from '@libs/constants';
 import { useFetch } from '@libs/hooks/shared';
 import { Tooltip } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styles from './list-item.module.scss';
 
 enum PendingStatus {
@@ -30,9 +30,7 @@ function PendingIndicator(props:PendingIndicatorProps) {
     return [CONFIG.IPFS_HOST, 'repo', CONFIG.NETWORK, key].join('/');
   }, []);
 
-  const options = useMemo(() => ({}), [props]);
-
-  const { data } = useFetch<RepoStatusRes>(url, options);
+  const { data } = useFetch<RepoStatusRes>(url);
 
   useEffect(() => {
     if (typeof data?.pending === 'boolean') {

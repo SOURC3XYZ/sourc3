@@ -2,12 +2,13 @@ import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
 import { entitiesThunk, userThunk } from '@libs/action-creators/async';
-import { CONFIG } from '@libs/constants';
+import { CONFIG, EVENTS } from '@libs/constants';
 import { BeamApiDesktop } from '@libs/core';
 import { AppThunkDispatch } from '@libs/redux';
 import wasm from '@assets/app.wasm';
 import { ContractsResp, PKeyRes } from '@types';
 import { useCallback, useMemo, useRef } from 'react';
+import { useCustomEvent } from '@libs/hooks/shared';
 import { BeamWebApiContext } from './shared-context';
 
 type BeamWebCtxProps = {
@@ -16,6 +17,8 @@ type BeamWebCtxProps = {
 
 export function BeamDesktopApi({ children } : BeamWebCtxProps) {
   const { current: api } = useRef(new BeamApiDesktop(CONFIG.CID));
+
+  const messageToRepo = useCustomEvent(EVENTS.SUBUNSUB);
 
   const [query] = contractCall(api.callApi);
 
@@ -28,6 +31,7 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
       dispatch(getOrganizations());
       dispatch(getProjects());
       dispatch(getWalletStatus());
+      messageToRepo();
       // dispatch(thunks.getTxList());
     });
   }, [api]);
