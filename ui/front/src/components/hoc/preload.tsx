@@ -4,7 +4,7 @@ type PeloadProps = {
   isLoaded: boolean,
   callback?: () => void
   Fallback: (props:any) => JSX.Element;
-  children: ReactElement<any, any>;
+  children: ReactElement<any, any> | null;
 };
 
 function PreloadComponent({

@@ -1,13 +1,27 @@
+// Copyright 2021-2022 SOURC3 Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
 #include "Shaders/Math.h"
 #include "contract.h"
-#include "upgradable3/contract_impl.h"
+#include "Shaders/upgradable3/contract_impl.h"
 
 #include <algorithm>
 #include <memory>
 
-using namespace git_remote_beam;
+using namespace sourc3;
 namespace {
 template <Tag Tg, class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
@@ -59,12 +73,21 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-void git_remote_beam::OnUpgraded(uint32_t /*nPrevVersion*/) {
+namespace Upgradable3 {  // NOLINT
+void OnUpgraded(uint32_t n_prev_version) {
+    // TODO: temporary code to set faucet balance to 0, delete next upgrade
+    if (n_prev_version == 1) {
+        ContractState cs;
+        Env::LoadVar_T(0, cs);
+        cs.faucet_balance = 0;
+        Env::SaveVar_T(0, cs);
+    }
 }
 
-uint32_t git_remote_beam::get_CurrentVersion() {  // NOLINT
-    return 1;
+uint32_t get_CurrentVersion() {  // NOLINT
+    return 3;
 }
+}  // namespace Upgradable3
 
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
@@ -434,4 +457,20 @@ BEAM_EXPORT void Method_22(
         Organization::Permissions::kRemoveMember);
     Env::DelVar_T(member_key);
     Env::AddSig(params.caller);
+}
+
+BEAM_EXPORT void Method_23(const method::Deposit& params) {  // NOLINT
+    Env::FundsLock(0, params.amount);
+    ContractState cs;
+    Env::LoadVar_T(0, cs);
+    Strict::Add(cs.faucet_balance, params.amount);
+    Env::SaveVar_T(0, cs);
+}
+
+BEAM_EXPORT void Method_24(const method::Withdraw& params) {  // NOLINT
+    ContractState cs;
+    Env::LoadVar_T(0, cs);
+    Strict::Sub(cs.faucet_balance, params.amount);
+    Env::SaveVar_T(0, cs);
+    Env::FundsUnlock(0, params.amount);
 }

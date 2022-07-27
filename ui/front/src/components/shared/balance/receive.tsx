@@ -2,26 +2,24 @@ import {
   Button, Modal, Typography
 } from 'antd';
 import { useEffect, useState } from 'react';
-import { thunks } from '@libs/action-creators';
-import { AppThunkDispatch, RootState } from '@libs/redux';
-import { connect } from 'react-redux';
 import { PromiseArg } from '@types';
+import { useUserAction } from '@libs/hooks/thunk';
 
   type ReceivePropsType = {
     isVisible:boolean;
     onClose: () => void;
-    createAddressList: (resolve: PromiseArg<{ address: string }>) => void;
   };
 
 function Receive({
   isVisible,
-  onClose,
-  createAddressList
-  // getWalletAddressList
+  onClose
+  // createAddressList
 }:ReceivePropsType) {
   const [visible, setVisible] = useState(false);
 
   const [newAddress, setNewAddress] = useState<string | null>(null);
+
+  const { createAddressList } = useUserAction();
 
   const showModal = () => {
     setVisible(true);
@@ -42,7 +40,6 @@ function Receive({
   );
 
   useEffect(() => {
-    // getWalletAddressList();
     if (isVisible) {
       showModal();
       createAddressPromise()
@@ -64,7 +61,7 @@ function Receive({
 
   return (
     <Modal
-      title="RECEIVE PIT"
+      title="RECEIVE SC3"
       visible={visible}
       onCancel={handleCancel}
       footer={[
@@ -80,34 +77,34 @@ function Receive({
     </Modal>
   );
 }
-const mapState = ({ app: { balance, addrList } }: RootState) => ({
-  balance,
-  addrList
-});
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getWalletStatus: () => {
-    dispatch(thunks.getWalletStatus());
-  },
-  getWalletAddressList: () => {
-    dispatch(thunks.getWalletAddressList());
-  },
-  createAddressList: (
-    resolve: PromiseArg<{ address: string }>,
-    message:string = 'john smith'
-  ) => {
-    dispatch(thunks.createAddress(message, resolve));
-  },
-  setWalletSendBeam: (
-    amountValue: number,
-    addressValue:string,
-    commentValue:string
-  ) => {
-    dispatch(thunks.setWalletSendBeam(
-      amountValue,
-      addressValue,
-      commentValue
-    ));
-  }
-});
+// const mapState = ({ app: { balance, addrList } }: RootState) => ({
+//   balance,
+//   addrList
+// });
+// const mapDispatch = (dispatch: AppThunkDispatch) => ({
+//   getWalletStatus: () => {
+//     dispatch(thunks.getWalletStatus());
+//   },
+//   getWalletAddressList: () => {
+//     dispatch(thunks.getWalletAddressList());
+//   },
+//   createAddressList: (
+//     resolve: PromiseArg<{ address: string }>,
+//     message:string = 'john smith'
+//   ) => {
+//     dispatch(thunks.createAddress(message, resolve));
+//   },
+//   setWalletSendBeam: (
+//     amountValue: number,
+//     addressValue:string,
+//     commentValue:string
+//   ) => {
+//     dispatch(thunks.setWalletSendBeam(
+//       amountValue,
+//       addressValue,
+//       commentValue
+//     ));
+//   }
+// });
 
-export default connect(mapState, mapDispatch)(Receive);
+export default Receive;

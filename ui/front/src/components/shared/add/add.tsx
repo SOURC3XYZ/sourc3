@@ -1,43 +1,29 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { thunks } from '@libs/action-creators';
-import { useObjectState } from '@libs/hooks/shared';
-import { AppThunkDispatch, RootState } from '@libs/redux';
+import { MODAL } from '@libs/constants';
+import { useAddButton } from '@libs/hooks/container/wallet';
+import useUserAsync from '@libs/hooks/thunk/useEntitiesAction';
 import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useCallback } from 'react';
-import { connect } from 'react-redux';
-import styles from './add.module.css';
+import { NavButton } from '../nav-button';
+import styles from './add.module.scss';
 import { CloneModal } from './content';
 import { CreateModal } from './content/create-modal';
 
-type AddButtonPropsType = {
-  createRepo: (repo_name:string) => void,
-  cloneRepo: (local:string, remote:string) => void
-};
-
-enum MODAL { NONE, CLONE, CREATE, ADD }
-
-const initialState = {
-  isLoading: true,
-  modal: MODAL.NONE
-};
-
-function AddButton({ createRepo, cloneRepo }:AddButtonPropsType) {
-  const [state, setState] = useObjectState(initialState);
-  const { modal } = state;
-
-  const showModal = (mode: MODAL) => setState({ modal: mode });
-
-  const handleCancel = () => setState({ modal: MODAL.NONE });
-
-  const handleOk = () => {
-    setState({ modal: MODAL.NONE });
-  };
+function AddButton() {
+//   const { cloneRepo } = useUserAsync();
+  const {
+    modal,
+    showModal,
+    handleCancel,
+    handleOk,
+    cloneRepo,
+    createRepo
+  } = useAddButton();
 
   const data = [
-    { title: 'Clone repository', mode: MODAL.CLONE },
     { title: 'Create new Repository', mode: MODAL.CREATE },
+    { title: 'Clone repository', mode: MODAL.CLONE },
     { title: 'Add existing repository', mode: MODAL.ADD }
   ];
 
@@ -69,8 +55,8 @@ function AddButton({ createRepo, cloneRepo }:AddButtonPropsType) {
       {data.map(({ title, mode }) => {
         const onClick = () => showModal(mode);
         return (
-          <Menu.Item>
-            <Button type="link" onClick={onClick}>{title}</Button>
+          <Menu.Item key={`menu-item-${title}`}>
+            <Button type="link" onClick={onClick} className={styles.button}>{title}</Button>
           </Menu.Item>
         );
       })}
@@ -78,34 +64,28 @@ function AddButton({ createRepo, cloneRepo }:AddButtonPropsType) {
   );
 
   return (
-    <>
+    <div className={styles.dropdown}>
       <ModalView />
       <div className={styles.wrapper}>
-        <Dropdown overlay={menu} placement="bottomCenter" trigger={['click']}>
-          <Button className={styles.addButton}>
-            Add
-            <PlusOutlined />
-          </Button>
+        <Dropdown
+          overlay={menu}
+          placement="bottomCenter"
+          trigger={['click']}
+          overlayClassName={styles.dropdown}
+        >
+          <NavButton
+            active
+            name="Add new"
+            inlineStyles={{
+              width: '106px',
+              height: '36px',
+              padding: 'inherit'
+            }}
+          />
         </Dropdown>
       </div>
-    </>
+    </div>
   );
 }
 
-const mapState = ({
-  app: { isApiConnected }
-}: RootState) => ({
-  isApiConnected
-});
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  createRepo: (repo_name:string) => {
-    if (repo_name === null) return;
-    dispatch(thunks.createRepos(repo_name));
-  },
-
-  cloneRepo: (local:string, remote: string) => {
-    dispatch(thunks.cloneRepo(local, remote));
-  }
-});
-
-export default connect(mapState, mapDispatch)(AddButton);
+export default AddButton;

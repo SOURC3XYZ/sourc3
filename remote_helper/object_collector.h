@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2022 SOURC3 Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include "git_utils.h"
@@ -109,14 +125,16 @@ public:
                     break;
                 }
             }
+
+            ByteBuffer buf;
             if (count == 0) {
+                func(buf, done);
                 break;
             }
 
             // serializing
-            ByteBuffer buf;
             buf.resize(serialized_size +
-                       sizeof(ObjectsInfo));  // objects count size
+                        sizeof(ObjectsInfo));  // objects count size
             auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
             p->objects_number = count;
             auto* ser_obj = reinterpret_cast<GitObject*>(p + 1);
@@ -127,10 +145,14 @@ public:
                 git_oid_cpy(&ser_obj->hash, &obj.oid);
                 auto* data = reinterpret_cast<uint8_t*>(ser_obj + 1);
                 std::copy_n(obj.GetData(), obj.GetSize(), data);
-                ser_obj = reinterpret_cast<GitObject*>(data + obj.GetSize());
+                ser_obj =
+                    reinterpret_cast<GitObject*>(data + obj.GetSize());
             }
+
             done += count;
-            func(buf, done);
+            if (func(buf, done) == false) {
+                break;
+            }
         }
     }
 

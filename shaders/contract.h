@@ -1,10 +1,26 @@
+/*
+ * Copyright 2021-2022 SOURC3 Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include <cstddef>
 #include "Shaders/common.h"
-#include "upgradable3/contract.h"
+#include "Shaders/upgradable3/contract.h"
 
-namespace git_remote_beam {
+namespace sourc3 {
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -36,6 +52,7 @@ struct ContractState {
     uint64_t last_repo_id;
     uint64_t last_organization_id;
     uint64_t last_project_id;
+    Amount faucet_balance;
 };
 
 struct Organization {
@@ -255,7 +272,7 @@ namespace method {
 
 struct Initial {
     static const uint32_t kMethod = 0;
-    Settings m_Stgs;
+    Upgradable3::Settings m_Stgs;
 };
 
 struct PushObjects {
@@ -414,6 +431,16 @@ struct RemoveOrganizationMember {
     PubKey caller;
 };
 
+struct Deposit {
+    static const uint32_t kMethod = 23;
+    Amount amount;
+};
+
+struct Withdraw {
+    static const uint32_t kMethod = 24;
+    Amount amount;
+};
+
 #pragma pack(pop)
 }  // namespace method
-}  // namespace git_remote_beam
+}  // namespace sourc3

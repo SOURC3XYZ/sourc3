@@ -1,0 +1,225 @@
+.section {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  .logo{
+    margin: 36px 0 45px 0;
+  }
+  .text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 943px;
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    .profile{
+      position: relative;
+      width: 265px;
+      z-index: 1;
+    }
+    h1 {
+      font-family: 'PublicSans-ExtraBold', serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 48px;
+      line-height: 56px;
+      color: #000000;
+    }
+
+    p {
+      font-family: 'PublicSans-Regular', serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 19px;
+      text-align: center;
+      color: #000000;
+      margin: 16px 0 59px 0;
+
+      span {
+        display: block;
+      }
+    }
+
+    .button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 299px;
+      height: 52px;
+      background: #FF791F;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      font-family: 'PublicSans-ExtraBold', serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 16px;
+      line-height: 20px;
+      color: #FFFFFF;
+      cursor: pointer;
+    }
+
+    .img {
+      img {
+        position: absolute;
+
+        &:nth-child(1) {
+          animation: fadein 4s ease-in alternate;
+          width: 100%;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: -1;
+        }
+
+        &:nth-child(2) {
+          width: 98px;
+          height: 98px;
+          animation: fadein 5s ease-in alternate;
+          bottom: -10%;
+          left: 0;
+        }
+
+        &:nth-child(3) {
+          width: 178px;
+          height: 178px;
+          animation: fadein 6s ease-in alternate;
+          top: 21%;
+          left: 0;
+        }
+
+        &:nth-child(4) {
+          width: 107px;
+          height: 107px;
+          animation: fadein 7s ease-in alternate;
+          top: 42%;
+          left: 10%;
+        }
+
+        &:nth-child(5) {
+          animation: fadein 2s ease-in alternate;
+          right: 0;
+          bottom: 30%;
+        }
+
+        &:nth-child(6) {
+          animation: fadein 2s ease-in alternate;
+          right: 8%;
+          top: 13%;
+        }
+      }
+    }
+  }
+  .browsers{
+    margin-top: 80px;
+    h4{
+      font-family: 'PublicSans-ExtraBold', serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 29px;
+      text-align: center;
+      color: #000000;
+      margin-bottom: 32px;
+    }
+    .items{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 80px;
+      div{
+        margin: 0 -80px;
+      }
+      img{
+        width: 60px;
+      }
+      p{
+        font-family: 'PublicSans-Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        text-align: center;
+        color: #000000;
+        opacity: 0.5;
+        margin-top: 16px;
+      }
+    }
+  }
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: .5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+@media only screen and (max-width: 1199px) {
+  .section{
+    footer{
+      .content{
+        div {
+          padding: 16px 15px 20px 15px;
+        }
+      }
+    }
+  }
+}
+@media only screen and (max-width: 600px) {
+  .section{
+    .text{
+      p{
+        span{
+          display: inline;
+        }
+      }
+      .img {
+        display: none;
+      }
+    }
+  }
+}
+@media only screen and (max-width: 400px) {
+  .section{
+    .text{
+      h1{
+        font-size: 35px !important;
+      }
+    }
+    .items{
+      margin: 0 70px !important;
+      div{
+        margin: 0 -70px !important;
+      }
+      img{
+        width: 50px;
+      }
+    }
+    footer{
+      .content{
+        div{
+          a{
+            h4{
+              margin-left: 15px;
+            }
+            img{
+              margin-right: 18px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

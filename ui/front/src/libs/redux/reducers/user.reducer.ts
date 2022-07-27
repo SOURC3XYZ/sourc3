@@ -1,6 +1,8 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
-import { BeamError, TxItem, TxInfo } from '@types';
+import {
+  BeamError, TxItem, TxInfo, User
+} from '@types';
 
 interface IUser {
   isApiConnected: boolean;
@@ -9,7 +11,9 @@ interface IUser {
   balance: number,
   addrList: string
   pkey: string,
-  txList: TxInfo[]
+  pid: number,
+  txList: TxInfo[],
+  users: User[]
 }
 
 const initialState:IUser = {
@@ -19,7 +23,9 @@ const initialState:IUser = {
   balance: 0,
   addrList: '',
   pkey: '',
-  txList: []
+  pid: 0,
+  txList: [],
+  users: []
 };
 
 const reducer = (
@@ -34,6 +40,11 @@ const reducer = (
   switch (action.type) {
     case ACTIONS.ERROR: {
       newState.error = action.payload as IUser['error'];
+      return newState;
+    }
+    case ACTIONS.SET_USERS: {
+      newState.users = action.payload as IUser['users'];
+      newState.pid = newState.users.find((el) => el.active)?.id || 0;
       return newState;
     }
     case ACTIONS.CONNECTION: {

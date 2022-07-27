@@ -1,51 +1,59 @@
-import { UserOutlined } from '@ant-design/icons';
 import {
-  Avatar, Button, Dropdown, Menu, Typography
+  Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
+import Avatar from 'boring-avatars';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styles from './profile.module.css';
+import { useNavigate } from 'react-router-dom';
+import styles from './profile.module.scss';
 
 type profileType = {
   pKey: string
 };
 
 function Profile({ pKey }:profileType) {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const showModal = () => {
-    setVisible(true);
-  };
+  // const showModal = () => {
+  //   setVisible(true);
+  // };
 
-  const handleCancel = () => {
-    setVisible(false);
-  };
-  const handleOk = () => {
-    handleCancel();
-  };
+  const handleCancel = () => setVisible(false);
+  const handleOk = () => handleCancel();
+  const logOut = () => navigate('/');
+  const myOrg = () => navigate('/organizations/my/1');
+  const myRep = () => navigate('/repos/my/1');
+
+  const data = [
+    { title: 'Profile', isDisabled: true },
+    { title: 'My repositories', onClick: myRep },
+    { title: 'My organization', onClick: myOrg },
+    { title: 'Settings', isDisabled: true },
+    { title: 'Help', isDisabled: true },
+    { title: 'Support', isDisabled: true },
+    { title: 'Twitter', link: 'https://twitter.com/SOURC3xyz' },
+    { title: 'Discord', link: 'https://discord.gg/nqTTMXrhMc' },
+    { title: 'Logout', onClick: logOut }
+  ];
   const menu = (
     <Menu>
-      <Menu.Item>
-        <Button type="link" onClick={showModal}>Your profile</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Your repositories</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Your organizations</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Settings</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Help</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">Support</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Link type="link" to="/auth">Log out</Link>
-      </Menu.Item>
+      {data.map(({
+        title, onClick, link, isDisabled
+      }) => (
+        <Menu.Item key={`menu-item-${title}`}>
+          <Button
+            type="link"
+            className={styles.button}
+            href={link}
+            onClick={onClick}
+            disabled={isDisabled}
+            target="_blank"
+          >
+            {title}
+
+          </Button>
+        </Menu.Item>
+      ))}
     </Menu>
   );
 
@@ -56,15 +64,33 @@ function Profile({ pKey }:profileType) {
           overlay={menu}
           placement="bottomCenter"
           trigger={['click']}
+          overlayClassName={styles.dropdown}
+          overlayStyle={{ position: 'fixed' }}
         >
           <div>
-            <Avatar size="large" icon={<UserOutlined />} />
-            <span className={styles.disabled}>yourmail.@gmail.com</span>
+            <Avatar
+              size={40}
+              name={pKey}
+              variant="beam"
+              colors={[
+                '#FF791F',
+                '#3FD05A',
+                '#000000',
+                '#C271B4',
+                '#4DA2E6',
+                '#DDDDDD',
+                '#92A1C6',
+                '#146A7C',
+                '#F0AB3D',
+                '#C271B4',
+                '#C20D90'
+              ]}
+            />
           </div>
         </Dropdown>
       </div>
       <Modal
-        title="RECEIVE PIT"
+        title="RECEIVE SC3"
         visible={visible}
         onCancel={handleCancel}
         footer={[

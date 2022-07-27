@@ -8,24 +8,26 @@ type InfoProps = {
   title?:string;
 };
 
-const Info = ({ message, title, link }:InfoProps) => (
-  <>
-    {title && (
-      <span className={styles.title}>
-        {title}
-      </span>
-    )}
+function Info({ message, title, link }:InfoProps) {
+  return (
+    <div className={styles.info}>
+      {title && (
+        <span className={styles.title}>
+          {title}
+        </span>
+      )}
 
-    {link && (
-      <Typography.Text
-        className={styles.message}
-        type="secondary"
-        copyable={{ text: link, icon: <img alt="copy" src={img} /> }}
-      >
-        {message}
-      </Typography.Text>
-    )}
-  </>
-);
+      {link && (
+        <Typography.Text
+          className={styles.message}
+          type="secondary"
+          copyable={{ text: link, icon: <img alt="copy" src={img} /> }}
+        >
+          {message}
+        </Typography.Text>
+      )}
+    </div>
+  );
+}
 
 export default Info;

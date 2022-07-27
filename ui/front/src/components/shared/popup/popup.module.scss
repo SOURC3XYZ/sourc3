@@ -1,0 +1,81 @@
+.container {
+  transform: translateX(-50%) translateY(-50%);
+  position: absolute;
+  z-index: 999;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  padding: 24px 32px;
+  background-color: white;
+box-sizing: border-box;
+box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.05);
+border-radius: 8px;
+  text-align: center;
+  color: rgba(0,0,0,0.5);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: "PublicSans-Regular";
+  span:not(:first-child){
+    margin-top: 5px
+  }
+  
+
+  > .cancel-header {
+    right: 4px;
+    top: 10px;
+    position: absolute;
+  }
+};
+
+.title{
+    font-family: "PublicSans-Black";
+    font-size: 24px;
+    margin: 0;
+    margin-bottom: 32px;
+    text-align: center;
+    color: black;
+    line-height: 28px;
+    font-weight: 900;
+};
+
+.footer{
+  display: flex;
+  margin: 0 -7px;
+  margin-top: 24px;
+
+  &.justify-right {
+    justify-content: right;
+    margin-top: 40px;
+  }
+  &.qr-code-popup {
+    > button {
+      margin: 0 auto !important;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+};
+.center{
+margin: 32px 0 0 0 !important;
+justify-content: center !important; 
+};
+
+.backDrop{
+    position: fixed;
+    z-index: 3;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.buttonClose{
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute;
+    top: 12px;
+    right: 12.44px;
+}

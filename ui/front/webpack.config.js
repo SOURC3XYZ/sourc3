@@ -36,10 +36,11 @@ const build = {
     publicPath: env === 'production' && mode === 'desktop' ? './' : '/'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: 'eval-source-map',
-  // optimization: {
-  //   nodeEnv: 'production'
-  // },
+  // devtool: 'eval-source-map',
+  optimization: {
+    // nodeEnv: 'production'
+    minimize: env === 'production'
+  },
   resolve: {
     extensions: ['.ts', '.js', '.tsx', '.scss'],
     plugins: [new TsconfigPathsPlugin()],
@@ -143,8 +144,11 @@ const build = {
           from: path.join(__dirname, './public/netlify.toml')
         },
         {
+          from: path.join(__dirname, './public/favicon.png')
+        },
+        {
           from: path.join(
-            __dirname, './node_modules/beam-wasm-client-masternet/'
+            __dirname, './node_modules/beam-wasm-client-dappnet/'
           ),
           globOptions: {
             ignore: ['package.json']
@@ -183,4 +187,6 @@ const build = {
     // })
   ]
 };
+
+if (env === 'development') build.devtool = 'eval-source-map'
 module.exports = build;

@@ -12,3 +12,8 @@
     composes: connectBtn;
     padding: 2px 24px;
 }
+
+.connectBtnLogined {
+    composes: connectBtn;
+    opacity: 0.5;
+}

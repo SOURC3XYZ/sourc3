@@ -1,0 +1,31 @@
+/* eslint-disable max-len */
+import img from '@assets/img/source-logo.svg';
+import { useNavigate } from 'react-router-dom';
+import styles from './lendos.module.scss';
+
+function Lendos() {
+  const navigate = useNavigate();
+  const onClick = () => navigate('/repos/all/1', { replace: false });
+  return (
+    <div className={styles.bg}>
+      <div className={styles.wrapper}>
+        <div className={styles.logo}>
+          <img alt="source-logo" src={img} />
+        </div>
+        <div className={styles.intro}>
+          <h1>
+            Building
+            <br />
+            the Web3-way
+          </h1>
+          <p>
+            Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development
+          </p>
+          <button style={{ cursor: 'pointer' }} onClick={onClick} type="button">Explore</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Lendos;

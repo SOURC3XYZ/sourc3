@@ -1,18 +1,17 @@
-import { AC, thunks } from '@libs/action-creators';
+import { useModal } from '@libs/hooks/shared';
 import { useSearch } from '@libs/hooks/shared/useSearch';
-import { useDispatch, useSelector } from '@libs/redux';
+import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
   projId: string,
   type: OwnerListType,
-  page: number
+  page: string
 };
-
-// orgId/:type/:page
 
 const useProjectRepos = () => {
   const { pathname } = useLocation();
@@ -21,50 +20,36 @@ const useProjectRepos = () => {
 
   const id = useMemo(() => +projId, [projId]);
 
-  const dispatch = useDispatch();
+  const { setInputText, createRepo } = useEntitiesAction();
+
   const pkey = useSelector((state) => state.app.pkey);
   const searchText = useSelector((state) => state.entities.searchText);
   const repos = useSelector(
     (state) => getReposByProject(id, state.entities.repos, type, pkey)
   );
-  const orgName = useSelector(
+  const projectName = useSelector(
     (state) => getProjectName(id, state.entities.projects) || 'NO_NAME'
   );
 
   const items = useSearch(searchText, repos, ['repo_name', 'repo_id']);
 
-  const [isModal, setIsModal] = useState(false);
+  const modalApi = useModal(
+    (txt: string) => setInputText(txt),
+    (name: string) => createRepo(name, id)
+  );
 
-  const setInputText = (txt: string) => dispatch(AC.setSearch(txt));
-
-  const showModal = () => {
-    setIsModal(true);
-  };
-  const closeModal = () => {
-    setIsModal(false);
-  };
-
-  const handleOk = (name: string) => {
-    closeModal();
-    dispatch(thunks.createRepos(name, id));
-  };
-
-  const deleteRepos = () => {};
+  const deleteRepo = () => {};
   return {
     items,
-    orgName,
+    projectName,
     path,
     pkey,
     type,
-    page,
+    page: +page,
     searchText,
-    isModal,
     id,
-    setInputText,
-    showModal,
-    closeModal,
-    deleteRepos,
-    handleOk
+    modalApi,
+    deleteRepo
   };
 };
 

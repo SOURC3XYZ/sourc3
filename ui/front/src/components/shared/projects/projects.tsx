@@ -1,28 +1,36 @@
+import {
+  CreateModal,
+  EntityList,
+  EntityWrapper,
+  BackButton
+} from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
-import Title from 'antd/lib/typography/Title';
-import { useMemo } from 'react';
-import { CreateModal, Nav, Search } from '@components/shared';
-import { BeamButton } from '../beam-button';
-import styles from './projects.module.scss';
-import { ProjectList } from './projectList';
+import { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ProjectListItem from './project-list-item';
 
 const placeholder = 'Enter name of your project';
 
 function Projects() {
   const {
+    id,
     orgName,
+    page,
     path,
     type,
     pkey,
     searchText,
-    isModal,
-    id,
     items,
+    modalApi
+  } = useProject();
+
+  const {
+    isModal,
     setInputText,
     showModal,
     handleOk,
     closeModal
-  } = useProject();
+  } = modalApi;
 
   const navItems = [
     {
@@ -37,48 +45,62 @@ function Projects() {
     }
   ];
 
-  const projectManager = useMemo(() => (
-    <div className={styles.repoHeader}>
-      {pkey && <Nav type={type} items={navItems} />}
+  const listItem = (item: typeof items[number]) => (
+    <ProjectListItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      type={type}
+    />
+  );
 
-      <div className={styles.manage}>
-        <div className={styles.searchWrapper}>
-          <Search
-            text={searchText}
-            setInputText={setInputText}
-            placeholder="Search by organization name or ID"
-          />
-        </div>
-        {pkey && (
-          <div className={styles.buttonWrapper}>
-            <BeamButton callback={showModal}>
-              Add new
-            </BeamButton>
-          </div>
-        )}
-      </div>
+  const navigate = useNavigate();
 
-      <CreateModal
-        isModalVisible={isModal}
-        handleCreate={handleOk}
-        handleCancel={closeModal}
-        placeholder={placeholder}
-      />
-    </div>
-  ), [searchText, pkey, isModal]);
+  const back = useCallback(() => navigate(-1), []);
+
+  const isElectron = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  }, []);
+
+  const style = {
+    position: 'relative',
+    left: '0',
+    top: '-150px'
+  };
+
   return (
-    <div className={styles.content}>
-      <Title level={3}>{`${orgName} projects`}</Title>
-      {projectManager}
-      <ProjectList
-        orgId={id}
-        items={items}
-        searchText={searchText}
-        path={path}
-        type={type}
-        page={0}
-      />
-    </div>
+    <EntityWrapper
+      title={`${orgName} projects`}
+      type={type}
+      pkey={pkey}
+      searchText={searchText}
+      navItems={navItems}
+      setInputText={setInputText}
+      placeholder={placeholder}
+      showModal={showModal}
+    >
+      <>
+        {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
+        <CreateModal
+          title="Add new project to organization"
+          label="Project name"
+          isModalVisible={isModal}
+          placeholder="Enter your project name"
+          handleCreate={handleOk}
+          handleCancel={closeModal}
+        />
+        <EntityList
+          searchText={searchText}
+          renderItem={listItem}
+          route={`projects/${id}`}
+          path={path}
+          page={page}
+          items={items}
+          type={type}
+        />
+      </>
+    </EntityWrapper>
   );
 }
 

@@ -17,7 +17,8 @@ import {
   MetaHash,
   TxInfo,
   Organization,
-  Project
+  Project,
+  User
 } from '@types';
 
 export const AC = {
@@ -27,6 +28,18 @@ export const AC = {
     type: ACTIONS.SET_LOCAL_MAP,
     payload
   } as const),
+
+  setCommits: (
+    payload: Map<string, BranchCommit> | null
+  ) => ({
+    type: ACTIONS.SET_COMMITS_MAP,
+    payload
+  }),
+
+  setUsers: (payload: User[]) => ({
+    type: ACTIONS.SET_USERS,
+    payload
+  }),
 
   setWalletConnection: (payload: boolean) => ({
     type: ACTIONS.SET_WALLET_CONNECTION,
@@ -94,11 +107,6 @@ export const AC = {
     payload
   } as const),
 
-  setRepoRefs: (payload: Branch[]) => ({
-    type: ACTIONS.REPO_REFS,
-    payload
-  } as const),
-
   setCommitData: (payload: BranchCommit | null) => ({
     type: ACTIONS.COMMIT,
     payload
@@ -124,22 +132,17 @@ export const AC = {
     payload
   } as const),
 
-  setCommitRefList: (payload: BranchCommit[]) => ({
-    type: ACTIONS.SET_BRANCH_REF_LIST,
-    payload
-  } as const),
-
   setRepoMap: (payload: Map<BranchName, BranchCommit[]> | null) => ({
     type: ACTIONS.SET_REPO_MAP,
     payload
   } as const),
 
-  setRepoId: (payload: RepoId) => ({
+  setRepoId: (payload: RepoId | null) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
   } as const),
 
-  setPreviousReposPage: (payload: string) => ({
+  setPreviousReposPage: (payload: string | null) => ({
     type: ACTIONS.SET_PREV_REPO_HREF,
     payload
   } as const),
@@ -171,6 +174,11 @@ export const AC = {
 
   setProjectsList: (payload: Project[]) => ({
     type: ACTIONS.SET_PROJECTS,
+    payload
+  } as const),
+
+  setBranchRefList: (payload: Branch[]) => ({
+    type: ACTIONS.SET_BRANCH_REF_LIST,
     payload
   } as const)
 };

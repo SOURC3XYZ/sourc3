@@ -1,53 +1,45 @@
-import { AC, thunks } from '@libs/action-creators';
-import { AppThunkDispatch, RootState } from '@libs/redux';
-import {
-  BranchCommit, DataNode, ErrorHandler, MetaHash, RepoId, TreeElementOid, UpdateProps
-} from '@types';
-import { batch, connect } from 'react-redux';
-import { FailPage, Preload } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { useUserRepos } from '@libs/hooks/container/user-repos';
-import { useCallback } from 'react';
+import {
+  BackButton, FailPage, Preload, NavButton
+} from '@components/shared';
 import { LoadingMessages } from '@libs/constants';
+import { useAllRepos } from '@libs/hooks/container/all-repos';
+import { useUserRepos } from '@libs/hooks/container/user-repos';
+import { message } from 'antd';
 import Title from 'antd/lib/typography/Title';
-import { RepoContent } from './content';
+import { useCallback, useMemo } from 'react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import { CommitContent } from './commit-content';
+import { CommitsTree } from './commit-tree';
+import { ReloadBtn } from './reload-btn';
+import { RepoContent } from './repo-content';
 import styles from './repo.module.scss';
 
-type RepoProps = {
-  currentId: RepoId | null;
-  repoMap: Map<string, BranchCommit[]> | null;
-  filesMap: Map<MetaHash, string>;
-  tree: DataNode[] | null;
-  fileText: string | null;
-  prevReposHref: string | null
-  getRepoData: (
-    id: RepoId, errHandler: ErrorHandler
-  ) => (resolve: () => void) => void;
-  updateTree: (
-    id: RepoId, errHandler: ErrorHandler
-  ) => (props: Omit<UpdateProps, 'id'>) => void;
-  killTree: () => void;
-  getFileData: (
-    repoId: RepoId, oid: string, errHandler: ErrorHandler
-  ) => void;
-};
+function UserRepos() {
+  const containerProps = useUserRepos();
+  const allReposProps = useAllRepos();
 
-function UserRepos({
-  currentId,
-  repoMap,
-  filesMap,
-  tree,
-  prevReposHref,
-  getRepoData,
-  updateTree,
-  killTree,
-  getFileData
-}:RepoProps) {
-  const talonProps = useUserRepos({ currentId, getRepoData, updateTree });
+  const { items } = allReposProps;
 
-  const { isLoaded, loadingHandler, repoName } = talonProps;
+  const {
+    isLoaded, repoName, commitsMap, loadingHandler, startLoading, id
+  } = containerProps;
 
-  const fallback = (props:any) => {
+  const item = items && items.filter((el) => el.repo_id === id);
+  const { repo_owner } = item[0];
+
+  const repoLink = `sourc3://${repo_owner}/${repoName}`;
+
+  const handleCloneRepo = () => {
+    navigator.clipboard.writeText(repoLink);
+    message.info(`${repoLink} copied to clipboard!`);
+  };
+
+  const navigate = useNavigate();
+
+  const goTo = (path: string) => navigate(path);
+
+  const fallback = (props: any) => {
     const updatedProps = { ...props, subTitle: 'no data' };
     return <FailPage {...updatedProps} isBtn />;
   };
@@ -55,65 +47,58 @@ function UserRepos({
   const RefsPreloadFallback = useCallback(() => (
     <Preload
       className={styles.preload}
-      message={LoadingMessages.COMMITS}
+      message={LoadingMessages.BRANCHES}
     />
   ), []);
 
-  const props = {
-    ...talonProps,
-    repoMap: repoMap as NonNullable<typeof repoMap>,
-    tree,
-    filesMap,
-    prevReposHref,
-    killTree,
-    getFileData
-  };
+  const back = useCallback(() => navigate(-1), []);
+
+  const isElectron = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  }, []);
+
+  const isLoadedReload = !!(commitsMap && isLoaded);
 
   return (
     <div className={styles.wrapper}>
-      <Title level={3}>{repoName}</Title>
+      {isElectron ? <BackButton onClick={back} /> : null}
+      <div className={styles.titleWrapper}>
+        <Title className={styles.title} level={3}>{repoName}</Title>
+        <NavButton
+          name="Clone"
+          onClick={handleCloneRepo}
+          inlineStyles={{ margin: '0.5rem', width: '60px', padding: '5px' }}
+          active
+        />
+        <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
+      </div>
+
       <ErrorBoundary fallback={fallback}>
         <PreloadComponent
           isLoaded={isLoaded}
           callback={loadingHandler}
           Fallback={RefsPreloadFallback}
         >
-          <RepoContent {...props} />
+          <Routes>
+            <Route
+              path="branch/:type/:branchName/*"
+              element={<RepoContent {...containerProps} goTo={goTo} />}
+            />
+            <Route
+              path="commits/:branchName"
+              element={<CommitsTree {...containerProps} goTo={goTo} />}
+            />
+
+            <Route
+              path="commit/:type/:hash/*"
+              element={<CommitContent {...containerProps} goTo={goTo} />}
+            />
+          </Routes>
         </PreloadComponent>
       </ErrorBoundary>
     </div>
   );
 }
 
-const mapState = ({
-  repo: {
-    id, repoMap, filesMap, tree, fileText, prevReposHref
-  }
-}:RootState) => ({
-  currentId: id,
-  repoMap,
-  filesMap,
-  tree,
-  fileText,
-  prevReposHref
-});
-
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getRepoData: (id:RepoId, errHandler: ErrorHandler) => (resolve: () => void) => {
-    dispatch(thunks.getRepo(id, errHandler, resolve));
-  },
-  killTree: () => {
-    batch(() => {
-      dispatch(AC.setFileText(null));
-      dispatch(AC.setTreeData(null));
-    });
-  },
-  updateTree: (id: RepoId, errHandler: ErrorHandler) => (props: Omit<UpdateProps, 'id'>) => {
-    dispatch(thunks.getTree({ ...props, id }, errHandler));
-  },
-  getFileData: (repoId: RepoId, oid: TreeElementOid, errHandler: ErrorHandler) => {
-    dispatch(thunks.getTextData(repoId, oid, errHandler));
-  }
-});
-
-export default connect(mapState, mapDispatch)(UserRepos);
+export default UserRepos;

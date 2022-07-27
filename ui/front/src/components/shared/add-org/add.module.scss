@@ -1,0 +1,58 @@
+@import '@styles/vars.scss';
+
+.wrapper{
+    margin-right:24px;
+}
+
+.addButton {
+    color: black !important;
+    border: none;
+    background-color: $color-orange !important;
+    border-radius: 8px;
+    height: 36px;
+    width: 76px;
+    span{
+        font-family: 'PublicSans-Medium' !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px !important;
+        line-height: 16px !important;
+        letter-spacing: 0.1px;
+    }
+    &:hover, &:target{
+        background-color: $color-orange !important;
+        color: white !important;
+    }
+}
+
+.button{color: black;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    font-size: 16px;
+    font-family: 'PublicSans-Regular';
+    font-weight: 400;
+    // padding: 16px 32px;
+    width: 100%;
+    text-align: left;
+&:hover{
+    background-color: transparent;
+    color: $color-orange;
+}
+&:disabled{
+    pointer-events: none;
+}
+}
+.dropdown{
+
+    ul{
+        border-radius:16px;
+        li:hover{
+            background-color: transparent;
+            // color: $color-orage;
+        }
+        li:nth-child(3){
+            border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+        }
+    }
+}

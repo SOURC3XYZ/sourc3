@@ -1,5 +1,5 @@
 import { BeamAmmount } from '@libs/constants';
-import { ObjectData, BeamReqAction } from '@types';
+import { ObjectData, BeamReqAction, BranchCommit } from '@types';
 
 export const argsStringify = (args: BeamReqAction): string => Object
   .entries(args)
@@ -72,7 +72,7 @@ export const handleString = (next:string):boolean => {
   return result;
 };
 
-export const fullBranchName = (clippedName:string, base: 'refs/heads/') => `${base}${clippedName}`;
+export const fullBranchName = (clippedName:string, base = 'refs/heads/') => `${base}${clippedName}`;
 
 export const clipString = (fullName:string, cut = 'refs/heads/') => fullName.replace(cut, '');
 
@@ -92,3 +92,65 @@ export function textEllipsis(
   }
   return str;
 }
+
+export function timeSince(date: number) {
+  const today = Number(new Date());
+  const seconds = Math.floor((today - date) / 1000);
+
+  let interval = seconds / 31536000;
+
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} year${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} month${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} day${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} hour${floor === 1 ? '' : 's'}`;
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    const floor = ~~interval;
+    return `${floor} minute${floor === 1 ? '' : 's'}`;
+  }
+  const floor = ~~interval;
+  return `${floor} second${floor === 1 ? '' : 's'}`;
+}
+
+export const dateCreator = (mls: number) => {
+  const date = +new Date(mls);
+  return timeSince(date);
+  // return date.toLocaleString();
+};
+
+export const actualTime = (commit: BranchCommit) => {
+  const localTimeOffser = new Date().getTimezoneOffset();
+  const {
+    commit_time_tz_offset_min, commit_time_positive, create_time_sec
+  } = commit;
+  return (create_time_sec + (
+    ((commit_time_tz_offset_min + localTimeOffser) * 60) * (commit_time_positive === 0 ? 1 : -1)
+  )) * 1000;
+};
+
+export const getDay = (milliSeconds: number) => Math.floor(milliSeconds / (86400 * 1000));
+
+export const getMsFromDays = (days: number) => days * (86400 * 1000);
+
+export const getDateFromMs = (ms: number) => {
+  const date = new Date(ms);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+};

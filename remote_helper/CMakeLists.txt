@@ -25,6 +25,9 @@ target_link_libraries(helper_lib
 		Boost::container
 		Boost::json
 		Boost::regex
+		Boost::context
+		Boost::coroutine
+		Boost::thread
 )
 
 target_link_libraries(${TARGET_NAME} 
@@ -34,6 +37,6 @@ target_link_libraries(${TARGET_NAME}
 		Boost::filesystem 
 )
 
-if (PIT_TESTS_ENABLED)
+if (SOURC3_TESTS_ENABLED)
 	add_subdirectory(unittests)
 endif()
