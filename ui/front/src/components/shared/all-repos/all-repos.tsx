@@ -5,7 +5,7 @@ import RepoItem from './repo-item';
 const placeholder = 'type your repo name or ID';
 
 function AllRepos() {
-  const containerProps = useAllRepos();
+  const containerProps = useAllRepos(true);
 
   const {
     pkey,
