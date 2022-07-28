@@ -14,13 +14,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-18.04, nacos-11]
+        os: [windows-2019, ubuntu-18.04, macos-11]
         include:
           - os: windows-2019
             PLATFORM_NAME: win
           - os: ubuntu-18.04
             PLATFORM_NAME: linux
-          - os: nacos-11
+          - os: macos-11
             PLATFORM_NAME: mac
     steps:
     - uses: actions/checkout@v2
@@ -47,8 +47,8 @@ jobs:
 # Create Build Environment
 ###############################################################################
 
-    - name: Create Build Environment [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Create Build Environment [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         echo $GITHUB_WORKSPACE
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
@@ -116,8 +116,8 @@ jobs:
 ###############################################################################
 # Configure CMake
 ###############################################################################
-    - name: Configure CMake [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Configure CMake [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
       env:
@@ -165,9 +165,9 @@ jobs:
 
         npm install --global yarn
 
-    - name: Prepare for electron build [nacos-11 && ubuntu all]
+    - name: Prepare for electron build [macos-11 && ubuntu all]
       shell: bash
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'nacos-11'
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-11'
       run: |
         mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
         tar xvf ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/api
@@ -217,9 +217,9 @@ jobs:
         cd ui
         yarn --frozen-lockfile
 
-    - name: Install dmg licence [nacos-11]
+    - name: Install dmg licence [macos-11]
       shell: bash
-      if: matrix.os == 'nacos-11' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'macos-11' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
         npm i dmg-license
@@ -270,8 +270,8 @@ jobs:
 ###############################################################################
 # Build
 ###############################################################################
-    - name: Build [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Build [macos-11]
+      if: matrix.os == 'macos-11'
       run: cmake --build . --parallel --config $BUILD_TYPE
 
     - name: Build [ubuntu all]
@@ -287,8 +287,8 @@ jobs:
 ###############################################################################
 # Test
 ###############################################################################
-    - name: Test [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Test [macos-11]
+      if: matrix.os == 'macos-11'
       continue-on-error: false
       run: ctest -C $BUILD_TYPE --verbose
 
@@ -353,14 +353,14 @@ jobs:
 ###############################################################################
 # Collect artifacts
 ###############################################################################
-    - name: Import Code-Signing Certificates [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Import Code-Signing Certificates [macos-11]
+      if: matrix.os == 'macos-11'
       uses: Apple-Actions/import-codesign-certs@v1
       with:
         p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
         p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-    - name: Sign the mac binaries [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Sign the mac binaries [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp remote_helper/git-remote-sourc3
 
@@ -369,12 +369,12 @@ jobs:
       run: |
         sha256sum remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Checksum [nacos-11]
-      if: matrix.os == 'nacos-11'
+    - name: Checksum [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         shasum -a 256 remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Collect [nacos-11 && ubuntu all]
+    - name: Collect [macos-11 && ubuntu all]
       shell: bash
       if: matrix.os != 'windows-2019'
       run: |
@@ -401,9 +401,9 @@ jobs:
       run: |
         certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Notarize [nacos-11]
+    - name: Notarize [macos-11]
       shell: bash
-      if: matrix.os == 'nacos-11'
+      if: matrix.os == 'macos-11'
       env:
         MACOS_NOTARIZE_USER: ${{ secrets.MACOS_NOTARIZE_USER }}
         MACOS_NOTARIZE_PASS: ${{ secrets.MACOS_NOTARIZE_PASS }}
@@ -424,7 +424,7 @@ jobs:
         cp ui/dist/*.AppImage installer/${{matrix.PLATFORM_NAME}}
 
     - name: Prepare artifacts [macos]
-      if: matrix.os == 'nacos-11'
+      if: matrix.os == 'macos-11'
       shell: bash
       run: |
         mkdir -p installer/${{matrix.PLATFORM_NAME}}
@@ -439,7 +439,7 @@ jobs:
 
         #TODO
         #- name: Prepare artifacts [macos]
-        #if: matrix.os == 'nacos-11'
+        #if: matrix.os == 'macos-11'
         #shell: bash
         #run: |
         #mkdir -p installer
@@ -457,7 +457,7 @@ jobs:
 
           # TODO
           #- uses: actions/upload-artifact@v2
-          #if: matrix.os == 'nacos-11'
+          #if: matrix.os == 'macos-11'
           #with:
           #name: sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
           #path: installer/*
@@ -471,7 +471,7 @@ jobs:
         if-no-files-found: error
 
     - uses: actions/upload-artifact@v2
-      if: matrix.os == 'nacos-11'
+      if: matrix.os == 'macos-11'
       with:
         name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
