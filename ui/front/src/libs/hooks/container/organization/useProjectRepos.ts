@@ -23,6 +23,7 @@ const useProjectRepos = () => {
   const { setInputText, createRepo } = useEntitiesAction();
 
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const repos = useSelector(
     (state) => getReposByProject(id, state.entities.repos, type, pkey)
@@ -35,7 +36,7 @@ const useProjectRepos = () => {
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
-    (name: string) => createRepo(name, id)
+    (name: string) => createRepo(name, id, pid)
   );
 
   const deleteRepo = () => {};
