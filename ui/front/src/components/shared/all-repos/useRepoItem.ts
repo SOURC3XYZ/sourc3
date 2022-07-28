@@ -32,7 +32,7 @@ export const useRepoItem = (item: RepoType) => {
 
   const { repo_name, repo_id, repo_owner } = item;
 
-  const repoLink = useMemo(() => `sourc3://${repo_owner}/${repo_name}`, []);
+  const repoLink = useMemo(() => `sourc3://${repo_owner}/${repo_name}`, [repo_id]);
 
   const getLastMasterCommit = useCallback(async () => {
     if (initial.loading) return undefined;
