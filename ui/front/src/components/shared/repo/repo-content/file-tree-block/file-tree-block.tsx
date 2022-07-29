@@ -34,28 +34,23 @@ function LeafCreator({ id, url, node }:LeafCreatorProps) {
 
   const { dataRef } = node;
 
-  const [download, isOnLoading] = useDownloadBlob(
-    {
-      id, name: dataRef.filename, gitHash: dataRef.oid
-    }
+  const [isOnDownload, downloadResource] = useDownloadBlob(
+    { id, name: dataRef.filename, gitHash: dataRef.oid }
   );
 
-  const handleDownload = useCallback(() => {
-    if (isOnLoading) return;
-    download();
-  }, [isOnLoading, download]);
-
-  // '#FF791F',
-  // '#3FD05A',
-  // '#000000',
-  // '#C271B4',
-  // '#4DA2E6',
-
   const downloadButton = useMemo(
-    () => (!isOnLoading
-      ? <CloudDownloadOutlined className={styles.cloudButton} onClick={handleDownload} />
+    () => (!isOnDownload
+      ? (
+        <Link
+          onClick={downloadResource}
+          download={dataRef.filename}
+          to="#"
+        >
+          <CloudDownloadOutlined className={styles.cloudButton} />
+        </Link>
+      )
       : <SyncOutlined className={styles.cloudButton} spin />),
-    [isOnLoading]
+    [isOnDownload]
   );
 
   if (node.isLeaf) {

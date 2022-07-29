@@ -31,11 +31,24 @@ const useRepoAction = () => {
     });
   };
 
+  const clearRepo = () => {
+    batch(() => {
+      dispatch(AC.setFileText(null));
+      dispatch(AC.setTreeData(null));
+      dispatch(AC.setCommits(null));
+      dispatch(AC.setCommitList([]));
+      dispatch(AC.setRepoMap(null));
+      dispatch(AC.setRepoId(null));
+      dispatch(AC.setPreviousReposPage(null));
+    });
+  };
+
   return {
     killTree,
     getRepo,
     updateTree,
-    getFileData
+    getFileData,
+    clearRepo
   };
 };
 export default useRepoAction;
