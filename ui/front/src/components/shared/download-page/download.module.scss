@@ -132,9 +132,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 80px;
+      margin: 0 -40px;
       div{
-        margin: 0 -80px;
+        width: 60px;
+        margin: 0 40px;
       }
       img{
         width: 60px;
@@ -190,21 +191,21 @@
       }
     }
   }
+  .items{
+    margin: 0 -20px !important;
+    div{
+      margin: 0 20px !important;
+    }
+    img{
+      width: 50px;
+    }
+  }
 }
 @media only screen and (max-width: 400px) {
   .section{
     .text{
       h1{
         font-size: 35px !important;
-      }
-    }
-    .items{
-      margin: 0 70px !important;
-      div{
-        margin: 0 -70px !important;
-      }
-      img{
-        width: 50px;
       }
     }
     footer{

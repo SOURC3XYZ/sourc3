@@ -15,7 +15,7 @@ function Footer({ isOnLending }: FooterProps) {
   const isVisible = useExcludeRoute('/download', '/404');
 
   const SOCIAL = {
-    DISCORD: 'https://discord.gg/FpE9VfB6',
+    DISCORD: 'https://discord.com/invite/Fw3Wvqt42b',
     TWITTER: 'https://twitter.com/SOURC3xyz',
     SOURC3: 'https://www.sourc3.xyz'
   };

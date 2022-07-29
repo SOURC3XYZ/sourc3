@@ -213,3 +213,14 @@
     }
   }
 }
+@media screen and (max-height: 900px) {
+
+  .wrapper{
+    .intro{
+      margin: 8vh 0 !important;
+    }
+  }
+    &::before{
+      left: -100px !important;
+    }
+}

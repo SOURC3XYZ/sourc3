@@ -92,3 +92,12 @@ footer {
     }
   }
 }
+@media screen and (max-height: 900px) {
+  .footer{
+    .content{
+      .icons {
+        padding-bottom: 30px;
+        }
+      }
+    }
+}
