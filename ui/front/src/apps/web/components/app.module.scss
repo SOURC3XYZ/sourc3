@@ -27,7 +27,9 @@
 
 .footerWhiteBg {
   composes: footer;
-
+  position: sticky;
+  background-color: $color-white;
+  bottom: 0;
   //background: rgb(51, 51, 51);
   // margin-top: 50px;
   .content {
