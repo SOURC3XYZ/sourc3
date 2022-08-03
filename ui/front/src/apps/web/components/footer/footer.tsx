@@ -24,10 +24,10 @@ function Footer({ isOnLending }: FooterProps) {
     <AntFooter className={footerClassname}>
       <div className={styles.content}>
         <div className={styles.icons}>
-          <a href={SOCIAL.DISCORD}>
+          <a href={SOCIAL.DISCORD} target="_blank">
             <img src={discordIcon} alt="discordIcon" />
           </a>
-          <a href={SOCIAL.TWITTER}>
+          <a href={SOCIAL.TWITTER} target="_blank">
             <img src={twitterIcon} alt="twitter" />
           </a>
         </div>
