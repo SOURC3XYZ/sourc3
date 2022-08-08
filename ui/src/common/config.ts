@@ -20,6 +20,10 @@ dotenv.config({
 
 export const {
   PORT,
+  ETH_HTTP_PROVIDER,
+  ETH_SOURC3_CONTRACT,
+  MNEMONIC,
+  HD_PATH,
   NODE_ENV,
   WALLET,
   WALLET_API_PORT,

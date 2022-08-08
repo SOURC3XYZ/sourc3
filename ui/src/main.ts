@@ -9,7 +9,7 @@ import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
 import { loggerLevel } from './middlewares';
-import { ethApi } from './ether/eth-api.js';
+import { ethApi } from './ether/websocket';
 
 ethApi();
 
