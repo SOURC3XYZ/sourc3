@@ -35,7 +35,7 @@ function Footer({ isOnLending }: FooterProps) {
           <a href="mailto:Hello@SOURC3.xyz">
             <h4>Contact us</h4>
           </a>
-          <a href={SOCIAL.SOURC3} target="_blank" rel="noreferrer">
+          <a href={SOCIAL.SOURC3} rel="noreferrer" target="_blank">
             <h4>© Sourc3</h4>
           </a>
         </div>
