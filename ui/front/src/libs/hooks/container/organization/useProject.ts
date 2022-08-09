@@ -21,6 +21,7 @@ const useProject = () => {
 
   const { setInputText, createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
     (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
@@ -31,7 +32,7 @@ const useProject = () => {
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
-    (name: string) => createProject(name, id)
+    (name: string) => createProject(name, id, pid)
 
   );
 

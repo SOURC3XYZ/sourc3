@@ -3,7 +3,7 @@ import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
-import { CONFIG } from '@libs/constants';
+import { CONFIG, EVENTS } from '@libs/constants';
 import { BeamWebAPI } from '@libs/core';
 import { useCustomEvent } from '@libs/hooks/shared';
 import { AppThunkDispatch } from '@libs/redux';
@@ -29,7 +29,7 @@ const messageBeam = {
 export function BeamWebApi({ children }:BeamWebCtxProps) {
   const navigate = useNavigate();
 
-  const messageToRepo = useCustomEvent('check-repo-status');
+  const messageToRepo = useCustomEvent(EVENTS.SUBUNSUB);
 
   const { current: api } = useRef(new BeamWebAPI(CONFIG.CID, navigate));
 
@@ -37,12 +37,12 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
     const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
-    messageToRepo();
     return apiManagerHelper(
       () => {
         dispatch(getRepos('all'));
         dispatch(getOrganizations());
         dispatch(getProjects());
+        messageToRepo();
       }
     );
   }, [api]);

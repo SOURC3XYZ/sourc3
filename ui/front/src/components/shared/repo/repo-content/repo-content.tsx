@@ -2,7 +2,6 @@ import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
 import { LoadingMessages } from '@libs/constants';
 import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
-import { useCustomEvent } from '@libs/hooks/shared';
 import {
   Branch,
   DataNode,
@@ -55,11 +54,6 @@ function RepoContent({
     goToCommitTree,
     goToBranch
   } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
-
-  useCustomEvent(
-    'check-repo-status',
-    (data) => console.log('DATA_CUSTOM', data)
-  );
 
   const content = useMemo(() => (
     type === 'blob'

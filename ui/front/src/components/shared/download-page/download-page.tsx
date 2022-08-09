@@ -31,7 +31,7 @@ function DownloadPage() {
           <img src={semisquare2} alt="semisquare" />
         </div>
 
-        <h1>The easiest way to Build the Web3-way</h1>
+        <h1>The easiest way to Build the Web3 way</h1>
         <img className={styles.profile} src={profile} alt="profile" />
         <Link
           to={CONFIG.BIN_REPO as string}

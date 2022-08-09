@@ -35,6 +35,10 @@ export enum ACTIONS {
   SET_USERS = 'SET_USERS'
 }
 
+export enum EVENTS {
+  SUBUNSUB = 'subunsub'
+}
+
 export enum ActionColor {
   BRIGHT_TEAL = 'rgba(0, 246, 210, 0.2)',
   DARKISH_BLUE = 'rgba(0, 69, 143, 0.2)',
