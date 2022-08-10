@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { loginWithGithub } from 'github-oauth-popup';
 import { NavButton } from '../nav-button';
-import styles from './git-auth-module.scss';
+import styles from './git-auth.module.scss';
 
 type GitConnectAuthProps = {
   name: string,
@@ -36,13 +36,14 @@ function GitConnectAuth({ name, small }:GitConnectAuthProps) {
   };
 
   const onClick = () => {
-    loginWithGithub(params, options).then(setIsDisabled(true));
+    loginWithGithub(params, options)
+      .then(() => setIsDisabled(true));
   };
   return (
     <NavButton
       name={name}
       onClick={onClick}
-    //   inlineStyles={small && style}
+      //   inlineStyles={small && style}
       isDisabled={isDisabled}
       classes={className}
     />

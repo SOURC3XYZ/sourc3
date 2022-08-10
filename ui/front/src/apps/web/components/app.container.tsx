@@ -9,10 +9,11 @@ import {
   Projects,
   ProjectRepos
 } from '@components/shared';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { PreloadComponent } from '@components/hoc';
 import { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
+import { ErrorBoundary } from '@components/context';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -57,11 +58,6 @@ function Main() {
     }
   ];
 
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
   const HeadlessPreloadFallback = useCallback(() => (
     <Preload
       isOnLendos={isOnLending}
@@ -70,14 +66,16 @@ function Main() {
   ), []);
 
   const routes = useMemo(() => (
-    <Routes>
-      {
-        routesData
-          .map((
-            { path, element }
-          ) => <Route key={`route-${path}`} path={path} element={element} />)
-      }
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        {
+          routesData
+            .map((
+              { path, element }
+            ) => <Route key={`route-${path}`} path={path} element={element} />)
+        }
+      </Routes>
+    </ErrorBoundary>
   ), [isApiConnected]);
 
   return (
@@ -86,18 +84,16 @@ function Main() {
       callback={connectBeamApi}
       isLoaded={isApiConnected}
     >
-      <ErrorBoundary fallback={fallback}>
-        <>
-          <div className={styles.appWrapper}>
-            <Header isOnLending={isOnLending} />
-            <div className={styles.main}>
-              {routes}
-              <Notifications />
-            </div>
+      <>
+        <div className={styles.appWrapper}>
+          <Header isOnLending={isOnLending} />
+          <div className={styles.main}>
+            {routes}
+            <Notifications />
           </div>
-          <Footer isOnLending={isOnLending} />
-        </>
-      </ErrorBoundary>
+        </div>
+        <Footer isOnLending={isOnLending} />
+      </>
     </PreloadComponent>
 
   );
