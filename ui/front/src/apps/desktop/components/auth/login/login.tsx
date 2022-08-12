@@ -1,10 +1,11 @@
 import React from 'react';
 import { Preload } from '@components/shared';
-import { useAsyncError, useObjectState } from '@libs/hooks/shared';
+import { useObjectState } from '@libs/hooks/shared';
 import { PromiseArg } from '@types';
 import { Sourc3Logo } from '@components/svg';
 import { BackButton } from '@components/shared/back-button';
 import { useNavigate } from 'react-router-dom';
+import { useErrorBoundary } from '@components/context';
 import styles from './login.module.scss';
 import { UpdatingNode } from '../update-node';
 import { Password } from './password';
@@ -24,7 +25,7 @@ const initial:LoginState = { pass: '', status: STATUS.LOGIN };
 
 function Login({ startWalletApi, statusFetcher }: LoginProps) {
   const [{ pass, status }, setState] = useObjectState<LoginState>(initial);
-  const throwError = useAsyncError();
+  const throwError = useErrorBoundary();
 
   const checkIsOk = (err?: Error) => {
     if (err) return throwError(err);

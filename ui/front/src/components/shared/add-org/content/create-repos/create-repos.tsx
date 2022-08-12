@@ -9,6 +9,8 @@ import SelectPopup from '@components/shared/selectPopup/selectPopup';
 import { Select } from 'antd';
 import styles from './create-repos.module.scss';
 
+type InputChange = React.ChangeEventHandler<HTMLInputElement>;
+
 type CreateReposType = {
   handleCancel: ()=>void;
   closePopup: ()=>void;
@@ -19,8 +21,13 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
   const { createRepo } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
+  const [valid, setValid] = useState(true);
 
-  const handleChange = (e:any) => setInputName(e.target?.value);
+  const handleChange:InputChange = (e) => {
+    const regExp = /[А-я]+/;
+    setInputName(e.target.value);
+    setValid(!regExp.test(e.target.value));
+  };
 
   const organizations = useSelector((
     state
@@ -100,6 +107,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           type="text"
           value={inputName}
           onChange={handleChange}
+          valid={valid}
         />
       </div>
     </Popup>

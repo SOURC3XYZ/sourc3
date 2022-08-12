@@ -12,7 +12,7 @@ type FooterProps = {
 function Footer({ isOnLending }: FooterProps) {
   const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
 
-  const isVisible = useExcludeRoute('/download', '/404');
+  const isVisible = useExcludeRoute('/download');
 
   const SOCIAL = {
     DISCORD: 'https://discord.com/invite/Fw3Wvqt42b',
@@ -24,10 +24,10 @@ function Footer({ isOnLending }: FooterProps) {
     <AntFooter className={footerClassname}>
       <div className={styles.content}>
         <div className={styles.icons}>
-          <a href={SOCIAL.DISCORD}>
+          <a href={SOCIAL.DISCORD} target="_blank" rel="noreferrer">
             <img src={discordIcon} alt="discordIcon" />
           </a>
-          <a href={SOCIAL.TWITTER}>
+          <a href={SOCIAL.TWITTER} target="_blank" rel="noreferrer">
             <img src={twitterIcon} alt="twitter" />
           </a>
         </div>
@@ -35,7 +35,7 @@ function Footer({ isOnLending }: FooterProps) {
           <a href="mailto:Hello@SOURC3.xyz">
             <h4>Contact us</h4>
           </a>
-          <a href={SOCIAL.SOURC3} target="_blank" rel="noreferrer">
+          <a href={SOCIAL.SOURC3} rel="noreferrer" target="_blank">
             <h4>© Sourc3</h4>
           </a>
         </div>
