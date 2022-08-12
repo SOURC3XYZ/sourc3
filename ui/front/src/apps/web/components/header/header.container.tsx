@@ -61,12 +61,12 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       { !desktop ? (
         <>
           {pkey && (<ProfileBlock pKey={pkey} />)}
+          {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           <ConnectBtn
             pkey={pkey}
             users={users}
             onConnect={onConnect}
           />
-          {!isOnLending && <GitConnectAuth small name="Connect" />}
         </>
       ) : (
 

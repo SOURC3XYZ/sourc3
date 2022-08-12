@@ -22,8 +22,8 @@ function Lendos() {
           <p>
             Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development.
           </p>
-          <button style={{ cursor: 'pointer', marginRight: '50px' }} onClick={onClick} type="button">Explore</button>
-          <GitConnectAuth name="Connect" />
+          <button className={styles.button} onClick={onClick} type="button">Explore</button>
+          <GitConnectAuth why name="Connect Github" />
         </div>
       </div>
     </div>

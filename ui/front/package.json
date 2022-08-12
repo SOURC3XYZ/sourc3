@@ -96,7 +96,7 @@
     "@ant-design/icons": "^4.7.0",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "antd": "^4.17.3",
-    "axios": "^0.25.0",
+    "axios": "^0.27.2",
     "beam-wasm-client-dappnet": "^7.1.12820",
     "boring-avatars": "^1.6.3",
     "cross-env": "^7.0.3",

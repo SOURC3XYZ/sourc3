@@ -12,7 +12,7 @@ type buttonProps = {
   classes?: string
 };
 function NavButton({
-  name, link, inlineStyles, isDisabled, onClick, active, classes
+  name, link, inlineStyles, isDisabled, onClick, active = false, classes
 }:buttonProps) {
   const navigate = useNavigate();
   const className = [classes, (active ? styles.button : styles.buttonSecond)].join(' ');
