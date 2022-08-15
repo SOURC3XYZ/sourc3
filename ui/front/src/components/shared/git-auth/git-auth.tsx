@@ -19,7 +19,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem('token')) {
+    if (window.localStorage.getItem('id')) {
       setIsDisabled(true);
     }
   }, []);
