@@ -1,5 +1,5 @@
 import {
-  app, BrowserWindow, session, ipcMain, dialog
+  app, BrowserWindow, session, ipcMain, dialog, shell
 } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -61,6 +61,13 @@ function createWindow() {
     }
   });
 
+  // win.webContents.setWindowOpenHandler(() => ({ action: 'allow' }));
+
+  win.webContents.on('new-window', (e, url) => {
+    e.preventDefault();
+    shell.openExternal(url);
+  });
+
   ipcMain.on('select-dirs', async () => {
     const result = await dialog.showOpenDialog(win, {
       properties: ['openDirectory']
@@ -68,6 +75,7 @@ function createWindow() {
     loggerLevel('info', `directories selected${result.filePaths}`);
     win.webContents.send('ping', result.filePaths[0]);
   });
+
   try {
     const sourc3Path = path.join(app.getPath('home'), '.sourc3');
     if (process.platform === 'linux') {

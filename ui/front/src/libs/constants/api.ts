@@ -14,7 +14,8 @@ export enum CONFIG {
   IPFS_HOST = 'https://cache.sourc3.xyz',
   ASSET_ID = 0,
   IPFS_TIMEOUT = 20000,
-  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master'
+  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master',
+  SELF = 'http://localhost:3000/connect'
 }
 // fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10
 // 126c94dad2a409d1af5beb1667972ebcbd165d940159049f4a0ad6b5f4b8e976

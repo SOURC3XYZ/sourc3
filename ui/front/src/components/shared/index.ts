@@ -29,3 +29,4 @@ export * from './search';
 export * from './seed-list';
 export * from './select';
 export * from './selectPopup';
+export * from './connect';

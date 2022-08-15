@@ -2,13 +2,11 @@ import WebSocket from 'ws';
 import { getRepoId } from './eth-api';
 
 function onConnect(wsClient:WebSocket) {
-  console.log('Новый пользователь');
-  // отправка приветственного сообщения клиенту
-  wsClient.send('Привет');
+  console.log('new user');
+  wsClient.send('Hi!');
   wsClient.on('message', (message) => {
     console.log(message.toString());
     try {
-      // сообщение пришло текстом, нужно конвертировать в JSON-формат
       const jsonMessage = JSON.parse(message.toString());
       switch (jsonMessage.action) {
         case 'ECHO':
@@ -21,17 +19,15 @@ function onConnect(wsClient:WebSocket) {
           }, 2000);
           break;
         default:
-          console.log('Неизвестная команда');
+          console.log('unknown command');
           break;
       }
     } catch (error) {
-      console.log('Ошибка', error);
+      console.log('Error', error);
     }
-    /* обработчик сообщений от клиента */
   });
   wsClient.on('close', () => {
-    // отправка уведомления в консоль
-    console.log('Пользователь отключился');
+    console.log('user disconnected');
   });
 }
 

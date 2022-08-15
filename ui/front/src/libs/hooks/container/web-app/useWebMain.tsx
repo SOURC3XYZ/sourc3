@@ -8,8 +8,10 @@ const useWebMain = () => {
 
   const isOnLending = useBackground({ url: '/' });
 
+  const isLoading = window.location.pathname !== '/connect';
+
   return {
-    isApiConnected, isOnLending, connectBeamApi
+    isApiConnected, isOnLending, isLoading, connectBeamApi
   };
 };
 

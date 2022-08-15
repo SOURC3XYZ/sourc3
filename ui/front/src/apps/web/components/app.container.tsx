@@ -7,7 +7,8 @@ import {
   FailPage,
   Organizations,
   Projects,
-  ProjectRepos
+  ProjectRepos,
+  Connect
 } from '@components/shared';
 import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import { useCallback, useMemo } from 'react';
@@ -20,7 +21,9 @@ import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
 
 function Main() {
-  const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
+  const {
+    isApiConnected, isOnLending, connectBeamApi
+  } = useWebMain();
 
   const routesData = [
     {
@@ -53,7 +56,11 @@ function Main() {
     },
     {
       path: '404',
-      element: <FailPage />
+      element: <FailPage subTitle="" />
+    },
+    {
+      path: 'connect',
+      element: <Connect />
     }
   ];
 
