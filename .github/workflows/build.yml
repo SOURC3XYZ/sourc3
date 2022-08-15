@@ -6,6 +6,8 @@ env:
   BUILD_TYPE: Release
   BUILD_CONFIG: RelWithDebInfo
   NETWORK: mainnet
+  ARTIFACT_SUFFIX: ''
+
 
 jobs:
 ###############################################################################
@@ -42,7 +44,7 @@ jobs:
         path: downloads
         repo: BeamMW/beam
         platform_name: ${{matrix.PLATFORM_NAME}}
-        net_name: ${{ env.NETWORK }}
+        net_name: ${{ env.ARTIFACT_SUFFIX }}
         search_artifacts: true
 ###############################################################################
 # Create Build Environment
@@ -142,8 +144,12 @@ jobs:
       shell: bash
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        echo "BEAM_TARGET_SUFFIX=-${{ env.NETWORK }}" >> $GITHUB_ENV
-        
+        if [ -z "${{ env.NETWORK }}" ] then
+          echo "BEAM_TARGET_SUFFIX=" >> $GITHUB_ENV
+        else
+          echo "BEAM_TARGET_SUFFIX=-${{ env.NETWORK }}" >> $GITHUB_ENV
+        fi
+
     - name: Change version for Electron
       shell: bash
       run: |

@@ -20,7 +20,8 @@ function checkArtifact(artifact_name, platform_name, network_name, downloadable_
         return true;
     }
 
-    return artifact_name.indexOf(platform_name) !== -1 && artifact_name.indexOf(network_name) !== -1;
+    return artifact_name.indexOf(platform_name) !== -1 && (network_name.length === 0
+        || artifact_name.indexOf(network_name) !== -1);
 }
 
 function checkArtifactsInRun(artifacts, platform_name, network_name, downloadable_artifacts) {
@@ -28,7 +29,8 @@ function checkArtifactsInRun(artifacts, platform_name, network_name, downloadabl
         let is_target_artifact = false;
         for (const artifact of artifacts) {
             if (artifact.name.indexOf(target_artifact) !== -1 && (artifact.name.indexOf("wasm") !== -1 ||
-                (artifact.name.indexOf(platform_name) !== -1 && artifact.name.indexOf(network_name) !== -1))) {
+                (artifact.name.indexOf(platform_name) !== -1 && (network_name.length === 0
+                    || artifact.name.indexOf(network_name) !== -1)))) {
                 is_target_artifact = true;
                 break;
             }
