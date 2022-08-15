@@ -36,9 +36,9 @@ const nodeUpdatingReq = /Updating node/i;
 const notInitializedReg = /Please initialize your wallet first/i;
 
 const peers = [
-  'eu-node01.mainnet.beam.mw:8100',
-  'eu-node02.mainnet.beam.mw:8100',
-  'eu-node03.mainnet.beam.mw:8100'
+  'eu-nodes.mainnet.beam.mw:8100',
+  'us-nodes.mainnet.beam.mw:8100',
+  'ap-nodes.mainnet.beam.mw:8100'
 ];
 
 export function getNodeUpdate() {
