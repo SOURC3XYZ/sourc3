@@ -16,11 +16,17 @@
 
 #pragma once
 
-#include <cstddef>
 #include "Shaders/common.h"
 #include "Shaders/upgradable3/contract.h"
 
+#include <array>
+#include <cstddef>
+
 namespace sourc3 {
+constexpr size_t kIpfsAddressSize = 46;
+
+using IpfsAddr = std::array<char, kIpfsAddressSize>;
+
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -52,6 +58,29 @@ struct ContractState {
     Amount faucet_balance;
 };
 
+struct OrganizationData {
+    size_t name_len;
+    size_t short_title_len;
+    size_t about_len;
+    size_t website_len;
+    size_t twitter_len;
+    size_t linkedin_len;
+    size_t instagram_len;
+    size_t telegram_len;
+    size_t discord_len;
+    size_t tags_len;
+    size_t tech_stack_len;
+    char data[];
+
+    static const size_t kMaxNameLen = 100;
+    static const size_t kMaxShortTitleLen = 50;
+    static const size_t kMaxAboutLen = 150;
+    static const size_t kMaxWebsiteLen = 100;
+    static const size_t kMaxSocialNickLen = 50;
+    static const size_t kMaxTagsLen = 100;
+    static const size_t kMaxTechStackLen = 100;
+};
+
 struct Organization {
     using Id = uint64_t;
     struct Key {
@@ -71,9 +100,26 @@ struct Organization {
                kModifyOrganization | kModifyMember,
     };
     PubKey creator;
+    IpfsAddr logo_addr;
+    OrganizationData data;
+};
+
+struct ProjectData {
     size_t name_len;
-    char name[];
-    static const size_t kMaxNameLen = 256;
+    size_t description_len;
+    size_t website_len;
+    size_t twitter_len;
+    size_t linkedin_len;
+    size_t instagram_len;
+    size_t telegram_len;
+    size_t discord_len;
+    size_t tags_len;
+    char data[];
+    static const size_t kMaxNameLen = 100;
+    static const size_t kMaxDescriptionLen = 1024;
+    static const size_t kMaxWebsiteLen = 100;
+    static const size_t kMaxTagsLen = 100;
+    static const size_t kMaxSocialNickLen = 50;
 };
 
 struct Project {
@@ -96,9 +142,8 @@ struct Project {
     };
     Organization::Id organization_id;
     PubKey creator;
-    size_t name_len;
-    char name[];
-    static const size_t kMaxNameLen = 256;
+    IpfsAddr logo_addr;
+    ProjectData data;
 };
 
 struct Repo {
@@ -113,7 +158,7 @@ struct Repo {
         kAll = kModifyRepo | kAddMember | kRemoveMember | kPush | kModifyMember,
     };
 
-    static constexpr size_t kMaxNameSize = 256;
+    static constexpr size_t kMaxNameSize = 100;
 
     struct NameKey {
         PubKey owner;
@@ -275,16 +320,16 @@ struct PushRefs {
 struct CreateOrganization {
     static const uint32_t kMethod = 5;
     PubKey caller;
-    size_t name_len;
-    char name[];
+    IpfsAddr logo_addr;
+    OrganizationData data;
 };
 
 struct ModifyOrganization {
     static const uint32_t kMethod = 6;
     PubKey caller;
     Organization::Id id;
-    size_t name_len;
-    char name[];
+    IpfsAddr logo_addr;
+    OrganizationData data;
 };
 
 struct RemoveOrganization {
@@ -319,8 +364,8 @@ struct CreateProject {
     static const uint32_t kMethod = 11;
     Organization::Id organization_id;
     PubKey caller;
-    size_t name_len;
-    char name[];
+    IpfsAddr logo_addr;
+    ProjectData data;
 };
 
 struct ModifyProject {
@@ -328,8 +373,8 @@ struct ModifyProject {
     Organization::Id organization_id;
     Project::Id project_id;
     PubKey caller;
-    size_t name_len;
-    char name[];
+    IpfsAddr logo_addr;
+    ProjectData data;
 };
 
 struct RemoveProject {
@@ -342,8 +387,8 @@ struct AddRepoMember {
     static const uint32_t kMethod = 14;
     Repo::Id repo_id;
     PubKey member;
-    uint8_t permissions;
     PubKey caller;
+    uint8_t permissions;
 };
 
 struct ModifyRepoMember {
