@@ -142,7 +142,7 @@ jobs:
       shell: bash
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        if [ -z "${{ env.NETWORK }}" ] then
+        if [ "${{ env.NETWORK }}" == "mainnet" ]; then
           echo "BEAM_TARGET_SUFFIX=" >> $GITHUB_ENV
         else
           echo "BEAM_TARGET_SUFFIX=-${{ env.NETWORK }}" >> $GITHUB_ENV
