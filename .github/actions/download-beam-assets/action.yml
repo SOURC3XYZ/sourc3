@@ -37,10 +37,6 @@ inputs:
   run_number:
     description: Workflow run number
     required: false
-  net_name:
-    description: Network, for which assets will be downloaded. Default is masternet
-    required: false
-    default: masternet
   platform_name:
     description: Platform name
     required: true

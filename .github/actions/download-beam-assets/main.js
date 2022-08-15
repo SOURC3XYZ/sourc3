@@ -5,7 +5,7 @@ const filesize = require('filesize')
 const pathname = require('path')
 const fs = require('fs')
 
-function checkArtifact(artifact_name, platform_name, network_name, downloadable_artifacts) {
+function checkArtifact(artifact_name, platform_name, downloadable_artifacts) {
     let is_target_artifact = false;
     for (const target_artifact of downloadable_artifacts) {
         if (artifact_name.indexOf(target_artifact) !== -1) {
@@ -20,17 +20,15 @@ function checkArtifact(artifact_name, platform_name, network_name, downloadable_
         return true;
     }
 
-    return artifact_name.indexOf(platform_name) !== -1 && (network_name.length === 0
-        || artifact_name.indexOf(network_name) !== -1);
+    return artifact_name.indexOf(platform_name) !== -1;
 }
 
-function checkArtifactsInRun(artifacts, platform_name, network_name, downloadable_artifacts) {
+function checkArtifactsInRun(artifacts, platform_name, downloadable_artifacts) {
     for (const target_artifact of downloadable_artifacts) {
         let is_target_artifact = false;
         for (const artifact of artifacts) {
             if (artifact.name.indexOf(target_artifact) !== -1 && (artifact.name.indexOf("wasm") !== -1 ||
-                (artifact.name.indexOf(platform_name) !== -1 && (network_name.length === 0
-                    || artifact.name.indexOf(network_name) !== -1)))) {
+                (artifact.name.indexOf(platform_name) !== -1))) {
                 is_target_artifact = true;
                 break;
             }
@@ -51,7 +49,6 @@ async function main() {
         const [owner, repo] = core.getInput("repo", { required: true }).split("/")
         const path = core.getInput("path", { required: true })
         const platform_name = core.getInput("platform_name")
-        const network_name = core.getInput("net_name")
         let workflowConclusion = core.getInput("workflow_conclusion")
         let pr = core.getInput("pr")
         let commit = core.getInput("commit")
@@ -69,8 +66,6 @@ async function main() {
         console.log("==> Repo:", owner + "/" + repo)
 
         console.log("==> Platform: ", platform_name)
-
-        console.log("==> Network: ", network_name)
 
         console.log("==> Assets: ", downloadable_artifacts)
 
@@ -133,7 +128,7 @@ async function main() {
                         }
                         if (searchArtifacts) {
                             const artifact = checkArtifactsInRun(artifacts.data.artifacts, platform_name,
-                                network_name, downloadable_artifacts);
+                                downloadable_artifacts);
                             if (!artifact) {
                                 continue
                             }
@@ -163,7 +158,7 @@ async function main() {
         // One artifact or all if `name` input is not specified.
         if (platform_name && network_name) {
             artifacts = artifacts.filter((artifact) => {
-                return checkArtifact(artifact.name, platform_name, network_name, downloadable_artifacts);
+                return checkArtifact(artifact.name, platform_name, downloadable_artifacts);
             })
         }
 
