@@ -14,12 +14,12 @@ Steps to upgrade contract:
 *!Do not forget option `--shader_privilege 2` for cli-wallet because method will not work without it!*
 
 ```bash
-./beam-wallet-dappnet shader --shader_privilege 2 --shader_app_file=app.wasm --shader_args='role=manager,action=schedule_upgrade,cid=cid,hTarget=hTarget,approve_mask=1' --shader_contract_file=contract.wasm
+./beam-wallet shader --shader_privilege 2 --shader_app_file=app.wasm --shader_args='role=manager,action=schedule_upgrade,cid=cid,hTarget=hTarget,approve_mask=1' --shader_contract_file=contract.wasm
 ```
 
 5. As blockchain reached height set in previous step `explicit_upgrade` method can be called.
 
 ```bash
-./beam-wallet-dappnet shader --shader_privilege 2 --shader_app_file=app.wasm --shader_args='role=manager,action=explicit_upgrade,cid=fc3a38836e99ee501c679935bbbdc30f1e1ac568b263d7bffb1add2aaf16ce57' --shader_contract_file=contract.wasm
+./beam-wallet shader --shader_privilege 2 --shader_app_file=app.wasm --shader_args='role=manager,action=explicit_upgrade,cid=fc3a38836e99ee501c679935bbbdc30f1e1ac568b263d7bffb1add2aaf16ce57' --shader_contract_file=contract.wasm
 ```
 

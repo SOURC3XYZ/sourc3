@@ -13,7 +13,7 @@ beam-wallet shader --shader_app_file=app.wasm \
 --shader_args="role=user,action=create_repo,repo_name=testrepo,cid=fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10" \
 --log_level=debug -n node_address
 ```
-where `wallet` is beam-wallet, i. e. `beam-wallet-dappnet`; `node_address` -- node address, for example `127.0.0.1:10005`.
+where `wallet` is beam-wallet, i. e. `beam-wallet`; `node_address` -- node address, for example `127.0.0.1:10005`.
 8. Create local repository
 ```
 mkdir testrepo

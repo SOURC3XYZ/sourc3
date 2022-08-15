@@ -97,7 +97,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "antd": "^4.17.3",
     "axios": "^0.27.2",
-    "beam-wasm-client-dappnet": "^7.1.12820",
+    "beam-wasm-client": "^7.1.12820",
     "boring-avatars": "^1.6.3",
     "cross-env": "^7.0.3",
     "github-oauth-popup": "^1.2.0",
