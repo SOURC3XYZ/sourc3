@@ -62,7 +62,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
         <NavButton
           key="all-repos-addBtn"
           onClick={() => handleOk(inputName, +idProject)}
-          isDisabled={!inputName || !idProject}
+          isDisabled={!inputName || !idProject ! || !valid}
           name="Add"
           active
         />
