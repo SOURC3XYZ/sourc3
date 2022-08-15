@@ -156,7 +156,7 @@ async function main() {
         })
 
         // One artifact or all if `name` input is not specified.
-        if (platform_name && network_name) {
+        if (platform_name) {
             artifacts = artifacts.filter((artifact) => {
                 return checkArtifact(artifact.name, platform_name, downloadable_artifacts);
             })
