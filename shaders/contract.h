@@ -73,6 +73,12 @@ struct OrganizationData {
     size_t tech_stack_len;
     char data[];
 
+    size_t GetTotalLen() const {
+        return name_len + short_title_len + about_len + website_len +
+               twitter_len + linkedin_len + instagram_len + telegram_len +
+               discord_len + tags_len + tech_stack_len;
+    }
+
     // plus 0-term
     static const size_t kMaxNameLen = 100 + 1;
     static const size_t kMaxShortTitleLen = 50 + 1;

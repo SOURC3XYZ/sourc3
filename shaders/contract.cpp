@@ -209,20 +209,22 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
 
 BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
     std::unique_ptr<Organization> organization =
-        LoadNamedObject<Organization>(params.id);
-    CheckPermissions<Tag::kOrganizationMember, Organization>(
+        LoadVLObject<Organization>(params.id);
+    CheckPermissions<Organization>(
         params.caller, params.id,
         Organization::Permissions::kModifyOrganization);
     Env::AddSig(params.caller);
 
+    size_t total_len = params.data.GetTotalLen();
     std::unique_ptr<Organization> new_organization(static_cast<Organization*>(
-        ::operator new(sizeof(Organization) + params.name_len)));
+        ::operator new(sizeof(Organization) + total_len)));
 
     new_organization->creator = organization->creator;
-    new_organization->name_len = params.name_len;
-    Env::Memcpy(new_organization->name, params.name, params.name_len);
+    new_organization->logo_addr = organization->logo_addr;
+    Env::Memcpy(&new_organization->data, &params.data, total_len);
 
-    SaveNamedObject(Organization::Key(params.id), new_organization);
+    SaveVLObject(Organization::Key(params.id), new_organization,
+                 sizeof(Organization) + total_len);
 }
 
 BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT

@@ -186,64 +186,60 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     Env::DocAddNum("organization_id", value->organization_id);
 }
 
-size_t GetOrganizationData(
-    const std::unique_ptr<sourc3::method::CreateOrganization>& buf) {
+size_t GetOrganizationData(sourc3::OrganizationData& buf) {
     using sourc3::OrganizationData;
-    using sourc3::method::CreateOrganization;
 
-    auto cur_ptr = buf->data.data;
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
-                    sourc3::kIpfsAddressSize + 1);
+    auto cur_ptr = buf.data;
 
-    buf->data.name_len =
+    buf.name_len =
         Env::DocGetText("name", cur_ptr, OrganizationData::kMaxNameLen);
-    if (buf->data.name_len <= 1) {
+    if (buf.name_len <= 1) {
         OnError("'name' required");
         return 0;
     }
-    cur_ptr += buf->data.name_len;
+    cur_ptr += buf.name_len;
 
-    buf->data.short_title_len = Env::DocGetText(
-        "short_title", cur_ptr, OrganizationData::kMaxShortTitleLen);
-    cur_ptr += buf->data.short_title_len;
+    buf.short_title_len = Env::DocGetText("short_title", cur_ptr,
+                                          OrganizationData::kMaxShortTitleLen);
+    cur_ptr += buf.short_title_len;
 
-    buf->data.about_len =
+    buf.about_len =
         Env::DocGetText("about", cur_ptr, OrganizationData::kMaxAboutLen);
-    cur_ptr += buf->data.about_len;
+    cur_ptr += buf.about_len;
 
-    buf->data.website_len =
+    buf.website_len =
         Env::DocGetText("website", cur_ptr, OrganizationData::kMaxWebsiteLen);
-    cur_ptr += buf->data.website_len;
+    cur_ptr += buf.website_len;
 
-    buf->data.twitter_len = Env::DocGetText(
-        "twitter", cur_ptr, OrganizationData::kMaxSocialNickLen);
-    cur_ptr += buf->data.twitter_len;
+    buf.twitter_len = Env::DocGetText("twitter", cur_ptr,
+                                      OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf.twitter_len;
 
-    buf->data.linkedin_len = Env::DocGetText(
-        "linkedin", cur_ptr, OrganizationData::kMaxSocialNickLen);
-    cur_ptr += buf->data.linkedin_len;
+    buf.linkedin_len = Env::DocGetText("linkedin", cur_ptr,
+                                       OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf.linkedin_len;
 
-    buf->data.instagram_len = Env::DocGetText(
-        "instagram", cur_ptr, OrganizationData::kMaxSocialNickLen);
-    cur_ptr += buf->data.instagram_len;
+    buf.instagram_len = Env::DocGetText("instagram", cur_ptr,
+                                        OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf.instagram_len;
 
-    buf->data.telegram_len = Env::DocGetText(
-        "telegram", cur_ptr, OrganizationData::kMaxSocialNickLen);
-    cur_ptr += buf->data.telegram_len;
+    buf.telegram_len = Env::DocGetText("telegram", cur_ptr,
+                                       OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf.telegram_len;
 
-    buf->data.discord_len = Env::DocGetText(
-        "discord", cur_ptr, OrganizationData::kMaxSocialNickLen);
-    cur_ptr += buf->data.discord_len;
+    buf.discord_len = Env::DocGetText("discord", cur_ptr,
+                                      OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf.discord_len;
 
-    buf->data.tags_len =
+    buf.tags_len =
         Env::DocGetText("tags", cur_ptr, OrganizationData::kMaxTagsLen);
-    cur_ptr += buf->data.tags_len;
+    cur_ptr += buf.tags_len;
 
-    buf->data.tech_stack_len = Env::DocGetText(
-        "tech_stack", cur_ptr, OrganizationData::kMaxTechStackLen);
-    cur_ptr += buf->data.tech_stack_len;
+    buf.tech_stack_len = Env::DocGetText("tech_stack", cur_ptr,
+                                         OrganizationData::kMaxTechStackLen);
+    cur_ptr += buf.tech_stack_len;
 
-    return cur_ptr - reinterpret_cast<char*>(buf.get());
+    return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
 void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
@@ -708,7 +704,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
         sizeof(CreateOrganization) + OrganizationData::GetMaxSize();
     auto buf = std::unique_ptr<CreateOrganization>(
         static_cast<CreateOrganization*>(::operator new(max_args_size)));
-    size_t args_size = GetOrganizationData(buf);
+    size_t args_size = GetOrganizationData(buf->data);
 
     if (!args_size)
         return;
@@ -861,23 +857,25 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 
 void OnActionModifyOrganization(const ContractID& cid) {
     using sourc3::Organization;
+    using sourc3::OrganizationData;
     using sourc3::method::ModifyOrganization;
 
-    char name[Organization::kMaxNameLen + 1];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    --name_len;  // remove 0-term
-    auto args_size = sizeof(ModifyOrganization) + name_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* request = reinterpret_cast<ModifyOrganization*>(buf.get());
+    constexpr auto max_args_size =
+        sizeof(ModifyOrganization) + OrganizationData::GetMaxSize();
+    auto buf = std::unique_ptr<ModifyOrganization>(
+        static_cast<ModifyOrganization*>(::operator new(max_args_size)));
+    size_t args_size = GetOrganizationData(buf->data);
+
+    if (!args_size)
+        return;
+
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
+
     UserKey user_key(cid);
-    user_key.Get(request->caller);
-    request->name_len = name_len;
-    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
-    if (!Env::DocGet("organization_id", request->id)) {
+    user_key.Get(buf->caller);
+
+    if (!Env::DocGet("organization_id", buf->id)) {
         return OnError("'organization_id' required");
     }
 
@@ -887,7 +885,7 @@ void OnActionModifyOrganization(const ContractID& cid) {
     CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyOrganization::kMethod,
-                        /*pArgs=*/request,
+                        /*pArgs=*/buf.get(),
                         /*nArgs=*/args_size,
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
