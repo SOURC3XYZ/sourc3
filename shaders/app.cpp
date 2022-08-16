@@ -499,13 +499,12 @@ void OnActionProjectByName(const ContractID& cid) {
 }
 
 void OnActionListProjectMembers(const ContractID& cid) {
-    using sourc3::Members;
+    using sourc3::Member;
     using sourc3::Project;
-    using Member = Members<sourc3::kProjectMember, Project>;
-    using MemberKey = Env::Key_T<Member::Key>;
+    using MemberKey = Env::Key_T<Member<Project>::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member::Key{PubKey{}, 0}};
+                    .m_KeyInContract = Member<Project>::Key{PubKey{}, 0}};
     if (!Env::DocGet("project_id", start.m_KeyInContract.id)) {
         return OnError("no 'project_id'");
     }
@@ -766,13 +765,12 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 }
 
 void OnActionListOrganizationMembers(const ContractID& cid) {
-    using sourc3::Members;
+    using sourc3::Member;
     using sourc3::Organization;
-    using Member = Members<sourc3::kOrganizationMember, Organization>;
-    using MemberKey = Env::Key_T<Member::Key>;
+    using MemberKey = Env::Key_T<Member<Organization>::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member::Key{PubKey{}, 0}};
+                    .m_KeyInContract = Member<Organization>::Key{PubKey{}, 0}};
     if (!Env::DocGet("organization_id", start.m_KeyInContract.id)) {
         return OnError("no 'organization_id'");
     }

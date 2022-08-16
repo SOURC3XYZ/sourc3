@@ -109,6 +109,8 @@ struct Organization {
     PubKey creator;
     IpfsAddr logo_addr;
     OrganizationData data;
+
+    static const Tag kMemberTag = Tag::kOrganizationMember;
 };
 
 struct ProjectData {
@@ -153,6 +155,8 @@ struct Project {
     PubKey creator;
     IpfsAddr logo_addr;
     ProjectData data;
+
+    static const Tag kMemberTag = Tag::kProjectMember;
 };
 
 struct Repo {
@@ -196,12 +200,14 @@ struct Repo {
     PubKey owner;
     size_t name_len;
     char name[];
+
+    static const Tag kMemberTag = Tag::kRepoMember;
 };
 
-template <Tag TG, class T>
-struct Members {
+template <class T>
+struct Member {
     struct Key {
-        Tag tag = TG;
+        Tag tag = T::kMemberTag;
         PubKey user;
         typename T::Id id;
         Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
