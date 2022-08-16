@@ -101,6 +101,7 @@
     "boring-avatars": "^1.6.3",
     "cross-env": "^7.0.3",
     "hexdump-js": "^0.1.0",
+    "metamask-react": "^2.4.0",
     "qwebchannel": "^5.9.0",
     "rc-virtual-list": "^3.4.8",
     "react": "^17.0.2",

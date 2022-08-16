@@ -5,6 +5,7 @@ import './index.scss';
 import { BrowserRouter } from 'react-router-dom';
 import store from '@libs/redux/store';
 import { BeamWebApi } from '@components/context';
+import { MetaMaskProvider } from 'metamask-react';
 import { App } from './components';
 
 const container = document.querySelector('#root') as NonNullable<HTMLElement>;
@@ -12,9 +13,11 @@ const container = document.querySelector('#root') as NonNullable<HTMLElement>;
 ReactDOM.render(
   <BrowserRouter>
     <BeamWebApi>
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <MetaMaskProvider>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </MetaMaskProvider>
     </BeamWebApi>
   </BrowserRouter>,
   container
