@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import img from '@assets/img/source-logo.svg';
+import { GitConnectAuth } from '@components/shared/git-auth';
 import { useNavigate } from 'react-router-dom';
 import styles from './lendos.module.scss';
 
@@ -21,7 +22,8 @@ function Lendos() {
           <p>
             Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development.
           </p>
-          <button style={{ cursor: 'pointer' }} onClick={onClick} type="button">Explore</button>
+          <button className={styles.button} onClick={onClick} type="button">Explore</button>
+          <GitConnectAuth why name="Connect Github" />
         </div>
       </div>
     </div>

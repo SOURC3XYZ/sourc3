@@ -1,4 +1,5 @@
-import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
+import { useCallApi } from '@libs/hooks/shared';
 import { useRepoAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
@@ -16,7 +17,7 @@ const useUserRepos = () => {
 
   const [callApi, isLoading, callApiErr] = useCallApi();
 
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
 
   const {
     getRepo, updateTree, getFileData, killTree, clearRepo

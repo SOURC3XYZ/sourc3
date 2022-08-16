@@ -7,7 +7,7 @@ const useHeader = () => {
     (state) => ({ pkey: state.app.pkey, users: state.app.users })
   );
 
-  const isVisible = useExcludeRoute('/download', '/404');
+  const isVisible = useExcludeRoute('/download');
 
   const { connectExtension: onConnect } = useUserAction();
 

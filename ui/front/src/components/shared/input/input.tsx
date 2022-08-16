@@ -37,7 +37,7 @@ function InputCustom({
             ? <IconEyeOpen className={styles.eye} />
             : <IconEyeCrossed className={styles.eyeCrossed} />}
         </button>
-        {/* TODO: Jenk component label */}
+
         {!!ref && (
           <div
             className={styles.label}
@@ -48,13 +48,12 @@ function InputCustom({
         )}
       </div>
     ) : (
-      // TODO: NEW COMPONENT JENK
       <div className={styles.wrapperInput}>
         <label htmlFor="input" className={styles.labelUp}>{label}</label>
         <input
           autoFocus
           id="input"
-          className={styles.inputText}
+          className={valid ? styles.inputText : styles.invalid}
           // ref={ref}
           {...rest}
           type="text"
