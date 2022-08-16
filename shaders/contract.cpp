@@ -208,7 +208,21 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Organization> organization =
+        LoadNamedObject<Organization>(params.id);
+    CheckPermissions<Tag::kOrganizationMember, Organization>(
+        params.caller, params.id,
+        Organization::Permissions::kModifyOrganization);
+    Env::AddSig(params.caller);
+
+    std::unique_ptr<Organization> new_organization(static_cast<Organization*>(
+        ::operator new(sizeof(Organization) + params.name_len)));
+
+    new_organization->creator = organization->creator;
+    new_organization->name_len = params.name_len;
+    Env::Memcpy(new_organization->name, params.name, params.name_len);
+
+    SaveNamedObject(Organization::Key(params.id), new_organization);
 }
 
 BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT
@@ -271,7 +285,7 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     new_repo_info->name_len = params.name_len;
     new_repo_info->cur_objs_number = repo_info->cur_objs_number;
     new_repo_info->project_id = repo_info->project_id;
-    Env::Memcpy(new_repo_info->name, params.name, repo_info->name_len);
+    Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
     Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
@@ -321,7 +335,21 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Project> project =
+        LoadNamedObject<Project>(params.project_id);
+    CheckPermissions<Tag::kProjectMember, Project>(
+        params.caller, params.project_id, Project::Permissions::kModifyProject);
+    Env::AddSig(params.caller);
+
+    std::unique_ptr<Project> new_project(static_cast<Project*>(
+        ::operator new(sizeof(Project) + params.name_len)));
+
+    new_project->creator = project->creator;
+    new_project->organization_id = project->organization_id;
+    new_project->name_len = params.name_len;
+    Env::Memcpy(new_project->name, params.name, params.name_len);
+
+    SaveNamedObject(Project::Key(params.project_id), new_project);
 }
 
 BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
