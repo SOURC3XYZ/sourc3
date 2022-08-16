@@ -116,6 +116,93 @@ void CompensateFee(const ContractID& cid, Amount charge) {
                         nullptr, 0, "Compensate fee", 0);
 }
 
+size_t GetOrganizationData(
+    const std::unique_ptr<sourc3::method::CreateOrganization>& buf) {
+    using sourc3::OrganizationData;
+    using sourc3::method::CreateOrganization;
+
+    auto cur_ptr = buf->data.data;
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
+
+    buf->data.name_len =
+        Env::DocGetText("name", cur_ptr, OrganizationData::kMaxNameLen);
+    if (buf->data.name_len <= 1) {
+        OnError("'name' required");
+        return 0;
+    }
+    cur_ptr += buf->data.name_len;
+
+    buf->data.short_title_len = Env::DocGetText(
+        "short_title", cur_ptr, OrganizationData::kMaxShortTitleLen);
+    cur_ptr += buf->data.short_title_len;
+
+    buf->data.about_len =
+        Env::DocGetText("about", cur_ptr, OrganizationData::kMaxAboutLen);
+    cur_ptr += buf->data.about_len;
+
+    buf->data.website_len =
+        Env::DocGetText("website", cur_ptr, OrganizationData::kMaxWebsiteLen);
+    cur_ptr += buf->data.website_len;
+
+    buf->data.twitter_len = Env::DocGetText(
+        "twitter", cur_ptr, OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf->data.twitter_len;
+
+    buf->data.linkedin_len = Env::DocGetText(
+        "linkedin", cur_ptr, OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf->data.linkedin_len;
+
+    buf->data.instagram_len = Env::DocGetText(
+        "instagram", cur_ptr, OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf->data.instagram_len;
+
+    buf->data.telegram_len = Env::DocGetText(
+        "telegram", cur_ptr, OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf->data.telegram_len;
+
+    buf->data.discord_len = Env::DocGetText(
+        "discord", cur_ptr, OrganizationData::kMaxSocialNickLen);
+    cur_ptr += buf->data.discord_len;
+
+    buf->data.tags_len =
+        Env::DocGetText("tags", cur_ptr, OrganizationData::kMaxTagsLen);
+    cur_ptr += buf->data.tags_len;
+
+    buf->data.tech_stack_len = Env::DocGetText(
+        "tech_stack", cur_ptr, OrganizationData::kMaxTechStackLen);
+    cur_ptr += buf->data.tech_stack_len;
+
+    return cur_ptr - reinterpret_cast<char*>(buf.get());
+}
+
+void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
+    auto cur_ptr = value->data.data;
+    Env::DocAddText("organization_name", cur_ptr);
+    cur_ptr += value->data.name_len;
+    Env::DocAddText("organization_short_title", cur_ptr);
+    cur_ptr += value->data.short_title_len;
+    Env::DocAddText("organization_about", cur_ptr);
+    cur_ptr += value->data.about_len;
+    Env::DocAddText("organization_website", cur_ptr);
+    cur_ptr += value->data.website_len;
+    Env::DocAddText("organization_twitter", cur_ptr);
+    cur_ptr += value->data.twitter_len;
+    Env::DocAddText("organization_linkedin", cur_ptr);
+    cur_ptr += value->data.linkedin_len;
+    Env::DocAddText("organization_instagram", cur_ptr);
+    cur_ptr += value->data.instagram_len;
+    Env::DocAddText("organization_telegram", cur_ptr);
+    cur_ptr += value->data.telegram_len;
+    Env::DocAddText("organization_discord", cur_ptr);
+    cur_ptr += value->data.discord_len;
+    Env::DocAddText("organization_tags", cur_ptr);
+    cur_ptr += value->data.tags_len;
+    Env::DocAddText("organization_tech_stack", cur_ptr);
+    Env::DocAddText("organization_logo_ipfs_hash", value->logo_addr.data());
+    Env::DocAddBlob_T("organization_creator", value->creator);
+}
+
 void OnActionCreateContract(const ContractID& unused) {
     MyKeyID kid;
     PubKey pk;
@@ -544,22 +631,20 @@ void OnActionListProjectRepos(const ContractID& cid) {
 
 void OnActionCreateOrganization(const ContractID& cid) {
     using sourc3::Organization;
+    using sourc3::OrganizationData;
     using sourc3::method::CreateOrganization;
 
-    char name[Organization::kMaxNameLen + 1];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    --name_len;  // remove 0-term
-    auto args_size = sizeof(CreateOrganization) + name_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* request = reinterpret_cast<CreateOrganization*>(buf.get());
+    constexpr auto max_args_size =
+        sizeof(CreateOrganization) + OrganizationData::GetMaxSize();
+    auto buf = std::unique_ptr<CreateOrganization>(
+        static_cast<CreateOrganization*>(::operator new(max_args_size)));
+    size_t args_size = GetOrganizationData(buf);
+
+    if (!args_size)
+        return;
+
     UserKey user_key(cid);
-    user_key.Get(request->caller);
-    request->name_len = name_len;
-    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
+    user_key.Get(buf->caller);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -567,7 +652,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
     CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateOrganization::kMethod,
-                        /*pArgs=*/request,
+                        /*pArgs=*/buf.get(),
                         /*nArgs=*/args_size,
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
@@ -575,11 +660,16 @@ void OnActionCreateOrganization(const ContractID& cid) {
                         /*nSig=*/1,
                         /*szComment=*/"create organization",
                         /*nCharge=*/charge);
-}
 
 void OnActionListOrganizations(const ContractID& cid) {
     using sourc3::Organization;
+    using sourc3::OrganizationData;
     using OrganizationKey = Env::Key_T<Organization::Key>;
+
+    constexpr auto max_args_size =
+        sizeof(Organization) + OrganizationData::GetMaxSize();
+    auto buf = std::unique_ptr<Organization>(
+        static_cast<Organization*>(::operator new(max_args_size)));
 
     OrganizationKey start{.m_Prefix = {.m_Cid = cid},
                           .m_KeyInContract = Organization::Key{0}};
@@ -588,26 +678,22 @@ void OnActionListOrganizations(const ContractID& cid) {
 
     OrganizationKey key = start;
     Env::DocArray organizations("organizations");
-    uint32_t value_len = 0, key_len = sizeof(OrganizationKey);
+    uint32_t value_len = max_args_size, key_len = sizeof(OrganizationKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Organization*>(buf.get());
+         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup org_object("");
         Env::DocAddNum("organization_tag", (uint32_t)key.m_KeyInContract.tag);
         Env::DocAddNum("organization_id", key.m_KeyInContract.id);
-        Env::DocAddText("organization_name", value->name);
-        Env::DocAddBlob_T("organization_creator", value->creator);
-        value_len = 0;
+        PrintOrganization(buf);
     }
 }
 
 void OnActionOrganizationByName(const ContractID& cid) {
     using sourc3::Organization;
+    using sourc3::OrganizationData;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
-    char name[Organization::kMaxNameLen + 1];
+    char name[OrganizationData::kMaxNameLen];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
     if (name_len <= 1) {
         return OnError("'name' required");
@@ -617,6 +703,11 @@ void OnActionOrganizationByName(const ContractID& cid) {
         return OnError("'owner' required");
     }
 
+    constexpr auto max_args_size =
+        sizeof(Organization) + OrganizationData::GetMaxSize();
+    auto buf = std::unique_ptr<Organization>(
+        static_cast<Organization*>(::operator new(max_args_size)));
+
     OrganizationKey start{.m_Prefix = {.m_Cid = cid},
                           .m_KeyInContract = Organization::Key{0}};
     auto end = start;
@@ -624,20 +715,16 @@ void OnActionOrganizationByName(const ContractID& cid) {
 
     OrganizationKey key = start;
     Env::DocArray organizations("organizations");
-    uint32_t value_len = 0, key_len = sizeof(OrganizationKey);
+    uint32_t value_len = max_args_size, key_len = sizeof(OrganizationKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Organization*>(buf.get());
-        if (Env::Strcmp(value->name, name) == 0 &&
-            _POD_(value->creator) == owner) {  // NOLINT
+         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
+        if (Env::Strcmp(buf->data.data, name) == 0 &&
+            _POD_(buf->creator) == owner) {  // NOLINT
             Env::DocGroup org_object("");
             Env::DocAddNum("organization_tag",
                            (uint32_t)key.m_KeyInContract.tag);
             Env::DocAddNum("organization_id", key.m_KeyInContract.id);
-            Env::DocAddText("organization_name", value->name);
-            Env::DocAddBlob_T("organization_creator", value->creator);
+            PrintOrganization(buf);
             return;
         }
     }
