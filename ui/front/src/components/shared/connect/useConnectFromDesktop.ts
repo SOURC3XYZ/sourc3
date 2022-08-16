@@ -21,7 +21,18 @@ export const useConnectFromDesktop = () => {
 
   const wsSendPing = useCallback(() => {
     if (connection) {
-      connection.send(JSON.stringify({ action: 'PING', data: JSON.stringify({}) }));
+      connection.send(JSON.stringify({
+        action: 'PING',
+        data: {
+          jsonrpc: '2.0',
+          id: 6,
+          method: 'getRepoId',
+          params: {
+            owner: '0xbDAA766458f33a0cb56d42F70060d5F4Cbb927A4',
+            name: 'test_2'
+          }
+        }
+      }));
     }
   }, [connection]);
 

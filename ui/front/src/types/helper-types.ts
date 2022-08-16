@@ -27,5 +27,6 @@ export interface BeamApiContext {
   callApi: CallBeamApi<RequestSchema['params']>,
   connectExtension?: ApiConnecting,
   isWebHeadless?: () => boolean,
-  callIPC?: CallIPCType
+  callIPC?: CallIPCType,
+  callCustomIPC?: (method: string) => void;
 }

@@ -7,8 +7,6 @@ import { Link } from 'react-router-dom';
 import img from '@assets/img/source-header-logo.svg';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
-import { Button } from 'antd';
-import { CONFIG } from '@libs/constants';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
@@ -48,6 +46,11 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
             Organizations
           </Link>
         </li>
+        <li>
+          <Link className={styles.textColor} to="/connect">
+            Connect
+          </Link>
+        </li>
       </ul>
     </div>
   );
@@ -79,13 +82,8 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
     </div>
   ), [isOnLending, pkey, users]);
 
-  const onWindowOpen = () => window.open(CONFIG.SELF, '_blank');
-
   const header = useMemo(() => (isVisible ? (
     <header className={headerClassName}>
-      <Button onClick={onWindowOpen}>
-        CLICK ME
-      </Button>
       <div className={styles.nav}>
         {headerElements}
         {searchElement}

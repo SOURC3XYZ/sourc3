@@ -9,7 +9,7 @@ import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
 import { loggerLevel } from './middlewares';
-import { ethApi } from './ether/websocket';
+import { ethApi, wsConnection } from './ether/websocket';
 
 ethApi();
 
@@ -74,6 +74,15 @@ function createWindow() {
     });
     loggerLevel('info', `directories selected${result.filePaths}`);
     win.webContents.send('ping', result.filePaths[0]);
+  });
+
+  ipcMain.on('ws-send', async () => {
+    if (typeof wsConnection.wsSend === 'function') {
+      wsConnection.wsSend(JSON.stringify({
+        action: 'TX_SEND',
+        data: 'beam'
+      }));
+    }
   });
 
   try {

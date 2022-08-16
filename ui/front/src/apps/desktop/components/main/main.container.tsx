@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import {
   AllRepos,
+  ConnectDesktop,
   FailPage,
   Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
 } from '@components/shared';
@@ -54,6 +55,11 @@ function App() {
     {
       path: 'localRepos/',
       element: <LocalRepos />
+    },
+
+    {
+      path: 'connect/',
+      element: <ConnectDesktop />
     }
   ];
 

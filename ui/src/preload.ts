@@ -7,7 +7,8 @@ const ipc = new IpcClient(ipcRenderer);
 enum IPCTypes {
   CONTROL_REQ = 'ipc-control-req',
   CONTROL_RES = 'ipc-control-res',
-  SELECT_DIRS = 'select-dirs'
+  SELECT_DIRS = 'select-dirs',
+  WS_SEND = 'ws-send'
 }
 
 export type BeamApiResult = {
@@ -65,6 +66,11 @@ process.once('loaded', () => {
     if (evt.data.type === IPCTypes.SELECT_DIRS) {
       ipcRenderer.send('select-dirs');
     }
+
+    if (evt.data.type === IPCTypes.WS_SEND) {
+      ipcRenderer.send('ws-send');
+    }
+
     if (evt.data.type === IPCTypes.CONTROL_REQ) {
       const response = {
         id: evt.data.id,

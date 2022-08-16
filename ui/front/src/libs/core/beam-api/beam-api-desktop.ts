@@ -78,4 +78,10 @@ export class BeamApiDesktop extends BeamAPI<RequestSchema['params']> {
     });
     this.callbacks.set(id, { resolve, reject });
   });
+
+  public readonly callCustonIPC = (
+    type: string
+  ):void => {
+    window.postMessage({ type });
+  };
 }
