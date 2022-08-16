@@ -398,8 +398,7 @@ public:
                 ba::spawn(yield, [&, it2 = pit.first, obj = object_to_receive](
                                      ba::yield_context yield2) {
                     SimpleWalletClient wallet_client(
-                        wallet_client_.ioc_, wallet_client_.options_, yield2,
-                        /*connected=*/true);
+                        wallet_client_.ioc_, wallet_client_.options_, yield2);
                     auto res = wallet_client.GetObjectDataAsync(obj);
                     auto root = ParseJsonAndTest(res);
                     git_oid oid;

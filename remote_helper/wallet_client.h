@@ -51,12 +51,10 @@ public:
     };
 
     SimpleWalletClient(net::io_context& ioc, const Options& options,
-                       boost::optional<net::yield_context> yield = boost::none,
-                       bool connected = false)
+                       boost::optional<net::yield_context> yield = boost::none)
         : ioc_(ioc),
           resolver_(ioc_),
           stream_(ioc_),
-          connected_(connected),
           options_(options),
           yield_(yield) {
         // PrintVersion();
