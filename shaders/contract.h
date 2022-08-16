@@ -25,7 +25,8 @@
 namespace sourc3 {
 constexpr size_t kIpfsAddressSize = 46;
 
-using IpfsAddr = std::array<char, kIpfsAddressSize>;
+// plus 0-term
+using IpfsAddr = std::array<char, kIpfsAddressSize + 1>;
 
 enum Tag : uint8_t {
     kRepo,
@@ -72,13 +73,19 @@ struct OrganizationData {
     size_t tech_stack_len;
     char data[];
 
-    static const size_t kMaxNameLen = 100;
-    static const size_t kMaxShortTitleLen = 50;
-    static const size_t kMaxAboutLen = 150;
-    static const size_t kMaxWebsiteLen = 100;
-    static const size_t kMaxSocialNickLen = 50;
-    static const size_t kMaxTagsLen = 100;
-    static const size_t kMaxTechStackLen = 100;
+    // plus 0-term
+    static const size_t kMaxNameLen = 100 + 1;
+    static const size_t kMaxShortTitleLen = 50 + 1;
+    static const size_t kMaxAboutLen = 150 + 1;
+    static const size_t kMaxWebsiteLen = 100 + 1;
+    static const size_t kMaxSocialNickLen = 50 + 1;
+    static const size_t kMaxTagsLen = 100 + 1;
+    static const size_t kMaxTechStackLen = 100 + 1;
+
+    static constexpr size_t GetMaxSize() {
+        return kMaxNameLen + kMaxShortTitleLen + kMaxAboutLen + kMaxWebsiteLen +
+               kMaxSocialNickLen * 5 + kMaxTagsLen + kMaxTechStackLen;
+    };
 };
 
 struct Organization {
@@ -115,11 +122,13 @@ struct ProjectData {
     size_t discord_len;
     size_t tags_len;
     char data[];
-    static const size_t kMaxNameLen = 100;
-    static const size_t kMaxDescriptionLen = 1024;
-    static const size_t kMaxWebsiteLen = 100;
-    static const size_t kMaxTagsLen = 100;
-    static const size_t kMaxSocialNickLen = 50;
+
+    // plus 0-term
+    static const size_t kMaxNameLen = 100 + 1;
+    static const size_t kMaxDescriptionLen = 1024 + 1;
+    static const size_t kMaxWebsiteLen = 100 + 1;
+    static const size_t kMaxTagsLen = 100 + 1;
+    static const size_t kMaxSocialNickLen = 50 + 1;
 };
 
 struct Project {
