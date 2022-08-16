@@ -566,10 +566,10 @@ void OnActionProjectByName(const ContractID& cid) {
 void OnActionListProjectMembers(const ContractID& cid) {
     using sourc3::Member;
     using sourc3::Project;
-    using MemberKey = Env::Key_T<Member<Project>::Key>;
+    using MemberKey = Env::Key_T<Member::Key<Project>>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member<Project>::Key{PubKey{}, 0}};
+                    .m_KeyInContract = Member::Key<Project>{PubKey{}, 0}};
     if (!Env::DocGet("project_id", start.m_KeyInContract.id)) {
         return OnError("no 'project_id'");
     }
@@ -579,7 +579,7 @@ void OnActionListProjectMembers(const ContractID& cid) {
 
     MemberKey key = start;
     Env::DocArray projects("members");
-    sourc3::UserInfo member;
+    sourc3::Member member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);
@@ -834,10 +834,10 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 void OnActionListOrganizationMembers(const ContractID& cid) {
     using sourc3::Member;
     using sourc3::Organization;
-    using MemberKey = Env::Key_T<Member<Organization>::Key>;
+    using MemberKey = Env::Key_T<Member::Key<Organization>>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member<Organization>::Key{PubKey{}, 0}};
+                    .m_KeyInContract = Member::Key<Organization>{PubKey{}, 0}};
     if (!Env::DocGet("organization_id", start.m_KeyInContract.id)) {
         return OnError("no 'organization_id'");
     }
@@ -847,7 +847,7 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 
     MemberKey key = start;
     Env::DocArray members("members");
-    sourc3::UserInfo member;
+    sourc3::Member member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);

@@ -37,6 +37,7 @@ enum Tag : uint8_t {
     kRepoMember,
     kOrganizationMember,
     kProjectMember,
+    kUser,
 };
 
 #pragma pack(push, 1)
@@ -221,8 +222,8 @@ struct Repo {
     static const Tag kMemberTag = Tag::kRepoMember;
 };
 
-template <class T>
 struct Member {
+    template <class T>
     struct Key {
         Tag tag = T::kMemberTag;
         PubKey user;
@@ -230,6 +231,7 @@ struct Member {
         Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
         }
     };
+    uint8_t permissions;
 };
 
 struct GitObject {
@@ -317,8 +319,44 @@ struct RefsInfo {
     GitRef refs[];
 };
 
-struct UserInfo {
-    uint8_t permissions;
+struct UserData {
+    size_t name_len;
+    size_t description_len;
+    size_t website_len;
+    size_t twitter_len;
+    size_t linkedin_len;
+    size_t instagram_len;
+    size_t telegram_len;
+    size_t discord_len;
+    char data[];
+
+    size_t GetTotalLen() const {
+        return name_len + description_len + website_len + twitter_len +
+               linkedin_len + instagram_len + telegram_len + discord_len;
+    }
+
+    static const size_t kMaxNameLen = 100 + 1;
+    static const size_t kMaxDescriptionLen = 1024 + 1;
+    static const size_t kMaxWebsiteLen = 100 + 1;
+    static const size_t kMaxSocialNickLen = 50 + 1;
+
+    static constexpr size_t GetMaxSize() {
+        return kMaxNameLen + kMaxDescriptionLen + kMaxWebsiteLen +
+               kMaxSocialNickLen * 5;
+    };
+};
+
+struct User {
+    struct Key {
+        explicit Key(PubKey id) : id(id) {
+        }
+
+        Tag tag = Tag::kUser;
+        PubKey id;
+    };
+    uint32_t rating;
+    IpfsAddr avatar_addr;
+    UserData data;
 };
 
 namespace method {
@@ -492,6 +530,14 @@ struct Deposit {
 struct Withdraw {
     static const uint32_t kMethod = 24;
     Amount amount;
+};
+
+struct ModifyUser {
+    static const uint32_t kMethod = 25;
+    PubKey id;
+    uint32_t rating;
+    IpfsAddr avatar_addr;
+    UserData data;
 };
 
 #pragma pack(pop)
