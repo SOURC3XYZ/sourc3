@@ -335,21 +335,22 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
-    std::unique_ptr<Project> project =
-        LoadNamedObject<Project>(params.project_id);
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, params.project_id, Project::Permissions::kModifyProject);
+    std::unique_ptr<Project> project = LoadVLObject<Project>(params.project_id);
+    CheckPermissions<Project>(params.caller, params.project_id,
+                              Project::Permissions::kModifyProject);
     Env::AddSig(params.caller);
 
-    std::unique_ptr<Project> new_project(static_cast<Project*>(
-        ::operator new(sizeof(Project) + params.name_len)));
+    size_t total_len = params.data.GetTotalLen();
+    std::unique_ptr<Project> new_project(
+        static_cast<Project*>(::operator new(sizeof(Project) + total_len)));
 
     new_project->creator = project->creator;
     new_project->organization_id = project->organization_id;
-    new_project->name_len = params.name_len;
-    Env::Memcpy(new_project->name, params.name, params.name_len);
+    new_project->logo_addr = project->logo_addr;
+    Env::Memcpy(&new_project->data, &params.data, total_len);
 
-    SaveNamedObject(Project::Key(params.project_id), new_project);
+    SaveVLObject(Project::Key(params.project_id), new_project,
+                 sizeof(Project) + total_len);
 }
 
 BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT

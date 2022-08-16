@@ -116,56 +116,50 @@ void CompensateFee(const ContractID& cid, Amount charge) {
                         nullptr, 0, "Compensate fee", 0);
 }
 
-size_t GetProjectData(
-    const std::unique_ptr<sourc3::method::CreateProject>& buf) {
+size_t GetProjectData(sourc3::ProjectData& buf) {
     using sourc3::ProjectData;
-    using sourc3::method::CreateProject;
 
-    auto cur_ptr = buf->data.data;
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
-                    sourc3::kIpfsAddressSize + 1);
+    auto cur_ptr = buf.data;
 
-    buf->data.name_len =
-        Env::DocGetText("name", cur_ptr, ProjectData::kMaxNameLen);
-    if (buf->data.name_len <= 1) {
+    buf.name_len = Env::DocGetText("name", cur_ptr, ProjectData::kMaxNameLen);
+    if (buf.name_len <= 1) {
         OnError("'name' required");
         return 0;
     }
-    cur_ptr += buf->data.name_len;
+    cur_ptr += buf.name_len;
 
-    buf->data.description_len = Env::DocGetText(
-        "description", cur_ptr, ProjectData::kMaxDescriptionLen);
-    cur_ptr += buf->data.description_len;
+    buf.description_len = Env::DocGetText("description", cur_ptr,
+                                          ProjectData::kMaxDescriptionLen);
+    cur_ptr += buf.description_len;
 
-    buf->data.website_len =
+    buf.website_len =
         Env::DocGetText("website", cur_ptr, ProjectData::kMaxWebsiteLen);
-    cur_ptr += buf->data.website_len;
+    cur_ptr += buf.website_len;
 
-    buf->data.twitter_len =
+    buf.twitter_len =
         Env::DocGetText("twitter", cur_ptr, ProjectData::kMaxSocialNickLen);
-    cur_ptr += buf->data.twitter_len;
+    cur_ptr += buf.twitter_len;
 
-    buf->data.linkedin_len =
+    buf.linkedin_len =
         Env::DocGetText("linkedin", cur_ptr, ProjectData::kMaxSocialNickLen);
-    cur_ptr += buf->data.linkedin_len;
+    cur_ptr += buf.linkedin_len;
 
-    buf->data.instagram_len =
+    buf.instagram_len =
         Env::DocGetText("instagram", cur_ptr, ProjectData::kMaxSocialNickLen);
-    cur_ptr += buf->data.instagram_len;
+    cur_ptr += buf.instagram_len;
 
-    buf->data.telegram_len =
+    buf.telegram_len =
         Env::DocGetText("telegram", cur_ptr, ProjectData::kMaxSocialNickLen);
-    cur_ptr += buf->data.telegram_len;
+    cur_ptr += buf.telegram_len;
 
-    buf->data.discord_len =
+    buf.discord_len =
         Env::DocGetText("discord", cur_ptr, ProjectData::kMaxSocialNickLen);
-    cur_ptr += buf->data.discord_len;
+    cur_ptr += buf.discord_len;
 
-    buf->data.tags_len =
-        Env::DocGetText("tags", cur_ptr, ProjectData::kMaxTagsLen);
-    cur_ptr += buf->data.tags_len;
+    buf.tags_len = Env::DocGetText("tags", cur_ptr, ProjectData::kMaxTagsLen);
+    cur_ptr += buf.tags_len;
 
-    return cur_ptr - reinterpret_cast<char*>(buf.get());
+    return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
 void PrintProject(std::unique_ptr<sourc3::Project>& value) {
@@ -476,10 +470,13 @@ void OnActionCreateProject(const ContractID& cid) {
         sizeof(CreateProject) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<CreateProject>(
         static_cast<CreateProject*>(::operator new(max_args_size)));
-    size_t args_size = GetProjectData(buf);
+    size_t args_size = GetProjectData(buf->data);
 
     if (!args_size)
         return;
+
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->caller);
@@ -596,28 +593,30 @@ void OnActionListProjectMembers(const ContractID& cid) {
 
 void OnActionModifyProject(const ContractID& cid) {
     using sourc3::Project;
+    using sourc3::ProjectData;
     using sourc3::method::ModifyProject;
 
-    char name[Project::kMaxNameLen + 1];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    --name_len;  // remove 0-term
-    auto args_size = sizeof(ModifyProject) + name_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* request = reinterpret_cast<ModifyProject*>(buf.get());
+    constexpr auto max_args_size =
+        sizeof(ModifyProject) + ProjectData::GetMaxSize();
+    auto buf = std::unique_ptr<ModifyProject>(
+        static_cast<ModifyProject*>(::operator new(max_args_size)));
+    size_t args_size = GetProjectData(buf->data);
+
+    if (!args_size)
+        return;
+
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
+
     UserKey user_key(cid);
-    user_key.Get(request->caller);
-    request->name_len = name_len;
-    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
+    user_key.Get(buf->caller);
 
-    if (!Env::DocGet("organization_id", request->organization_id)) {
-        return OnError("'organization_id' required");
-    }
+    /*    if (!Env::DocGet("organization_id", request->organization_id)) {
+            return OnError("'organization_id' required");
+        }
+    */
 
-    if (!Env::DocGet("project_id", request->project_id)) {
+    if (!Env::DocGet("project_id", buf->project_id)) {
         return OnError("'project_id' required");
     }
     SigRequest sig;
@@ -626,7 +625,7 @@ void OnActionModifyProject(const ContractID& cid) {
     CompensateFee(cid, 0);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyProject::kMethod,
-                        /*pArgs=*/request,
+                        /*pArgs=*/buf.get(),
                         /*nArgs=*/args_size,
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,

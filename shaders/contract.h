@@ -125,6 +125,12 @@ struct ProjectData {
     size_t tags_len;
     char data[];
 
+    size_t GetTotalLen() const {
+        return name_len + description_len + website_len + twitter_len +
+               linkedin_len + instagram_len + telegram_len + discord_len +
+               tags_len;
+    }
+
     static constexpr size_t GetMaxSize() {
         return kMaxNameLen + kMaxDescriptionLen + kMaxWebsiteLen +
                kMaxSocialNickLen * 5 + kMaxTagsLen;
