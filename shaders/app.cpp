@@ -116,6 +116,82 @@ void CompensateFee(const ContractID& cid, Amount charge) {
                         nullptr, 0, "Compensate fee", 0);
 }
 
+size_t GetProjectData(
+    const std::unique_ptr<sourc3::method::CreateProject>& buf) {
+    using sourc3::ProjectData;
+    using sourc3::method::CreateProject;
+
+    auto cur_ptr = buf->data.data;
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
+
+    buf->data.name_len =
+        Env::DocGetText("name", cur_ptr, ProjectData::kMaxNameLen);
+    if (buf->data.name_len <= 1) {
+        OnError("'name' required");
+        return 0;
+    }
+    cur_ptr += buf->data.name_len;
+
+    buf->data.description_len = Env::DocGetText(
+        "description", cur_ptr, ProjectData::kMaxDescriptionLen);
+    cur_ptr += buf->data.description_len;
+
+    buf->data.website_len =
+        Env::DocGetText("website", cur_ptr, ProjectData::kMaxWebsiteLen);
+    cur_ptr += buf->data.website_len;
+
+    buf->data.twitter_len =
+        Env::DocGetText("twitter", cur_ptr, ProjectData::kMaxSocialNickLen);
+    cur_ptr += buf->data.twitter_len;
+
+    buf->data.linkedin_len =
+        Env::DocGetText("linkedin", cur_ptr, ProjectData::kMaxSocialNickLen);
+    cur_ptr += buf->data.linkedin_len;
+
+    buf->data.instagram_len =
+        Env::DocGetText("instagram", cur_ptr, ProjectData::kMaxSocialNickLen);
+    cur_ptr += buf->data.instagram_len;
+
+    buf->data.telegram_len =
+        Env::DocGetText("telegram", cur_ptr, ProjectData::kMaxSocialNickLen);
+    cur_ptr += buf->data.telegram_len;
+
+    buf->data.discord_len =
+        Env::DocGetText("discord", cur_ptr, ProjectData::kMaxSocialNickLen);
+    cur_ptr += buf->data.discord_len;
+
+    buf->data.tags_len =
+        Env::DocGetText("tags", cur_ptr, ProjectData::kMaxTagsLen);
+    cur_ptr += buf->data.tags_len;
+
+    return cur_ptr - reinterpret_cast<char*>(buf.get());
+}
+
+void PrintProject(std::unique_ptr<sourc3::Project>& value) {
+    auto cur_ptr = value->data.data;
+    Env::DocAddText("project_name", cur_ptr);
+    cur_ptr += value->data.name_len;
+    Env::DocAddText("project_description", cur_ptr);
+    cur_ptr += value->data.description_len;
+    Env::DocAddText("project_website", cur_ptr);
+    cur_ptr += value->data.website_len;
+    Env::DocAddText("project_twitter", cur_ptr);
+    cur_ptr += value->data.twitter_len;
+    Env::DocAddText("project_linkedin", cur_ptr);
+    cur_ptr += value->data.linkedin_len;
+    Env::DocAddText("project_instagram", cur_ptr);
+    cur_ptr += value->data.instagram_len;
+    Env::DocAddText("project_telegram", cur_ptr);
+    cur_ptr += value->data.telegram_len;
+    Env::DocAddText("project_discord", cur_ptr);
+    cur_ptr += value->data.discord_len;
+    Env::DocAddText("project_tags", cur_ptr);
+    Env::DocAddText("project_logo_ipfs_hash", value->logo_addr.data());
+    Env::DocAddBlob_T("project_creator", value->creator);
+    Env::DocAddNum("organization_id", value->organization_id);
+}
+
 size_t GetOrganizationData(
     const std::unique_ptr<sourc3::method::CreateOrganization>& buf) {
     using sourc3::OrganizationData;
@@ -393,24 +469,22 @@ void OnActionModifyRepo(const ContractID& cid) {
 
 void OnActionCreateProject(const ContractID& cid) {
     using sourc3::Project;
+    using sourc3::ProjectData;
     using sourc3::method::CreateProject;
 
-    char name[Project::kMaxNameLen + 1];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    --name_len;  // remove 0-term
-    auto args_size = sizeof(CreateProject) + name_len;
-    auto buf = std::make_unique<uint8_t[]>(args_size);
-    auto* request = reinterpret_cast<CreateProject*>(buf.get());
-    UserKey user_key(cid);
-    user_key.Get(request->caller);
-    request->name_len = name_len;
-    Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/name, /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
+    constexpr auto max_args_size =
+        sizeof(CreateProject) + ProjectData::GetMaxSize();
+    auto buf = std::unique_ptr<CreateProject>(
+        static_cast<CreateProject*>(::operator new(max_args_size)));
+    size_t args_size = GetProjectData(buf);
 
-    if (!Env::DocGet("organization_id", request->organization_id)) {
+    if (!args_size)
+        return;
+
+    UserKey user_key(cid);
+    user_key.Get(buf->caller);
+
+    if (!Env::DocGet("organization_id", buf->organization_id)) {
         return OnError("'organization_id' required");
     }
     SigRequest sig;
@@ -420,7 +494,7 @@ void OnActionCreateProject(const ContractID& cid) {
     CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/CreateProject::kMethod,
-                        /*pArgs=*/request,
+                        /*pArgs=*/buf.get(),
                         /*nArgs=*/args_size,
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
@@ -432,7 +506,12 @@ void OnActionCreateProject(const ContractID& cid) {
 
 void OnActionListProjects(const ContractID& cid) {
     using sourc3::Project;
+    using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
+
+    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
+    auto buf = std::unique_ptr<Project>(
+        static_cast<Project*>(::operator new(max_args_size)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
                      .m_KeyInContract = Project::Key{0}};
@@ -441,27 +520,22 @@ void OnActionListProjects(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Project*>(buf.get());
+         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup project_object("");
         Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
         Env::DocAddNum("project_id", key.m_KeyInContract.id);
-        Env::DocAddNum("organization_id", value->organization_id);
-        Env::DocAddText("project_name", value->name);
-        Env::DocAddBlob_T("project_creator", value->creator);
-        value_len = 0;
+        PrintProject(buf);
     }
 }
 
 void OnActionProjectByName(const ContractID& cid) {
     using sourc3::Project;
+    using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
 
-    char name[Project::kMaxNameLen + 1];
+    char name[ProjectData::kMaxNameLen];
     auto name_len = Env::DocGetText("name", name, sizeof(name));
     if (name_len <= 1) {
         return OnError("'name' required");
@@ -471,6 +545,10 @@ void OnActionProjectByName(const ContractID& cid) {
         return OnError("'owner' required");
     }
 
+    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
+    auto buf = std::unique_ptr<Project>(
+        static_cast<Project*>(::operator new(max_args_size)));
+
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
                      .m_KeyInContract = Project::Key{0}};
     ProjectKey end = start;
@@ -478,21 +556,15 @@ void OnActionProjectByName(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Project*>(buf.get());
-
-        if (Env::Strcmp(value->name, name) == 0 &&
-            _POD_(value->creator) == owner) {  // NOLINT
+         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
+        if (Env::Strcmp(buf->data.data, name) == 0 &&
+            _POD_(buf->creator) == owner) {  // NOLINT
             Env::DocGroup project_object("");
             Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
             Env::DocAddNum("project_id", key.m_KeyInContract.id);
-            Env::DocAddNum("organization_id", value->organization_id);
-            Env::DocAddText("project_name", value->name);
-            Env::DocAddBlob_T("project_creator", value->creator);
+            PrintProject(buf);
             return;
         }
     }
@@ -659,6 +731,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
                         /*nSig=*/1,
                         /*szComment=*/"create organization",
                         /*nCharge=*/charge);
+}
 
 void OnActionListOrganizations(const ContractID& cid) {
     using sourc3::Organization;
@@ -732,7 +805,12 @@ void OnActionOrganizationByName(const ContractID& cid) {
 void OnActionListOrganizationProjects(const ContractID& cid) {
     using sourc3::Organization;
     using sourc3::Project;
+    using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
+
+    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
+    auto buf = std::unique_ptr<Project>(
+        static_cast<Project*>(::operator new(max_args_size)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
                      .m_KeyInContract = Project::Key{0}};
@@ -746,21 +824,15 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = 0, key_len = sizeof(ProjectKey);
+    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
-        auto buf = std::make_unique<uint8_t[]>(value_len + 1);  // 0-term
-        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
-        auto* value = reinterpret_cast<Project*>(buf.get());
-        if (value->organization_id == org_id) {
+         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
+        if (buf->organization_id == org_id) {
             Env::DocGroup project_object("");
             Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
             Env::DocAddNum("project_id", key.m_KeyInContract.id);
-            Env::DocAddNum("organization_id", value->organization_id);
-            Env::DocAddText("project_name", value->name);
-            Env::DocAddBlob_T("project_creator", value->creator);
+            PrintProject(buf);
         }
-        value_len = 0;
     }
 }
 

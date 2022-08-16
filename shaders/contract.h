@@ -125,6 +125,11 @@ struct ProjectData {
     size_t tags_len;
     char data[];
 
+    static constexpr size_t GetMaxSize() {
+        return kMaxNameLen + kMaxDescriptionLen + kMaxWebsiteLen +
+               kMaxSocialNickLen * 5 + kMaxTagsLen;
+    };
+
     // plus 0-term
     static const size_t kMaxNameLen = 100 + 1;
     static const size_t kMaxDescriptionLen = 1024 + 1;
