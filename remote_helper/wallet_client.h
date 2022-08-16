@@ -51,10 +51,12 @@ public:
     };
 
     SimpleWalletClient(net::io_context& ioc, const Options& options,
-                       boost::optional<net::yield_context> yield = boost::none)
+                       boost::optional<net::yield_context> yield = boost::none,
+                       bool connected = false)
         : ioc_(ioc),
           resolver_(ioc_),
           stream_(ioc_),
+          connected_(connected),
           options_(options),
           yield_(yield) {
         // PrintVersion();
@@ -76,8 +78,7 @@ public:
 
     std::string GetAllObjectsMetadata();
     std::string GetObjectData(const std::string& obj_id);
-    std::string GetObjectDataAsync(const std::string& obj_id,
-                                   net::yield_context yield);
+    std::string GetObjectDataAsync(const std::string& obj_id);
     std::string GetReferences();
     std::string PushObjects(const std::string& data,
                             const std::vector<Ref>& refs,
@@ -88,8 +89,7 @@ public:
     }
 
     std::string LoadObjectFromIPFS(std::string&& hash);
-    std::string LoadObjectFromIPFSAsync(std::string&& hash,
-                                        net::yield_context yield);
+    std::string LoadObjectFromIPFSAsync(std::string&& hash);
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size);
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
@@ -106,29 +106,27 @@ private:
             .append(GetCID());
         return InvokeShader(std::move(args), create_tx);
     }
-    std::string InvokeWalletAsync(std::string args, bool create_tx,
-                                  net::yield_context yield) {
+    std::string InvokeWalletAsync(std::string args, bool create_tx) {
         args.append(",repo_id=")
-            .append(GetRepoIDAsync(yield))
+            .append(GetRepoIDAsync())
             .append(",cid=")
             .append(GetCID());
-        return InvokeShaderAsync(std::move(args), create_tx, yield);
+        return InvokeShaderAsync(std::move(args), create_tx);
     }
 
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
-    void EnsureConnectedAsync(net::yield_context yield);
+    void EnsureConnectedAsync();
     std::string ExtractResult(const std::string& response);
     std::string InvokeShader(const std::string& args, bool create_tx);
-    std::string InvokeShaderAsync(const std::string& args, bool create_tx,
-                                  net::yield_context yield);
+    std::string InvokeShaderAsync(const std::string& args, bool create_tx);
     const char* GetCID() const;
     const std::string& GetRepoID();
-    const std::string& GetRepoIDAsync(net::yield_context yield);
+    const std::string& GetRepoIDAsync();
     std::string CallAPI(std::string&& request);
-    std::string CallAPIAsync(std::string request, net::yield_context yield);
+    std::string CallAPIAsync(std::string request);
     std::string ReadAPI();
-    std::string ReadAPIAsync(net::yield_context yield);
+    std::string ReadAPIAsync();
     void PrintVersion();
     // private:
 public:

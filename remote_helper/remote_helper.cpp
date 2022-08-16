@@ -390,7 +390,7 @@ public:
                 auto it_to_receive = object_hashes.begin();
                 const auto& object_to_receive = *it_to_receive;
                 auto pit = processing_hashes.insert(object_to_receive);
-                if (pit.second == false) {
+                if (!pit.second) {
                     object_hashes.erase(it_to_receive);
                     continue;
                 }
@@ -398,8 +398,9 @@ public:
                 ba::spawn(yield, [&, it2 = pit.first, obj = object_to_receive](
                                      ba::yield_context yield2) {
                     SimpleWalletClient wallet_client(
-                        wallet_client_.ioc_, wallet_client_.options_, yield2);
-                    auto res = wallet_client.GetObjectDataAsync(obj, yield2);
+                        wallet_client_.ioc_, wallet_client_.options_, yield2,
+                        /*connected=*/true);
+                    auto res = wallet_client.GetObjectDataAsync(obj);
                     auto root = ParseJsonAndTest(res);
                     git_oid oid;
                     git_oid_fromstr(&oid, obj.data());
@@ -423,8 +424,7 @@ public:
                         try {
                             auto responce =
                                 wallet_client.LoadObjectFromIPFSAsync(
-                                    std::string(hash.cbegin(), hash.cend()),
-                                    yield2);
+                                    std::string(hash.cbegin(), hash.cend()));
                             auto r = ParseJsonAndTest(responce);
                             if (r.as_object().find("result") ==
                                 r.as_object().end()) {
