@@ -2,7 +2,6 @@
 import {
   AllRepos,
   ConnectDesktop,
-  FailPage,
   Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
 } from '@components/shared';
 import { useSelector } from '@libs/redux';
@@ -10,7 +9,8 @@ import React, { useCallback, useMemo } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useUserAction } from '@libs/hooks/thunk';
 import { LoadingMessages } from '@libs/constants';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { PreloadComponent } from '@components/hoc';
+import { ErrorBoundary } from '@components/context';
 import Header from '../../../web/components/header/header.container';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
@@ -73,16 +73,11 @@ function App() {
     />
   ), []);
 
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
-  const View = useMemo(() => {
+  const main = useMemo(() => {
     const Component = isApiConnected
       ? <Routes>{routes}</Routes>
       : <Preload message="loading" />;
-    return () => Component;
+    return Component;
   }, [isApiConnected]);
 
   return (
@@ -91,15 +86,15 @@ function App() {
       callback={connectToDesktopApi}
       isLoaded={isApiConnected}
     >
-      <ErrorBoundary fallback={fallback}>
-        <>
-          <Header desktop />
-          <div className={styles.wrapper}>
-            <View />
-            <Notifications />
-          </div>
-        </>
-      </ErrorBoundary>
+      <>
+        <Header desktop />
+        <div className={styles.wrapper}>
+          <ErrorBoundary>
+            {main}
+          </ErrorBoundary>
+          <Notifications />
+        </div>
+      </>
     </PreloadComponent>
   );
 }

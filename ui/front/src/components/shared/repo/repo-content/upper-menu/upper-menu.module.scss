@@ -1,5 +1,11 @@
+@import '@styles/vars.scss';
+
 .commits {
-    width: 300px;
+    color: $color-orange;
+    &:hover{
+        color: rgba(0, 0, 0, 0.85);
+        transition: all 0.3s;
+    }
 }
 
 .branches {

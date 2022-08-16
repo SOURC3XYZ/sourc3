@@ -1,3 +1,4 @@
+import { ErrorBoundary } from '@components/context';
 import { ErrorAlert } from '@components/shared';
 import { AC } from '@libs/action-creators';
 import { useDispatch, useSelector } from '@libs/redux';
@@ -48,7 +49,13 @@ function App() {
 
   const component = useMemo(() => (error
     ? <ErrorAlert onClick={onClick} error={error} />
-    : <Routes>{routes}</Routes>), [error]);
+    : (
+      <ErrorBoundary>
+        <Routes>
+          {routes}
+        </Routes>
+      </ErrorBoundary>
+    )), [error]);
 
   return component;
 }

@@ -1,6 +1,6 @@
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { PreloadComponent } from '@components/hoc';
 import {
-  BackButton, FailPage, Preload, NavButton
+  BackButton, Preload, NavButton
 } from '@components/shared';
 import { LoadingMessages } from '@libs/constants';
 import { useAllRepos } from '@libs/hooks/container/all-repos';
@@ -37,11 +37,6 @@ function UserRepos() {
 
   const goTo = (path: string) => navigate(path);
 
-  const fallback = (props: any) => {
-    const updatedProps = { ...props, subTitle: 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
   const RefsPreloadFallback = useCallback(() => (
     <Preload
       className={styles.preload}
@@ -74,30 +69,27 @@ function UserRepos() {
         />
         <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
       </div>
+      <PreloadComponent
+        isLoaded={isLoaded}
+        callback={loadingHandler}
+        Fallback={RefsPreloadFallback}
+      >
+        <Routes>
+          <Route
+            path="branch/:type/:branchName/*"
+            element={<RepoContent {...containerProps} goTo={goTo} />}
+          />
+          <Route
+            path="commits/:branchName"
+            element={<CommitsTree {...containerProps} goTo={goTo} />}
+          />
 
-      <ErrorBoundary fallback={fallback}>
-        <PreloadComponent
-          isLoaded={isLoaded}
-          callback={loadingHandler}
-          Fallback={RefsPreloadFallback}
-        >
-          <Routes>
-            <Route
-              path="branch/:type/:branchName/*"
-              element={<RepoContent {...containerProps} goTo={goTo} />}
-            />
-            <Route
-              path="commits/:branchName"
-              element={<CommitsTree {...containerProps} goTo={goTo} />}
-            />
-
-            <Route
-              path="commit/:type/:hash/*"
-              element={<CommitContent {...containerProps} goTo={goTo} />}
-            />
-          </Routes>
-        </PreloadComponent>
-      </ErrorBoundary>
+          <Route
+            path="commit/:type/:hash/*"
+            element={<CommitContent {...containerProps} goTo={goTo} />}
+          />
+        </Routes>
+      </PreloadComponent>
     </div>
   );
 }

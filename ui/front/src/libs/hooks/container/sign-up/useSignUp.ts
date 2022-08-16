@@ -1,5 +1,5 @@
+import { useErrorBoundary } from '@components/context';
 import { MODE, WALLET } from '@libs/constants';
-import { useAsyncError } from '@libs/hooks/shared';
 import { useWalletAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { message } from 'antd';
@@ -16,7 +16,7 @@ const useSignUp = () => {
   const clearSeed = new Array(WALLET.SEED_PHRASE_COUNT).fill('');
   const clearErrors = new Array(WALLET.SEED_PHRASE_COUNT).fill(false);
 
-  const throwError = useAsyncError();
+  const throwError = useErrorBoundary();
 
   useEffect(() => {
     generateSeed();

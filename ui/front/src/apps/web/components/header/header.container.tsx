@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import img from '@assets/img/source-header-logo.svg';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
+import { GitConnectAuth } from '@components/shared/git-auth';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
@@ -66,6 +67,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       { !desktop ? (
         <>
           {pkey && (<ProfileBlock pKey={pkey} />)}
+          {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           <ConnectBtn
             pkey={pkey}
             users={users}
@@ -73,6 +75,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
           />
         </>
       ) : (
+
         <ProfileBlock
           balance
           profile

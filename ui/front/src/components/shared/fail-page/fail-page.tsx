@@ -1,7 +1,7 @@
-import { Result } from 'antd';
-import React from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BeamButton } from '@components/shared';
+import { useSelector } from '@libs/redux';
 import styles from './fail-page.module.scss';
 
 import illustration from '../../../assets/icons/illustration2.svg';
@@ -12,23 +12,22 @@ import semisquare2 from '../../../assets/icons/semisquare2.svg';
 import arrow2 from '../../../assets/icons/arrow2.svg';
 
 type FailPageProps = {
-  subTitle: string;
   comeBack?: string
   resetErrState?: () => void
-  title?: string;
-  isBtn?: boolean;
 };
 
 function FailPage({
-  title, subTitle, comeBack, isBtn, resetErrState
+  comeBack, resetErrState
 }: FailPageProps) {
   const navigate = useNavigate();
 
-  React.useEffect(() => resetErrState);
+  const prevRepoHref = useSelector((state) => state.repo.prevReposHref);
+
+  useEffect(() => resetErrState);
 
   const back = () => {
     if (comeBack !== undefined) return navigate(comeBack);
-    return navigate(-1);
+    return navigate(prevRepoHref || '/');
   };
   return (
     <div className={styles.section}>
