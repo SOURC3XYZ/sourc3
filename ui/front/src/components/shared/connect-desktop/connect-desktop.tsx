@@ -13,7 +13,7 @@ function ConnectDesktop() {
   return (
     <div style={{ display: 'flex' }}>
       <Button onClick={onWindowOpen}>
-        CLICK ME
+        Open Browser
       </Button>
       <Button onClick={sendWs}>
         WS SEND

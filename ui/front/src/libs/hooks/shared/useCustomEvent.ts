@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 
-export const useCustomEvent = (event:string, eventHandler?: EventListener) => {
+export const useCustomEvent = (event:string, eventHandler?: (EventListener)) => {
   useEffect(() => {
     if (eventHandler) {
       document.addEventListener(event, eventHandler);
@@ -8,8 +8,8 @@ export const useCustomEvent = (event:string, eventHandler?: EventListener) => {
     } return undefined;
   }, [event, eventHandler]);
 
-  const dispatchEvent = useCallback(() => {
-    const customEvent = new Event(event);
+  const dispatchEvent = useCallback((data?: any) => {
+    const customEvent = new CustomEvent(event, { detail: data });
     document.dispatchEvent(customEvent);
   }, []);
 

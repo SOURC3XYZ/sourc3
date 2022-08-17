@@ -30,3 +30,10 @@ export interface BeamApiContext {
   callIPC?: CallIPCType,
   callCustomIPC?: (method: string) => void;
 }
+
+export type WSSendArgs = {
+  action: string,
+  data: any
+};
+
+export type WSContext = readonly [boolean, () => Promise<void>, (obj: WSSendArgs) => void];

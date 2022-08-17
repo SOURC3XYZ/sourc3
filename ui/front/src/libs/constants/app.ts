@@ -36,7 +36,8 @@ export enum ACTIONS {
 }
 
 export enum EVENTS {
-  SUBUNSUB = 'subunsub'
+  SUBUNSUB = 'subunsub',
+  WS_PING = 'ws-ping'
 }
 
 export enum ActionColor {

@@ -57,7 +57,7 @@ function Main() {
     },
     {
       path: '404',
-      element: <FailPage subTitle="" />
+      element: <FailPage />
     },
     {
       path: 'connect',

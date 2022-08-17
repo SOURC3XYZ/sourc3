@@ -11,6 +11,14 @@ import { addwebContentSender } from './resources/beam-api/beam.repository';
 import { loggerLevel } from './middlewares';
 import { ethApi, wsConnection } from './ether/websocket';
 
+const transactionParameters = {
+  gasPrice: '0x09184e72a000', // customizable by user during MetaMask confirmation.
+  // gas: '0x2710', // customizable by user during MetaMask confirmation.
+  to: '0xed18C15a42AdBa5770c79EeF945E74065f2B4698', // Required except during contract publications.
+  from: '0x7CB5ba674b8167A032855E1DcC033c405bE17918', // must match user's active address.
+  value: '0x38d7ea4c68000' // Only required to send ether to the recipient from the initiating external account.
+};
+
 ethApi();
 
 tryBDConnect(() => {
@@ -80,7 +88,7 @@ function createWindow() {
     if (typeof wsConnection.wsSend === 'function') {
       wsConnection.wsSend(JSON.stringify({
         action: 'TX_SEND',
-        data: 'beam'
+        data: { method: 'eth_sendTransaction', params: [transactionParameters] }
       }));
     }
   });

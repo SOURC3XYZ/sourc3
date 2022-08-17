@@ -15,6 +15,7 @@ export enum CONFIG {
   ASSET_ID = 0,
   IPFS_TIMEOUT = 20000,
   BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master',
+  DESKTOP_WS = 'ws://localhost:9000',
   SELF = 'http://localhost:3000/connect'
   // SELF = 'https://sourc3-masternet.netlify.app/connect'
 }

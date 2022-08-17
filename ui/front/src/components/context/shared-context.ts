@@ -1,4 +1,4 @@
-import { BeamApiContext } from '@types';
+import { BeamApiContext, WSContext } from '@types';
 import { Context, createContext, useContext } from 'react';
 
 const generalCtxHook = <T>(
@@ -11,7 +11,10 @@ const generalCtxHook = <T>(
 
 export const BeamWebApiContext = createContext<BeamApiContext | null>(null);
 export const ErrorBoundaryContext = createContext<((e: Error) => void) | null>(null);
+export const WebSocketContext = createContext<WSContext | null>(null);
 
 export const useSourc3Api = generalCtxHook(BeamWebApiContext);
 
 export const useErrorBoundary = generalCtxHook(ErrorBoundaryContext);
+
+export const useWebSocket = generalCtxHook(WebSocketContext);
