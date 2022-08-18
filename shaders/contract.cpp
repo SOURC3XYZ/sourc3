@@ -49,20 +49,6 @@ void CheckProjectData(const ProjectData& proj_data) {
     Env::Halt_if(proj_data.tags_len > proj_data.kMaxTagsLen);
 }
 
-inline size_t CalculateOrganizationDataLen(const OrganizationData& org_data) {
-    return org_data.name_len + org_data.short_title_len + org_data.about_len +
-           org_data.website_len + org_data.twitter_len + org_data.linkedin_len +
-           org_data.instagram_len + org_data.telegram_len +
-           org_data.discord_len + org_data.tags_len + org_data.tech_stack_len;
-}
-
-inline size_t CalculateProjectDataLen(const ProjectData& proj_data) {
-    return proj_data.name_len + proj_data.description_len +
-           proj_data.website_len + proj_data.twitter_len +
-           proj_data.linkedin_len + proj_data.instagram_len +
-           proj_data.telegram_len + proj_data.discord_len + proj_data.tags_len;
-}
-
 template <class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
                       typename T::Permissions p) {
@@ -186,7 +172,7 @@ BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
 
 BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     CheckOrganizationData(params.data);
-    size_t data_len = CalculateOrganizationDataLen(params.data);
+    size_t data_len = params.data.GetTotalLen();
     std::unique_ptr<Organization> org(static_cast<Organization*>(
         ::operator new(sizeof(Organization) + data_len)));
 
@@ -312,7 +298,7 @@ BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     CheckProjectData(params.data);
-    size_t data_len = CalculateProjectDataLen(params.data);
+    size_t data_len = params.data.GetTotalLen();
     std::unique_ptr<Project> project(
         static_cast<Project*>(::operator new(sizeof(Project) + data_len)));
 
