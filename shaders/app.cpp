@@ -162,6 +162,49 @@ size_t GetProjectData(sourc3::ProjectData& buf) {
     return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
+size_t GetUserData(sourc3::UserData& buf) {
+    using sourc3::UserData;
+
+    auto cur_ptr = buf.data;
+
+    buf.name_len = Env::DocGetText("name", cur_ptr, UserData::kMaxNameLen);
+    if (buf.name_len <= 1) {
+        OnError("'name' required");
+        return 0;
+    }
+    cur_ptr += buf.name_len;
+
+    buf.description_len = Env::DocGetText("description", cur_ptr,
+                                          UserData::kMaxDescriptionLen);
+    cur_ptr += buf.description_len;
+
+    buf.website_len =
+        Env::DocGetText("website", cur_ptr, UserData::kMaxWebsiteLen);
+    cur_ptr += buf.website_len;
+
+    buf.twitter_len =
+        Env::DocGetText("twitter", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.twitter_len;
+
+    buf.linkedin_len =
+        Env::DocGetText("linkedin", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.linkedin_len;
+
+    buf.instagram_len =
+        Env::DocGetText("instagram", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.instagram_len;
+
+    buf.telegram_len =
+        Env::DocGetText("telegram", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.telegram_len;
+
+    buf.discord_len =
+        Env::DocGetText("discord", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.discord_len;
+
+    return cur_ptr - reinterpret_cast<char*>(&buf);
+}
+
 void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     auto cur_ptr = value->data.data;
     Env::DocAddText("project_name", cur_ptr);
@@ -267,6 +310,27 @@ void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
     Env::DocAddText("organization_tech_stack", cur_ptr);
     Env::DocAddText("organization_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("organization_creator", value->creator);
+}
+
+void PrintUser(std::unique_ptr<sourc3::User>& value) {
+    auto cur_ptr = value->data.data;
+    Env::DocAddText("user_name", cur_ptr);
+    cur_ptr += value->data.name_len;
+    Env::DocAddText("user_description", cur_ptr);
+    cur_ptr += value->data.description_len;
+    Env::DocAddText("user_website", cur_ptr);
+    cur_ptr += value->data.website_len;
+    Env::DocAddText("user_twitter", cur_ptr);
+    cur_ptr += value->data.twitter_len;
+    Env::DocAddText("user_linkedin", cur_ptr);
+    cur_ptr += value->data.linkedin_len;
+    Env::DocAddText("user_instagram", cur_ptr);
+    cur_ptr += value->data.instagram_len;
+    Env::DocAddText("user_telegram", cur_ptr);
+    cur_ptr += value->data.telegram_len;
+    Env::DocAddText("user_discord", cur_ptr);
+    Env::DocAddText("user_avatar_ipfs_hash", value->avatar_addr.data());
+    Env::DocAddNum32("rating", value->rating);
 }
 
 void OnActionCreateContract(const ContractID& unused) {
@@ -708,6 +772,9 @@ void OnActionCreateOrganization(const ContractID& cid) {
 
     if (!args_size)
         return;
+
+    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->caller);
@@ -1230,7 +1297,7 @@ void OnActionDeleteRepo(const ContractID& cid) {
                         /*nCharge=*/charge);
 }
 
-void OnActionAddUserParams(const ContractID& cid) {
+void OnActionAddRepoMember(const ContractID& cid) {
     using sourc3::method::AddRepoMember;
     AddRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
@@ -1264,7 +1331,7 @@ void OnActionAddUserParams(const ContractID& cid) {
                         /*nCharge=*/0);
 }
 
-void OnActionModifyUserParams(const ContractID& cid) {
+void OnActionModifyRepoMember(const ContractID& cid) {
     using sourc3::method::ModifyRepoMember;
     ModifyRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
@@ -1298,7 +1365,7 @@ void OnActionModifyUserParams(const ContractID& cid) {
                         /*nCharge=*/0);
 }
 
-void OnActionRemoveUserParams(const ContractID& cid) {
+void OnActionRemoveRepoMember(const ContractID& cid) {
     using sourc3::method::RemoveRepoMember;
     RemoveRepoMember request;
     Env::DocGet("repo_id", request.repo_id);
@@ -1734,6 +1801,66 @@ void OnActionViewBalance(const ContractID& cid) {
     Env::DocAddNum("balance", cs.faucet_balance);
 }
 
+void OnActionModifyUser(const ContractID& cid) {
+    using sourc3::User;
+    using sourc3::UserData;
+    using sourc3::method::ModifyUser;
+
+    constexpr auto max_args_size =
+        sizeof(ModifyUser) + UserData::GetMaxSize();
+    auto buf = std::unique_ptr<ModifyUser>(
+        static_cast<ModifyUser*>(::operator new(max_args_size)));
+    size_t args_size = GetUserData(buf->data);
+    Env::DocGetNum32("rating", &buf->rating);
+    Env::DocGetBlob("id", &buf->id, sizeof(PubKey));
+    Env::DocGetText("avatar_ipfs_hash", buf->avatar_addr.data(), sourc3::kIpfsAddressSize + 1);
+
+    UserKey user_key(cid);
+    user_key.Get(buf->id);
+    SigRequest sig;
+    user_key.FillSigRequest(sig);
+
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/ModifyUser::kMethod,
+                        /*pArgs=*/buf.get(),
+                        /*nArgs=*/args_size,
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&sig,
+                        /*nSig=*/1,
+                        /*szComment=*/"modify user",
+                        /*nCharge=*/charge);
+}
+
+void OnActionViewUser(const ContractID& cid) {
+    using sourc3::User;
+    using sourc3::UserData;
+    using UserKey = Env::Key_T<User::Key>;
+
+    constexpr auto max_args_size =
+        sizeof(User) + UserData::GetMaxSize();
+    auto buf = std::unique_ptr<User>(
+        static_cast<User*>(::operator new(max_args_size)));
+
+    PubKey pub_key;
+    Env::DocGetBlob("id", &pub_key, sizeof(PubKey));
+    UserKey start {
+        .m_Prefix = {.m_Cid = cid},
+        .m_KeyInContract = User::Key{pub_key},
+    };
+    auto end = start;
+
+    auto key = start;
+    uint32_t value_len = max_args_size, key_len = sizeof(UserKey);
+    Env::VarReader reader(start, end);
+    reader.MoveNext(&key, key_len, buf.get(), value_len, 0);
+    Env::DocGroup org_object("");
+    Env::DocAddBlob_T("user_id", key.m_KeyInContract.id);
+    PrintUser(buf);
+}
+
 void GetObjects(const ContractID& cid, sourc3::GitObject::Meta::Type type) {
     using sourc3::GitObject;
     using sourc3::Repo;
@@ -2055,6 +2182,26 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("view_balance");
                 Env::DocAddText("cid", "ContractID");
             }
+            {
+                Env::DocGroup gr_method("modify_user");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("id", "PubKey");
+                Env::DocAddText("rating", "uint32_t");
+                Env::DocAddText("avatar_addr", "IpfsAddr");
+                Env::DocAddText("name", "User name");
+                Env::DocAddText("description", "User description");
+                Env::DocAddText("website", "User website");
+                Env::DocAddText("twitter", "User twitter");
+                Env::DocAddText("linkedin", "User linkedin");
+                Env::DocAddText("instagram", "User instagram");
+                Env::DocAddText("telegram", "User telegram");
+                Env::DocAddText("discord", "User discord");
+            }
+            {
+                Env::DocGroup gr_method("view_user");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("id", "PubKey");
+            }
         }
     }
 }
@@ -2073,9 +2220,9 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"all_repos", OnActionAllRepos},
         {"modify_repo", OnActionModifyRepo},
         {"delete_repo", OnActionDeleteRepo},
-        {"add_user_params", OnActionAddUserParams},
-        {"modify_user_params", OnActionModifyUserParams},
-        {"remove_user_params", OnActionRemoveUserParams},
+        {"add_repo_member", OnActionAddRepoMember},
+        {"modify_repo_member", OnActionModifyRepoMember},
+        {"remove_repo_member", OnActionRemoveRepoMember},
         {"push_objects", OnActionPushObjects},
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},
@@ -2103,6 +2250,8 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"modify_organization_member", OnActionModifyOrganizationMember},
         {"deposit", OnActionDeposit},
         {"view_balance", OnActionViewBalance},
+        {"modify_user", OnActionModifyUser},
+        {"view_user", OnActionViewUser},
         {"remove_organization_member", OnActionRemoveOrganizationMember}};
 
     ActionsMap valid_manager_actions = {

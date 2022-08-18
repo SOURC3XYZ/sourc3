@@ -49,6 +49,17 @@ void CheckProjectData(const ProjectData& proj_data) {
     Env::Halt_if(proj_data.tags_len > proj_data.kMaxTagsLen);
 }
 
+void CheckUserData(const UserData& user_data) {
+    Env::Halt_if(user_data.name_len > user_data.kMaxNameLen);
+    Env::Halt_if(user_data.description_len > user_data.kMaxDescriptionLen);
+    Env::Halt_if(user_data.website_len > user_data.kMaxWebsiteLen);
+    Env::Halt_if(user_data.twitter_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.linkedin_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.instagram_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.telegram_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.discord_len > user_data.kMaxSocialNickLen);
+}
+
 template <class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
                       typename T::Permissions p) {
@@ -457,5 +468,13 @@ BEAM_EXPORT void Method_24(const method::Withdraw& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
-    // TODO:
+    CheckUserData(params.data);
+    size_t data_len = params.data.GetTotalLen();
+    std::unique_ptr<User> user(static_cast<User*>(::operator new(sizeof(user) + data_len)));
+
+    user->avatar_addr = params.avatar_addr;
+    user->rating = params.rating;
+    Env::Memcpy(&user->data, &params.data, sizeof(params.data) + data_len);
+
+    SaveVLObject(User::Key{params.id}, user, sizeof(User) + data_len);
 }
