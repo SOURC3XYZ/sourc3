@@ -174,8 +174,8 @@ size_t GetUserData(sourc3::UserData& buf) {
     }
     cur_ptr += buf.name_len;
 
-    buf.description_len = Env::DocGetText("description", cur_ptr,
-                                          UserData::kMaxDescriptionLen);
+    buf.description_len =
+        Env::DocGetText("description", cur_ptr, UserData::kMaxDescriptionLen);
     cur_ptr += buf.description_len;
 
     buf.website_len =
@@ -207,23 +207,27 @@ size_t GetUserData(sourc3::UserData& buf) {
 
 void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("project_name", cur_ptr);
+    Env::DocAddText("project_name", value->data.name_len ? cur_ptr : "");
     cur_ptr += value->data.name_len;
-    Env::DocAddText("project_description", cur_ptr);
+    Env::DocAddText("project_description",
+                    value->data.description_len ? cur_ptr : "");
     cur_ptr += value->data.description_len;
-    Env::DocAddText("project_website", cur_ptr);
+    Env::DocAddText("project_website", value->data.website_len ? cur_ptr : "");
     cur_ptr += value->data.website_len;
-    Env::DocAddText("project_twitter", cur_ptr);
+    Env::DocAddText("project_twitter", value->data.twitter_len ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
-    Env::DocAddText("project_linkedin", cur_ptr);
+    Env::DocAddText("project_linkedin",
+                    value->data.linkedin_len ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
-    Env::DocAddText("project_instagram", cur_ptr);
+    Env::DocAddText("project_instagram",
+                    value->data.instagram_len ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
-    Env::DocAddText("project_telegram", cur_ptr);
+    Env::DocAddText("project_telegram",
+                    value->data.telegram_len ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
-    Env::DocAddText("project_discord", cur_ptr);
+    Env::DocAddText("project_discord", value->data.discord_len ? cur_ptr : "");
     cur_ptr += value->data.discord_len;
-    Env::DocAddText("project_tags", cur_ptr);
+    Env::DocAddText("project_tags", value->data.tags_len ? cur_ptr : "");
     Env::DocAddText("project_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("project_creator", value->creator);
     Env::DocAddNum("organization_id", value->organization_id);
@@ -287,48 +291,57 @@ size_t GetOrganizationData(sourc3::OrganizationData& buf) {
 
 void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("organization_name", cur_ptr);
+    Env::DocAddText("organization_name", value->data.name_len ? cur_ptr : "");
     cur_ptr += value->data.name_len;
-    Env::DocAddText("organization_short_title", cur_ptr);
+    Env::DocAddText("organization_short_title",
+                    value->data.short_title_len ? cur_ptr : "");
     cur_ptr += value->data.short_title_len;
-    Env::DocAddText("organization_about", cur_ptr);
+    Env::DocAddText("organization_about", value->data.about_len ? cur_ptr : "");
     cur_ptr += value->data.about_len;
-    Env::DocAddText("organization_website", cur_ptr);
+    Env::DocAddText("organization_website",
+                    value->data.website_len ? cur_ptr : "");
     cur_ptr += value->data.website_len;
-    Env::DocAddText("organization_twitter", cur_ptr);
+    Env::DocAddText("organization_twitter",
+                    value->data.twitter_len ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
-    Env::DocAddText("organization_linkedin", cur_ptr);
+    Env::DocAddText("organization_linkedin",
+                    value->data.linkedin_len ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
-    Env::DocAddText("organization_instagram", cur_ptr);
+    Env::DocAddText("organization_instagram",
+                    value->data.instagram_len ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
-    Env::DocAddText("organization_telegram", cur_ptr);
+    Env::DocAddText("organization_telegram",
+                    value->data.telegram_len ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
-    Env::DocAddText("organization_discord", cur_ptr);
+    Env::DocAddText("organization_discord",
+                    value->data.discord_len ? cur_ptr : "");
     cur_ptr += value->data.discord_len;
-    Env::DocAddText("organization_tags", cur_ptr);
+    Env::DocAddText("organization_tags", value->data.tags_len ? cur_ptr : "");
     cur_ptr += value->data.tags_len;
-    Env::DocAddText("organization_tech_stack", cur_ptr);
+    Env::DocAddText("organization_tech_stack",
+                    value->data.tech_stack_len ? cur_ptr : "");
     Env::DocAddText("organization_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("organization_creator", value->creator);
 }
 
 void PrintUser(std::unique_ptr<sourc3::User>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("user_name", cur_ptr);
+    Env::DocAddText("user_name", value->data.name_len ? cur_ptr : "");
     cur_ptr += value->data.name_len;
-    Env::DocAddText("user_description", cur_ptr);
+    Env::DocAddText("user_description",
+                    value->data.description_len ? cur_ptr : "");
     cur_ptr += value->data.description_len;
-    Env::DocAddText("user_website", cur_ptr);
+    Env::DocAddText("user_website", value->data.website_len ? cur_ptr : "");
     cur_ptr += value->data.website_len;
-    Env::DocAddText("user_twitter", cur_ptr);
+    Env::DocAddText("user_twitter", value->data.twitter_len ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
-    Env::DocAddText("user_linkedin", cur_ptr);
+    Env::DocAddText("user_linkedin", value->data.linkedin_len ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
-    Env::DocAddText("user_instagram", cur_ptr);
+    Env::DocAddText("user_instagram", value->data.instagram_len ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
-    Env::DocAddText("user_telegram", cur_ptr);
+    Env::DocAddText("user_telegram", value->data.telegram_len ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
-    Env::DocAddText("user_discord", cur_ptr);
+    Env::DocAddText("user_discord", value->data.discord_len ? cur_ptr : "");
     Env::DocAddText("user_avatar_ipfs_hash", value->avatar_addr.data());
     Env::DocAddNum32("rating", value->rating);
 }
@@ -535,6 +548,8 @@ void OnActionCreateProject(const ContractID& cid) {
     if (!args_size)
         return;
 
+    args_size += sizeof(CreateProject);
+
     Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
@@ -584,6 +599,7 @@ void OnActionListProjects(const ContractID& cid) {
         Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
         Env::DocAddNum("project_id", key.m_KeyInContract.id);
         PrintProject(buf);
+        value_len = max_args_size;
     }
 }
 
@@ -664,6 +680,8 @@ void OnActionModifyProject(const ContractID& cid) {
 
     if (!args_size)
         return;
+
+    args_size += sizeof(ModifyProject);
 
     Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
@@ -766,12 +784,18 @@ void OnActionCreateOrganization(const ContractID& cid) {
 
     constexpr auto max_args_size =
         sizeof(CreateOrganization) + OrganizationData::GetMaxSize();
+    Env::DocAddNum32("MAX_DEBUG", max_args_size);
     auto buf = std::unique_ptr<CreateOrganization>(
         static_cast<CreateOrganization*>(::operator new(max_args_size)));
     size_t args_size = GetOrganizationData(buf->data);
 
     if (!args_size)
         return;
+
+    args_size += sizeof(CreateOrganization);
+    Env::DocAddNum32("DEBUG", args_size);
+    Env::DocAddNum32("DEBUG_CREATESIZE", sizeof(CreateOrganization));
+    return;
 
     Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
@@ -819,6 +843,7 @@ void OnActionListOrganizations(const ContractID& cid) {
         Env::DocAddNum("organization_tag", (uint32_t)key.m_KeyInContract.tag);
         Env::DocAddNum("organization_id", key.m_KeyInContract.id);
         PrintOrganization(buf);
+        value_len = max_args_size;
     }
 }
 
@@ -895,6 +920,7 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
             Env::DocAddNum("project_id", key.m_KeyInContract.id);
             PrintProject(buf);
         }
+        value_len = max_args_size;
     }
 }
 
@@ -935,6 +961,8 @@ void OnActionModifyOrganization(const ContractID& cid) {
 
     if (!args_size)
         return;
+
+    args_size += sizeof(ModifyOrganization);
 
     Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
@@ -1806,14 +1834,19 @@ void OnActionModifyUser(const ContractID& cid) {
     using sourc3::UserData;
     using sourc3::method::ModifyUser;
 
-    constexpr auto max_args_size =
-        sizeof(ModifyUser) + UserData::GetMaxSize();
+    constexpr auto max_args_size = sizeof(ModifyUser) + UserData::GetMaxSize();
     auto buf = std::unique_ptr<ModifyUser>(
         static_cast<ModifyUser*>(::operator new(max_args_size)));
     size_t args_size = GetUserData(buf->data);
+
+    if (!args_size)
+        return;
+
+    args_size += sizeof(ModifyUser);
+
     Env::DocGetNum32("rating", &buf->rating);
-    Env::DocGetBlob("id", &buf->id, sizeof(PubKey));
-    Env::DocGetText("avatar_ipfs_hash", buf->avatar_addr.data(), sourc3::kIpfsAddressSize + 1);
+    Env::DocGetText("avatar_ipfs_hash", buf->avatar_addr.data(),
+                    sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->id);
@@ -1839,14 +1872,17 @@ void OnActionViewUser(const ContractID& cid) {
     using sourc3::UserData;
     using UserKey = Env::Key_T<User::Key>;
 
-    constexpr auto max_args_size =
-        sizeof(User) + UserData::GetMaxSize();
+    constexpr auto max_args_size = sizeof(User) + UserData::GetMaxSize();
     auto buf = std::unique_ptr<User>(
         static_cast<User*>(::operator new(max_args_size)));
 
     PubKey pub_key;
     Env::DocGetBlob("id", &pub_key, sizeof(PubKey));
-    UserKey start {
+    if (_POD_(pub_key).IsZero()) {
+        OnError("user id is missing");
+        return;
+    }
+    UserKey start{
         .m_Prefix = {.m_Cid = cid},
         .m_KeyInContract = User::Key{pub_key},
     };

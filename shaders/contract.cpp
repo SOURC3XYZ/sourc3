@@ -205,6 +205,7 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
+    CheckOrganizationData(params.data);
     std::unique_ptr<Organization> organization =
         LoadVLObject<Organization>(params.id);
     CheckPermissions<Organization>(
@@ -217,8 +218,9 @@ BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
         ::operator new(sizeof(Organization) + total_len)));
 
     new_organization->creator = organization->creator;
-    new_organization->logo_addr = organization->logo_addr;
-    Env::Memcpy(&new_organization->data, &params.data, total_len);
+    new_organization->logo_addr = params.logo_addr;
+    Env::Memcpy(&new_organization->data, &params.data,
+                total_len + sizeof(OrganizationData));
 
     SaveVLObject(Organization::Key(params.id), new_organization,
                  sizeof(Organization) + total_len);
@@ -345,8 +347,9 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
 
     new_project->creator = project->creator;
     new_project->organization_id = project->organization_id;
-    new_project->logo_addr = project->logo_addr;
-    Env::Memcpy(&new_project->data, &params.data, total_len);
+    new_project->logo_addr = params.logo_addr;
+    Env::Memcpy(&new_project->data, &params.data,
+                total_len + sizeof(ProjectData));
 
     SaveVLObject(Project::Key(params.project_id), new_project,
                  sizeof(Project) + total_len);
@@ -470,11 +473,13 @@ BEAM_EXPORT void Method_24(const method::Withdraw& params) {  // NOLINT
 BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
     CheckUserData(params.data);
     size_t data_len = params.data.GetTotalLen();
-    std::unique_ptr<User> user(static_cast<User*>(::operator new(sizeof(user) + data_len)));
+    std::unique_ptr<User> user(
+        static_cast<User*>(::operator new(sizeof(user) + data_len)));
 
     user->avatar_addr = params.avatar_addr;
     user->rating = params.rating;
-    Env::Memcpy(&user->data, &params.data, sizeof(params.data) + data_len);
+    Env::Memcpy(&user->data, &params.data, sizeof(UserData) + data_len);
 
     SaveVLObject(User::Key{params.id}, user, sizeof(User) + data_len);
+    Env::AddSig(params.id);
 }
