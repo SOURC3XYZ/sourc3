@@ -156,9 +156,6 @@ size_t GetProjectData(sourc3::ProjectData& buf) {
         Env::DocGetText("discord", cur_ptr, ProjectData::kMaxSocialNickLen);
     cur_ptr += buf.discord_len;
 
-    buf.tags_len = Env::DocGetText("tags", cur_ptr, ProjectData::kMaxTagsLen);
-    cur_ptr += buf.tags_len;
-
     return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
@@ -173,6 +170,13 @@ size_t GetUserData(sourc3::UserData& buf) {
         return 0;
     }
     cur_ptr += buf.name_len;
+
+    buf.nickname_len =
+        Env::DocGetText("nickname", cur_ptr, UserData::kMaxSocialNickLen);
+    cur_ptr += buf.nickname_len;
+
+    buf.email_len = Env::DocGetText("email", cur_ptr, UserData::kMaxEmailLen);
+    cur_ptr += buf.email_len;
 
     buf.description_len =
         Env::DocGetText("description", cur_ptr, UserData::kMaxDescriptionLen);
@@ -226,8 +230,6 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value) {
                     value->data.telegram_len ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
     Env::DocAddText("project_discord", value->data.discord_len ? cur_ptr : "");
-    cur_ptr += value->data.discord_len;
-    Env::DocAddText("project_tags", value->data.tags_len ? cur_ptr : "");
     Env::DocAddText("project_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("project_creator", value->creator);
     Env::DocAddNum("organization_id", value->organization_id);
@@ -278,14 +280,6 @@ size_t GetOrganizationData(sourc3::OrganizationData& buf) {
                                       OrganizationData::kMaxSocialNickLen);
     cur_ptr += buf.discord_len;
 
-    buf.tags_len =
-        Env::DocGetText("tags", cur_ptr, OrganizationData::kMaxTagsLen);
-    cur_ptr += buf.tags_len;
-
-    buf.tech_stack_len = Env::DocGetText("tech_stack", cur_ptr,
-                                         OrganizationData::kMaxTechStackLen);
-    cur_ptr += buf.tech_stack_len;
-
     return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
@@ -315,11 +309,6 @@ void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
     cur_ptr += value->data.telegram_len;
     Env::DocAddText("organization_discord",
                     value->data.discord_len ? cur_ptr : "");
-    cur_ptr += value->data.discord_len;
-    Env::DocAddText("organization_tags", value->data.tags_len ? cur_ptr : "");
-    cur_ptr += value->data.tags_len;
-    Env::DocAddText("organization_tech_stack",
-                    value->data.tech_stack_len ? cur_ptr : "");
     Env::DocAddText("organization_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("organization_creator", value->creator);
 }
@@ -328,6 +317,10 @@ void PrintUser(std::unique_ptr<sourc3::User>& value) {
     auto cur_ptr = value->data.data;
     Env::DocAddText("user_name", value->data.name_len ? cur_ptr : "");
     cur_ptr += value->data.name_len;
+    Env::DocAddText("user_nickname", value->data.nickname_len ? cur_ptr : "");
+    cur_ptr += value->data.nickname_len;
+    Env::DocAddText("user_email", value->data.email_len ? cur_ptr : "");
+    cur_ptr += value->data.email_len;
     Env::DocAddText("user_description",
                     value->data.description_len ? cur_ptr : "");
     cur_ptr += value->data.description_len;
@@ -343,7 +336,6 @@ void PrintUser(std::unique_ptr<sourc3::User>& value) {
     cur_ptr += value->data.telegram_len;
     Env::DocAddText("user_discord", value->data.discord_len ? cur_ptr : "");
     Env::DocAddText("user_avatar_ipfs_hash", value->avatar_addr.data());
-    Env::DocAddNum32("rating", value->rating);
 }
 
 void OnActionCreateContract(const ContractID& unused) {
@@ -457,6 +449,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     auto args_size = sizeof(CreateRepo) + name_len;
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateRepo*>(buf.get());
+    Env::DocGetNum32("private", &request->is_private);
     request->project_id = project_id;
     UserKey user_key(cid);
     user_key.Get(request->caller);
@@ -511,6 +504,7 @@ void OnActionModifyRepo(const ContractID& cid) {
     auto args_size = sizeof(ModifyRepo) + name_len;
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<ModifyRepo*>(buf.get());
+    Env::DocGetNum32("private", &request->is_private);
     request->repo_id = repo_id;
     UserKey user_key(cid);
     user_key.Get(request->caller);
@@ -772,6 +766,7 @@ void OnActionListProjectRepos(const ContractID& cid) {
             Env::DocAddNum("project_id", value->project_id);
             Env::DocAddNum64("cur_objects", value->cur_objs_number);
             Env::DocAddBlob_T("repo_owner", value->owner);
+            Env::DocAddNum32("private", value->is_private);
             value_len = 0;
         }
     }
@@ -784,7 +779,6 @@ void OnActionCreateOrganization(const ContractID& cid) {
 
     constexpr auto max_args_size =
         sizeof(CreateOrganization) + OrganizationData::GetMaxSize();
-    Env::DocAddNum32("MAX_DEBUG", max_args_size);
     auto buf = std::unique_ptr<CreateOrganization>(
         static_cast<CreateOrganization*>(::operator new(max_args_size)));
     size_t args_size = GetOrganizationData(buf->data);
@@ -793,9 +787,6 @@ void OnActionCreateOrganization(const ContractID& cid) {
         return;
 
     args_size += sizeof(CreateOrganization);
-    Env::DocAddNum32("DEBUG", args_size);
-    Env::DocAddNum32("DEBUG_CREATESIZE", sizeof(CreateOrganization));
-    return;
 
     Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
@@ -1262,6 +1253,7 @@ void OnActionMyRepos(const ContractID& cid) {
             Env::DocGroup repo_object("");
             Env::DocAddNum("repo_id", value->repo_id);
             Env::DocAddText("repo_name", value->name);
+            Env::DocAddNum32("private", value->is_private);
         }
         value_len = 0;
     }
@@ -1292,6 +1284,7 @@ void OnActionAllRepos(const ContractID& cid) {
         Env::DocAddNum("project_id", value->project_id);
         Env::DocAddNum64("cur_objects", value->cur_objs_number);
         Env::DocAddBlob_T("repo_owner", value->owner);
+        Env::DocAddNum32("private", value->is_private);
         value_len = 0;
     }
 }
@@ -1844,7 +1837,6 @@ void OnActionModifyUser(const ContractID& cid) {
 
     args_size += sizeof(ModifyUser);
 
-    Env::DocGetNum32("rating", &buf->rating);
     Env::DocGetText("avatar_ipfs_hash", buf->avatar_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
@@ -2222,9 +2214,10 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("modify_user");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("id", "PubKey");
-                Env::DocAddText("rating", "uint32_t");
                 Env::DocAddText("avatar_addr", "IpfsAddr");
                 Env::DocAddText("name", "User name");
+                Env::DocAddText("nickname", "User nickname");
+                Env::DocAddText("email", "User email");
                 Env::DocAddText("description", "User description");
                 Env::DocAddText("website", "User website");
                 Env::DocAddText("twitter", "User twitter");

@@ -33,8 +33,6 @@ void CheckOrganizationData(const OrganizationData& org_data) {
     Env::Halt_if(org_data.instagram_len > org_data.kMaxSocialNickLen);
     Env::Halt_if(org_data.telegram_len > org_data.kMaxSocialNickLen);
     Env::Halt_if(org_data.discord_len > org_data.kMaxSocialNickLen);
-    Env::Halt_if(org_data.tags_len > org_data.kMaxTagsLen);
-    Env::Halt_if(org_data.tech_stack_len > org_data.kMaxTechStackLen);
 }
 
 void CheckProjectData(const ProjectData& proj_data) {
@@ -46,11 +44,12 @@ void CheckProjectData(const ProjectData& proj_data) {
     Env::Halt_if(proj_data.instagram_len > proj_data.kMaxSocialNickLen);
     Env::Halt_if(proj_data.telegram_len > proj_data.kMaxSocialNickLen);
     Env::Halt_if(proj_data.discord_len > proj_data.kMaxSocialNickLen);
-    Env::Halt_if(proj_data.tags_len > proj_data.kMaxTagsLen);
 }
 
 void CheckUserData(const UserData& user_data) {
     Env::Halt_if(user_data.name_len > user_data.kMaxNameLen);
+    Env::Halt_if(user_data.nickname_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.email_len > user_data.kMaxEmailLen);
     Env::Halt_if(user_data.description_len > user_data.kMaxDescriptionLen);
     Env::Halt_if(user_data.website_len > user_data.kMaxWebsiteLen);
     Env::Halt_if(user_data.twitter_len > user_data.kMaxSocialNickLen);
@@ -259,6 +258,7 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     repo_info->name_len = params.name_len;
     repo_info->cur_objs_number = 0;
     repo_info->project_id = params.project_id;
+    repo_info->is_private = params.is_private;
     Env::Memcpy(repo_info->name, params.name, repo_info->name_len);
 
     Member::Key<Repo> key_user(params.caller, repo_info->repo_id);
@@ -286,6 +286,7 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     new_repo_info->name_len = params.name_len;
     new_repo_info->cur_objs_number = repo_info->cur_objs_number;
     new_repo_info->project_id = repo_info->project_id;
+    new_repo_info->is_private = params.is_private;
     Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
@@ -477,7 +478,6 @@ BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
         static_cast<User*>(::operator new(sizeof(user) + data_len)));
 
     user->avatar_addr = params.avatar_addr;
-    user->rating = params.rating;
     Env::Memcpy(&user->data, &params.data, sizeof(UserData) + data_len);
 
     SaveVLObject(User::Key{params.id}, user, sizeof(User) + data_len);

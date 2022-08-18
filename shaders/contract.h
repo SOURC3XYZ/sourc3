@@ -70,14 +70,12 @@ struct OrganizationData {
     size_t instagram_len;
     size_t telegram_len;
     size_t discord_len;
-    size_t tags_len;
-    size_t tech_stack_len;
     char data[];
 
     size_t GetTotalLen() const {
         return name_len + short_title_len + about_len + website_len +
                twitter_len + linkedin_len + instagram_len + telegram_len +
-               discord_len + tags_len + tech_stack_len;
+               discord_len;
     }
 
     // plus 0-term
@@ -86,12 +84,10 @@ struct OrganizationData {
     static const size_t kMaxAboutLen = 150 + 1;
     static const size_t kMaxWebsiteLen = 100 + 1;
     static const size_t kMaxSocialNickLen = 50 + 1;
-    static const size_t kMaxTagsLen = 100 + 1;
-    static const size_t kMaxTechStackLen = 100 + 1;
 
     static constexpr size_t GetMaxSize() {
         return kMaxNameLen + kMaxShortTitleLen + kMaxAboutLen + kMaxWebsiteLen +
-               kMaxSocialNickLen * 5 + kMaxTagsLen + kMaxTechStackLen;
+               kMaxSocialNickLen * 5;
     };
 };
 
@@ -129,25 +125,22 @@ struct ProjectData {
     size_t instagram_len;
     size_t telegram_len;
     size_t discord_len;
-    size_t tags_len;
     char data[];
 
     size_t GetTotalLen() const {
         return name_len + description_len + website_len + twitter_len +
-               linkedin_len + instagram_len + telegram_len + discord_len +
-               tags_len;
+               linkedin_len + instagram_len + telegram_len + discord_len;
     }
 
     static constexpr size_t GetMaxSize() {
         return kMaxNameLen + kMaxDescriptionLen + kMaxWebsiteLen +
-               kMaxSocialNickLen * 5 + kMaxTagsLen;
+               kMaxSocialNickLen * 5;
     };
 
     // plus 0-term
     static const size_t kMaxNameLen = 100 + 1;
     static const size_t kMaxDescriptionLen = 1024 + 1;
     static const size_t kMaxWebsiteLen = 100 + 1;
-    static const size_t kMaxTagsLen = 100 + 1;
     static const size_t kMaxSocialNickLen = 50 + 1;
 };
 
@@ -216,6 +209,7 @@ struct Repo {
     Id repo_id;
     size_t cur_objs_number;
     PubKey owner;
+    uint32_t is_private;
     size_t name_len;
     char name[];
 
@@ -321,6 +315,8 @@ struct RefsInfo {
 
 struct UserData {
     size_t name_len;
+    size_t nickname_len;
+    size_t email_len;
     size_t description_len;
     size_t website_len;
     size_t twitter_len;
@@ -331,18 +327,20 @@ struct UserData {
     char data[];
 
     size_t GetTotalLen() const {
-        return name_len + description_len + website_len + twitter_len +
-               linkedin_len + instagram_len + telegram_len + discord_len;
+        return name_len + nickname_len + email_len + description_len +
+               website_len + twitter_len + linkedin_len + instagram_len +
+               telegram_len + discord_len;
     }
 
     static const size_t kMaxNameLen = 100 + 1;
+    static const size_t kMaxEmailLen = 320 + 1;
     static const size_t kMaxDescriptionLen = 1024 + 1;
     static const size_t kMaxWebsiteLen = 100 + 1;
     static const size_t kMaxSocialNickLen = 50 + 1;
 
     static constexpr size_t GetMaxSize() {
         return kMaxNameLen + kMaxDescriptionLen + kMaxWebsiteLen +
-               kMaxSocialNickLen * 5;
+               kMaxSocialNickLen * 6 + kMaxEmailLen;
     };
 };
 
@@ -354,7 +352,6 @@ struct User {
         Tag tag = Tag::kUser;
         PubKey id;
     };
-    uint32_t rating;
     IpfsAddr avatar_addr;
     UserData data;
 };
@@ -412,6 +409,7 @@ struct CreateRepo {
     static const uint32_t kMethod = 8;
     Project::Id project_id;
     PubKey caller;
+    uint32_t is_private;
     size_t name_len;
     char name[];
 };
@@ -420,6 +418,7 @@ struct ModifyRepo {
     static const uint32_t kMethod = 9;
     Repo::Id repo_id;
     PubKey caller;
+    uint32_t is_private;
     size_t name_len;
     char name[];
 };
