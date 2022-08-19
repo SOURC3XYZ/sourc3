@@ -121,9 +121,9 @@ jobs:
       shell: bash
       run: |
         cd ${{runner.workspace}}/boost
-        ./b2  cxxflags="-arch arm64" toolset=darwin --target=static
+        ./b2 toolset=clang-darwin target-os=darwin architecture=arm abi=aapcs cxxflags="-arch arm64" cflags="-arch arm64" linkflags="-arch arm64" --target=static
         mkdir -p arm64 && cp stage/lib/*.a arm64 && cp stage/lib/*.dylib arm64
-        ./b2 toolset=clang cxxflags="-arch arm64 -arch x86_64" --target=static
+        ./b2 toolset=clang-darwin target-os=darwin architecture=x86 cxxflags="-arch x86_64" cflags="-arch x86_64" linkflags="-arch x86_64" abi=sysv binary-format=mach-o --target=static
         mkdir x86_64 && cp stage/lib/*.a x86_64 && cp stage/lib/*.dylib x86_64
 
     - name: Install
