@@ -122,9 +122,9 @@ jobs:
       run: |
         cd ${{runner.workspace}}/boost
         ./b2  cxxflags="-arch arm64" toolset=darwin --target=static
-        mkdir -p arm64 && cp stage/lib/*.a arm64 && stage/lib/*.dylib arm64
+        mkdir -p arm64 && cp stage/lib/*.a arm64 && cp stage/lib/*.dylib arm64
         ./b2 toolset=clang cxxflags="-arch arm64 -arch x86_64" --target=static
-        mkdir x86_64 && cp stage/lib/*.a x86_64 && stage/lib/*.dylib x86_64
+        mkdir x86_64 && cp stage/lib/*.a x86_64 && cp stage/lib/*.dylib x86_64
 
     - name: Install
       if: matrix.os == 'macos-11'
