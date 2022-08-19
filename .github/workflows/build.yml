@@ -121,7 +121,10 @@ jobs:
       shell: bash
       run: |
         cd ${{runner.workspace}}/boost
-        ./b2 architecture=combined --target=static cxxflags="-arch x86_64 -arch arm64"
+        ./b2  cxxflags="-arch arm64" toolset=darwin --target=static
+        mkdir -p arm64 && cp stage/lib/*.a arm64 && stage/lib/*.dylib arm64
+        ./b2 toolset=clang cxxflags="-arch arm64 -arch x86_64" --target=static
+        mkdir x86_64 && cp stage/lib/*.a x86_64 && stage/lib/*.dylib x86_64
 
     - name: Install
       if: matrix.os == 'macos-11'
@@ -129,6 +132,9 @@ jobs:
       run: |
         cd ${{runner.workspace}}/boost
         ./b2 install --prefix=${{runner.workspace}}/boost_prebuild cxxstd=14
+        for dylib in arm64/*; do 
+          lipo -create -arch arm64 $dylib -arch x86_64 x86_64/$(basename $dylib) -output ${{runner.workspace}}/boost_prebuild/lib/$(basename $dylib);
+        done
 
     - name: Remove Boost sources [macos]
       if: matrix.os == 'macos-11'
