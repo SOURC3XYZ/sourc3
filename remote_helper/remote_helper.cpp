@@ -728,7 +728,7 @@ private:
     Command commands_[5] = {{"capabilities", &RemoteHelper::DoCapabilities},
                             {"list", &RemoteHelper::DoList},
                             {"option", &RemoteHelper::DoOption},
-                            {"fetch", &RemoteHelper::DoFetch},
+                            {"fetch", &RemoteHelper::DoFetchAsync},
                             {"push", &RemoteHelper::DoPush}};
 
     struct Options {
