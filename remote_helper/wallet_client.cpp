@@ -157,10 +157,8 @@ void SimpleWalletClient::EnsureConnectedAsync() {
 
     auto const results =
         resolver_.async_resolve(options_.apiHost, options_.apiPort, *yield_);
-    std::cerr << "async_resolve success." << std::endl;
     // Make the connection on the IP address we get from a lookup
     stream_.async_connect(results, *yield_);
-    std::cerr << "async_connect success." << std::endl;
     connected_ = true;
 }
 
@@ -180,7 +178,6 @@ std::string SimpleWalletClient::ExtractResult(const std::string& response) {
 
 std::string SimpleWalletClient::InvokeShader(const std::string& args,
                                              bool create_tx) {
-    std::cerr << "Args: " << args << std::endl;
     auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
                            {"id", 1},
                            {"method", "invoke_contract"},
@@ -194,7 +191,6 @@ std::string SimpleWalletClient::InvokeShader(const std::string& args,
 
 std::string SimpleWalletClient::InvokeShaderAsync(const std::string& args,
                                                   bool create_tx) {
-    std::cerr << "Args: " << args << std::endl;
     auto msg = json::value{{JsonRpcHeader, JsonRpcVersion},
                            {"id", 1},
                            {"method", "invoke_contract"},
@@ -268,7 +264,6 @@ std::string SimpleWalletClient::CallAPIAsync(std::string request) {
     size_t s = request.size();
     size_t transferred =
         boost::asio::async_write(stream_, boost::asio::buffer(request), *yield_);
-    std::cerr << "CallAPI success." << std::endl;
     if (s != transferred) {
         return "";
     }
@@ -286,7 +281,6 @@ std::string SimpleWalletClient::ReadAPI() {
 std::string SimpleWalletClient::ReadAPIAsync() {
     auto n = boost::asio::async_read_until(
         stream_, boost::asio::dynamic_buffer(data_), '\n', *yield_);
-    std::cerr << "ReadAPI success." << std::endl;
     auto line = data_.substr(0, n);
     data_.erase(0, n);
     return line;
