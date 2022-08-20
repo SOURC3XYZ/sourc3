@@ -32,8 +32,8 @@ export interface BeamApiContext {
 }
 
 export type WSSendArgs = {
-  action: string,
-  data: any
+  id: string,
+  [key:string]: any
 };
 
 export type WSContext = readonly [boolean, () => Promise<void>, (obj: WSSendArgs) => void];

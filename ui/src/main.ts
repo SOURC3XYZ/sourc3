@@ -1,5 +1,5 @@
 import {
-  app, BrowserWindow, session, ipcMain, dialog, shell
+  app, BrowserWindow, session, ipcMain, dialog, shell, Tray, Menu
 } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -9,7 +9,8 @@ import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
 import { loggerLevel } from './middlewares';
-import { ethApi, wsConnection } from './ether/websocket';
+import { wsConnection } from './ether/websocket';
+import { createContractMethods, startEtherApi } from './ether';
 
 const transactionParameters = {
   gasPrice: '0x09184e72a000', // customizable by user during MetaMask confirmation.
@@ -19,7 +20,9 @@ const transactionParameters = {
   value: '0x38d7ea4c68000' // Only required to send ether to the recipient from the initiating external account.
 };
 
-ethApi();
+// ethApi();
+
+startEtherApi(createContractMethods(shell));
 
 tryBDConnect(() => {
   const ipc = new IpcServer(ipcMain);
@@ -57,16 +60,41 @@ function CopyIfNotEqualHash(src: string, dst: string) {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1024,
-    height: 786,
-    minWidth: 1024,
-    minHeight: 768,
-    resizable: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true
+    // width: 1024,
+    // height: 786,
+    // minWidth: 1024,
+    // minHeight: 768,
+    // resizable: true,
+    // frame: false,
+    // webPreferences: {
+    //   preload: path.join(__dirname, 'preload.js'),
+    //   nodeIntegration: false,
+    //   contextIsolation: true
+    // }
+    show: false
+  });
+
+  const tray = new Tray('/home/danik/webdev/pit/ui/build/icon.png');
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click() {
+        win.show();
+      }
+    },
+    {
+      label: 'Quit',
+      click() {
+        app.quit();
+      }
     }
+  ]);
+  tray.setToolTip('This is my application.');
+  tray.setContextMenu(contextMenu);
+
+  win.on('minimize', (event:Event) => {
+    event.preventDefault();
+    win.hide();
   });
 
   // win.webContents.setWindowOpenHandler(() => ({ action: 'allow' }));
@@ -132,13 +160,13 @@ function createWindow() {
   }
 
   win.webContents.userAgent = 'SOURC3-DESKTOP';
-  if (process.env['NODE_ENV'] === 'dev') {
-    win.loadURL('http://localhost:5003');
-    win.webContents.openDevTools();
-  } else {
-    win.setMenu(null);
-    win.loadFile('front/dist/index.html');
-  }
+  // if (process.env['NODE_ENV'] === 'dev') {
+  //   win.loadURL('http://localhost:5003');
+  //   win.webContents.openDevTools();
+  // } else {
+  //   win.setMenu(null);
+  //   win.loadFile('front/dist/index.html');
+  // }
   const webContents = win.webContents.send.bind(win.webContents);
   addwebContentSender(webContents);
   win.webContents.on('before-input-event', (_, input) => {
