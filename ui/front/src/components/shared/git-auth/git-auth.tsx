@@ -19,7 +19,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem('token')) {
+    if (window.localStorage.getItem('id')) {
       setIsDisabled(true);
     }
   }, []);
@@ -34,7 +34,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
                 setVisible(true);
-                window.localStorage.setItem('token', res.token);
+                window.localStorage.setItem('id', res.data.id);
                 setIsDisabled(true);
               })
               .catch(() => {
@@ -54,7 +54,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
       </div>
       <Popup
         visible={isVisible}
-        title={isErr ? 'Failed connect with Github' : 'Your connected with GitHub'}
+        title={isErr ? 'Failed to connect with Github' : 'You are connected'}
         onCancel={() => (setVisible(false))}
         agree
         confirmButton={(
@@ -67,7 +67,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
         )}
       >
         <span>
-          {isErr ? 'Failed connect with Github' : 'Thank you. Your connected with GitHub'}
+          {isErr ? 'Failed to connect with Github' : 'Thank you. You are connected'}
         </span>
       </Popup>
     </>

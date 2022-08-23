@@ -63,7 +63,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
         <NavButton
           key="all-repos-addBtn"
           onClick={() => handleOk(inputName, idOrg)}
-          isDisabled={!inputName}
+          isDisabled={!inputName || !valid}
           name="Add"
           active
         />
