@@ -48,6 +48,7 @@ public:
         std::string repoName;
         std::string repoPath = ".";
         bool useIPFS = true;
+        size_t max_connections = 400;
     };
 
     SimpleWalletClient(net::io_context& ioc, const Options& options,

@@ -127,6 +127,9 @@ vector<string_view> ParseArgs(std::string_view args_sv) {
 
 json::value ParseJsonAndTest(json::string_view sv) {
     auto r = json::parse(sv);
+    if (!r.is_object()) {
+        throw 123;
+    }
     if (const auto* error = r.as_object().if_contains("error"); error) {
         throw std::runtime_error(
             error->as_object().at("message").as_string().c_str());
@@ -382,7 +385,9 @@ public:
         ba::spawn(io_context, [&](ba::yield_context yield) {
             std::set<std::string> processing_hashes;
             while (!object_hashes.empty() || !processing_hashes.empty()) {
-                if (object_hashes.empty() || processing_hashes.size() >= 400) {
+                if (object_hashes.empty() ||
+                    processing_hashes.size() >=
+                        wallet_client_.options_.max_connections) {
                     timer.expires_from_now(std::chrono::milliseconds(100));
                     timer.async_wait(yield);
                     continue;
@@ -806,7 +811,10 @@ int main(int argc, char* argv[]) {
             po::value<string>(&options.appPath)->default_value("app.wasm"),
             "Path to the app shader file")(
             "use-ipfs", po::value<bool>(&options.useIPFS)->default_value(true),
-            "Use IPFS to store large blobs");
+            "Use IPFS to store large blobs")(
+            "max-conn",
+            po::value<size_t>(&options.max_connections)->default_value(400),
+            "Maximum amount of cloning objects ");
         po::variables_map vm;
 #ifdef WIN32
         const auto* home_dir = std::getenv("USERPROFILE");
