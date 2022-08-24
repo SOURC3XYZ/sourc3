@@ -4,10 +4,10 @@ import {
   AllRepos,
   Preload,
   Repo,
-  FailPage,
   Organizations,
   Projects,
-  ProjectRepos
+  ProjectRepos,
+  Uploader
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
 import { useCallback, useMemo } from 'react';
@@ -53,8 +53,8 @@ function Main() {
       element: <DownloadPage />
     },
     {
-      path: '404',
-      element: <FailPage />
+      path: 'upload',
+      element: <Uploader />
     }
   ];
 
