@@ -107,13 +107,14 @@ private:
 };
 
 struct ObjectWithContent : public GitObject {
+    std::string ipfs_hash;
     std::string content;
 };
 
 struct GitIdWithIPFS {
     GitIdWithIPFS() = default;
 
-    GitIdWithIPFS(const git_oid oid, string ipfs)
+    GitIdWithIPFS(git_oid oid, string ipfs)
         : oid(std::move(oid)), ipfs(std::move(ipfs)) {
     }
 
@@ -138,11 +139,11 @@ struct MetaBlock {
 };
 
 struct CommitMetaBlock final : MetaBlock {
-    GitIdWithIPFS tree_hash;
+    std::string tree_meta_hash;
     std::vector<GitIdWithIPFS> parent_hashes;
 
     string Serialize() const final {
-        std::string data = hash.ToString() + "\n" + tree_hash.ToString() + "\n";
+        std::string data = hash.ToString() + "\n" + tree_meta_hash + "\n";
         for (const auto& parent : parent_hashes) {
             data += parent.ToString() + "\n";
         }
@@ -195,6 +196,10 @@ using HashMapping = std::unordered_map<git_oid, std::string, OidHasher>;
 
 json::value ParseJsonAndTest(json::string_view sv) {
     auto r = json::parse(sv);
+    if (!r.is_object()) {
+        throw std::runtime_error{sv.to_string() + " isn't an object."};
+    }
+
     if (const auto* error = r.as_object().if_contains("error"); error) {
         throw std::runtime_error(
             error->as_object().at("message").as_string().c_str());
@@ -269,8 +274,7 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(
     if (oid_to_meta.count(*git_commit_tree_id(raw_commit)) == 0) {
         throw std::runtime_error{"Cannot find tree meta on IPFS"};
     }
-    block->tree_hash = {*git_commit_tree_id(raw_commit),
-                        oid_to_meta.at(*git_commit_tree_id(raw_commit))};
+    block->tree_meta_hash = oid_to_meta.at(*git_commit_tree_id(raw_commit));
     unsigned int parents_count = git_commit_parentcount(raw_commit);
     for (unsigned int i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
@@ -320,7 +324,7 @@ std::unique_ptr<MetaBlock> GetMetaBlock(
 std::string GetStringFromIPFS(const std::string& hash,
                               SimpleWalletClient& wallet_client) {
     auto res = ParseJsonAndTest(wallet_client.LoadObjectFromIPFS(hash));
-    if (!res.is_object() || !res.as_object().contains("result")) {
+    if (!res.as_object().contains("result")) {
         throw std::runtime_error{""};
     }
     auto d = res.as_object()["result"].as_object()["data"].as_array();
@@ -332,11 +336,13 @@ std::string GetStringFromIPFS(const std::string& hash,
     return ByteBufferToString(buf);
 }
 
-ObjectWithContent CreateObject(int8_t type, git_oid hash, std::string content) {
+ObjectWithContent CreateObject(int8_t type, git_oid hash,
+                               std::string ipfs_hash, std::string content) {
     ObjectWithContent obj;
     obj.hash = std::move(hash);
     obj.type = type;
     obj.data_size = static_cast<uint32_t>(content.size());
+    obj.ipfs_hash = std::move(ipfs_hash);
     obj.content = std::move(content);
     return obj;
 }
@@ -400,21 +406,14 @@ public:
 
         std::vector<ObjectWithContent> objects =
             GetUploadedObjects(RequestRefs());
-        {
-            auto progress = MakeProgress("Enumerating objects", 0);
-            for (const auto& obj : objects) {
-                if (progress) {
-                    progress->UpdateProgress(++total_objects);
-                }
-                if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
-                    received_objects.insert(ToString(obj.hash));
-                }
+        for (const auto& obj : objects) {
+            if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
+                received_objects.insert(ToString(obj.hash));
+                ++total_objects;
             }
         }
-
         auto progress = MakeProgress("Receiving objects",
                                      total_objects - received_objects.size());
-
         size_t done = 0;
         while (!object_hashes.empty()) {
             auto it_to_receive = object_hashes.begin();
@@ -505,8 +504,9 @@ public:
         }
 
         auto remote_refs = RequestRefs();
-        auto uploaded_objects =
-            GetOidsFromObjects(GetUploadedObjects(remote_refs));
+        auto uploaded_objects = GetUploadedObjects(remote_refs);
+        auto uploaded_oids =
+            GetOidsFromObjects(uploaded_objects);
         std::vector<git_oid> merge_bases;
         for (const auto& remote_ref : remote_refs) {
             for (const auto& local_ref : local_refs) {
@@ -556,7 +556,7 @@ public:
         }
 
         for (auto& obj : collector.m_objects) {
-            if (uploaded_objects.find(obj.oid) != uploaded_objects.end()) {
+            if (uploaded_oids.find(obj.oid) != uploaded_oids.end()) {
                 obj.selected = true;
             }
         }
@@ -605,6 +605,11 @@ public:
         }
 
         HashMapping oid_to_ipfs;
+
+        for (const auto& obj : uploaded_objects) {
+            oid_to_ipfs[obj.hash] = obj.ipfs_hash;
+        }
+
         uint32_t new_objects = 0;
         uint32_t new_metas = 0;
         {
@@ -626,40 +631,35 @@ public:
                 obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
                 oid_to_ipfs[obj.oid] =
                     std::string(hash_str.cbegin(), hash_str.cend());
+                std::cerr << "Process object " << ToString(obj.oid) << " with IPFS hash: " << ByteBufferToString(obj.ipfsHash) << " with type: " << obj.type << std::endl;
                 auto meta_object =
                     GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
                 if (meta_object != nullptr) {
                     if (obj.type == GIT_OBJECT_COMMIT && !is_forced &&
                         !prev_commits_parents.empty()) {
                         // We need to check linking of commits
-                        if (auto commit = dynamic_cast<CommitMetaBlock*>(
-                                meta_object.get())) {
-                            if (!std::all_of(
-                                    commit->parent_hashes.begin(),
-                                    commit->parent_hashes.end(),
-                                    [&prev_commits_parents](
-                                        const GitIdWithIPFS& obj) {
-                                        return std::any_of(
-                                            prev_commits_parents.begin(),
-                                            prev_commits_parents.end(),
-                                            [&obj](const GitIdWithIPFS& other) {
-                                                return other == obj;
-                                            });
-                                    })) {
-                                cerr << "Seems like commit history wrong "
-                                        "linked. "
-                                        "If you want to rewrite history, use "
-                                        "`--force` flag"
-                                     << endl;
-                                return CommandResult::Failed;
-                            }
-                            prev_commits_parents = commit->parent_hashes;
-                        } else {
-                            cerr << "Seems like logic was corrupted. Download "
-                                    "newer version of helper"
+                        auto commit = static_cast<CommitMetaBlock*>(
+                                meta_object.get());
+                        if (!std::all_of(
+                                commit->parent_hashes.begin(),
+                                commit->parent_hashes.end(),
+                                [&prev_commits_parents](
+                                    const GitIdWithIPFS& obj) {
+                                    return std::any_of(
+                                        prev_commits_parents.begin(),
+                                        prev_commits_parents.end(),
+                                        [&obj](const GitIdWithIPFS& other) {
+                                            return other == obj;
+                                        });
+                                })) {
+                            cerr << "Seems like commit history wrong "
+                                    "linked. "
+                                    "If you want to rewrite history, use "
+                                    "`--force` flag"
                                  << endl;
                             return CommandResult::Failed;
                         }
+                        prev_commits_parents = commit->parent_hashes;
                     }
 
                     auto meta_buffer =
@@ -845,10 +845,12 @@ private:
                 break;
             }
             parent_meta_hashes.push_back(std::move(hash));
+            ss >> hash;
         }
         auto commit_content = GetStringFromIPFS(commit_hash, wallet_client_);
         objects.push_back(CreateObject(GIT_OBJECT_COMMIT,
                                        FromString(commit_oid),
+                                       std::move(commit_hash),
                                        std::move(commit_content)));
         if (progress) {
             progress->AddProgress(1);
@@ -876,19 +878,22 @@ private:
         ss >> tree_oid;
         auto tree_content = GetStringFromIPFS(tree_hash, wallet_client_);
         objects.push_back(
-            CreateObject(GIT_OBJECT_TREE, FromString(tree_oid), tree_content));
+            CreateObject(GIT_OBJECT_TREE, FromString(tree_oid),
+                         std::move(tree_hash), std::move(tree_content)));
         if (progress) {
             progress->AddProgress(1);
         }
         std::string file_hash;
+        std::string file_oid;
         while (ss >> file_hash) {
             if (file_hash.empty()) {
                 break;
             }
             auto file_content = GetStringFromIPFS(file_hash, wallet_client_);
-            ss >> file_hash;
+            ss >> file_oid;
             objects.push_back(CreateObject(
-                GIT_OBJECT_BLOB, FromString(file_hash), file_content));
+                GIT_OBJECT_BLOB, FromString(file_oid), std::move(file_hash),
+                std::move(file_content)));
             if (progress) {
                 progress->AddProgress(1);
             }
