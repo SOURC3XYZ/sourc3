@@ -196,7 +196,7 @@ jobs:
       shell: bash
       run: |
         cd ui/front
-        yarn --frozen-lockfile
+        yarn
 
     - name: Build front
       shell: bash
@@ -214,7 +214,7 @@ jobs:
       if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
-        yarn --frozen-lockfile
+        yarn
 
     - name: Install dmg licence [macos-11]
       shell: bash
