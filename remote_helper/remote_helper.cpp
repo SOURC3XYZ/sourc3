@@ -138,11 +138,11 @@ struct MetaBlock {
 };
 
 struct CommitMetaBlock final : MetaBlock {
-    GitIdWithIPFS tree_hash;
+    std::string tree_meta_hash;
     std::vector<GitIdWithIPFS> parent_hashes;
 
     string Serialize() const final {
-        std::string data = hash.ToString() + "\n" + tree_hash.ToString() + "\n";
+        std::string data = hash.ToString() + "\n" + tree_meta_hash + "\n";
         for (const auto& parent : parent_hashes) {
             data += parent.ToString() + "\n";
         }
@@ -195,6 +195,10 @@ using HashMapping = std::unordered_map<git_oid, std::string, OidHasher>;
 
 json::value ParseJsonAndTest(json::string_view sv) {
     auto r = json::parse(sv);
+    if (!r.is_object()) {
+        throw std::runtime_error{sv.to_string() + " isn't an object."};
+    }
+
     if (const auto* error = r.as_object().if_contains("error"); error) {
         throw std::runtime_error(
             error->as_object().at("message").as_string().c_str());
@@ -269,8 +273,7 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(
     if (oid_to_meta.count(*git_commit_tree_id(raw_commit)) == 0) {
         throw std::runtime_error{"Cannot find tree meta on IPFS"};
     }
-    block->tree_hash = {*git_commit_tree_id(raw_commit),
-                        oid_to_meta.at(*git_commit_tree_id(raw_commit))};
+    block->tree_meta_hash = oid_to_meta.at(*git_commit_tree_id(raw_commit));
     unsigned int parents_count = git_commit_parentcount(raw_commit);
     for (unsigned int i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
@@ -320,7 +323,7 @@ std::unique_ptr<MetaBlock> GetMetaBlock(
 std::string GetStringFromIPFS(const std::string& hash,
                               SimpleWalletClient& wallet_client) {
     auto res = ParseJsonAndTest(wallet_client.LoadObjectFromIPFS(hash));
-    if (!res.is_object() || !res.as_object().contains("result")) {
+    if (!res.as_object().contains("result")) {
         throw std::runtime_error{""};
     }
     auto d = res.as_object()["result"].as_object()["data"].as_array();

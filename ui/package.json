@@ -89,6 +89,7 @@
     },
     "dmg": {
       "sign": false
-    }
+    },
+    "npmRebuild": false
   }
 }
