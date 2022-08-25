@@ -1884,7 +1884,6 @@ void OnActionViewUser(const ContractID& cid) {
     uint32_t value_len = max_args_size, key_len = sizeof(UserKey);
     Env::VarReader reader(start, end);
     reader.MoveNext(&key, key_len, buf.get(), value_len, 0);
-    Env::DocGroup org_object("");
     Env::DocAddBlob_T("user_id", key.m_KeyInContract.id);
     PrintUser(buf);
 }
