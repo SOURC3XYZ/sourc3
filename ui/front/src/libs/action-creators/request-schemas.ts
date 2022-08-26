@@ -1,6 +1,6 @@
 import { CONFIG } from '@libs/constants';
 import {
-  CommitHash, PropertiesType, RepoId, TreeElementOid, TreeOid
+  CommitHash, IProfile, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
 
 export const RC = {
@@ -318,6 +318,43 @@ export const RC = {
         repo_name,
         project_id,
         pid
+      }
+    }
+  } as const),
+  getUser: (id:string) => ({
+    callID: 'view_user',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'view_user',
+        id
+      }
+    }
+  } as const),
+  setModifyUser: ({
+    id, names, nickname, description, email, twitter, instagram, telegram, discord, linkedin, website, avatar_addr
+  }: IProfile) => ({
+    callID: 'modify_user',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_user',
+        id,
+        avatar_addr,
+        name: names,
+        nickname,
+        description,
+        email,
+        twitter,
+        instagram,
+        telegram,
+        discord,
+        linkedin,
+        website
       }
     }
   } as const)

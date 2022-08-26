@@ -7,10 +7,11 @@ import {
   Organizations,
   Projects,
   ProjectRepos,
-  Uploader
+  Uploader,
+  ProfilesPage
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
@@ -19,6 +20,7 @@ import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
+import ProfilesEdit from "@components/shared/profiles-page/profiles-edit";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -55,6 +57,14 @@ function Main() {
     {
       path: 'upload',
       element: <Uploader />
+    },
+    {
+      path: 'profiles/:id/*',
+      element: <ProfilesPage />
+    },
+    {
+      path: 'profiles/:id/edit',
+      element: <ProfilesEdit />
     }
   ];
 

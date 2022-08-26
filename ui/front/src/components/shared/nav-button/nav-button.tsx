@@ -9,10 +9,11 @@ type buttonProps = {
   onClick?: () => void
   inlineStyles?: CSSProperties
   active?: boolean
-  classes?: string
+  classes?: string,
+  type?: string
 };
 function NavButton({
-  name, link, inlineStyles, isDisabled, onClick, active = false, classes
+  name, link, inlineStyles, isDisabled, onClick, active = false, classes, type = 'button'
 }:buttonProps) {
   const navigate = useNavigate();
   const className = [classes, (active ? styles.button : styles.buttonSecond)].join(' ');
@@ -24,7 +25,7 @@ function NavButton({
       style={inlineStyles}
       // autoFocus={active}
       // className={active ? styles.button : styles.buttonSecond}
-      type="button"
+      type={type}
       onClick={onClick || onClickHandler}
     >
       { name }

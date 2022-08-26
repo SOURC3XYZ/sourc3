@@ -36,12 +36,13 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
   const [query] = contractCall(api.callApi);
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
-    const [{ getOrganizations, getProjects, getRepos }] = entitiesThunk(api.callApi);
+    const [{ getOrganizations, getProjects, getRepos, getViewUser }] = entitiesThunk(api.callApi);
     return apiManagerHelper(
       () => {
         dispatch(getRepos('all'));
         dispatch(getOrganizations());
         dispatch(getProjects());
+        dispatch(getViewUser());
         messageToRepo();
       }
     );

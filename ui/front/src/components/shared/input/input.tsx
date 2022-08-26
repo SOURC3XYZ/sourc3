@@ -2,17 +2,19 @@ import { IconEyeOpen, IconEyeCrossed } from '@components/svg';
 import React, { useRef, useState } from 'react';
 import styles from './input.module.scss';
 
-interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string | null;
   valid?: boolean;
   password?: boolean;
   length?: number;
-  type?: string
+  type?: string;
+  refs?: React.InputHTMLAttributes<HTMLInputElement>;
+  placeholder?: string;
 }
 
-function InputCustom({
+const InputCustom = React.forwardRef(({
   label, valid = true, password, length, type, ...rest
-}: IputProps) {
+}:InputProps, refs) => {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
     setPasswordShown(!passwordShown);
@@ -49,18 +51,18 @@ function InputCustom({
       </div>
     ) : (
       <div className={styles.wrapperInput}>
-        <label htmlFor="input" className={styles.labelUp}>{label}</label>
+        <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>{label}</label>
         <input
           autoFocus
           id="input"
           className={valid ? styles.inputText : styles.invalid}
-          // ref={ref}
+          ref={refs}
           {...rest}
           type="text"
         />
       </div>
     )
   );
-}
+});
 
 export default InputCustom;

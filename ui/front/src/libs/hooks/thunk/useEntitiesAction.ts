@@ -1,8 +1,8 @@
 import { useSourc3Api } from '@components/context';
-import { AC } from '@libs/action-creators';
+import {AC, RC} from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
-import { useDispatch } from '@libs/redux';
-import { RepoListType, ArgumentTypes } from '@types';
+import {CustomAction, useDispatch} from '@libs/redux';
+import {RepoListType, ArgumentTypes, OrganizationsResp} from '@types';
 
 const useUserAsync = () => {
   const dispatch = useDispatch();
@@ -35,6 +35,11 @@ const useUserAsync = () => {
     ...args: ArgumentTypes<typeof mutations.createRepo>
   ) => dispatch(mutations.createRepo(...args));
 
+  const setModifyUser = (state:any):any => {
+    console.log(state)
+    dispatch(queries.setModifyUser(state))
+  };
+
   return {
     setInputText,
     setPrevHref,
@@ -44,7 +49,8 @@ const useUserAsync = () => {
     createOrganization,
     createProject,
     createRepo,
-    deleteRepo
+    deleteRepo,
+    setModifyUser
   };
 };
 

@@ -10,6 +10,8 @@ import { useUserAction } from '@libs/hooks/thunk';
 import { LoadingMessages } from '@libs/constants';
 import { PreloadComponent } from '@components/hoc';
 import { ErrorBoundary } from '@components/context';
+import ProfilesPage from '@components/shared/profiles-page/profiles-page';
+import ProfilesEdit from '@components/shared/profiles-page/profiles-edit';
 import Header from '../../../web/components/header/header.container';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
@@ -35,6 +37,7 @@ function App() {
       path: 'repo/:repoParams/*',
       element: <Repo />
     },
+
     {
       path: 'organizations/:type/:page',
       element: <Organizations />
@@ -54,7 +57,16 @@ function App() {
     {
       path: 'localRepos/',
       element: <LocalRepos />
+    },
+    {
+      path: 'profiles/:id/*',
+      element: <ProfilesPage />
+    },
+    {
+      path: 'profiles/:id/edit',
+      element: <ProfilesEdit />
     }
+
   ];
 
   const routes = data.map(

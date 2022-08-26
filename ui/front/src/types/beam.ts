@@ -110,3 +110,18 @@ export interface BeamError extends Error {
   code?: number,
   status?: string
 }
+
+export interface IProfile {
+  names: string,
+  avatar_addr: string,
+  id: string,
+  nickname: string,
+  email: string,
+  description: string,
+  website: string
+  twitter: string,
+  instagram: string,
+  telegram: string,
+  linkedin: string,
+  discord: string
+}

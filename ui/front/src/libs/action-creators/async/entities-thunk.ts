@@ -1,8 +1,8 @@
 /* eslint-disable prefer-destructuring */
 import { CustomAction } from '@libs/redux';
 import {
-  CallBeamApi,
-  OrganizationsResp,
+  CallBeamApi, IProfile,
+  OrganizationsResp, PKeyRes,
   ProjectsResp,
   RepoListType,
   ReposResp
@@ -52,6 +52,10 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.getOrganizations(),
     (output:OrganizationsResp) => [AC.setOrganizationsList(output.organizations)]
   );
+  const setModifyUser = (state:any):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.setModifyUser(state)
+  );
 
   const getProjects = ():CustomAction => async (dispatch) => {
     contractQuery(
@@ -68,8 +72,24 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
       dispatch(AC.setRepos(repos));
     }
   };
+  const getViewUser = ():CustomAction => async (dispatch) => {
+    await contractQuery<PKeyRes>(
+      dispatch,
+      RC.getPublicKey(),
+      (output) => {
+        contractQuery<IProfile>(
+          dispatch,
+          RC.getUser(output.key),
+          (profile) => [ AC.setViewUser(profile)]
+        );
+        return [];
+      }
+    );
+  };
 
-  return [{ getOrganizations, getProjects, getRepos }, {
+  return [{
+    getOrganizations, getProjects, getRepos, setModifyUser, getViewUser
+  }, {
     createProject,
     createOrganization,
     deleteRepo,

@@ -106,6 +106,7 @@
     "rc-virtual-list": "^3.4.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-hook-form": "^7.34.2",
     "react-infinite-scroll-component": "^6.1.0",
     "react-redux": "^7.2.5",
     "react-router-dom": "^6.3.0",
