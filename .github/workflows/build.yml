@@ -277,7 +277,9 @@ jobs:
         cd ../arm64
         cmake --build . --parallel --config $BUILD_TYPE
         cd ..
-        lipo -create -output git-remote-sourc3 x86_64/git-remote-sourc3 arm64/git-remote-sourc3
+        mkdir remote_helper
+        lipo -create -output remote_helper/git-remote-sourc3 x86_64/remote_helper/git-remote-sourc3 arm64/remote_helper/git-remote-sourc3
+        cp x86_64/remote_helper/sourc3-remote.cfg remote_helper/sourc3-remote.cfg
 
     - name: Build [ubuntu all]
       shell: bash
