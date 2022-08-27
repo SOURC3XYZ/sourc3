@@ -114,9 +114,13 @@ jobs:
     - name: Configure CMake [macos-11]
       if: matrix.os == 'macos-11'
       run: |
-        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
-      env:
-        LDFLAGS: -L/usr/local/opt/icu4c/lib
+        mkdir x86_64
+        cd x86_64
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} -DCMAKE_OSX_ARCHITECTURES="x86_64" ..
+        cd ..
+        mkdir arm64
+        cd arm64
+        cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} -DCMAKE_OSX_ARCHITECTURES="arm64" ..
 
     - name: Configure CMake [ubuntu all]
       if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04'
@@ -267,7 +271,10 @@ jobs:
 ###############################################################################
     - name: Build [macos-11]
       if: matrix.os == 'macos-11'
-      run: cmake --build . --parallel --config $BUILD_TYPE
+      run: |
+        cmake --build x86_64 --parallel --config $BUILD_TYPE
+        cmake --build arm64 --parallel --config $BUILD_TYPE
+        lipo -create -output git-remote-sourc3 x86_64/git-remote-sourc3 arm64/git-remote-sourc3
 
     - name: Build [ubuntu all]
       shell: bash
