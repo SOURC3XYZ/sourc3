@@ -272,8 +272,11 @@ jobs:
     - name: Build [macos-11]
       if: matrix.os == 'macos-11'
       run: |
-        cmake --build x86_64 --parallel --config $BUILD_TYPE
-        cmake --build arm64 --parallel --config $BUILD_TYPE
+        cd x86_64
+        cmake --build .. --parallel --config $BUILD_TYPE
+        cd ../arm64
+        cmake --build .. --parallel --config $BUILD_TYPE
+        cd ..
         lipo -create -output git-remote-sourc3 x86_64/git-remote-sourc3 arm64/git-remote-sourc3
 
     - name: Build [ubuntu all]
