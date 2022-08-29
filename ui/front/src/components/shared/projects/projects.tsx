@@ -5,7 +5,7 @@ import {
   BackButton
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
-import { useCallback, useMemo } from 'react';
+import { CSSProperties, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProjectListItem from './project-list-item';
 
@@ -14,7 +14,7 @@ const placeholder = 'Enter name of your project';
 function Projects() {
   const {
     id,
-    orgName,
+    org,
     page,
     path,
     type,
@@ -63,15 +63,32 @@ function Projects() {
     return /SOURC3-DESKTOP/i.test(ua);
   }, []);
 
-  const style = {
+  const style:CSSProperties = {
     position: 'relative',
     left: '0',
     top: '-150px'
   };
 
+  const backButton = useMemo(() => (
+    isElectron && <BackButton inlineStyles={style} onClick={back} />), []);
+
+  const headerFields = {
+    avatar: org.organization_logo_ipfs_hash,
+    email: 'daniluk@tut.by',
+    shortTitle: org.organization_short_title,
+    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia tempore assumenda commodi incidunt corporis cum beatae nostrum, ab eos perspiciatis. Dolorem officiis voluptate quasi totam repudiandae, repellendus laudantium ex sit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia tempore assumenda commodi incidunt corporis cum beatae nostrum, ab eos perspiciatis. Dolorem officiis voluptate quasi totam repudiandae, repellendus laudantium ex sit',
+    website: org.organization_website,
+    twitter: org.organization_twitter,
+    instagram: org.organization_twitter,
+    telegram: org.organization_telegram,
+    linkedin: org.organization_linkedin,
+    discord: org.organization_discord
+  };
+
   return (
     <EntityWrapper
-      title={`${orgName} projects`}
+      headerFields={headerFields}
+      title={org.organization_name || 'NO NAME'}
       type={type}
       pkey={pkey}
       searchText={searchText}
@@ -81,7 +98,7 @@ function Projects() {
       showModal={showModal}
     >
       <>
-        {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
+        {backButton}
         <CreateModal
           title="Add new project to organization"
           label="Project name"

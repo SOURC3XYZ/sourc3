@@ -1,5 +1,3 @@
-import ProfilesPage from "@components/shared/profiles-page/profiles-page";
-
 export * from './add';
 export * from './add-org';
 export * from './all-repos';
@@ -33,3 +31,5 @@ export * from './select';
 export * from './selectPopup';
 export * from './uploader';
 export * from './profiles-page';
+export * from './icons';
+export * from './tabs';

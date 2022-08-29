@@ -40,7 +40,7 @@ const reducer = (
   switch (action.type) {
     case ACTIONS.SET_VIEW_USER: {
       newState = action.payload as typeof initialState;
-      console.log(action.payload)
+      console.log(action.payload);
       return newState;
     }
     case ACTIONS.SET_MODIFY_USER: {

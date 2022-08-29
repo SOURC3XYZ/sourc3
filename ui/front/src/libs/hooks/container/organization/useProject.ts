@@ -1,10 +1,10 @@
 import { useModal } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
-import { OwnerListType } from '@types';
+import { Organization, OwnerListType } from '@types';
 import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { getOrgName, getProjectsByOrgId } from './selectors';
+import { getOrg, getProjectsByOrgId } from './selectors';
 
 type LocationState = {
   orgId: number,
@@ -26,8 +26,8 @@ const useProject = () => {
   const projects = useSelector(
     (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
   );
-  const orgName = useSelector(
-    (state) => getOrgName(id, state.entities.organizations) || 'NO_NAME'
+  const org = useSelector(
+    (state) => getOrg(id, state.entities.organizations)
   );
 
   const modalApi = useModal(
@@ -39,7 +39,7 @@ const useProject = () => {
   return {
     items: projects,
     page: +page,
-    orgName,
+    org: org as Organization,
     path,
     pkey,
     type,
