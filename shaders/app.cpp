@@ -788,7 +788,7 @@ void OnActionCreateOrganization(const ContractID& cid) {
 
     args_size += sizeof(CreateOrganization);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
@@ -955,7 +955,7 @@ void OnActionModifyOrganization(const ContractID& cid) {
 
     args_size += sizeof(ModifyOrganization);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
@@ -1956,6 +1956,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("private", "Is repo private");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1963,6 +1964,14 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("name", "Name of project");
                 Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("logo_addr", "IpfsAddr");
+                Env::DocAddText("description", "Project description");
+                Env::DocAddText("website", "Project website");
+                Env::DocAddText("twitter", "Project twitter");
+                Env::DocAddText("linkedin", "Project linkedin");
+                Env::DocAddText("instagram", "Project instagram");
+                Env::DocAddText("telegram", "Project telegram");
+                Env::DocAddText("discord", "Project discord");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1971,6 +1980,14 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("name", "Name of project");
                 Env::DocAddText("project_id", "Project ID");
                 Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("logo_addr", "IpfsAddr");
+                Env::DocAddText("description", "Project description");
+                Env::DocAddText("website", "Project website");
+                Env::DocAddText("twitter", "Project twitter");
+                Env::DocAddText("linkedin", "Project linkedin");
+                Env::DocAddText("instagram", "Project instagram");
+                Env::DocAddText("telegram", "Project telegram");
+                Env::DocAddText("discord", "Project discord");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -1983,12 +2000,30 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("create_organization");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("logo_addr", "IpfsAddr");
+                Env::DocAddText("short_title", "Short title");
+                Env::DocAddText("about", "Organization about");
+                Env::DocAddText("website", "Organization website");
+                Env::DocAddText("twitter", "Organization twitter");
+                Env::DocAddText("linkedin", "Organization linkedin");
+                Env::DocAddText("instagram", "Organization instagram");
+                Env::DocAddText("telegram", "Organization telegram");
+                Env::DocAddText("discord", "Organization discord");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup gr_method("modify_organization");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("logo_addr", "IpfsAddr");
+                Env::DocAddText("short_title", "Short title");
+                Env::DocAddText("about", "Organization about");
+                Env::DocAddText("website", "Organization website");
+                Env::DocAddText("twitter", "Organization twitter");
+                Env::DocAddText("linkedin", "Organization linkedin");
+                Env::DocAddText("instagram", "Organization instagram");
+                Env::DocAddText("telegram", "Organization telegram");
+                Env::DocAddText("discord", "Organization discord");
                 Env::DocAddText("organization_id", "Organization ID");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -2012,6 +2047,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("private", "Is repo private");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -2021,7 +2057,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
-                Env::DocGroup gr_method("add_user_params");
+                Env::DocGroup gr_method("add_repo_member");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
@@ -2029,7 +2065,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
-                Env::DocGroup gr_method("modify_user_params");
+                Env::DocGroup gr_method("modify_repo_member");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
@@ -2037,7 +2073,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
-                Env::DocGroup gr_method("remove_user_params");
+                Env::DocGroup gr_method("remove_repo_member");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("user", "User PubKey");
