@@ -6,9 +6,9 @@ const pathname = require('path')
 const fs = require('fs')
 
 function checkArtifact(artifact_name, platform_name, network_name, downloadable_artifacts) {
-    var is_target_artifact = false;
+    let is_target_artifact = false;
     for (const target_artifact of downloadable_artifacts) {
-        if (artifact_name.indexOf(target_artifact) != -1) {
+        if (artifact_name.indexOf(target_artifact) !== -1) {
             is_target_artifact = true;
             break;
         }
@@ -16,12 +16,30 @@ function checkArtifact(artifact_name, platform_name, network_name, downloadable_
     if (!is_target_artifact) {
         return false;
     }
-    if (artifact_name.indexOf("wasm") != -1) {
+    if (artifact_name.indexOf("wasm") !== -1) {
         return true;
     }
 
-    return artifact_name.indexOf(platform_name) != -1 && artifact_name.indexOf(network_name) != -1;
+    return artifact_name.indexOf(platform_name) !== -1 && artifact_name.indexOf(network_name) !== -1;
 }
+
+function checkArtifactsInRun(artifacts, platform_name, network_name, downloadable_artifacts) {
+    for (const target_artifact of downloadable_artifacts) {
+        let is_target_artifact = false;
+        for (const artifact of artifacts) {
+            if (artifact.name.indexOf(target_artifact) !== -1 && (artifact.name.indexOf("wasm") !== -1 ||
+                (artifact.name.indexOf(platform_name) !== -1 && artifact.name.indexOf(network_name) !== -1))) {
+                is_target_artifact = true;
+                break;
+            }
+        }
+        if (!is_target_artifact) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 async function main() {
     try {
@@ -47,8 +65,6 @@ async function main() {
         console.log("==> Workflow:", workflow)
 
         console.log("==> Repo:", owner + "/" + repo)
-
-        console.log("==> Conclusion:", workflowConclusion)
 
         console.log("==> Platform: ", platform_name)
 
@@ -87,12 +103,12 @@ async function main() {
 
         if (!runID) {
             for await (const runs of client.paginate.iterator(client.rest.actions.listWorkflowRuns, {
-                owner: owner,
-                repo: repo,
-                workflow_id: workflow,
-                branch: branch,
-                event: event,
-            }
+                    owner: owner,
+                    repo: repo,
+                    workflow_id: workflow,
+                    branch: branch,
+                    event: event,
+                }
             )) {
                 for (const run of runs.data) {
                     if (commit && run.head_sha != commit) {
@@ -110,13 +126,12 @@ async function main() {
                             repo: repo,
                             run_id: run.id,
                         })
-                        if (artifacts.data.artifacts.length == 0) {
+                        if (artifacts.data.artifacts.length === 0) {
                             continue
                         }
                         if (searchArtifacts) {
-                            const artifact = artifacts.data.artifacts.find((artifact) => {
-                                return checkArtifact(artifact.name, platform_name, network_name, downloadable_artifacts);
-                            })
+                            const artifact = checkArtifactsInRun(artifacts.data.artifacts, platform_name,
+                                network_name, downloadable_artifacts);
                             if (!artifact) {
                                 continue
                             }
@@ -150,13 +165,13 @@ async function main() {
             })
         }
 
-        if (artifacts.length == 0)
+        if (artifacts.length === 0)
             throw new Error("no artifacts found")
 
         for (const artifact of artifacts) {
             console.log("==> Artifact:", artifact.id)
 
-            const size = filesize(artifact.size_in_bytes, { base: 10 })
+            const size = filesize(artifact.size_in_bytes, {base: 10})
 
             console.log(`==> Downloading: ${artifact.name}.zip (${size})`)
 
@@ -169,7 +184,7 @@ async function main() {
 
             const dir = path
 
-            fs.mkdirSync(dir, { recursive: true })
+            fs.mkdirSync(dir, {recursive: true})
 
             const adm = new AdmZip(Buffer.from(zip.data))
 

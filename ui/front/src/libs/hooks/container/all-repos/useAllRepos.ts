@@ -10,7 +10,7 @@ type LocationState = {
   type: RepoListType
 };
 
-const useAllRepos = () => {
+const useAllRepos = (prevHref = false) => {
   const pkey = useSelector((state) => state.app.pkey);
   const { repos, searchText } = useSelector(
     ({ entities }) => ({ repos: entities.repos, searchText: entities.searchText })
@@ -19,7 +19,6 @@ const useAllRepos = () => {
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const path = pathname.split('repos/')[0];
-
   const byRouteRepos = pkey && type === 'my'
     ? repos.filter(({ repo_owner }) => repo_owner === pkey)
     : repos;
@@ -27,15 +26,16 @@ const useAllRepos = () => {
   const elements = useSearch(searchText, byRouteRepos, ['repo_name', 'repo_owner'], type);
 
   useEffect(() => {
-    setPrevHref(pathname);
+    if (prevHref) setPrevHref(pathname);
   }, [page]);
 
-  const repoListProps = {
-    pkey, page: +page, type, items: elements, path, searchText
-  };
-
   return {
-    ...repoListProps,
+    pkey,
+    page: +page,
+    type,
+    items: elements,
+    path,
+    searchText,
     setInputText,
     deleteRepo
   };

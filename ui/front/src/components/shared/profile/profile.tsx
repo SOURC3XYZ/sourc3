@@ -23,9 +23,10 @@ function Profile({ pKey }:profileType) {
   const logOut = () => navigate('/');
   const myOrg = () => navigate('/organizations/my/1');
   const myRep = () => navigate('/repos/my/1');
+  const myProfile = () => navigate(`/profiles/${pKey}`);
 
   const data = [
-    { title: 'Profile', isDisabled: true },
+    { title: 'Profile', onClick: myProfile },
     { title: 'My repositories', onClick: myRep },
     { title: 'My organization', onClick: myOrg },
     { title: 'Settings', isDisabled: true },

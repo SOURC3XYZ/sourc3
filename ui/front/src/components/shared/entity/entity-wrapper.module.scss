@@ -1,10 +1,102 @@
+@import '@styles/vars.scss';
+
+.TabsRoot {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.TabLabel {
+    font-family:"PublicSans-Medium";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
+    color: #FFFFFF;
+    cursor: pointer;
+    &Selected {
+        @extend .TabLabel;
+        color: #FF791F;
+    }
+}
+
+
 .content {
     width: 100%;
     max-width: 60rem;
     margin: 0 auto;
     padding: 2.5rem;
-    h3{
+
+    h3 {
         font-family: "PublicSans-Medium";
+    }
+
+    .specBlock {
+        background-color: #000;
+        padding: 24px 24px 40px;
+        border-radius: 8px;
+
+        .entityHeader {
+            display: flex;
+            font-family: "PublicSans-Medium";
+            gap: 0 24px;
+
+            img {
+                width: 80px;
+                height: 80px;
+                border-radius: 8px;
+            }
+
+            .titleBlock {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .title {
+                    color: #fff;
+                    margin: 0;
+                }
+
+                .shortTitle {
+                    color: #fff;
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 19px;
+                }
+            }
+
+            .socialBlock {
+                margin-left: auto;
+
+                .icon+.icon {
+                    margin-left: 18px;
+                }
+
+            }
+        }
+
+        .descriptionBlock {
+            padding: 11px 100px 0;
+            .description {
+                display: none;
+                color: #808080;
+                padding-bottom: 8px;
+                &Active {
+                    @extend .description;
+                    display: block;
+
+                }
+            }
+
+            .showMoreBtn {
+                background-color: transparent;
+                border: none;
+                color: $color-orange;
+                cursor: pointer;
+            }
+        }
     }
 }
 

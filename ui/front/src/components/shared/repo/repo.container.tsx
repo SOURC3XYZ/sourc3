@@ -1,6 +1,6 @@
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { PreloadComponent } from '@components/hoc';
 import {
-  BackButton, FailPage, Preload, NavButton
+  BackButton, Preload, NavButton
 } from '@components/shared';
 import { LoadingMessages } from '@libs/constants';
 import { useAllRepos } from '@libs/hooks/container/all-repos';
@@ -17,32 +17,25 @@ import styles from './repo.module.scss';
 
 function UserRepos() {
   const containerProps = useUserRepos();
-  const allReposProps = useAllRepos();
-
-  const { items } = allReposProps;
+  const { items } = useAllRepos();
 
   const {
-    isLoaded, repoName, commitsMap, loadingHandler, startLoading, id
+    id, isLoaded, repoName, commitsMap, loadingHandler, startLoading
   } = containerProps;
 
-  const item = items && items.filter((el) => el.repo_id === id);
-  const { repo_owner } = item[0];
-
-  const repoLink = `sourc3://${repo_owner}/${repoName}`;
-
-  const handleCloneRepo = () => {
-    navigator.clipboard.writeText(repoLink);
-    message.info(`${repoLink} copied to clipboard!`);
-  };
+  const handleCloneRepo = useCallback(() => {
+    const item = items.find((el) => el.repo_id === id);
+    if (item) {
+      const { repo_owner } = item;
+      const repoLink = `sourc3://${repo_owner}/${repoName}`;
+      navigator.clipboard.writeText(repoLink);
+      return message.info(`${repoLink} copied to clipboard!`);
+    } return message.error(`Cannot clone repo №${id}`);
+  }, [items, id]);
 
   const navigate = useNavigate();
 
   const goTo = (path: string) => navigate(path);
-
-  const fallback = (props: any) => {
-    const updatedProps = { ...props, subTitle: 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
 
   const RefsPreloadFallback = useCallback(() => (
     <Preload
@@ -58,10 +51,13 @@ function UserRepos() {
     return /SOURC3-DESKTOP/i.test(ua);
   }, []);
 
+  const wrapperClass = useMemo(() => (
+    isElectron ? styles.wrapperElectron : styles.wrapper), [isElectron]);
+
   const isLoadedReload = !!(commitsMap && isLoaded);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={wrapperClass}>
       {isElectron ? <BackButton onClick={back} /> : null}
       <div className={styles.titleWrapper}>
         <Title className={styles.title} level={3}>{repoName}</Title>
@@ -73,30 +69,27 @@ function UserRepos() {
         />
         <ReloadBtn isLoaded={isLoadedReload} loadingHandler={startLoading} />
       </div>
+      <PreloadComponent
+        isLoaded={isLoaded}
+        callback={loadingHandler}
+        Fallback={RefsPreloadFallback}
+      >
+        <Routes>
+          <Route
+            path="branch/:type/:branchName/*"
+            element={<RepoContent {...containerProps} goTo={goTo} />}
+          />
+          <Route
+            path="commits/:branchName"
+            element={<CommitsTree {...containerProps} goTo={goTo} />}
+          />
 
-      <ErrorBoundary fallback={fallback}>
-        <PreloadComponent
-          isLoaded={isLoaded}
-          callback={loadingHandler}
-          Fallback={RefsPreloadFallback}
-        >
-          <Routes>
-            <Route
-              path="branch/:type/:branchName/*"
-              element={<RepoContent {...containerProps} goTo={goTo} />}
-            />
-            <Route
-              path="commits/:branchName"
-              element={<CommitsTree {...containerProps} goTo={goTo} />}
-            />
-
-            <Route
-              path="commit/:type/:hash/*"
-              element={<CommitContent {...containerProps} goTo={goTo} />}
-            />
-          </Routes>
-        </PreloadComponent>
-      </ErrorBoundary>
+          <Route
+            path="commit/:type/:hash/*"
+            element={<CommitContent {...containerProps} goTo={goTo} />}
+          />
+        </Routes>
+      </PreloadComponent>
     </div>
   );
 }

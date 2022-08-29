@@ -35,6 +35,18 @@ declare module 'qwebchannel' {
   }
 }
 
+declare module 'github-oauth-popup' {
+  type params = {
+    client_id: string
+  };
+  type options = {
+    height: number,
+    width: number
+  };
+
+  export const loginWithGithub: (params: params, options: options) => Promise<any>;
+}
+
 declare interface Window {
   qt: QWebChannelTransport;
   BeamApi: QObject;

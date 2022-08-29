@@ -64,7 +64,7 @@ function UpperMenu({
   const commits = useMemo(() => (
     commitsMap
       ? (
-        <Link onClick={onCommitMapClickHandle} to="">
+        <Link onClick={onCommitMapClickHandle} to="" className={styles.commits}>
           {`${commitsMap.size} commits`}
         </Link>
       )

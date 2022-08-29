@@ -29,3 +29,7 @@ export * from './search';
 export * from './seed-list';
 export * from './select';
 export * from './selectPopup';
+export * from './uploader';
+export * from './profiles-page';
+export * from './icons';
+export * from './tabs';

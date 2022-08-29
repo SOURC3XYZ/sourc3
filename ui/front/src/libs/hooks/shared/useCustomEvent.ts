@@ -6,7 +6,7 @@ export const useCustomEvent = (event:string, eventHandler?: EventListener) => {
       document.addEventListener(event, eventHandler);
       return () => document.removeEventListener(event, eventHandler);
     } return undefined;
-  }, []);
+  }, [event, eventHandler]);
 
   const dispatchEvent = useCallback(() => {
     const customEvent = new Event(event);

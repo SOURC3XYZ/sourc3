@@ -28,8 +28,6 @@ export type RepoType = {
   repo_owner: string;
   project_id: number;
   cur_objects: number;
-  masterBranch: Branch;
-  lastCommit: BranchCommit | null;
 };
 
 export interface ReposResp extends ContractResp {
@@ -118,7 +116,16 @@ export type Organization = {
   organization_tag: number,
   organization_id: number,
   organization_name: string,
-  organization_creator: string
+  organization_creator: string,
+  organization_short_title: string,
+  organization_about: string,
+  organization_website: string,
+  organization_twitter: string,
+  organization_linkedin: string,
+  organization_instagram: string,
+  organization_telegram: string,
+  organization_discord: string,
+  organization_logo_ipfs_hash: string
 };
 
 export interface OrganizationsResp extends ContractResp {
@@ -143,6 +150,14 @@ export type Project = {
   organization_id:number;
   project_name:string;
   project_creator:string;
+  project_description:string,
+  project_website:string,
+  project_twitter:string,
+  project_linkedin:string,
+  project_instagram:string,
+  project_telegram:string,
+  project_discord:string,
+  project_logo_ipfs_hash:string
 };
 
 export interface ProjectsResp extends ContractResp {

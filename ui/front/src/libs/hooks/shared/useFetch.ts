@@ -1,4 +1,8 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { EVENTS } from '@libs/constants';
+import {
+  useEffect, useReducer, useRef
+} from 'react';
+import { useCustomEvent } from './useCustomEvent';
 
 interface State<T> {
   data?: T
@@ -34,33 +38,35 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boo
 
   const [state, dispatch] = useReducer(fetchReducer, initialState);
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!url) return;
 
     cancelRequest.current = false;
 
-    const fetchData = async () => {
-      if (loading) dispatch({ type: 'loading' });
+    if (loading) dispatch({ type: 'loading' });
 
-      try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-          throw new Error(response.statusText);
-        }
-
-        const data = (await response.json()) as T;
-        if (cancelRequest.current) return;
-
-        dispatch({ type: 'fetched', payload: data });
-      } catch (error) {
-        if (cancelRequest.current) return;
-
-        dispatch({ type: 'error', payload: error as Error });
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.statusText);
       }
-    };
 
+      const data = (await response.json()) as T;
+      if (cancelRequest.current) return;
+
+      dispatch({ type: 'fetched', payload: data });
+    } catch (error) {
+      if (cancelRequest.current) return;
+
+      dispatch({ type: 'error', payload: error as Error });
+    }
+  };
+
+  useEffect(() => {
     fetchData();
-  }, [url, options]);
+  }, [url]);
+
+  useCustomEvent(EVENTS.SUBUNSUB, fetchData);
 
   return state;
 }

@@ -19,8 +19,8 @@ export const getProjectsByOrgId = (
   } return orgProjects;
 };
 
-export const getOrgName = (orgId: number, items: Organization[]) => items
-  .find((el) => el.organization_id === orgId)?.organization_name;
+export const getOrg = (orgId: number, items: Organization[]) => items
+  .find((el) => el.organization_id === orgId);
 
 export const getProjectName = (id: number, items: Project[]) => items
   .find((el) => el.project_id === id)?.project_name;

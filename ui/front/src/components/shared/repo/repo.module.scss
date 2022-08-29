@@ -1,5 +1,7 @@
 @import "@styles/vars.scss";
 
+
+
 .wrapper {
     height: 100%;
     width: 100%;
@@ -60,6 +62,11 @@
 .list.list {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+}
+
+.wrapperElectron {
+    composes:wrapper;
+    padding: 0 2rem;
 }
 
 @media screen and (max-width: 600px) {
