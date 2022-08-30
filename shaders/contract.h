@@ -25,9 +25,6 @@
 namespace sourc3 {
 constexpr size_t kIpfsAddressSize = 46;
 
-// plus 0-term
-using IpfsAddr = std::array<char, kIpfsAddressSize + 1>;
-
 enum Tag : uint8_t {
     kRepo,
     kObjects,
@@ -37,16 +34,14 @@ enum Tag : uint8_t {
     kRepoMember,
     kOrganizationMember,
     kProjectMember,
-    kOrganizationName,
-    kProjectName,
-    kRepoName,
     kUser,
 };
 
 #pragma pack(push, 1)
 
-using GitOid = Opaque<20>;
-using Hash256 = Opaque<32>;
+using IpfsAddr = std::array<char, kIpfsAddressSize + 1>;  // plus 0-term
+using GitOid = std::array<uint8_t, 20>;
+using Hash256 = std::array<uint8_t, 32>;
 
 inline Hash256 GetNameHash(const char* name, size_t len) {
     Hash256 res;
@@ -57,9 +52,6 @@ inline Hash256 GetNameHash(const char* name, size_t len) {
 }
 
 struct ContractState {
-    uint64_t last_repo_id;
-    uint64_t last_organization_id;
-    uint64_t last_project_id;
     Amount faucet_balance;
 };
 
@@ -95,18 +87,16 @@ struct OrganizationData {
 };
 
 struct Organization {
-    using Id = uint64_t;
+    struct Id {
+        Hash256 org_name_hash;
+    };
+
     struct Key {
         Tag tag = Tag::kOrganization;
         Id id;
-        explicit Key(const Id& id) : id(id) {
+        explicit Key(const Hash256& h) : id{h} {
         }
-    };
-    struct NameKey {
-        Tag tag = Tag::kOrganizationName;
-        Hash256 name_hash;
-        explicit NameKey(const Hash256& h) {
-            Env::Memcpy(&name_hash, &h, sizeof(name_hash));
+        explicit Key(const Id& id) : id(id) {
         }
     };
     enum Permissions : uint8_t {
@@ -155,20 +145,16 @@ struct ProjectData {
 };
 
 struct Project {
-    using Id = uint64_t;
+    struct Id : Organization::Id {
+        Hash256 proj_name_hash;
+    };
     struct Key {
         Tag tag = Tag::kProject;
         Id id;
-        explicit Key(const Id& id) : id(id) {
+        Key(const Hash256& org_hash, const Hash256& proj_hash)
+            : id{{org_hash}, proj_hash} {
         }
-    };
-    struct NameKey {
-        Tag tag = Tag::kProjectName;
-        Organization::Id org_id;
-        Hash256 proj_name_hash;
-        explicit NameKey(const Organization::Id& org_id, const Hash256& h)
-            : org_id{org_id} {
-            Env::Memcpy(&proj_name_hash, &h, sizeof(proj_name_hash));
+        explicit Key(const Id& id) : id(id) {
         }
     };
     enum Permissions : uint8_t {
@@ -190,8 +176,6 @@ struct Project {
 };
 
 struct Repo {
-    using Id = uint64_t;  // big-endinan
-
     enum Permissions : uint8_t {
         kModifyRepo = 0b00001,
         kAddMember = 0b00010,
@@ -203,34 +187,22 @@ struct Repo {
 
     static constexpr size_t kMaxNameSize = 100;
 
-    struct NameKey {
-        Tag tag = Tag::kRepoName;
-        Organization::Id org_id;
-        Hash256 proj_hash;
-        Hash256 repo_hash;
-        NameKey(const Organization::Id& org_id, const Hash256& proj_hash,
-                const Hash256& repo_hash)
-            : org_id(org_id) {
-            Env::Memcpy(&this->proj_hash, &proj_hash, sizeof(proj_hash));
-            Env::Memcpy(&this->repo_hash, &repo_hash, sizeof(repo_hash));
-        }
+    struct Id : Project::Id {
+        Hash256 repo_name_hash;
     };
-    struct BaseKey {
-        Tag tag;
-        Id repo_id;
-        BaseKey(Tag t, Repo::Id id) : tag(t), repo_id(Utils::FromBE(id)) {
-        }  // swap bytes
-    };
-    struct Key : BaseKey {
-        explicit Key(Repo::Id id) : BaseKey(kRepo, id) {
+
+    struct Key {
+        Tag tag = Tag::kRepo;
+        Id id;
+        Key(const Hash256& org_hash, const Hash256& proj_hash,
+            const Hash256& repo_hash)
+            : id{{{org_hash}, proj_hash}, repo_hash} {
         }
-        Key() : Key(0) {
+        explicit Key(const Id& id) : id(id) {
         }
     };
 
-    Project::Id project_id;
-    Hash256 name_hash;
-    Id repo_id;
+    Id id;
     size_t cur_objs_number;
     PubKey owner;
     uint32_t is_private;
@@ -256,10 +228,11 @@ struct GitObject {
     using Id = uint64_t;
 
     struct Meta {
-        struct Key : Repo::BaseKey {
+        struct Key {
+            Tag tag = kObjects;
+            Repo::Id repo_id;
             Id obj_id;
-            Key(Repo::Id rid, const Id& oid)
-                : Repo::BaseKey(kObjects, rid), obj_id(oid) {
+            Key(Repo::Id rid, const Id& oid) : repo_id(rid), obj_id(oid) {
             }
         };
         enum Type : int8_t {
@@ -275,11 +248,11 @@ struct GitObject {
     } meta;
 
     struct Data {
-        struct Key : Repo::BaseKey {
+        struct Key {
+            Tag tag = kObjects;
+            Repo::Id repo_id;
             GitOid hash;
-            Key(Repo::Id rid, const GitOid& oid)
-                : Repo::BaseKey(kObjects, rid) {
-                Env::Memcpy(&hash, &oid, sizeof(oid));
+            Key(Repo::Id rid, const GitOid& oid) : repo_id(rid), hash(oid) {
             }
         };
 
@@ -300,18 +273,15 @@ struct GitObject {
 
 struct GitRef {
     static constexpr size_t kMaxNameSize = 256;
-    struct Key : Repo::BaseKey {
+    struct Key {
+        Tag tag = kRefs;
+        Repo::Id repo_id;
         Hash256 name_hash;
-        Key(Repo::Id rid, const Hash256& nh)
-            : Repo::BaseKey(kRefs, rid), name_hash(nh) {
-            Env::Memcpy(&name_hash, &nh, sizeof(name_hash));
+        Key(Repo::Id rid, const Hash256& nh) : repo_id(rid), name_hash(nh) {
         }
 
         Key(Repo::Id rid, const char* name, size_t len)
-            : Repo::BaseKey(kRefs, rid), name_hash(GetNameHash(name, len)) {
-        }
-
-        Key() : Repo::BaseKey(kRefs, 0) {
+            : repo_id(rid), name_hash(GetNameHash(name, len)) {
         }
     };
 
@@ -395,7 +365,7 @@ struct PushObjects {
         uint32_t data_size;
         // followed by data
     };
-    uint64_t repo_id;
+    Repo::Id repo_id;
     PubKey user;
     size_t objects_number;
     // packed objects after this
@@ -403,7 +373,7 @@ struct PushObjects {
 
 struct PushRefs {
     static const uint32_t kMethod = 4;
-    uint64_t repo_id;
+    Repo::Id repo_id;
     PubKey user;
     RefsInfo refs_info;
 };

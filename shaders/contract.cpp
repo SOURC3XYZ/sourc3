@@ -63,9 +63,9 @@ template <class T>
 void CheckPermissions(const PubKey& user, typename T::Id id,
                       typename T::Permissions p) {
     typename Member::Key<T> key(user, id);
-    Member user_info;
-    Env::Halt_if(!Env::LoadVar_T(key, user_info));
-    Env::Halt_if((user_info.permissions & p) != p);
+    Member member_info;
+    Env::Halt_if(!Env::LoadVar_T(key, member_info));
+    Env::Halt_if((member_info.permissions & p) != p);
 }
 
 // Loads variable length object
@@ -81,9 +81,11 @@ std::unique_ptr<T> LoadVLObject(const typename T::Id& id) {
 
 // Saves variable length object
 template <class T>
-void SaveVLObject(const typename T::Key& key, const std::unique_ptr<T>& object,
-                  uint32_t obj_size = sizeof(T)) {
-    Env::SaveVar(&key, sizeof(key), object.get(), obj_size, KeyTag::Internal);
+uint32_t SaveVLObject(const typename T::Key& key,
+                      const std::unique_ptr<T>& object,
+                      uint32_t obj_size = sizeof(T)) {
+    return Env::SaveVar(&key, sizeof(key), object.get(), obj_size,
+                        KeyTag::Internal);
 }
 
 template <class T>
@@ -97,9 +99,7 @@ BEAM_EXPORT void Ctor(const method::Initial& params) {
     params.m_Stgs.TestNumApprovers();
     params.m_Stgs.Save();
     ContractState cs;
-    cs.last_repo_id = 1;
-    cs.last_project_id = 1;
-    cs.last_organization_id = 1;
+    cs.faucet_balance = 0;
     Env::SaveVar_T(0, cs);
 }
 
@@ -109,13 +109,6 @@ BEAM_EXPORT void Dtor(void*) {
 
 namespace Upgradable3 {  // NOLINT
 void OnUpgraded(uint32_t n_prev_version) {
-    // TODO: temporary code to set faucet balance to 0, delete next upgrade
-    if (n_prev_version == 1) {
-        ContractState cs;
-        Env::LoadVar_T(0, cs);
-        cs.faucet_balance = 0;
-        Env::SaveVar_T(0, cs);
-    }
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
@@ -126,7 +119,7 @@ uint32_t get_CurrentVersion() {  // NOLINT
 BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
 
-    CheckPermissions<Repo>(params.user, repo_info->repo_id,
+    CheckPermissions<Repo>(params.user, repo_info->id,
                            Repo::Permissions::kPush);
 
     auto* obj =
@@ -154,16 +147,15 @@ BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
             size);  // move to next object
     }
 
-    Repo::Key key_repo(repo_info->repo_id);
-    SaveVLObject(key_repo, repo_info, sizeof(Repo) + repo_info->name_len);
-
+    SaveVLObject(Repo::Key{repo_info->id}, repo_info,
+                 sizeof(Repo) + repo_info->name_len);
     Env::AddSig(params.user);
 }
 
 BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
 
-    CheckPermissions<Repo>(params.user, repo_info->repo_id,
+    CheckPermissions<Repo>(params.user, repo_info->id,
                            Repo::Permissions::kPush);
 
     auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
@@ -190,18 +182,12 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     org->logo_addr = params.logo_addr;
     Env::Memcpy(&org->data, &params.data, sizeof(params.data) + data_len);
 
-    ContractState cs;
-    Env::LoadVar_T(0, cs);
-    Organization::Key org_key(cs.last_organization_id++);
-    Env::SaveVar_T(0, cs);
-    SaveVLObject(org_key, org, sizeof(Organization) + data_len);
+    Organization::Key org_key{GetNameHash(org->data.data, org->data.name_len)};
+    Env::Halt_if(SaveVLObject(org_key, org, sizeof(Organization) + data_len));
 
     Member::Key<Organization> member_key(org->creator, org_key.id);
     Member member_info{.permissions = Organization::Permissions::kAll};
     Env::SaveVar_T(member_key, member_info);
-
-    Organization::NameKey org_name_key{GetNameHash(org->data.data, org->data.name_len)};
-    Env::Halt_if(Env::SaveVar_T(org_name_key, org_key.id));
 
     Env::AddSig(org->creator);
 }
@@ -224,15 +210,12 @@ BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
     Env::Memcpy(&new_organization->data, &params.data,
                 total_len + sizeof(OrganizationData));
 
-    Organization::NameKey old_org_name_key{
-        GetNameHash(organization->data.data, organization->data.name_len)};
-    Env::DelVar_T(old_org_name_key);
+    Env::DelVar_T(Organization::Key{params.id});
 
-    Organization::NameKey new_org_name_key{
-        GetNameHash(new_organization->data.data, new_organization->data.name_len)};
-    Env::Halt_if(Env::SaveVar_T(new_org_name_key, params.id));
+    Organization::Key new_org_key{GetNameHash(new_organization->data.data,
+                                              new_organization->data.name_len)};
 
-    SaveVLObject(Organization::Key(params.id), new_organization,
+    SaveVLObject(new_org_key, new_organization,
                  sizeof(Organization) + total_len);
 }
 
@@ -245,46 +228,29 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     CheckPermissions<Project>(params.caller, params.project_id,
                               Project::Permissions::kAddRepo);
 
-    std::unique_ptr<Project> project =
-        LoadVLObject<Project>(params.project_id);
-
-    ContractState cs;
-    Env::LoadVar_T(0, cs);
-
-    uint64_t repo_id = cs.last_repo_id++;
-
-    Env::SaveVar_T(0, cs);
-
     auto repo_name_hash = GetNameHash(params.name, params.name_len);
 
     std::unique_ptr<Repo> repo_info(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
-    _POD_(repo_info->name_hash) = repo_name_hash;
     repo_info->owner = params.caller;
-    repo_info->repo_id = repo_id;
+    repo_info->id = {{params.project_id}, repo_name_hash};
     repo_info->name_len = params.name_len;
     repo_info->cur_objs_number = 0;
-    repo_info->project_id = params.project_id;
     repo_info->is_private = params.is_private;
     Env::Memcpy(repo_info->name, params.name, repo_info->name_len);
 
-    Member::Key<Repo> key_user(params.caller, repo_info->repo_id);
+    Member::Key<Repo> key_user(params.caller, repo_info->id);
     Env::SaveVar_T(key_user, Member{.permissions = Repo::Permissions::kAll});
 
-    Repo::NameKey name_key{project->organization_id,
-                           GetNameHash(project->data.data, project->data.name_len),
-                           repo_name_hash};
-    Env::Halt_if(Env::SaveVar_T(name_key, repo_id));
-
-    SaveVLObject(Repo::Key(repo_info->repo_id), repo_info,
-                 sizeof(Repo) + repo_info->name_len);
+    Env::Halt_if(SaveVLObject(Repo::Key{repo_info->id}, repo_info,
+                              sizeof(Repo) + repo_info->name_len));
 
     Env::AddSig(repo_info->owner);
 }
 
 BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
-    CheckPermissions<Repo>(params.caller, repo_info->repo_id,
+    CheckPermissions<Repo>(params.caller, repo_info->id,
                            Repo::Permissions::kModifyRepo);
     Env::AddSig(params.caller);
 
@@ -292,44 +258,30 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
 
     auto new_repo_name_hash = GetNameHash(params.name, params.name_len);
-    _POD_(new_repo_info->name_hash) = new_repo_name_hash;
     new_repo_info->owner = repo_info->owner;
-    new_repo_info->repo_id = repo_info->repo_id;
+    new_repo_info->id = repo_info->id;
     new_repo_info->name_len = params.name_len;
     new_repo_info->cur_objs_number = repo_info->cur_objs_number;
-    new_repo_info->project_id = repo_info->project_id;
     new_repo_info->is_private = params.is_private;
     Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
-    Env::DelVar_T(Repo::Key(repo_info->repo_id));
-
-    std::unique_ptr<Project> project =
-        LoadVLObject<Project>(repo_info->project_id);
-
-    Env::DelVar_T(Repo::NameKey(project->organization_id,
-                                GetNameHash(project->data.data, project->data.name_len),
-                                repo_info->name_hash));
-    Repo::NameKey new_name_key{project->organization_id,
-                               GetNameHash(project->data.data, project->data.name_len),
-                               new_repo_info->name_hash};
-    Env::Halt_if(Env::SaveVar_T(new_name_key, new_repo_info->repo_id));
-
-    SaveVLObject(Repo::Key(new_repo_info->repo_id), new_repo_info,
+    Env::DelVar_T(Repo::Key(repo_info->id));
+    SaveVLObject(Repo::Key(new_repo_info->id), new_repo_info,
                  sizeof(Repo) + new_repo_info->name_len);
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
-/*                                                                
-    std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
-    CheckPermissions<Project>(params.caller, repo_info->repo_id,
-                              Project::Permissions::kRemoveRepo);
-    Env::AddSig(params.caller);
-    Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
-    Env::DelVar_T(Member::Key<Repo>(repo_info->owner, repo_info->repo_id));
-    Env::DelVar_T(Repo::Key(repo_info->repo_id));
-    // TODO: delete all repo members
-    // TODO: delete all git refs and objects
-*/
+    /*
+        std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
+        CheckPermissions<Project>(params.caller, repo_info->id,
+                                  Project::Permissions::kRemoveRepo);
+        Env::AddSig(params.caller);
+        Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
+        Env::DelVar_T(Member::Key<Repo>(repo_info->owner, repo_info->id));
+        Env::DelVar_T(Repo::Key(repo_info->id));
+        // TODO: delete all repo members
+        // TODO: delete all git refs and objects
+    */
 }
 
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
@@ -346,15 +298,10 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     project->organization_id = params.organization_id;
     Env::Memcpy(&project->data, &params.data, sizeof(params.data) + data_len);
 
-    ContractState cs;
-    Env::LoadVar_T(0, cs);
-    Project::Key project_key(cs.last_project_id++);
-    Env::SaveVar_T(0, cs);
+    Project::Key project_key{
+        {{project->organization_id},
+         GetNameHash(project->data.data, project->data.name_len)}};
     SaveVLObject(project_key, project, sizeof(Project) + data_len);
-
-    Project::NameKey name_key{project->organization_id,
-                              GetNameHash(project->data.data, project->data.name_len)};
-    Env::Halt_if(Env::SaveVar_T(name_key, project_key.id));
 
     Member::Key<Project> member_key(project->creator, project_key.id);
     Member member_info{.permissions = Project::Permissions::kAll};
@@ -379,18 +326,13 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     Env::Memcpy(&new_project->data, &params.data,
                 total_len + sizeof(ProjectData));
 
-    Project::NameKey old_name_key{
-        project->organization_id,
-        GetNameHash(project->data.data, project->data.name_len)};
-    Env::DelVar_T(old_name_key);
+    Env::DelVar_T(Project::Key{params.project_id});
 
-    Project::NameKey new_name_key{
-        new_project->organization_id,
-        GetNameHash(new_project->data.data, new_project->data.name_len)};
-    Env::Halt_if(Env::SaveVar_T(new_name_key, params.project_id));
+    Project::Key new_key{
+        {{new_project->organization_id},
+         GetNameHash(new_project->data.data, new_project->data.name_len)}};
 
-    SaveVLObject(Project::Key(params.project_id), new_project,
-                 sizeof(Project) + total_len);
+    SaveVLObject(new_key, new_project, sizeof(Project) + total_len);
 }
 
 BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
