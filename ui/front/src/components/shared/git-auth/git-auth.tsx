@@ -50,7 +50,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             classes={className}
           />
         </LoginSocialGithub>
-        {why && !isDisabled && <a className={styles.whyLink} href="#">Why connect? Learn more</a>}
+        {why && !isDisabled && <a className={styles.whyLink} target="_blank" href="https://www.sourc3.xyz/why-connect-to-github">Why connect? Learn more</a>}
       </div>
       <Popup
         visible={isVisible}
