@@ -21,13 +21,14 @@ export function Uploader() {
     customRequest: () => {},
     onChange: async (info: UploadChangeParam) => {
       if (info.fileList[0].originFileObj) {
-        const data = await uploadToIpfs(info.fileList[0].originFileObj);
-        const image = await getImgUrlFromIpfs(data.hash);
-        if (image) {
-          setSrc(image);
+        try {
+          const data = await uploadToIpfs(info.fileList[0].originFileObj);
+          const image = await getImgUrlFromIpfs(data.hash);
+          if (image) setSrc(image);
+          console.log(data);
+        } finally {
+          info.fileList.splice(0, 1);
         }
-        console.log(data);
-        info.fileList.splice(0, 1);
       }
     }
   };

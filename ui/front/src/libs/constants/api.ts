@@ -3,7 +3,7 @@ export enum CONFIG {
   HOST = 'http://localhost:5001',
   NETWORK = 'dappnet',
   CID = '9d6ae1118597570ce50b79580737777329730abca6cf91aa0b8bd7d2764485e5',
-  //9d6ae1118597570ce50b79580737777329730abca6cf91aa0b8bd7d2764485e5 - new_fields
+  // 9d6ae1118597570ce50b79580737777329730abca6cf91aa0b8bd7d2764485e5 - new_fields
   // '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3' - DEV
   // ec90c6258019107543e0726c415f8b92c78805afcdb1336a61345b97486d2832 - DEMO
   // dappnet demo e95c0ab0b2ccbd79f542ea307bf6aa6f1898dcc607a4faedf187e7309e8d38b9
@@ -13,9 +13,11 @@ export enum CONFIG {
   DOWNLOAD_LINK = 'https://apps-dappnet.beam.mw/ipfs',
   HEADLESS_NODE = 'eu-node02.dappnet.beam.mw:8200',
   IPFS_HOST = 'https://cache.sourc3.xyz',
+  // https://cache.sourc3.xyz
   ASSET_ID = 0,
   IPFS_TIMEOUT = 20000,
-  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master'
+  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master',
+  MAX_PIC_SIZE = 750000
 }
 // fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10
 // 126c94dad2a409d1af5beb1667972ebcbd165d940159049f4a0ad6b5f4b8e976
