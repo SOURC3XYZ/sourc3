@@ -673,6 +673,7 @@ public:
 
             auto oid_copy = oid_to_meta;
             for (const auto& [_, hash] : oid_copy) {
+                (void)_;
                 CommitMetaBlock commit(GetStringFromIPFS(hash, wallet_client_));
                 TreeMetaBlock tree(
                     GetStringFromIPFS(commit.tree_meta_hash, wallet_client_));
@@ -930,6 +931,7 @@ private:
         std::move(tree_objects.begin(), tree_objects.end(),
                   std::back_inserter(objects));
         for (auto&& [_, parent_hash] : commit.parent_hashes) {
+            (void)_;
             auto parent_objects = GetAllObjects(parent_hash, progress);
             std::move(parent_objects.begin(), parent_objects.end(),
                       std::back_inserter(objects));
@@ -962,6 +964,7 @@ private:
         std::move(tree_objects.begin(), tree_objects.end(),
                   std::back_inserter(objects));
         for (auto&& [_, parent_hash] : commit.parent_hashes) {
+            (void)_;
             auto [parent_objects, parent_metas] =
                 GetAllObjectsWithMeta(parent_hash, progress);
             std::move(parent_objects.begin(), parent_objects.end(),
