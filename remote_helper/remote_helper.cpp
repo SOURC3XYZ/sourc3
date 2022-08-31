@@ -391,14 +391,19 @@ ObjectWithContent CreateObject(int8_t type, git_oid hash, std::string ipfs_hash,
 bool CheckCommitsLinking(
     const unordered_map<string, std::variant<TreeMetaBlock, CommitMetaBlock>>&
         metas,
-    const vector<Ref>& new_refs) {
+    const vector<Ref>& new_refs,
+    const HashMapping& oid_to_meta) {
     deque<string> working_hashes;
     for (const auto& ref : new_refs) {
-        working_hashes.push_back(ref.ipfs_hash);
+        if (oid_to_meta.count(ref.target) == 0) {
+            return false;
+        }
+        string hash = oid_to_meta.at(ref.target);
+        working_hashes.push_back(hash);
     }
 
     while (!working_hashes.empty()) {
-        auto&& hash = std::move(working_hashes.back());
+        string hash = std::move(working_hashes.back());
         working_hashes.pop_back();
         if (metas.count(hash) == 0) {
             return false;
@@ -728,13 +733,19 @@ public:
                                            .as_string()
                                            .c_str();
                     oid_to_meta[obj.oid] = hash;
+                    if (obj.type == GIT_OBJECT_COMMIT) {
+                        metas[hash] = *static_cast<CommitMetaBlock*>(meta_object.get());
+                    } else if (obj.type == GIT_OBJECT_TREE) {
+                        metas[hash] = *static_cast<TreeMetaBlock*>(meta_object.get());
+                    }
                 }
                 if (progress) {
                     progress->UpdateProgress(++i);
                 }
             }
         }
-        if (!is_forced && !CheckCommitsLinking(metas, collector.m_refs)) {
+        if (!is_forced && !CheckCommitsLinking(metas, collector.m_refs,
+                                               oid_to_meta)) {
             cerr << "Commits linking wrong, looks like you use force push "
                     "without `--force` flag"
                  << endl;
