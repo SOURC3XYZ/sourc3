@@ -142,6 +142,26 @@ struct CommitMetaBlock final : MetaBlock {
     std::string tree_meta_hash;
     std::vector<GitIdWithIPFS> parent_hashes;
 
+    CommitMetaBlock() = default;
+
+    explicit CommitMetaBlock(const string& serialized) {
+        istringstream ss(serialized);
+        string hash_oid;
+        ss >> hash.ipfs;
+        ss >> hash_oid;
+        hash.oid = FromString(hash_oid);
+        ss >> tree_meta_hash;
+        string hash_ipfs;
+        while (ss >> hash_ipfs) {
+            if (hash_ipfs.empty()) {
+                break;
+            }
+            ss >> hash_oid;
+            parent_hashes.emplace_back(FromString(hash_oid),
+                                       std::move(hash_ipfs));
+        }
+    }
+
     string Serialize() const final {
         std::string data = hash.ToString() + "\n" + tree_meta_hash + "\n";
         for (const auto& parent : parent_hashes) {
@@ -153,6 +173,24 @@ struct CommitMetaBlock final : MetaBlock {
 
 struct TreeMetaBlock final : MetaBlock {
     std::vector<GitIdWithIPFS> entries;
+
+    TreeMetaBlock() = default;
+
+    explicit TreeMetaBlock(const string& serialized) {
+        istringstream ss(serialized);
+        string hash_oid;
+        ss >> hash.ipfs;
+        ss >> hash_oid;
+        hash.oid = FromString(hash_oid);
+        string hash_ipfs;
+        while (ss >> hash_ipfs) {
+            if (hash_oid.empty()) {
+                break;
+            }
+            ss >> hash_oid;
+            entries.emplace_back(FromString(hash_oid), std::move(hash_ipfs));
+        }
+    }
 
     string Serialize() const final {
         std::string data = hash.ToString() + "\n";
@@ -272,7 +310,9 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(
     block->hash.oid = *commit_id;
     block->hash.ipfs = oid_to_ipfs.at(*commit_id);
     if (oid_to_meta.count(*git_commit_tree_id(raw_commit)) == 0) {
-        throw std::runtime_error{"Cannot find tree meta on IPFS"};
+        throw std::runtime_error{"Cannot find tree " +
+                                 ToString(*git_commit_tree_id(raw_commit)) +
+                                 " meta on IPFS"};
     }
     block->tree_meta_hash = oid_to_meta.at(*git_commit_tree_id(raw_commit));
     unsigned int parents_count = git_commit_parentcount(raw_commit);
@@ -325,7 +365,7 @@ std::string GetStringFromIPFS(const std::string& hash,
                               SimpleWalletClient& wallet_client) {
     auto res = ParseJsonAndTest(wallet_client.LoadObjectFromIPFS(hash));
     if (!res.as_object().contains("result")) {
-        throw std::runtime_error{""};
+        throw std::runtime_error{"No result in resulting JSON, probably error"};
     }
     auto d = res.as_object()["result"].as_object()["data"].as_array();
     ByteBuffer buf;
@@ -336,8 +376,8 @@ std::string GetStringFromIPFS(const std::string& hash,
     return ByteBufferToString(buf);
 }
 
-ObjectWithContent CreateObject(int8_t type, git_oid hash,
-                               std::string ipfs_hash, std::string content) {
+ObjectWithContent CreateObject(int8_t type, git_oid hash, std::string ipfs_hash,
+                               std::string content) {
     ObjectWithContent obj;
     obj.hash = std::move(hash);
     obj.type = type;
@@ -345,6 +385,34 @@ ObjectWithContent CreateObject(int8_t type, git_oid hash,
     obj.ipfs_hash = std::move(ipfs_hash);
     obj.content = std::move(content);
     return obj;
+}
+
+bool CheckCommitsLinking(
+    const unordered_map<string, std::variant<TreeMetaBlock, CommitMetaBlock>>&
+        metas,
+    const vector<Ref>& new_refs) {
+    deque<string> working_hashes;
+    for (const auto& ref : new_refs) {
+        working_hashes.push_back(ref.ipfs_hash);
+    }
+
+    while (!working_hashes.empty()) {
+        auto&& hash = std::move(working_hashes.back());
+        working_hashes.pop_back();
+        if (metas.count(hash) == 0) {
+            return false;
+        }
+
+        auto* commit = std::get_if<CommitMetaBlock>(&metas.at(hash));
+        if (commit == nullptr) {
+            return false;
+        }
+
+        for (const auto& parent_meta : commit->parent_hashes) {
+            working_hashes.push_back(parent_meta.ipfs);
+        }
+    }
+    return true;
 }
 
 }  // namespace
@@ -404,8 +472,7 @@ public:
         git::RepoAccessor accessor(wallet_client_.GetRepoDir());
         size_t total_objects = 0;
 
-        std::vector<ObjectWithContent> objects =
-            GetUploadedObjects(RequestRefs());
+        auto objects = GetUploadedObjects(RequestRefs());
         for (const auto& obj : objects) {
             if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
                 received_objects.insert(ToString(obj.hash));
@@ -504,9 +571,9 @@ public:
         }
 
         auto remote_refs = RequestRefs();
-        auto uploaded_objects = GetUploadedObjects(remote_refs);
-        auto uploaded_oids =
-            GetOidsFromObjects(uploaded_objects);
+        auto [uploaded_objects, metas] =
+            GetUploadedObjectsWithMetas(remote_refs);
+        auto uploaded_oids = GetOidsFromObjects(uploaded_objects);
         std::vector<git_oid> merge_bases;
         for (const auto& remote_ref : remote_refs) {
             for (const auto& local_ref : local_refs) {
@@ -602,6 +669,21 @@ public:
             for (const auto& [oid, hash] : oid_to_meta) {
                 prev_commits_parents.emplace_back(oid, hash);
             }
+
+            auto oid_copy = oid_to_meta;
+            for (const auto& [_, hash] : oid_copy) {
+                CommitMetaBlock commit(GetStringFromIPFS(hash, wallet_client_));
+                TreeMetaBlock tree(
+                    GetStringFromIPFS(commit.tree_meta_hash, wallet_client_));
+                oid_to_meta[tree.hash.oid] = commit.tree_meta_hash;
+            }
+        }
+
+        for (const auto& [hash, meta] : metas) {
+            auto oid = std::visit([](const auto& value) {
+                return value.hash.oid;
+            }, meta);
+            oid_to_meta[oid] = hash;
         }
 
         HashMapping oid_to_ipfs;
@@ -631,37 +713,9 @@ public:
                 obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
                 oid_to_ipfs[obj.oid] =
                     std::string(hash_str.cbegin(), hash_str.cend());
-                std::cerr << "Process object " << ToString(obj.oid) << " with IPFS hash: " << ByteBufferToString(obj.ipfsHash) << " with type: " << obj.type << std::endl;
                 auto meta_object =
                     GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
                 if (meta_object != nullptr) {
-                    if (obj.type == GIT_OBJECT_COMMIT && !is_forced &&
-                        !prev_commits_parents.empty()) {
-                        // We need to check linking of commits
-                        auto commit = static_cast<CommitMetaBlock*>(
-                                meta_object.get());
-                        if (!std::all_of(
-                                commit->parent_hashes.begin(),
-                                commit->parent_hashes.end(),
-                                [&prev_commits_parents](
-                                    const GitIdWithIPFS& obj) {
-                                    return std::any_of(
-                                        prev_commits_parents.begin(),
-                                        prev_commits_parents.end(),
-                                        [&obj](const GitIdWithIPFS& other) {
-                                            return other == obj;
-                                        });
-                                })) {
-                            cerr << "Seems like commit history wrong "
-                                    "linked. "
-                                    "If you want to rewrite history, use "
-                                    "`--force` flag"
-                                 << endl;
-                            return CommandResult::Failed;
-                        }
-                        prev_commits_parents = commit->parent_hashes;
-                    }
-
                     auto meta_buffer =
                         StringToByteBuffer(meta_object->Serialize());
                     auto meta_res =
@@ -677,6 +731,12 @@ public:
                     progress->UpdateProgress(++i);
                 }
             }
+        }
+        if (!is_forced && !CheckCommitsLinking(metas, collector.m_refs)) {
+            cerr << "Commits linking wrong, looks like you use force push "
+                    "without `--force` flag"
+                 << endl;
+            return CommandResult::Failed;
         }
         std::string new_refs_content =
             CreateRefsFile(collector.m_refs, oid_to_meta);
@@ -766,6 +826,29 @@ private:
         return objects;
     }
 
+    std::pair<
+        std::vector<ObjectWithContent>,
+        unordered_map<string, std::variant<TreeMetaBlock, CommitMetaBlock>>>
+    GetUploadedObjectsWithMetas(const std::vector<Ref>& refs) {
+        std::vector<ObjectWithContent> objects;
+        unordered_map<string, variant<TreeMetaBlock, CommitMetaBlock>> metas;
+        auto progress = MakeProgress("Enumerate uploaded objects",
+                                     wallet_client_.GetUploadedObjectCount());
+        for (const auto& ref : refs) {
+            auto [ref_objects, ref_metas] =
+                GetAllObjectsWithMeta(ref.ipfs_hash, progress);
+            std::move(ref_objects.begin(), ref_objects.end(),
+                      std::back_inserter(objects));
+            for (auto&& [key, value] : ref_metas) {
+                metas[std::move(key)] = std::move(value);
+            }
+        }
+        if (progress) {
+            progress->Done();
+        }
+        return {std::move(objects), std::move(metas)};
+    }
+
 private:
     SimpleWalletClient& wallet_client_;
 
@@ -830,35 +913,22 @@ private:
         const std::string& root_ipfs_hash,
         std::optional<ProgressReporter>& progress) {
         std::vector<ObjectWithContent> objects;
-        auto res = GetStringFromIPFS(root_ipfs_hash, wallet_client_);
-        std::istringstream ss(res);
-        std::string commit_hash;
-        ss >> commit_hash;
-        std::string commit_oid;
-        ss >> commit_oid;
-        std::string tree_meta_hash;
-        ss >> tree_meta_hash;
-        std::vector<std::string> parent_meta_hashes;
-        std::string hash;
-        while (ss >> hash) {
-            if (hash.empty()) {
-                break;
-            }
-            parent_meta_hashes.push_back(std::move(hash));
-            ss >> hash;
-        }
-        auto commit_content = GetStringFromIPFS(commit_hash, wallet_client_);
-        objects.push_back(CreateObject(GIT_OBJECT_COMMIT,
-                                       FromString(commit_oid),
-                                       std::move(commit_hash),
-                                       std::move(commit_content)));
+        CommitMetaBlock commit(
+            GetStringFromIPFS(root_ipfs_hash, wallet_client_));
+        auto commit_content =
+            GetStringFromIPFS(commit.hash.ipfs, wallet_client_);
+        objects.push_back(CreateObject(
+            GIT_OBJECT_COMMIT, std::move(commit.hash.oid),
+            std::move(commit.hash.ipfs), std::move(commit_content)));
         if (progress) {
             progress->AddProgress(1);
         }
-        auto tree_objects = GetObjectsFromTreeMeta(tree_meta_hash, progress);
+        TreeMetaBlock tree(
+            GetStringFromIPFS(commit.tree_meta_hash, wallet_client_));
+        auto tree_objects = GetObjectsFromTreeMeta(tree, progress);
         std::move(tree_objects.begin(), tree_objects.end(),
                   std::back_inserter(objects));
-        for (auto&& parent_hash : parent_meta_hashes) {
+        for (auto&& [_, parent_hash] : commit.parent_hashes) {
             auto parent_objects = GetAllObjects(parent_hash, progress);
             std::move(parent_objects.begin(), parent_objects.end(),
                       std::back_inserter(objects));
@@ -866,34 +936,54 @@ private:
         return objects;
     }
 
-    std::vector<ObjectWithContent> GetObjectsFromTreeMeta(
-        const std::string& tree_meta_hash,
-        std::optional<ProgressReporter>& progress) {
+    std::pair<
+        std::vector<ObjectWithContent>,
+        unordered_map<string, std::variant<TreeMetaBlock, CommitMetaBlock>>>
+    GetAllObjectsWithMeta(const std::string& root_ipfs_hash,
+                          std::optional<ProgressReporter>& progress) {
         std::vector<ObjectWithContent> objects;
-        auto meta = GetStringFromIPFS(tree_meta_hash, wallet_client_);
-        std::string tree_hash;
-        std::string tree_oid;
-        std::istringstream ss(meta);
-        ss >> tree_hash;
-        ss >> tree_oid;
-        auto tree_content = GetStringFromIPFS(tree_hash, wallet_client_);
-        objects.push_back(
-            CreateObject(GIT_OBJECT_TREE, FromString(tree_oid),
-                         std::move(tree_hash), std::move(tree_content)));
+        unordered_map<string, variant<TreeMetaBlock, CommitMetaBlock>> metas;
+        CommitMetaBlock commit(
+            GetStringFromIPFS(root_ipfs_hash, wallet_client_));
+        metas[root_ipfs_hash] = commit;
+        auto commit_content =
+            GetStringFromIPFS(commit.hash.ipfs, wallet_client_);
+        objects.push_back(CreateObject(
+            GIT_OBJECT_COMMIT, std::move(commit.hash.oid),
+            std::move(commit.hash.ipfs), std::move(commit_content)));
         if (progress) {
             progress->AddProgress(1);
         }
-        std::string file_hash;
-        std::string file_oid;
-        while (ss >> file_hash) {
-            if (file_hash.empty()) {
-                break;
+        TreeMetaBlock tree(
+            GetStringFromIPFS(commit.tree_meta_hash, wallet_client_));
+        metas[commit.tree_meta_hash] = tree;
+        auto tree_objects = GetObjectsFromTreeMeta(tree, progress);
+        std::move(tree_objects.begin(), tree_objects.end(),
+                  std::back_inserter(objects));
+        for (auto&& [_, parent_hash] : commit.parent_hashes) {
+            auto [parent_objects, parent_metas] =
+                GetAllObjectsWithMeta(parent_hash, progress);
+            std::move(parent_objects.begin(), parent_objects.end(),
+                      std::back_inserter(objects));
+            for (auto&& [key, value] : parent_metas) {
+                metas[std::move(key)] = std::move(value);
             }
-            auto file_content = GetStringFromIPFS(file_hash, wallet_client_);
-            ss >> file_oid;
-            objects.push_back(CreateObject(
-                GIT_OBJECT_BLOB, FromString(file_oid), std::move(file_hash),
-                std::move(file_content)));
+        }
+        return {std::move(objects), std::move(metas)};
+    }
+
+    std::vector<ObjectWithContent> GetObjectsFromTreeMeta(
+        const TreeMetaBlock& tree, std::optional<ProgressReporter>& progress) {
+        std::vector<ObjectWithContent> objects;
+        auto tree_content = GetStringFromIPFS(tree.hash.ipfs, wallet_client_);
+        objects.push_back(
+            CreateObject(GIT_OBJECT_TREE, std::move(tree.hash.oid),
+                         std::move(tree.hash.ipfs), std::move(tree_content)));
+        for (auto&& [oid, hash] : tree.entries) {
+            auto file_content = GetStringFromIPFS(hash, wallet_client_);
+            objects.push_back(CreateObject(GIT_OBJECT_BLOB, std::move(oid),
+                                           std::move(hash),
+                                           std::move(file_content)));
             if (progress) {
                 progress->AddProgress(1);
             }
