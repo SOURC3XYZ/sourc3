@@ -1837,7 +1837,7 @@ void OnActionModifyUser(const ContractID& cid) {
 
     args_size += sizeof(ModifyUser);
 
-    Env::DocGetText("avatar_ipfs_hash", buf->avatar_addr.data(),
+    Env::DocGetText("avatar_addr", buf->avatar_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);

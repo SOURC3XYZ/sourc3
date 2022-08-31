@@ -26,6 +26,8 @@ export function Uploader() {
           const image = await getImgUrlFromIpfs(data.hash);
           if (image) setSrc(image);
           console.log(data);
+        } catch (err) {
+          console.error(err);
         } finally {
           info.fileList.splice(0, 1);
         }
