@@ -9,16 +9,42 @@
 }
 
 .TabLabel {
-    font-family:"PublicSans-Medium";
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 16px;
-    color: #FFFFFF;
-    cursor: pointer;
+    span:first-child {
+        font-family: "PublicSans-Medium";
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 16px;
+        color: #FFFFFF;
+        cursor: pointer;
+    }
+
+    span:last-child {
+        display: inline-block;
+        text-align: center;
+        margin-left: 4px;
+        padding: 3px 8px;
+        border-radius: 11px;
+        background: #fff;
+        color: #000000;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 16px;
+        min-width: 25px
+    }
+
     &Selected {
         @extend .TabLabel;
-        color: #FF791F;
+
+        span:first-child {
+            color: #FF791F;
+        }
+
+        span:last-child {
+            background: #FF791F;
+
+        }
     }
 }
 
@@ -43,10 +69,16 @@
             font-family: "PublicSans-Medium";
             gap: 0 24px;
 
-            img {
+            .entityPicture {
                 width: 80px;
                 height: 80px;
+                object-fit: contain;
                 border-radius: 8px;
+                visibility: hidden;
+
+                &Active {
+                    visibility: visible;
+                }
             }
 
             .titleBlock {
@@ -79,10 +111,12 @@
 
         .descriptionBlock {
             padding: 11px 100px 0;
+
             .description {
                 display: none;
                 color: #808080;
                 padding-bottom: 8px;
+
                 &Active {
                     @extend .description;
                     display: block;

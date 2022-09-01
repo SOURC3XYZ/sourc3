@@ -15,12 +15,12 @@ import React, { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
+import ProfilesEdit from '@components/shared/profiles-page/profiles-edit';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
-import ProfilesEdit from "@components/shared/profiles-page/profiles-edit";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -43,7 +43,7 @@ function Main() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page',
+      path: 'projects/:orgId/:type/:page/*',
       element: <Projects />
     },
     {

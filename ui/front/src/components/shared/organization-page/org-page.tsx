@@ -1,13 +1,12 @@
 import {
-  CreateModal,
-  EntityList,
   EntityWrapper,
   BackButton
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
 import { CSSProperties, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ProjectListItem from './project-list-item';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import TabItem from '../entity/tab-item';
+import ProjectList from './project-list';
 
 const placeholder = 'Enter name of your project';
 
@@ -20,8 +19,9 @@ function Projects() {
     type,
     pkey,
     searchText,
-    items,
-    modalApi
+    projects,
+    modalApi,
+    repos
   } = useProject();
 
   const {
@@ -45,15 +45,6 @@ function Projects() {
     }
   ];
 
-  const listItem = (item: typeof items[number]) => (
-    <ProjectListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      type={type}
-    />
-  );
-
   const navigate = useNavigate();
 
   const back = useCallback(() => navigate(-1), []);
@@ -72,17 +63,35 @@ function Projects() {
   const backButton = useMemo(() => (
     isElectron && <BackButton inlineStyles={style} onClick={back} />), []);
 
+  const tabData = useMemo(() => [
+    {
+      id: 0,
+      label: <TabItem title="Projects" count={projects.length} />
+    },
+    {
+      id: 1,
+      label: <TabItem title="Repositories" count={repos.length} />
+    },
+    {
+      id: 2,
+      label: <TabItem title="Members" count={0} />
+    }
+  ], [repos, projects]);
+
   const headerFields = {
+    routes: ['projects', 'repos', 'users'],
     avatar: org.organization_logo_ipfs_hash,
-    email: 'daniluk@tut.by',
     shortTitle: org.organization_short_title,
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia tempore assumenda commodi incidunt corporis cum beatae nostrum, ab eos perspiciatis. Dolorem officiis voluptate quasi totam repudiandae, repellendus laudantium ex sit. Lorem ipsum dolor sit amet consectetur adipisicing elit. Officia tempore assumenda commodi incidunt corporis cum beatae nostrum, ab eos perspiciatis. Dolorem officiis voluptate quasi totam repudiandae, repellendus laudantium ex sit',
-    website: org.organization_website,
-    twitter: org.organization_twitter,
-    instagram: org.organization_twitter,
-    telegram: org.organization_telegram,
-    linkedin: org.organization_linkedin,
-    discord: org.organization_discord
+    description: org.organization_about,
+    socialLinks: {
+      website: org.organization_website,
+      twitter: org.organization_twitter,
+      instagram: org.organization_twitter,
+      telegram: org.organization_telegram,
+      linkedin: org.organization_linkedin,
+      discord: org.organization_discord
+    },
+    tabData
   };
 
   return (
@@ -97,26 +106,25 @@ function Projects() {
       placeholder={placeholder}
       showModal={showModal}
     >
-      <>
+      <Routes>
         {backButton}
-        <CreateModal
-          title="Add new project to organization"
-          label="Project name"
-          isModalVisible={isModal}
-          placeholder="Enter your project name"
-          handleCreate={handleOk}
-          handleCancel={closeModal}
+        <Route
+          path="/projects"
+          element={(
+            <ProjectList
+              id={id}
+              isModal={isModal}
+              searchText={searchText}
+              projects={projects}
+              path={path}
+              page={page}
+              type={type}
+              handleOk={handleOk}
+              closeModal={closeModal}
+            />
+          )}
         />
-        <EntityList
-          searchText={searchText}
-          renderItem={listItem}
-          route={`projects/${id}`}
-          path={path}
-          page={page}
-          items={items}
-          type={type}
-        />
-      </>
+      </Routes>
     </EntityWrapper>
   );
 }

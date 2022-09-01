@@ -23,7 +23,7 @@ export * from './organizations';
 export * from './preload';
 export * from './profile';
 export * from './profile-block';
-export * from './projects';
+export * from './organization-page';
 export * from './repo';
 export * from './search';
 export * from './seed-list';

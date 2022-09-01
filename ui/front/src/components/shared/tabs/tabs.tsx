@@ -3,9 +3,9 @@
 import classJoin from 'classnames';
 import styles from './tabs.module.scss';
 
-type Tab = {
+export type Tab = {
   id: number,
-  label: string
+  label: string | JSX.Element
 };
 
 type PropClasses = {
