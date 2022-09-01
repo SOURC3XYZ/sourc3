@@ -43,7 +43,7 @@ function App() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page',
+      path: 'projects/:orgId/:type/:page/*',
       element: <Projects />
     },
     {

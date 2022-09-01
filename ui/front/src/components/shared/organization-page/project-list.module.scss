@@ -1,5 +1,28 @@
 @import '@styles/vars.scss';
 
+.entityPicture {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 8px;
+    visibility: hidden;
+
+    &Active {
+        visibility: visible;
+    }
+}
+
+.content {
+    font-family: PublicSans-Thin;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 18px;
+    color: #000000;
+    opacity: 0.5;
+    margin-top: 15px;
+}
+
 
 .list {
     border: 1px solid rgba(0, 0, 0, 0.1);

@@ -48,7 +48,7 @@ const EntityManager = ({
         {addEntityBtn}
       </div>
     </div>
-  ), [searchText, pkey, type]);
+  ), [searchText, pkey, type, navItems]);
 
   return repoManager;
 };
