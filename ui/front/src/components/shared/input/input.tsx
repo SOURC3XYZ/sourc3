@@ -1,5 +1,7 @@
 import { IconEyeOpen, IconEyeCrossed } from '@components/svg';
 import React, { useRef, useState } from 'react';
+import IconSocial from '@components/shared/input/Icon';
+import classNames from 'classnames';
 import styles from './input.module.scss';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,10 +12,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   type?: string;
   refs?: React.InputHTMLAttributes<HTMLInputElement>;
   placeholder?: string;
+  icon?: string
 }
 
 const InputCustom = React.forwardRef(({
-  label, valid = true, password, length, type, ...rest
+  label, valid = true, password, length, type, icon, ...rest
 }:InputProps, refs) => {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
@@ -51,15 +54,24 @@ const InputCustom = React.forwardRef(({
       </div>
     ) : (
       <div className={styles.wrapperInput}>
-        <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>{label}</label>
-        <input
-          autoFocus
-          id="input"
-          className={valid ? styles.inputText : styles.invalid}
-          ref={refs}
-          {...rest}
-          type="text"
-        />
+        <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>
+          {label}
+          <input
+            autoFocus
+            id="input"
+            className={
+              classNames(
+                { [`${styles.inputText}`]: valid },
+                { [`${styles.invalid}`]: !valid },
+                { [`${styles.iconsMargin}`]: icon }
+              )
+            }
+            ref={refs}
+            {...rest}
+            type="text"
+          />
+          {icon && <IconSocial icon={icon} className={styles.icon} /> }
+        </label>
       </div>
     )
   );

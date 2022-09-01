@@ -77,6 +77,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  .icon{
+    position: absolute;
+    z-index: 1;
+    float: left;
+    top: 30px;
+    left: 16px;
+    & > path{
+      fill: rgba(0, 0, 0, 0.3);
+    }
+  }
+  .IconGray{
+    collapse: icon;
+    fill: #252525;
+  }
+  .iconsMargin{
+    padding: 0 10px 0 40px;
+  }
 }
 
 .labelUp{
@@ -88,6 +106,7 @@
   margin-bottom: 8px;
   width: 100%;
   text-align: left;
+  position: relative;
 }
 .labelUpRed{
   composes: labelUp;

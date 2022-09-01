@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import {
   AllRepos,
-  Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
+  Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo, Uploader
 } from '@components/shared';
 import { useSelector } from '@libs/redux';
 import React, { useCallback, useMemo } from 'react';
@@ -57,6 +57,10 @@ function App() {
     {
       path: 'localRepos/',
       element: <LocalRepos />
+    },
+    {
+      path: 'upload',
+      element: <Uploader />
     },
     {
       path: 'profiles/:id/*',

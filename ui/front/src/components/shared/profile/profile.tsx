@@ -2,9 +2,11 @@ import {
   Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
-import Avatar from 'boring-avatars';
+import DefaultAvatar from 'boring-avatars';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from '@libs/redux';
+import Avatar from '@components/shared/profiles-page/avatar/avatar';
 import styles from './profile.module.scss';
 
 type profileType = {
@@ -17,7 +19,9 @@ function Profile({ pKey }:profileType) {
   // const showModal = () => {
   //   setVisible(true);
   // };
-
+  const { profileImage } = useSelector(((
+    state
+  ) => ({ profileImage: state.profile.user_avatar_ipfs_hash })));
   const handleCancel = () => setVisible(false);
   const handleOk = () => handleCancel();
   const logOut = () => navigate('/');
@@ -69,24 +73,35 @@ function Profile({ pKey }:profileType) {
           overlayStyle={{ position: 'fixed' }}
         >
           <div>
-            <Avatar
-              size={40}
-              name={pKey}
-              variant="beam"
-              colors={[
-                '#FF791F',
-                '#3FD05A',
-                '#000000',
-                '#C271B4',
-                '#4DA2E6',
-                '#DDDDDD',
-                '#92A1C6',
-                '#146A7C',
-                '#F0AB3D',
-                '#C271B4',
-                '#C20D90'
-              ]}
-            />
+            {
+              profileImage ? (
+                <Avatar
+                  src={profileImage}
+                  small
+                />
+              )
+                : (
+                  <DefaultAvatar
+                    size={40}
+                    name={pKey}
+                    variant="beam"
+                    colors={[
+                      '#FF791F',
+                      '#3FD05A',
+                      '#000000',
+                      '#C271B4',
+                      '#4DA2E6',
+                      '#DDDDDD',
+                      '#92A1C6',
+                      '#146A7C',
+                      '#F0AB3D',
+                      '#C271B4',
+                      '#C20D90'
+                    ]}
+                  />
+                )
+            }
+
           </div>
         </Dropdown>
       </div>
