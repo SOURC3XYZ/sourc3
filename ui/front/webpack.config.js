@@ -61,7 +61,7 @@ const build = {
     },
     historyApiFallback: true,
     watchFiles: path.join(__dirname, 'src'),
-    port: 5005,
+    port: 5003,
     open: true,
     hot: true
   },
