@@ -19,6 +19,7 @@ import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
+import {CreateProjectWeb} from "@components/shared/add-org/content/create-project-web";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -55,7 +56,11 @@ function Main() {
     {
       path: '404',
       element: <FailPage />
-    }
+    },
+    {
+      path: 'add-web',
+      element: <CreateProjectWeb />
+    },
   ];
 
   const HeadlessPreloadFallback = useCallback(() => (
