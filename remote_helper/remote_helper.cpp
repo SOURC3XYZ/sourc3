@@ -785,6 +785,19 @@ private:
 };
 
 int main(int argc, char* argv[]) {
+
+    #ifdef __APPLE__
+    pid_t pid = getpid();
+    struct rlimit l;
+    int ret = getrlimit(RLIMIT_CORE, &l);
+
+    printf("getrlimit returned %d\n", ret);
+    printf("rlim_cur = %llu\n", l.rlim_cur);
+    printf("rlim_max = %llu\n", l.rlim_max);
+    l.rlim_cur = l.rlim_max;
+    printf("setrlimit returned %d\n", setrlimit(RLIMIT_CORE, &l));
+    #endif  // __APPLE__
+
     if (argc != 3) {
         cerr << "USAGE: git-remote-sourc3 <remote> <url>" << endl;
         return -1;
