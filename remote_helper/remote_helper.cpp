@@ -787,7 +787,6 @@ private:
 int main(int argc, char* argv[]) {
 
     #ifdef __APPLE__
-    pid_t pid = getpid();
     struct rlimit l;
     int ret = getrlimit(RLIMIT_CORE, &l);
 
