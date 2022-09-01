@@ -4,7 +4,7 @@ import {
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
-import img from '@assets/img/source-header-logo.svg';
+import img from '@assets/img/source-header-logo-alpha.svg';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
 import { GitConnectAuth } from '@components/shared/git-auth';
