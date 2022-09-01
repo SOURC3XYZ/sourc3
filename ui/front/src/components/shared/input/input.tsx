@@ -12,11 +12,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   type?: string;
   refs?: React.InputHTMLAttributes<HTMLInputElement>;
   placeholder?: string;
-  icon?: string
+  icon?: string;
+  onFocus?: boolean
 }
 
 const InputCustom = React.forwardRef(({
-  label, valid = true, password, length, type, icon, ...rest
+  label, valid = true, password, length, type, icon, onFocus, ...rest
 }:InputProps, refs) => {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
@@ -57,7 +58,7 @@ const InputCustom = React.forwardRef(({
         <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>
           {label}
           <input
-            autoFocus
+            autoFocus={onFocus}
             id="input"
             className={
               classNames(

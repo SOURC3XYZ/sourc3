@@ -13,7 +13,7 @@ const TextArea = React.forwardRef(({
   label, valid = true, password, length, type, ...rest
 }:TextAreaProps, refs) => (
   <div className={styles.wrapperInput}>
-    <label htmlFor="input" className={styles.labelUp}>{label}</label>
+    <label htmlFor="input" className={valid ? styles.labelUp : styles.labelRed}>{label}</label>
     <textarea id="input" className={styles.textarea} ref={refs} {...rest} />
   </div>
 ));
