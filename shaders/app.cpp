@@ -544,7 +544,7 @@ void OnActionCreateProject(const ContractID& cid) {
 
     args_size += sizeof(CreateProject);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
@@ -677,7 +677,7 @@ void OnActionModifyProject(const ContractID& cid) {
 
     args_size += sizeof(ModifyProject);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
