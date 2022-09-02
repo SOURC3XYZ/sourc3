@@ -562,8 +562,9 @@ public:
             auto& arg = args[i];
             auto p = arg.find(':');
             auto& r = refs.emplace_back();
-            r.localRef = arg.substr(0, p);
-            is_forced = r.localRef[0] == '+';
+            is_forced = arg[0] == '+';
+            size_t start_index = is_forced ? 1 : 0;
+            r.localRef = arg.substr(start_index, p - start_index);
             r.remoteRef = arg.substr(p + 1);
             git::Reference local_ref;
             if (git_reference_lookup(local_ref.Addr(), *collector.m_repo,
