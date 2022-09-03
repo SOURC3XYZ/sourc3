@@ -1,5 +1,4 @@
-import React, { useMemo, useRef, useState
-} from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import styles from '@components/shared/profiles-page/profiles-page.module.scss';
 import { useSelector } from '@libs/redux';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -7,10 +6,11 @@ import { InputCustom } from '@components/shared/input';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { IProfile } from '@types';
 import TextArea from '@components/shared/profiles-page/input/textArea';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { NavButton } from '@components/shared';
 import DefaultAvatar from 'boring-avatars';
 import { useUpload } from '@libs/hooks/shared';
+import { Breadcrumb } from 'antd';
 import Avatar from './avatar/avatar';
 
 function ProfilesEdit() {
@@ -45,7 +45,7 @@ function ProfilesEdit() {
   });
 
   const onCancel = () => navigate(-1);
-  const [src, setSrc] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(profile.user_avatar_ipfs_hash || null);
   const { uploadToIpfs, getImgUrlFromIpfs } = useUpload();
   const inputFileRef = useRef(null);
   const handleChangeFile = async (e: any) => {
@@ -69,6 +69,7 @@ function ProfilesEdit() {
 
   const onSubmit: SubmitHandler<IProfile> = (data) => {
     setModifyUser(data);
+    console.log(data);
     onCancel();
   };
 
@@ -88,7 +89,17 @@ function ProfilesEdit() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
-        <div className={styles.breadcrumbs} />
+        <div className={styles.breadcrumbs}>
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Link to="/profiles">Profile</Link>
+            </Breadcrumb.Item>
+
+            <Breadcrumb.Item>
+              <span>Edit profile</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        </div>
         <div className={styles.title}>
           <h3>Edit profile</h3>
         </div>
@@ -96,24 +107,26 @@ function ProfilesEdit() {
       <div className={styles.content}>
         <div className={styles.side}>
           <div className={styles.avatar}>
-            {!profile.user_avatar_ipfs_hash
-            || !src ? (<DefaultAvatar size={160} />)
-              : (<Avatar url={src} />)}
+            { src ? (<Avatar url={src} />) : (<DefaultAvatar size={160} />)}
           </div>
           <div className={styles.blockButtonLoad}>
-            <NavButton
-              onClick={() => (inputFileRef.current.click())}
-              name="Upload new photo"
-              classes={styles.buttonUpload}
-            />
-            <input ref={inputFileRef} type="file" onChange={handleChangeFile} hidden />
             <NavButton name="Remove photo" onClick={removePhoto} classes={styles.buttonUpload} />
+            <div className={styles.blockButtonLoad_upload}>
+              <NavButton
+                onClick={() => (inputFileRef.current.click())}
+                name="Upload new photo"
+                classes={styles.buttonUpload}
+              />
+              <input ref={inputFileRef} type="file" onChange={handleChangeFile} hidden />
+              <span>300x300px, max 700KB (jpg, png, gif)</span>
+            </div>
             <div />
           </div>
         </div>
         <div className={styles.main}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <InputCustom
+              onFocus
               label={errors.names?.message ? errors.names?.message : 'Name'}
               {...register(
                 'names',
@@ -144,16 +157,23 @@ function ProfilesEdit() {
                   }
                 }
               )}
-              // placeholder="name@domain"
+              placeholder="name@domain"
               valid={!errors.email?.message?.length}
             />
             <TextArea
-              label="Description"
+              label={errors.description?.message || 'Description'}
               {...register(
                 'description',
-                { setValueAs: (value) => (value.length ? `"${value}"` : value) }
+                {
+                  setValueAs: (value) => (value.length ? `"${value}"` : value),
+                  maxLength: {
+                    value: 1024,
+                    message: 'Please max 1024 characters'
+                  }
+                }
               )}
-              placeholder="Tell us a little bit about yourself"
+              placeholder="Tell us a little bit about yourself(up to 750 characters)"
+              valid={!errors.description?.message?.length}
             />
             <fieldset className={styles.socialBlock}>
               <legend>Social networks</legend>
@@ -175,16 +195,16 @@ function ProfilesEdit() {
                 />
 
                 <InputCustom
-                  label="LinkedIn"
+                  label={errors.linkedin?.message || 'LinkedIn'}
                   {...register(
                     'linkedin',
                     {
                       setValueAs: (value) => (
-                        (value ? checkUrl('linkedin.com/in', value) : value
+                        (value ? checkUrl('linkedin.com/', value) : value
                         ))
                     }
                   )}
-                  placeholder="@nickname"
+                  placeholder="in/@nickname or company/@nickname"
                   icon="linkedin"
                 />
                 <InputCustom

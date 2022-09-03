@@ -9,6 +9,11 @@
   text-align: left;
 }
 
+.labelRed{
+  composes: labelUp;
+  color: red;
+}
+
 .wrapperInput{
   display: flex;
   flex-direction: column;
