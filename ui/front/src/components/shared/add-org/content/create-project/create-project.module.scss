@@ -1,5 +1,102 @@
-// .wrapper{
-//     display: flex;
-//     align-items: center;
-//     flex-direction: column;
-// }
+.main{
+  max-width: 640px;
+  width: 100%;
+  .name{
+    margin-bottom: 32px;
+  }
+  .description{
+    margin-bottom: 32px;
+    h4{
+      font-family: "PublicSans-ExtraBold", serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 20px;
+      color: #000000;
+      text-align: start;
+      margin-bottom: 8px;
+    }
+    p{
+      font-family: 'PublicSans-Medium', serif;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 20px;
+      color: #000000;
+      text-align: start;
+      opacity: 0.5;
+    }
+  }
+  .upload{
+    margin-bottom: 32px;
+    label{
+      background: #FFFFFF;
+      border: 1px solid #FF791F;
+      border-radius: 8px;
+      font-family: "PublicSans-ExtraBold", serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 20px;
+      color: #FF791F;
+      padding: 8px 24px;
+    }
+    p{
+      font-family: 'PublicSans-Medium', serif;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 20px;
+      color: #000000;
+      opacity: 0.5;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+  }
+  .social{
+    margin-bottom: 40px;
+    h4{
+      font-family: "PublicSans-ExtraBold", serif;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 20px;
+      color: #000000;
+      margin-bottom: 8px;
+    }
+    .inputs{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      .input{
+        position: relative;
+        margin-bottom: 16px;
+        label{
+          margin-bottom: 0;
+        }
+        input{
+          width: 300px;
+          padding-left: 40px;
+        }
+        img{
+          position: absolute;
+          top: 50%;
+          transform: translate(0, -50%);
+          left: 17px;
+          z-index: 1;
+        }
+      }
+    }
+  }
+  .buttons{
+    display: flex;
+    justify-content: center;
+    button{
+      width: 125px;
+      height: 36px;
+      margin: 0 12px;
+      padding: 0;
+    }
+  }
+}
+

@@ -15,7 +15,6 @@ import React, { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
-import ProfilesEdit from '@components/shared/profiles-page/profiles-edit';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -61,10 +60,6 @@ function Main() {
     {
       path: 'profiles/:id/*',
       element: <ProfilesPage />
-    },
-    {
-      path: 'profiles/:id/edit',
-      element: <ProfilesEdit />
     }
   ];
 

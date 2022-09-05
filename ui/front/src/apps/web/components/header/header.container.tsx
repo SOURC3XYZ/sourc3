@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { GitConnectAuth } from '@components/shared/git-auth';
 import styles from './header.module.scss';
 
+
 type HeaderPropsType = {
   isOnLending?: boolean,
   desktop?: boolean,
@@ -64,11 +65,13 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           {!pkey
               && (
+                  <div>
                 <ConnectBtn
                   pkey={pkey}
                   users={users}
                   onConnect={onConnect}
                 />
+                  </div>
               )}
         </>
       ) : (
