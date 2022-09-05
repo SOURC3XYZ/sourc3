@@ -220,8 +220,8 @@ struct Member {
     template <class T>
     struct Key {
         Tag tag = T::kMemberTag;
-        PubKey user;
         typename T::Id id;
+        PubKey user;
         Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
         }
     };

@@ -32,6 +32,7 @@ namespace Env {  // NOLINT
 #include "libgit2/full_git.h"
 
 namespace sourc3 {
+/*
 namespace v0 {
 // SID: 5ca7c7e30f066942e47d803a4e016ca9ff08ccbcb84384662525b8bfe07246eb
 static const ShaderID s_SID = {0x97, 0x1f, 0xd9, 0x75, 0xb8, 0xe5, 0xc7, 0x5c,
@@ -39,7 +40,7 @@ static const ShaderID s_SID = {0x97, 0x1f, 0xd9, 0x75, 0xb8, 0xe5, 0xc7, 0x5c,
                                0xbc, 0xe9, 0x9d, 0xb0, 0x8a, 0xc2, 0x0d, 0x10,
                                0xc4, 0x34, 0x3b, 0x82, 0x24, 0x8b, 0x59, 0xe7};
 }  // namespace v0
-/*namespace v1 {
+namespace v1 {
 // SID: ea1765cc92875862660dea1e15cc342281bf0c840b0f9928ccfc8f7e8eeb0048
 static const ShaderID s_SID = {  // NOLINT
     0xea, 0x17, 0x65, 0xcc, 0x92, 0x87, 0x58, 0x62, 0x66, 0x0d, 0xea,
@@ -85,7 +86,7 @@ struct MyKeyID : public Env::KeyID {
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::s_SID};
+const ShaderID kSid[] = {sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 

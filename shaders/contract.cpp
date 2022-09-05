@@ -112,7 +112,7 @@ void OnUpgraded(uint32_t n_prev_version) {
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 1;
+    return 0;
 }
 }  // namespace Upgradable3
 
@@ -354,7 +354,7 @@ BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_14(const method::AddRepoMember& params) {  // NOLINT
-    // TODO: do not allow to modify repo owner
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
     Member::Key<Repo> member_key(params.member, params.repo_id);
     CheckPermissions<Repo>(params.caller, params.repo_id,
@@ -365,6 +365,7 @@ BEAM_EXPORT void Method_14(const method::AddRepoMember& params) {  // NOLINT
 
 BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Member::Key<Repo> member_key(params.member, params.repo_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
                               KeyTag::Internal) == 0u);
@@ -376,6 +377,7 @@ BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
 
 BEAM_EXPORT void Method_16(const method::RemoveRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Member::Key<Repo> member_key(params.member, params.repo_id);
     CheckPermissions<Repo>(params.caller, params.repo_id,
                            Repo::Permissions::kRemoveMember);
@@ -384,7 +386,7 @@ BEAM_EXPORT void Method_16(const method::RemoveRepoMember& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
-    // TODO: do not allow to modify project owner
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Member::Key<Project> member_key(params.member, params.project_id);
     CheckPermissions<Project>(params.caller, params.project_id,
@@ -395,6 +397,7 @@ BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
 
 BEAM_EXPORT void Method_18(
     const method::ModifyProjectMember& params) {  // NOLINT
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Member::Key<Project> member_key(params.member, params.project_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
@@ -407,6 +410,7 @@ BEAM_EXPORT void Method_18(
 
 BEAM_EXPORT void Method_19(
     const method::RemoveProjectMember& params) {  // NOLINT
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
     Member::Key<Project> member_key(params.member, params.project_id);
     CheckPermissions<Project>(params.caller, params.project_id,
@@ -417,7 +421,7 @@ BEAM_EXPORT void Method_19(
 
 BEAM_EXPORT void Method_20(
     const method::AddOrganizationMember& params) {  // NOLINT
-    // TODO: do not allow to modify org owner
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Member::Key<Organization> member_key(params.member, params.organization_id);
     CheckPermissions<Organization>(params.caller, params.organization_id,
@@ -428,6 +432,7 @@ BEAM_EXPORT void Method_20(
 
 BEAM_EXPORT void Method_21(
     const method::ModifyOrganizationMember& params) {  // NOLINT
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Member::Key<Organization> member_key(params.member, params.organization_id);
     Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
@@ -440,6 +445,7 @@ BEAM_EXPORT void Method_21(
 
 BEAM_EXPORT void Method_22(
     const method::RemoveOrganizationMember& params) {  // NOLINT
+    Env::Halt_if(_POD_(params.member) == params.caller);
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
     Member::Key<Organization> member_key(params.member, params.organization_id);
     CheckPermissions<Organization>(params.caller, params.organization_id,
