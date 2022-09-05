@@ -33,3 +33,4 @@ export * from './uploader';
 export * from './profiles-page';
 export * from './icons';
 export * from './tabs';
+export * from './usePathPattern';

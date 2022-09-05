@@ -2,47 +2,61 @@ import {
   CreateModal,
   EntityList
 } from '@components/shared';
-import { OwnerListType, Project } from '@types';
-import ProjectListItem from './project-list-item';
+import { OwnerListType } from '@types';
 
-type ProjectListProps = {
+export type HeaderElements = {
+  title?: string,
+  label?: string,
+  placeholder?: string
+};
+
+type ProjectListProps<T> = {
   id: number;
   isModal: boolean;
   searchText: string;
-  projects: Project[];
+  projects: T[];
   path:string;
   page: number;
   type: OwnerListType;
+  header?: {
+    title?: string,
+    label?: string,
+    placeholder?: string
+  },
+  route: string;
+  listItem: (item: T) => JSX.Element;
   handleOk: (name: string) => void;
   closeModal: () => void;
 };
 
-function ProjectList({
-  id, isModal, searchText, path, type, projects, page, handleOk, closeModal
-}:ProjectListProps) {
-  const listItem = (item: typeof projects[number]) => (
-    <ProjectListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      type={type}
-    />
-  );
-
+function ProjectList<T>({
+  id,
+  isModal,
+  searchText,
+  path,
+  type,
+  projects,
+  page,
+  header,
+  route,
+  listItem,
+  handleOk,
+  closeModal
+}:ProjectListProps<T>) {
   return (
     <>
       <CreateModal
-        title="Add new project to organization"
-        label="Project name"
+        title={header?.title || ''}
+        label={header?.label || ''}
         isModalVisible={isModal}
-        placeholder="Enter your project name"
+        placeholder={header?.placeholder || ''}
         handleCreate={handleOk}
         handleCancel={closeModal}
       />
       <EntityList
         searchText={searchText}
         renderItem={listItem}
-        route={`projects/${id}`}
+        route={`${route}/${id}`}
         path={path}
         page={page}
         items={projects}

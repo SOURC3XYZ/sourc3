@@ -380,6 +380,18 @@ export const RC = {
         organization_id
       }
     }
+  } as const),
+  getOrgMembers: (organization_id: number) => ({
+    callID: 'list_organization_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_organization_members',
+        organization_id
+      }
+    }
   } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

@@ -1,12 +1,24 @@
 import {
   EntityWrapper,
-  BackButton
+  BackButton,
+  RepoItem,
+  usePathPattern
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
 import { CSSProperties, useCallback, useMemo } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import TabItem from '../entity/tab-item';
-import ProjectList from './project-list';
+import MemberListItem from './member-list-item';
+import ProjectList, { HeaderElements } from './project-list';
+import ProjectListItem from './project-list-item';
+
+type RoutesType<T> = {
+  path: string,
+  items: T[],
+  navTitle:string,
+  itemComponent: (item: T) => JSX.Element;
+  headerElements?: HeaderElements;
+};
 
 const placeholder = 'Enter name of your project';
 
@@ -21,7 +33,8 @@ function Projects() {
     searchText,
     projects,
     modalApi,
-    repos
+    repos,
+    members
   } = useProject();
 
   const {
@@ -31,19 +44,6 @@ function Projects() {
     handleOk,
     closeModal
   } = modalApi;
-
-  const navItems = [
-    {
-      key: 'all',
-      to: `${path}projects/${id}/all/1`,
-      text: 'All Projects'
-    },
-    {
-      key: 'my',
-      to: `${path}projects/${id}/my/1`,
-      text: 'My Projects'
-    }
-  ];
 
   const navigate = useNavigate();
 
@@ -74,12 +74,68 @@ function Projects() {
     },
     {
       id: 2,
-      label: <TabItem title="Members" count={0} />
+      label: <TabItem title="Members" count={members.length} />
     }
-  ], [repos, projects]);
+  ], [repos, projects, members]);
+
+  const projectListItem = (item: typeof projects[number]) => (
+    <ProjectListItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      type={type}
+    />
+  );
+
+  const repoListItem = (item: typeof repos[number]) => (
+    <RepoItem
+      item={item}
+      path={path}
+      searchText={searchText}
+      deleteRepo={() => {}}
+    />
+  );
+
+  const memberListItem = (item: typeof members[number]) => (
+    <MemberListItem
+      item={item}
+      path={path}
+      searchText={searchText}
+    />
+  );
+
+  const routes: RoutesType<any>[] = [
+    {
+      path: 'projects',
+      itemComponent: projectListItem,
+      items: projects,
+      navTitle: 'Projects',
+      headerElements: {
+        placeholder: 'Search by project name or ID'
+      }
+    },
+    {
+      path: 'repos',
+      itemComponent: repoListItem,
+      items: repos,
+      navTitle: 'Repositories',
+      headerElements: {
+        placeholder: 'Search by repo name or ID'
+      }
+    },
+    {
+      path: 'users',
+      itemComponent: memberListItem,
+      items: members,
+      navTitle: 'Projects',
+      headerElements: {
+        placeholder: 'Search by username of pid'
+      }
+    }
+  ];
 
   const headerFields = {
-    routes: ['projects', 'repos', 'users'],
+    routes: routes.map((el) => el.path),
     avatar: org.organization_logo_ipfs_hash,
     shortTitle: org.organization_short_title,
     description: org.organization_about,
@@ -94,38 +150,66 @@ function Projects() {
     tabData
   };
 
+  const currentRoute = usePathPattern(routes.map((el) => el.path));
+
+  const navItems = [
+    {
+      key: 'all',
+      to: `${path}projects/${id}/all/1/${currentRoute}`,
+      text: 'All Projects'
+    },
+    {
+      key: 'my',
+      to: `${path}projects/${id}/my/1/${currentRoute}`,
+      text: 'My Projects'
+    }
+  ];
+
+  const RoutesView = useMemo(() => routes.map(
+    (el) => (
+      <Route
+        key={el.path}
+        path={`/${el.path}`}
+        element={(
+          <ProjectList
+            id={id}
+            route={el.path}
+            isModal={isModal}
+            searchText={searchText}
+            projects={el.items}
+            header={el.headerElements}
+            path={path}
+            page={page}
+            type={type}
+            handleOk={handleOk}
+            closeModal={closeModal}
+            listItem={el.itemComponent}
+          />
+        )}
+      />
+    )
+  ), [projects, members, repos, currentRoute]);
+
   return (
-    <EntityWrapper
-      headerFields={headerFields}
-      title={org.organization_name || 'NO NAME'}
-      type={type}
-      pkey={pkey}
-      searchText={searchText}
-      navItems={navItems}
-      setInputText={setInputText}
-      placeholder={placeholder}
-      showModal={showModal}
-    >
-      <Routes>
-        {backButton}
-        <Route
-          path="/projects"
-          element={(
-            <ProjectList
-              id={id}
-              isModal={isModal}
-              searchText={searchText}
-              projects={projects}
-              path={path}
-              page={page}
-              type={type}
-              handleOk={handleOk}
-              closeModal={closeModal}
-            />
-          )}
-        />
-      </Routes>
-    </EntityWrapper>
+    <>
+      {backButton}
+      <EntityWrapper
+        headerFields={headerFields}
+        title={org.organization_name || 'NO NAME'}
+        type={type}
+        pkey={pkey}
+        searchText={searchText}
+        navItems={navItems}
+        setInputText={setInputText}
+        placeholder={placeholder}
+        showModal={showModal}
+      >
+        <Routes>
+          {RoutesView}
+        </Routes>
+      </EntityWrapper>
+    </>
+
   );
 }
 

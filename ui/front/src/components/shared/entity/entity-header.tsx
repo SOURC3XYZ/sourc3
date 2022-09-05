@@ -7,6 +7,7 @@ import {
   DiscordIcon,
   InstagrammIcon,
   LinkedinIcon,
+  SettingsIcon,
   Tab,
   Tabs,
   TelegramIcon,
@@ -15,7 +16,7 @@ import {
 import classNames from 'classnames';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './entity-wrapper.module.scss';
 
 export type SocialLinks = {
@@ -44,6 +45,24 @@ const socialLinksData = new Map<keyof SocialLinks, React.FC>()
   .set('instagram', () => <InstagrammIcon />)
   .set('linkedin', () => <LinkedinIcon />);
 
+function SocialLinkHOC({ Component, key, link }: {
+  Component: React.FC,
+  key: string,
+  link: string
+}) {
+  return (
+    <a
+      className={styles.icon}
+      key={key}
+      href={`http://${link}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Component />
+    </a>
+  );
+}
+
 function EntityHeader({
   shortTitle, routes, tabData, avatar, description, socialLinks, title
 }:EntityHeaderProps) {
@@ -68,9 +87,7 @@ function EntityHeader({
 
   const showMoreBtn = useMemo(() => {
     const text = showMore ? 'Show less' : 'Show more';
-    const onChangeHandler = () => {
-      setShowMore((prev) => !prev);
-    };
+    const onChangeHandler = () => setShowMore((prev) => !prev);
     return (
       <button className={styles.showMoreBtn} type="button" onClick={onChangeHandler}>
         {text}
@@ -86,17 +103,7 @@ function EntityHeader({
       const [key, link] = el;
       const Component = socialLinksData.get(key);
       if (!Component) return null;
-      return (
-        <a
-          className={styles.icon}
-          key={key}
-          href={`http://${link}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Component />
-        </a>
-      );
+      return SocialLinkHOC({ key, link, Component });
     })
       .filter((el) => el);
     return links;
@@ -133,21 +140,26 @@ function EntityHeader({
           </Text>
         )}
         {showMoreBtn}
-        <Tabs
-          classNames={{
-            root: styles.TabsRoot,
-            tab: '',
-            selectedTabs: '',
-            label: styles.TabLabel,
-            selectedLabel: styles.TabLabelSelected
-          }}
-          selectedId={currentTab}
-          tabs={tabData}
-          onClick={(id: number) => {
-            setCurrentTab(id);
-            navigate(routes[id]);
-          }}
-        />
+        <div className={styles.navigationGrid}>
+          <Tabs
+            classNames={{
+              root: styles.TabsRoot,
+              tab: '',
+              selectedTabs: '',
+              label: styles.TabLabel,
+              selectedLabel: styles.TabLabelSelected
+            }}
+            selectedId={currentTab}
+            tabs={tabData}
+            onClick={(id: number) => {
+              setCurrentTab(id);
+              navigate(routes[id]);
+            }}
+          />
+          <Link className={styles.settingLink} to="/settings">
+            <SettingsIcon />
+          </Link>
+        </div>
       </div>
     </div>
   );

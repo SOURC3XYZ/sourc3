@@ -1,4 +1,4 @@
-import { OwnerListType, Project } from '@types';
+import { Member, MemberId } from '@types';
 import {
   Menu, Dropdown, List, message
 } from 'antd';
@@ -8,64 +8,67 @@ import { Excretion } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
 import { useCallback, useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { useUpload } from '@libs/hooks/shared';
+import { useCallApi, useUpload } from '@libs/hooks/shared';
+import { RC } from '@libs/action-creators';
 import styles from './project-list.module.scss';
 
 type ListItemProps = {
-  item: Project;
+  item: MemberId;
   path: string;
   searchText: string;
-  type: OwnerListType;
 };
 
-function ProjectListItem({
-  item, path, searchText, type
+function MemberListItem({
+  item, path, searchText
 }:ListItemProps) {
+  const [callApi] = useCallApi();
+  const [itemData, setItemData] = useState <Member | null>(null);
   const [src, setSrc] = useState<string | undefined>(undefined);
 
   const { getImgUrlFromIpfs } = useUpload();
 
+  const getItemData = useCallback(async () => {
+    const recievedItem = await callApi<Member>(RC.getUser(item.member));
+    if (recievedItem) setItemData(recievedItem);
+  }, []);
+
   const handleLoadPic = useCallback(async () => {
-    if (item.project_logo_ipfs_hash) {
-      const link = await getImgUrlFromIpfs(item.project_logo_ipfs_hash);
+    if (itemData?.user_avatar_ipfs_hash) {
+      const link = await getImgUrlFromIpfs(itemData.user_avatar_ipfs_hash);
       if (link) setSrc(link);
     }
+  }, [itemData]);
+
+  useEffect(() => {
+    getItemData();
   }, []);
 
   useEffect(() => {
     handleLoadPic();
-  }, []);
-
-  const {
-    organization_id, project_creator, project_name, project_id
-  } = item;
+  }, [itemData]);
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
   };
 
-  const link = `${path}project/${project_id}/${type}/1`;
+  const link = `${path}project/${item.member}/1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
   );
 
-  const content = (
-    item.project_description && (
-      <div className={styles.content}>
-        {item.project_description}
-      </div>
-    )
-  );
-
   return (
     <List.Item
       className={styles.listItem}
-      key={organization_id}
+      key={item.member}
       actions={[(
-        <span key="org-times" className={styles.time}>
-          {`creator: ${textEllipsis(project_creator, 10)}`}
-        </span>
+        <div key="user-id" className={styles.idField}>
+          <span>ID: </span>
+          <Excretion
+            name={String(textEllipsis(item.member, 6, { ellipsis: '' }))}
+            inputText={searchText}
+          />
+        </div>
       ),
       (
         <Dropdown key="org-drop" overlay={menuRender} placement="bottomRight">
@@ -77,8 +80,8 @@ function ProjectListItem({
       <List.Item.Meta
         avatar={(
           <img
-            className={classNames(styles.entityPicture, {
-              [styles.entityPictureActive]: !!src
+            className={classNames(styles.memberPicture, {
+              [styles.memberPictureActive]: !!src
             })}
             src={src}
             alt="avatar"
@@ -86,26 +89,15 @@ function ProjectListItem({
         )}
         title={(
           <div className={styles.title}>
-            <Link to={link} state={{ id: organization_id }}>
-              <Excretion name={project_name} inputText={searchText} />
+            <Link to={link} state={{ id: item.member }}>
+              <Excretion name={itemData ? itemData.user_name : ''} inputText={searchText} />
             </Link>
           </div>
         )}
-        description={(
-          <div className={styles.subtitle}>
-            <div className={styles.idField}>
-              <span>ID: </span>
-              <Excretion
-                name={String(project_id)}
-                inputText={searchText}
-              />
-            </div>
-            {content}
-          </div>
-        )}
+        description={<span className={styles.memberDescription}>member</span>}
       />
     </List.Item>
   );
 }
 
-export default ProjectListItem;
+export default MemberListItem;
