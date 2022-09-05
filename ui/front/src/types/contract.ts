@@ -94,6 +94,26 @@ export type BranchCommit = {
 
 export type User = { active: boolean, avatar: number, id: number, name: string };
 
+export interface Member extends ContractResp {
+  user_id:string;
+  user_name:string;
+  user_nickname:string;
+  user_email:string;
+  user_description:string;
+  user_website:string;
+  user_twitter:string;
+  user_linkedin:string;
+  user_instagram:string;
+  user_telegram:string;
+  user_discord:string;
+  user_avatar_ipfs_hash:string;
+}
+
+export type MemberId = {
+  member:string;
+  permissions: number;
+};
+
 export interface RepoCommitResp extends ContractResp {
   commit: BranchCommit;
 }
@@ -110,6 +130,10 @@ export interface RepoTreeResp extends ContractResp {
     object_data: string;
     entries: TreeElement[]
   }
+}
+
+export interface MemberList extends ContractResp {
+  members: MemberId[]
 }
 
 export type Organization = {

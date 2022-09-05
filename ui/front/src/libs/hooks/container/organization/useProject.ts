@@ -1,13 +1,18 @@
 /* eslint-disable no-restricted-syntax */
-import { useModal } from '@libs/hooks/shared';
+import { RC } from '@libs/action-creators';
+import { useCallApi, useModal } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { unorderedRemove } from '@libs/utils';
 import {
+  MemberId,
+  MemberList,
   Organization, OwnerListType
 } from '@types';
 import {
-  useMemo
+  useCallback,
+  useEffect,
+  useMemo, useState
 } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getOrg, getProjectsByOrgId } from './selectors';
@@ -23,7 +28,11 @@ const useProject = () => {
   const { type, page, orgId } = useParams<'type' & 'page' & 'orgId'>() as LocationState;
   const path = pathname.split('projects/')[0];
 
+  const [callApi] = useCallApi();
+
   const id = useMemo(() => +orgId, [orgId]);
+
+  const [members, setMembers] = useState<MemberId[]>([]);
 
   const { setInputText, createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
@@ -60,11 +69,20 @@ const useProject = () => {
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
     (name: string) => createProject(name, id, pid)
-
   );
+
+  const getOrgMembers = useCallback(async () => {
+    const recievedMembers = await callApi<MemberList>(RC.getOrgMembers(id));
+    if (recievedMembers) setMembers(recievedMembers.members);
+  }, []);
+
+  useEffect(() => {
+    getOrgMembers();
+  }, []);
 
   return {
     projects,
+    members,
     page: +page,
     org: org as Organization,
     path,

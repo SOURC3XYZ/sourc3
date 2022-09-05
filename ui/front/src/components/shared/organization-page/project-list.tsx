@@ -4,6 +4,12 @@ import {
 } from '@components/shared';
 import { OwnerListType } from '@types';
 
+export type HeaderElements = {
+  title?: string,
+  label?: string,
+  placeholder?: string
+};
+
 type ProjectListProps<T> = {
   id: number;
   isModal: boolean;
@@ -12,28 +18,45 @@ type ProjectListProps<T> = {
   path:string;
   page: number;
   type: OwnerListType;
+  header?: {
+    title?: string,
+    label?: string,
+    placeholder?: string
+  },
+  route: string;
   listItem: (item: T) => JSX.Element;
   handleOk: (name: string) => void;
   closeModal: () => void;
 };
 
 function ProjectList<T>({
-  id, isModal, searchText, path, type, projects, page, listItem, handleOk, closeModal
+  id,
+  isModal,
+  searchText,
+  path,
+  type,
+  projects,
+  page,
+  header,
+  route,
+  listItem,
+  handleOk,
+  closeModal
 }:ProjectListProps<T>) {
   return (
     <>
       <CreateModal
-        title="Add new project to organization"
-        label="Project name"
+        title={header?.title || ''}
+        label={header?.label || ''}
         isModalVisible={isModal}
-        placeholder="Enter your project name"
+        placeholder={header?.placeholder || ''}
         handleCreate={handleOk}
         handleCancel={closeModal}
       />
       <EntityList
         searchText={searchText}
         renderItem={listItem}
-        route={`projects/${id}`}
+        route={`${route}/${id}`}
         path={path}
         page={page}
         items={projects}
