@@ -109,17 +109,10 @@ BEAM_EXPORT void Dtor(void*) {
 
 namespace Upgradable3 {  // NOLINT
 void OnUpgraded(uint32_t n_prev_version) {
-    // TODO: temporary code to set faucet balance to 0, delete next upgrade
-    if (n_prev_version == 1) {
-        ContractState cs;
-        Env::LoadVar_T(0, cs);
-        cs.faucet_balance = 0;
-        Env::SaveVar_T(0, cs);
-    }
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 0;
+    return 1;
 }
 }  // namespace Upgradable3
 

@@ -81,7 +81,7 @@ struct OrganizationData {
     // plus 0-term
     static const size_t kMaxNameLen = 100 + 1;
     static const size_t kMaxShortTitleLen = 50 + 1;
-    static const size_t kMaxAboutLen = 150 + 1;
+    static const size_t kMaxAboutLen = 1024 + 1;
     static const size_t kMaxWebsiteLen = 100 + 1;
     static const size_t kMaxSocialNickLen = 50 + 1;
 
