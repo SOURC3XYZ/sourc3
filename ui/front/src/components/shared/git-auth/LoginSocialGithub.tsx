@@ -84,9 +84,8 @@ export const LoginSocialGithub = memo(
     const onLogin = useCallback(() => {
       if (!isProcessing) {
         window.addEventListener('storage', onChangeLocalStorage, false);
-        const redirect = `${redirect_uri}?state=_github`;
         const oauthUrl = `
-                ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=${encodeURIComponent(scope)}&allow_signup=${allow_signup}&redirect_uri=${encodeURIComponent(redirect)}`;
+                ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=${encodeURIComponent(scope)}&state=_github&allow_signup=${allow_signup}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
         const width = 450;
         const height = 730;
