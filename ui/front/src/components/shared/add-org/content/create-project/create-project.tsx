@@ -9,6 +9,7 @@ import SelectPopup from '@components/shared/selectPopup/selectPopup';
 import { Select } from 'antd';
 import styles from './create-project.module.scss';
 
+type InputChange = React.ChangeEventHandler<HTMLInputElement>;
 type CreateProjectType = {
   handleCancel: ()=>void;
   closePopup: ()=>void;
@@ -26,7 +27,13 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
 
-  const handleChange = (e:any) => setInputName(e.target?.value);
+  const [valid, setValid] = useState(true);
+
+  const handleChange:InputChange = (e) => {
+    const regExp = /[А-я]+/;
+    setInputName(e.target.value);
+    setValid(!regExp.test(e.target.value));
+  };
 
   const organizations = useSelector((
     state
@@ -56,7 +63,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
         <NavButton
           key="all-repos-addBtn"
           onClick={() => handleOk(inputName, idOrg)}
-          isDisabled={!inputName}
+          isDisabled={!inputName || !valid}
           name="Add"
           active
         />
@@ -85,6 +92,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
           type="text"
           value={inputName}
           onChange={handleChange}
+          valid={valid}
         />
       </div>
     </Popup>

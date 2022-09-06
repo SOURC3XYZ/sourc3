@@ -28,8 +28,13 @@ function CreateModal({
   title
 }:AddModalType) {
   const [inputName, setInputName] = useState('');
+  const [valid, setValid] = useState(true);
 
-  const handleChange:InputChange = (e) => setInputName(e.target.value);
+  const handleChange:InputChange = (e) => {
+    const regExp = /[А-я]+/;
+    setInputName(e.target.value);
+    setValid(!regExp.test(e.target.value));
+  };
 
   const handleOk = () => {
     handleCreate(inputName);
@@ -51,7 +56,7 @@ function CreateModal({
         <NavButton
           key="all-repos-addBtn"
           onClick={handleOk}
-          isDisabled={!inputName}
+          isDisabled={!inputName || !valid}
           name="Continue"
           active
         />
@@ -64,6 +69,7 @@ function CreateModal({
         placeholder={placeholder}
         value={inputName}
         onChange={handleChange}
+        valid={valid}
       />
     </Popup>
   );

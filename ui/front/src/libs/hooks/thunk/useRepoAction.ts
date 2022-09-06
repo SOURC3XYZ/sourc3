@@ -39,7 +39,7 @@ const useRepoAction = () => {
       dispatch(AC.setCommitList([]));
       dispatch(AC.setRepoMap(null));
       dispatch(AC.setRepoId(null));
-      dispatch(AC.setPreviousReposPage(null));
+      // dispatch(AC.setPreviousReposPage(null));
     });
   };
 

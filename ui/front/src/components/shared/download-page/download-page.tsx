@@ -1,4 +1,4 @@
-import img from '@assets/img/source-header-logo.svg';
+import img from '@assets/img/source-header-logo-alpha.svg';
 import { Link } from 'react-router-dom';
 import { CONFIG } from '@libs/constants';
 import styles from './download.module.scss';

@@ -1,11 +1,12 @@
 .section {
   position: relative;
-  height: 75vh;
+  height: 100%;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
+  flex-direction: column;    
+  flex-grow: 1;
 
   .text {
     position: relative;

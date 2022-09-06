@@ -1,5 +1,4 @@
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import { FailPage } from '@components/shared/fail-page';
+import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
 import { LoadingMessages } from '@libs/constants';
 import { useCommitsTree } from '@libs/hooks/container/user-repos';
@@ -9,9 +8,7 @@ import {
 import {
   Branch,
   BranchCommit,
-  DataNode,
-  List,
-  RepoId
+  List
 } from '@types';
 import { Skeleton } from 'antd';
 import Avatar from 'boring-avatars';
@@ -26,9 +23,7 @@ import styles from '../repo.module.scss';
 const ITEMS_COUNT = 5;
 
 export type UpperMenuProps = {
-  id: RepoId;
   goTo: (path: string) => void;
-  tree: DataNode[] | null;
   branches: Branch[];
   prevReposHref: string | null;
 };
@@ -131,11 +126,6 @@ function CommitsTree({
     } return null;
   }, [repoMap, loading, branchName]);
 
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
   const loadMoreData = useCallback(():void => {
     if (commitsBlock && commitsBlock.length) {
       setTimeout(() => {
@@ -165,24 +155,22 @@ function CommitsTree({
         branches={branches}
         goToBranch={goToBranch}
       />
-      <ErrorBoundary fallback={fallback}>
-        <PreloadComponent
-          isLoaded={loading && !!data && !!commitsBlock}
-          Fallback={RefsPreloadFallback}
-        >
-          {commitsBlock ? (
-            <InfiniteScroll
-              dataLength={data.length}
-              next={loadMoreData}
-              loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-              hasMore={data.length < commitsBlock.length}
-            >
-              {data}
-            </InfiniteScroll>
-          ) : null}
+      <PreloadComponent
+        isLoaded={loading && !!data && !!commitsBlock}
+        Fallback={RefsPreloadFallback}
+      >
+        {commitsBlock ? (
+          <InfiniteScroll
+            dataLength={data.length}
+            next={loadMoreData}
+            loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
+            hasMore={data.length < commitsBlock.length}
+          >
+            {data}
+          </InfiniteScroll>
+        ) : null}
 
-        </PreloadComponent>
-      </ErrorBoundary>
+      </PreloadComponent>
     </>
   );
 }

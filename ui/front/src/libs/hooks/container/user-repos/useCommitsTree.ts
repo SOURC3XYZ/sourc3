@@ -1,4 +1,4 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
 import { useSelector } from '@libs/redux';
 import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
@@ -15,7 +15,7 @@ type UseCommitsTreeProps = {
 const useCommitsTree = ({ goTo }: UseCommitsTreeProps) => {
   const repoMap = useSelector((state) => state.repo.repoMap);
   const commitsMap = useSelector((state) => state.repo.commitsMap);
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
   const location = useLocation();
   const { pathname } = location;
   const { branchName } = useParams<'branchName'>() as LocationState;

@@ -8,7 +8,7 @@ import styles from './connect-btn.module.scss';
 
 const WORD_COUNT = 7;
 
-const CONNECT = 'Connect';
+const CONNECT = 'Connect wallet';
 
 type ConnectBtnProps = {
   pkey: string;
