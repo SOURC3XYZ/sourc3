@@ -31,16 +31,13 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           client_id={clientId}
           redirect_uri={window.location.href}
           onResolve={({ data }) => {
-            alert('GITHUB LOGIN');
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
-                alert(JSON.stringify(res));
                 setVisible(true);
                 window.localStorage.setItem('id', res.data.id);
                 setIsDisabled(true);
               })
               .catch(() => {
-                alert('GITHUB LOGIN ERR');
                 setVisible(true);
                 setIsErr(true);
               });
