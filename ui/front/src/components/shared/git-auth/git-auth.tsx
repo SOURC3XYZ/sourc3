@@ -45,7 +45,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 setIsErr(true);
               });
           }}
-          scope="repo,gist'"
+          scope="read:user user:email public_repo"
         >
           <NavButton
             name={name}
