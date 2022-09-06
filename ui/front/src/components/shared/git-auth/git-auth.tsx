@@ -31,13 +31,16 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           client_id={clientId}
           redirect_uri={window.location.href}
           onResolve={({ data }) => {
+            alert('GITHUB LOGIN');
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
+                alert(JSON.stringify(res));
                 setVisible(true);
                 window.localStorage.setItem('id', res.data.id);
                 setIsDisabled(true);
               })
               .catch(() => {
+                alert('GITHUB LOGIN ERR');
                 setVisible(true);
                 setIsErr(true);
               });
@@ -50,7 +53,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             classes={className}
           />
         </LoginSocialGithub>
-        {why && !isDisabled && <a className={styles.whyLink} target="_blank" href="https://www.sourc3.xyz/why-connect-to-github">Why connect? Learn more</a>}
+        {why && !isDisabled && <a className={styles.whyLink} target="_blank" href="https://www.sourc3.xyz/why-connect-to-github" rel="noreferrer">Why connect? Learn more</a>}
       </div>
       <Popup
         visible={isVisible}
