@@ -84,7 +84,7 @@ export const userThunk = ({
         withCredentials: false,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${window.localStorage.getItem('github')}`
+          Authorization: `Bearer ${window.localStorage.getItem('token')}`
         }
       }).then((res) => {
         dispatch(AC.getAuthGitUser(res));
