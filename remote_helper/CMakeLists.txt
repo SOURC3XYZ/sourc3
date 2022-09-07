@@ -15,6 +15,7 @@ target_sources(helper_lib
 		engines/engine_factory.cpp
         wallets/client_factory.cpp
 		engines/ipfs/types.cpp
+		engines/ipfs/parsing.cpp
 )
 
 target_include_directories(helper_lib PUBLIC ${LIBGIT2_INCLUDES})

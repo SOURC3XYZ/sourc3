@@ -18,6 +18,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
+#include <variant>
 
 namespace sourc3 {
 struct GitIdWithIPFS {
