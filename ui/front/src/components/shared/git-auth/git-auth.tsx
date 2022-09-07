@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useDispatch } from '@libs/redux';
+import { AC } from '@libs/action-creators';
 import { NavButton } from '../nav-button';
 import styles from './git-auth.module.scss';
 import { Popup } from '../popup';
@@ -17,6 +19,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isVisible, setVisible] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isErr, setIsErr] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (window.localStorage.getItem('token')) {
@@ -35,6 +38,18 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
               .then((res) => {
                 setVisible(true);
                 window.localStorage.setItem('token', res.data.token);
+                axios({
+                  method: 'get',
+                  url: 'https://poap-api.sourc3.xyz/users/me',
+                  withCredentials: false,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${res.data.token}`
+                  }
+                }).then((result) => {
+                  dispatch(AC.getAuthGitUser(result));
+                })
+                  .catch((err) => (console.log(err)));
                 setIsDisabled(true);
               })
               .catch(() => {
