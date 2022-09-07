@@ -13,7 +13,6 @@ import { ToastMessages } from '@libs/constants';
 
 import { CustomAction } from '@libs/redux';
 import { parseToBeam, parseToGroth } from '@libs/utils';
-import { log } from 'util';
 import axios from 'axios';
 import { AC } from '../action-creators';
 import { thunkCatch } from '../error-handlers';
@@ -80,7 +79,8 @@ export const userThunk = ({
       if (!isWebHeadless || !setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
       await axios({
-        url: 'https:poap-api.sourc3.xyz/users/me',
+        method: 'get',
+        url: 'https://poap-api.sourc3.xyz/users/me',
         withCredentials: false,
         headers: {
           'Content-Type': 'application/json',
