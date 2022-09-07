@@ -19,7 +19,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
 
   useEffect(() => {
-    if (window.localStorage.getItem('id')) {
+    if (window.localStorage.getItem('token')) {
       setIsDisabled(true);
     }
   }, []);
@@ -33,9 +33,10 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           onResolve={({ data }) => {
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
-                setVisible(true);
-                window.localStorage.setItem('id', res.data.id);
-                setIsDisabled(true);
+                if (res) {
+                  setVisible(true);
+                  setIsDisabled(true);
+                }
               })
               .catch(() => {
                 setVisible(true);

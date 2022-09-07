@@ -20,6 +20,7 @@ import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
 import {CreateProjectWeb} from "@components/shared/add-org/content/create-project-web";
+import {GitProfile} from "@components/shared/git-auth";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -61,6 +62,10 @@ function Main() {
       path: 'add-web',
       element: <CreateProjectWeb />
     },
+    {
+      path: 'profile',
+      element: <GitProfile />
+    }
   ];
 
   const HeadlessPreloadFallback = useCallback(() => (
@@ -77,7 +82,7 @@ function Main() {
           routesData
             .map((
               { path, element }
-            ) => <Route key={`route-${path}`} path={path} element={element} />)
+            ) => <Route key={`route-${path}`} path={path} element={element}  />)
         }
       </Routes>
     </ErrorBoundary>
