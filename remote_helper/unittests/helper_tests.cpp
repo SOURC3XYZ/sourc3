@@ -16,8 +16,8 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include <git2.h>
-#include "git_utils.h"
-#include "object_collector.h"
+#include "git/git_utils.h"
+#include "git/object_collector.h"
 
 using namespace sourc3;
 

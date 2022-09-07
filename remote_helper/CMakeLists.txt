@@ -7,10 +7,14 @@ add_executable (${TARGET_NAME} remote_helper.cpp)
 add_library(helper_lib STATIC)
 target_sources(helper_lib 
 	PRIVATE
-		git_utils.cpp
-		object_collector.cpp
+		git/git_utils.cpp
+		git/object_collector.cpp
 		utils.cpp
-		wallet_client.cpp
+		wallets/beam_wallet_client.cpp
+		engines/ipfs/ipfs_engine.cpp
+		engines/engine_factory.cpp
+        wallets/client_factory.cpp
+		engines/ipfs/types.cpp
 )
 
 target_include_directories(helper_lib PUBLIC ${LIBGIT2_INCLUDES})

@@ -19,6 +19,11 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <memory>
+
+#include <boost/json/value.hpp>
+#include <boost/json/string_view.hpp>
+#include <boost/algorithm/hex.hpp>
 
 namespace sourc3 {
 using ByteBuffer = std::vector<uint8_t>;
@@ -27,4 +32,33 @@ std::string ToHex(const void* p, size_t size);
 ByteBuffer StringToByteBuffer(const std::string& str);
 std::string ByteBufferToString(const ByteBuffer& buffer);
 
+struct IProgressReporter {
+public:
+    virtual ~IProgressReporter() = default;
+
+    virtual void UpdateProgress(size_t done) = 0;
+
+    virtual void AddProgress(size_t done) = 0;
+
+    virtual void Done() = 0;
+
+    virtual void Failed(const std::string& failure) = 0;
+
+    virtual void StopProgress(std::string_view result) = 0;
+};
+
+enum class ReporterType { NoOp, Progress };
+
+std::unique_ptr<IProgressReporter> MakeProgress(std::string_view title, size_t total,
+                                                ReporterType type);
+
+boost::json::value ParseJsonAndTest(boost::json::string_view sv);
+
+template <typename String>
+ByteBuffer FromHex(const String& s) {
+    ByteBuffer res;
+    res.reserve(s.size() / 2);
+    boost::algorithm::unhex(s.begin(), s.end(), std::back_inserter(res));
+    return res;
+}
 }  // namespace sourc3

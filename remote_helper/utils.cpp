@@ -14,9 +14,11 @@
 
 #include "utils.h"
 
-#include <boost/algorithm/hex.hpp>
+#include <boost/json/parse.hpp>
 
 #include <iterator>
+#include <sstream>
+#include <iostream>
 
 namespace sourc3 {
 std::string ToHex(const void* p, size_t size) {
@@ -35,5 +37,102 @@ ByteBuffer StringToByteBuffer(const std::string& str) {
 
 std::string ByteBufferToString(const ByteBuffer& buffer) {
     return std::string(buffer.begin(), buffer.end());
+}
+
+struct ProgressReporter final : IProgressReporter {
+    ProgressReporter(std::string_view title, size_t total) : title_(title), total_(total) {
+        UpdateProgress(0);
+    }
+
+    ~ProgressReporter() {
+        if (failure_reason_.empty()) {
+            Done();
+        } else {
+            StopProgress(failure_reason_);
+        }
+    }
+
+    void UpdateProgress(size_t done) final {
+        done_ = done;
+        ShowProgress("\r");
+    }
+
+    void AddProgress(size_t done) final {
+        done_ += done;
+        ShowProgress("\r");
+    }
+
+    void Done() final {
+        StopProgress("done");
+    }
+
+    void Failed(const std::string& failure) final {
+        failure_reason_ = failure;
+    }
+
+    void StopProgress(std::string_view result) final {
+        std::stringstream ss;
+        ss << ", " << result << ".\n";
+        ShowProgress(ss.str());
+    }
+
+private:
+    std::string_view title_;
+    std::string failure_reason_;
+    size_t done_ = 0;
+    size_t total_;
+
+    void ShowProgress(std::string_view eol);
+};
+
+void ProgressReporter::ShowProgress(std::string_view eol) {
+    std::stringstream ss;
+    ss << title_ << ": ";
+    if (total_ > 0) {
+        size_t percent = done_ * 100 / total_;
+        ss << percent << "%"
+           << " (" << done_ << "/" << total_ << ")";
+    } else {
+        ss << done_;
+    }
+    ss << eol;
+    std::cerr << ss.str();
+    std::cerr.flush();
+}
+
+struct NoOpReporter : IProgressReporter {
+    void UpdateProgress(size_t) override {
+    }
+    void AddProgress(size_t) override {
+    }
+    void Done() override {
+    }
+    void Failed(const std::string&) override {
+    }
+    void StopProgress(std::string_view) override {
+    }
+};
+
+std::unique_ptr<IProgressReporter> MakeProgress(std::string_view title, size_t total,
+                                                ReporterType type) {
+    if (type == ReporterType::Progress) {
+        return std::make_unique<ProgressReporter>(title, total);
+    } else if (type == ReporterType::NoOp) {
+        return std::make_unique<NoOpReporter>();
+    }
+
+    return {};
+}
+
+boost::json::value ParseJsonAndTest(boost::json::string_view sv) {
+    auto r = boost::json::parse(sv);
+    if (!r.is_object()) {
+        throw std::runtime_error{sv.to_string() + " isn't an object."};
+    }
+
+    if (const auto* error = r.as_object().if_contains("error"); error) {
+        throw std::runtime_error(error->as_object().at("message").as_string().c_str());
+    }
+    return r;
 }
 }  // namespace sourc3
