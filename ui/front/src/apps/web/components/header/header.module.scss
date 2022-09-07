@@ -76,14 +76,15 @@
   // width: 425px;
   // margin-right: 40px;
   justify-content: space-between;
+  align-items: center;
 
   input {
     margin-right: 5px;
   }
 
-  button {
-    margin-left: auto;
-  }
+  //button {
+  //  margin-left: auto;
+  //}
 }
 
 .lendosInput {

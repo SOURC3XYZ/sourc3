@@ -180,6 +180,11 @@ export const AC = {
   setBranchRefList: (payload: Branch[]) => ({
     type: ACTIONS.SET_BRANCH_REF_LIST,
     payload
+  } as const),
+
+  getAuthGitUser: (payload: any) => ({
+    type: ACTIONS.GET_GIT_USER,
+    payload
   } as const)
 };
 
