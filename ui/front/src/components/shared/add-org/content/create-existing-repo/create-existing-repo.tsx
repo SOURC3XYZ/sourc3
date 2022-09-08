@@ -3,11 +3,8 @@ import { Popup } from '@components/shared/popup';
 import { NavButton } from '@components/shared/nav-button';
 import { useSelector } from '@libs/redux/';
 import { getProjectsByOrgId, itemsFilter } from '@libs/hooks/container/organization/selectors';
-import { InputCustom } from '@components/shared/input';
 import { useEntitiesAction } from '@libs/hooks/thunk';
-import SelectPopup from '@components/shared/selectPopup/selectPopup';
-import { Select } from 'antd';
-import styles from './create-repos.module.scss';
+import styles from './create-existing-repo.module.scss';
 
 type InputChange = React.ChangeEventHandler<HTMLInputElement>;
 
@@ -16,7 +13,7 @@ type CreateReposType = {
   closePopup: ()=>void;
 };
 
-function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
+function CreateExisting({ handleCancel, closePopup }: CreateReposType) {
   const [inputName, setInputName] = useState('');
   const { createRepo } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
@@ -46,16 +43,9 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
     closePopup();
   };
 
-  const handleChangeOption = (value:number) => {
-    setIdOrg(value);
-  };
-  const handleChangeProject = (value:any) => {
-    setIdProject(value);
-  };
-
   return (
     <Popup
-      title="Add new repository"
+      title="Add existing repository"
       visible
       onCancel={handleCancel}
       confirmButton={(
@@ -64,51 +54,17 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           onClick={() => handleOk(inputName, +idProject)}
           isDisabled={!inputName || !idProject ! || !valid}
           name="Add"
+          classes={styles.button}
           active
         />
       )}
       agree
     >
       <div className={styles.wrapper}>
-        <SelectPopup
-          onChange={handleChangeOption}
-          defaultValue={idOrg}
-          value={idOrg}
-          title="Select organization"
-        >
-          {organizations?.map(({ organization_id, organization_name }) => (
-            <Select.Option
-              className={styles.option}
-              key={organization_id}
-              value={organization_id}
-            >
-              {organization_name}
-            </Select.Option>
-          ))}
-        </SelectPopup>
-        <SelectPopup
-          defaultValue={idProject}
-          value={idProject}
-          onChange={handleChangeProject}
-          title="Select project"
-        >
-          {projects?.map(({ project_id, project_name }) => (
-            <Select.Option
-              className={styles.option}
-              key={project_id}
-              value={project_id}
-            >
-              {project_name}
-            </Select.Option>
-          ))}
-        </SelectPopup>
-        <InputCustom
-          label="Repository name"
-          type="text"
-          value={inputName}
-          onChange={handleChange}
-          valid={valid}
-        />
+        <div className={styles.titleHead}>
+          <h4>You can import all the files, including the revision history, from another version control system</h4>
+        </div>
+        <div className={styles.footer}>
         <div className={styles.type}>
           <h4>Repository type</h4>
           <ul>
@@ -129,9 +85,14 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
             </li>
           </ul>
         </div>
+          <div className={styles.upload}>
+            <input type="file" id="upload" hidden />
+            <label htmlFor="upload">Add a file here</label>
+          </div>
+        </div>
       </div>
     </Popup>
   );
 }
 
-export default CreateRepos;
+export default CreateExisting;

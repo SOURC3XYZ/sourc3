@@ -11,6 +11,7 @@ import styles from './add.module.scss';
 import { CreateRepos } from './content';
 import { CreateOrg } from './content/create-org';
 import { CreateProject } from './content/create-project';
+import { CreateExisting } from './content/create-existing-repo';
 
 function AddButton() {
   const {
@@ -35,6 +36,9 @@ function AddButton() {
     },
     {
       title: 'Add new repository to project', mode: MODAL.REPOS, id: 'repos', isDisabled: true
+    },
+    {
+      title: 'Add existing repository', mode: MODAL.EXISTING, id: 'existing', isDisabled: false
     },
     { title: 'Add new user', isDisabled: true },
     { title: 'Add new project for user', isDisabled: true }
@@ -106,6 +110,13 @@ function AddButton() {
             handleCancel={handleCancel}
             closePopup={handleOk}
           />
+        );
+      case MODAL.EXISTING:
+        return (
+            <CreateExisting
+                handleCancel={handleCancel}
+                closePopup={handleOk}
+            />
         );
       default:
         return null;
