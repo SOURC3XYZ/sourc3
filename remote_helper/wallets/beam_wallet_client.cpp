@@ -35,8 +35,17 @@ std::string BeamWalletClient::LoadObjectFromIPFS(std::string hash) {
     auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
                            {"id", 1},
                            {"method", "ipfs_get"},
-                           {"params", {{"hash", std::move(hash)}, {"timeout", 5000}}}};
+                           {"params", {{"hash", std::move(hash)}}}};
     return CallAPI(json::serialize(msg));
+}
+
+std::string BeamWalletClient::LoadObjectFromIPFSAsync(std::string hash,
+                                                      boost::asio::yield_context context) {
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
+                           {"id", 1},
+                           {"method", "ipfs_get"},
+                           {"params", {{"hash", std::move(hash)}}}};
+    return CallAPIAsync(json::serialize(msg), context);
 }
 
 std::string BeamWalletClient::SaveObjectToIPFS(const uint8_t* data, size_t size) {
@@ -48,6 +57,18 @@ std::string BeamWalletClient::SaveObjectToIPFS(const uint8_t* data, size_t size)
                                 {"data", json::array(data, data + size)},
                             }}};
     return CallAPI(json::serialize(msg));
+}
+
+std::string BeamWalletClient::SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
+                                                    boost::asio::yield_context context) {
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
+                           {"id", 1},
+                           {"method", "ipfs_add"},
+                           {"params",
+                            {
+                                {"data", json::array(data, data + size)},
+                            }}};
+    return CallAPIAsync(json::serialize(msg), context);
 }
 
 bool BeamWalletClient::WaitForCompletion(WaitFunc&& func) {
@@ -110,6 +131,19 @@ void BeamWalletClient::EnsureConnected() {
 
     // Make the connection on the IP address we get from a lookup
     stream_.connect(results);
+    connected_ = true;
+}
+
+void BeamWalletClient::EnsureConnectedAsync(AsyncContext context) {
+    if (connected_) {
+        return;
+    }
+
+    auto const results =
+        resolver_.async_resolve(options_.apiHost, options_.apiPort, context);
+
+    // Make the connection on the IP address we get from a lookup
+    stream_.async_connect(results, context);
     connected_ = true;
 }
 
@@ -178,8 +212,28 @@ std::string BeamWalletClient::CallAPI(std::string&& request) {
     return ReadAPI();
 }
 
+std::string BeamWalletClient::CallAPIAsync(std::string request, AsyncContext context) {
+    EnsureConnectedAsync(context);
+    request.push_back('\n');
+    size_t s = request.size();
+    size_t transferred =
+        boost::asio::async_write(stream_, boost::asio::buffer(request), context);
+    if (s != transferred) {
+        return "";
+    }
+    return ReadAPIAsync(context);
+}
+
 std::string BeamWalletClient::ReadAPI() {
     auto n = boost::asio::read_until(stream_, boost::asio::dynamic_buffer(data_), '\n');
+    auto line = data_.substr(0, n);
+    data_.erase(0, n);
+    return line;
+}
+
+std::string BeamWalletClient::ReadAPIAsync(AsyncContext context) {
+    auto n = boost::asio::async_read_until(
+        stream_, boost::asio::dynamic_buffer(data_), '\n', context);
     auto line = data_.substr(0, n);
     data_.erase(0, n);
     return line;

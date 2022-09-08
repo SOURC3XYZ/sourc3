@@ -18,9 +18,13 @@
 #include <cstdint>
 #include <functional>
 
+#include <boost/asio/spawn.hpp>
+
 struct State;
 
 struct IWalletClient {
+    using AsyncContext = boost::asio::yield_context;
+
     struct Options {
         std::string apiHost;
         std::string apiPort;
@@ -30,6 +34,7 @@ struct IWalletClient {
         std::string repoName;
         std::string repoPath = ".";
         bool useIPFS = true;
+        bool async = true;
     };
 
     explicit IWalletClient(const Options& options)
@@ -50,7 +55,10 @@ struct IWalletClient {
     }
 
     virtual std::string LoadObjectFromIPFS(std::string hash) = 0;
+    virtual std::string LoadObjectFromIPFSAsync(std::string hash, AsyncContext context) = 0;
     virtual std::string SaveObjectToIPFS(const uint8_t* data, size_t size) = 0;
+    virtual std::string SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
+                                              AsyncContext context) = 0;
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
 

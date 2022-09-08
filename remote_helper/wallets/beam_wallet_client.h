@@ -23,6 +23,7 @@
 #include <boost/beast/version.hpp>
 #include <iostream>
 #include <set>
+#include <boost/asio/spawn.hpp>
 #include "utils.h"
 #include "git/object_collector.h"
 #include "contract_state.hpp"
@@ -67,7 +68,10 @@ public:
 
     std::string LoadObjectFromIPFS(std::string hash) final;
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size) final;
-
+    std::string LoadObjectFromIPFSAsync(std::string hash,
+                                        boost::asio::yield_context context) override;
+    std::string SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
+                                      boost::asio::yield_context context) override;
     bool WaitForCompletion(WaitFunc&&) final;
     size_t GetTransactionCount() const final {
         return transactions_.size();
@@ -83,12 +87,15 @@ private:
     }
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
+    void EnsureConnectedAsync(AsyncContext context);
     std::string ExtractResult(const std::string& response);
     std::string InvokeShader(const std::string& args);
     const std::string& GetCID();
     const std::string& GetRepoID();
     std::string CallAPI(std::string&& request);
+    std::string CallAPIAsync(std::string request, AsyncContext context);
     std::string ReadAPI();
+    std::string ReadAPIAsync(AsyncContext context);
     void PrintVersion();
 
 private:

@@ -84,6 +84,21 @@ struct RepoAccessor {
 
 std::string ToString(const git_oid& oid);
 git_oid FromString(const std::string& str);
+
+template <typename Iterator>
+void SortCommitsByParents(Iterator begin, Iterator end, const git::Repository& repo) {
+    std::sort(begin, end, [&repo](const auto& lhs, const auto& rhs) {
+        git::Commit rhs_commit;
+        git_commit_lookup(rhs_commit.Addr(), *repo, &rhs.oid);
+        unsigned int parents_count = git_commit_parentcount(*rhs_commit);
+        for (unsigned int i = 0; i < parents_count; ++i) {
+            if (*git_commit_parent_id(*rhs_commit, i) == lhs.oid) {
+                return true;
+            }
+        }
+        return false;
+    });
+}
 }  // namespace sourc3
 
 bool operator<(const git_oid& left, const git_oid& right) noexcept;

@@ -24,6 +24,7 @@
 #include <unordered_map>
 
 #include <boost/json.hpp>
+#include <boost/asio.hpp>
 
 #include "utils.h"
 #include "contract_state.hpp"
@@ -61,6 +62,22 @@ std::string GetStringFromIPFS(const std::string& hash, IWalletClient& wallet_cli
     return ByteBufferToString(buf);
 }
 
+template <typename Context>
+std::string GetStringFromIPFSAsync(const std::string& hash, IWalletClient& wallet_client,
+                                   Context& context) {
+    auto res = ParseJsonAndTest(wallet_client.LoadObjectFromIPFSAsync(hash, context));
+    if (!res.as_object().contains("result")) {
+        throw std::runtime_error{"No result in resulting JSON, probably error"};
+    }
+    auto d = res.as_object()["result"].as_object()["data"].as_array();
+    ByteBuffer buf;
+    buf.reserve(d.size());
+    for (auto&& v : d) {
+        buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+    }
+    return ByteBufferToString(buf);
+}
+
 std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
                                                       sourc3::IProgressReporter& progress,
                                                       IWalletClient& client) {
@@ -74,6 +91,30 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
                              std::move(file_content));
         progress.AddProgress(1);
     }
+    return objects;
+}
+
+template <typename Context>
+std::vector<ObjectWithContent> GetObjectsFromTreeMetaAsync(const TreeMetaBlock& tree,
+                                                           sourc3::IProgressReporter& progress,
+                                                           IWalletClient& client,
+                                                           Context& context) {
+    namespace ba = boost::asio;
+    std::vector<ObjectWithContent> objects;
+    ba::spawn(context, [&](ba::yield_context context2) {
+        auto tree_content = GetStringFromIPFSAsync(tree.hash.ipfs, client, context2);
+        objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
+                             std::move(tree_content));
+        for (auto&& [oid, hash] : tree.entries) {
+            ba::spawn(context2, [&, hash = std::move(hash),
+                                 oid = std::move(oid)](ba::yield_context context3) {
+                auto file_content = GetStringFromIPFSAsync(hash, client, context3);
+                objects.emplace_back(GIT_OBJECT_BLOB, std::move(oid), std::move(hash),
+                                     std::move(file_content));
+                progress.AddProgress(1);
+            });
+        }
+    });
     return objects;
 }
 
@@ -93,6 +134,36 @@ std::vector<ObjectWithContent> GetAllObjects(const std::string& root_ipfs_hash,
         auto parent_objects = GetAllObjects(parent_hash.ipfs, progress, client);
         std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
     }
+    return objects;
+}
+
+template <typename Context>
+std::vector<ObjectWithContent> GetAllObjectsAsync(const std::string& root_ipfs_hash,
+                                                  sourc3::IProgressReporter& progress,
+                                                  IWalletClient& client,
+                                                  Context& context) {
+    namespace ba = boost::asio;
+    std::vector<ObjectWithContent> objects;
+    ba::spawn(context, [&objects, &root_ipfs_hash, &client,
+                        &progress](IWalletClient::AsyncContext context) {
+        CommitMetaBlock commit(GetStringFromIPFSAsync(root_ipfs_hash, client, context));
+        ba::spawn(context, [&](IWalletClient::AsyncContext context2) {
+            auto commit_content = GetStringFromIPFSAsync(commit.hash.ipfs, client, context2);
+            objects.emplace_back(GIT_OBJECT_COMMIT, std::move(commit.hash.oid),
+                                 std::move(commit.hash.ipfs), std::move(commit_content));
+            progress.AddProgress(1);
+            ba::spawn(context2, [&](IWalletClient::AsyncContext context3) {
+                TreeMetaBlock tree(GetStringFromIPFSAsync(commit.tree_meta_hash, client, context3));
+                auto tree_objects = GetObjectsFromTreeMetaAsync(tree, progress, client, context3);
+                std::move(tree_objects.begin(), tree_objects.end(), std::back_inserter(objects));
+                for (auto&& parent_hash : commit.parent_hashes) {
+                    auto parent_objects = GetAllObjectsAsync(parent_hash.ipfs, progress, client, context3);
+                    std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
+                }
+            });
+        });
+    });
+
     return objects;
 }
 
@@ -287,6 +358,7 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
     }
     return CommandResult::Batch;
 }
+
 IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& args) {
     using namespace sourc3;
     ObjectCollector collector(client_.GetRepoDir());
@@ -341,17 +413,7 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         auto commits = std::partition(non_blob, objs.end(), [](const ObjectInfo& obj) {
             return obj.type == GIT_OBJECT_TREE;
         });
-        std::sort(commits, objs.end(), [&collector](const ObjectInfo& lhs, const ObjectInfo& rhs) {
-            git::Commit rhs_commit;
-            git_commit_lookup(rhs_commit.Addr(), *collector.m_repo, &rhs.oid);
-            unsigned int parents_count = git_commit_parentcount(*rhs_commit);
-            for (unsigned int i = 0; i < parents_count; ++i) {
-                if (*git_commit_parent_id(*rhs_commit, i) == lhs.oid) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        SortCommitsByParents(commits, objs.end(), collector.m_repo);
     }
 
     for (auto& obj : collector.m_objects) {
