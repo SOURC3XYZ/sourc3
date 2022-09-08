@@ -1,0 +1,18 @@
+@import './content/create-project/create-project.module.scss';
+
+.icon {
+    fill: rgba(0, 0, 0, 0.3);;
+}
+
+.main {
+    margin: 0 auto;
+}
+
+.upload{
+    img {
+        height: 60px;
+        width: 60px;
+        object-fit: cover;
+        display: block;
+    }
+}

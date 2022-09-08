@@ -29,6 +29,8 @@ export type SocialLinks = {
 };
 
 type EntityHeaderProps = {
+  pkey: string,
+  owner:string,
   shortTitle?:string,
   routes:string[],
   tabData: Tab[]
@@ -39,11 +41,11 @@ type EntityHeaderProps = {
 };
 
 const socialLinksData = new Map<keyof SocialLinks, React.FC>()
-  .set('discord', () => <DiscordIcon />)
-  .set('telegram', () => <TelegramIcon />)
-  .set('twitter', () => <TwitterIcon />)
-  .set('instagram', () => <InstagrammIcon />)
-  .set('linkedin', () => <LinkedinIcon />);
+  .set('discord', () => <DiscordIcon className={styles.icon} />)
+  .set('telegram', () => <TelegramIcon className={styles.icon} />)
+  .set('twitter', () => <TwitterIcon className={styles.icon} />)
+  .set('instagram', () => <InstagrammIcon className={styles.icon} />)
+  .set('linkedin', () => <LinkedinIcon className={styles.icon} />);
 
 function SocialLinkHOC({ Component, key, link }: {
   Component: React.FC,
@@ -64,7 +66,7 @@ function SocialLinkHOC({ Component, key, link }: {
 }
 
 function EntityHeader({
-  shortTitle, routes, tabData, avatar, description, socialLinks, title
+  pkey, owner, shortTitle, routes, tabData, avatar, description, socialLinks, title
 }:EntityHeaderProps) {
   const { getImgUrlFromIpfs } = useUpload();
 
@@ -108,6 +110,14 @@ function EntityHeader({
       .filter((el) => el);
     return links;
   }, []);
+
+  const settings = useMemo(() => (
+    pkey === owner && (
+      <Link className={styles.settingLink} to="edit">
+        <SettingsIcon className={styles.icon} />
+      </Link>
+    )
+  ), []);
 
   return (
     <div className={styles.specBlock}>
@@ -156,9 +166,7 @@ function EntityHeader({
               navigate(routes[id]);
             }}
           />
-          <Link className={styles.settingLink} to="/settings">
-            <SettingsIcon />
-          </Link>
+          {settings}
         </div>
       </div>
     </div>

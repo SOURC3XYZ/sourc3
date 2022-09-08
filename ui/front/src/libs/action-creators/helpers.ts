@@ -66,7 +66,7 @@ export const contractCall = (callApi: CallBeamApi<RequestSchema['params']>) => {
     isContractInit = false
   ) {
     const res = await callApi({ ...props, isContractInit });
-    return outputParser<T>(res, dispatch);
+    return outputParser<T extends ContractResp ? T : any>(res, dispatch);
   }
 
   const contractQuery = async <T>(

@@ -1,10 +1,10 @@
 import { useSourc3Api } from '@components/context';
-import {AC, RC} from '@libs/action-creators';
+import { AC } from '@libs/action-creators';
 import { entitiesThunk } from '@libs/action-creators/async';
-import {CustomAction, useDispatch} from '@libs/redux';
-import {RepoListType, ArgumentTypes, OrganizationsResp} from '@types';
+import { useDispatch } from '@libs/redux';
+import { RepoListType, ArgumentTypes } from '@types';
 
-const useUserAsync = () => {
+const useEntitiesAction = () => {
   const dispatch = useDispatch();
   const api = useSourc3Api();
   const [queries, mutations] = entitiesThunk(api.callApi);
@@ -36,8 +36,12 @@ const useUserAsync = () => {
   ) => dispatch(mutations.createRepo(...args));
 
   const setModifyUser = (state:any):any => {
-    console.log(state)
-    dispatch(queries.setModifyUser(state))
+    console.log(state);
+    dispatch(queries.setModifyUser(state));
+  };
+
+  const setModifyOrg = (...args: ArgumentTypes<typeof mutations.setModifyOrganization>) => {
+    dispatch(mutations.setModifyOrganization(...args));
   };
 
   return {
@@ -50,8 +54,9 @@ const useUserAsync = () => {
     createProject,
     createRepo,
     deleteRepo,
-    setModifyUser
+    setModifyUser,
+    setModifyOrg
   };
 };
 
-export default useUserAsync;
+export default useEntitiesAction;

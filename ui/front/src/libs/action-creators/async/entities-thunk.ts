@@ -52,6 +52,12 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.getOrganizations(),
     (output:OrganizationsResp) => [AC.setOrganizationsList(output.organizations)]
   );
+
+  const setModifyOrganization = (state:any):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.setModifyOrganization({ ...state })
+  );
+
   const setModifyUser = (state:any):CustomAction => async (dispatch) => contractMutation(
     dispatch,
     RC.setModifyUser(state)
@@ -80,7 +86,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
         contractQuery<IProfile>(
           dispatch,
           RC.getUser(output.key),
-          (profile) => [ AC.setViewUser(profile)]
+          (profile) => [AC.setViewUser(profile)]
         );
         return [];
       }
@@ -92,6 +98,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
   }, {
     createProject,
     createOrganization,
+    setModifyOrganization,
     deleteRepo,
     createRepo
   }] as const;

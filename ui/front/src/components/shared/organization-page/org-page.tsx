@@ -2,7 +2,8 @@ import {
   EntityWrapper,
   BackButton,
   RepoItem,
-  usePathPattern
+  usePathPattern,
+  EditOrgForm
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
 import { CSSProperties, useCallback, useMemo } from 'react';
@@ -135,6 +136,8 @@ function Projects() {
   ];
 
   const headerFields = {
+    pkey,
+    owner: org.organization_creator,
     routes: routes.map((el) => el.path),
     avatar: org.organization_logo_ipfs_hash,
     shortTitle: org.organization_short_title,
@@ -193,23 +196,30 @@ function Projects() {
   return (
     <>
       {backButton}
-      <EntityWrapper
-        headerFields={headerFields}
-        title={org.organization_name || 'NO NAME'}
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      >
-        <Routes>
-          {RoutesView}
-        </Routes>
-      </EntityWrapper>
+      <Routes>
+        <Route path="/edit" element={<EditOrgForm pkey={pkey} {...org} />} />
+        <Route
+          path="/*"
+          element={(
+            <EntityWrapper
+              headerFields={headerFields}
+              title={org.organization_name || 'NO NAME'}
+              type={type}
+              pkey={pkey}
+              searchText={searchText}
+              navItems={navItems}
+              setInputText={setInputText}
+              placeholder={placeholder}
+              showModal={showModal}
+            >
+              <Routes>
+                {RoutesView}
+              </Routes>
+            </EntityWrapper>
+          )}
+        />
+      </Routes>
     </>
-
   );
 }
 

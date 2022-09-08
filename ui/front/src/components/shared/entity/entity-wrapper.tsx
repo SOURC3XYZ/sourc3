@@ -7,6 +7,8 @@ import styles from './entity-wrapper.module.scss';
 import EntityHeader, { SocialLinks } from './entity-header';
 
 type HeaderFields = {
+  pkey: string,
+  owner: string,
   shortTitle?:string,
   tabData: Tab[],
   routes: string[],
@@ -42,6 +44,9 @@ function EntityWrapper({
 }:EntityWrapperProps) {
   const header = useMemo(() => !!headerFields && (
     <EntityHeader
+      pkey={pkey}
+      owner={headerFields.owner}
+      shortTitle={headerFields.shortTitle}
       routes={headerFields.routes}
       tabData={headerFields.tabData}
       avatar={headerFields.avatar}

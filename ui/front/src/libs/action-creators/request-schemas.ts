@@ -1,6 +1,6 @@
 import { CONFIG } from '@libs/constants';
 import {
-  CommitHash, IProfile, PropertiesType, RepoId, TreeElementOid, TreeOid
+  CommitHash, IProfile, Organization, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
 
 export const RC = {
@@ -390,6 +390,42 @@ export const RC = {
         role: 'user',
         action: 'list_organization_members',
         organization_id
+      }
+    }
+  } as const),
+  setModifyOrganization: ({
+    organization_id,
+    name,
+    logo_addr,
+    short_title,
+    about,
+    website,
+    twitter,
+    linkedin,
+    instagram,
+    telegram,
+    discord,
+    pid = 0
+  }: any) => ({
+    callID: 'modify_organization',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_organization',
+        organization_id,
+        name,
+        logo_addr,
+        short_title,
+        about,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord,
+        pid
       }
     }
   } as const)
