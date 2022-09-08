@@ -14,12 +14,12 @@ import { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
+import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
-import {CreateProjectWeb} from "@components/shared/add-org/content/create-project-web";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -60,7 +60,7 @@ function Main() {
     {
       path: 'add-web',
       element: <CreateProjectWeb />
-    },
+    }
   ];
 
   const HeadlessPreloadFallback = useCallback(() => (
@@ -84,23 +84,40 @@ function Main() {
   ), [isApiConnected]);
 
   return (
-    <PreloadComponent
-      Fallback={HeadlessPreloadFallback}
-      callback={connectBeamApi}
-      isLoaded={isApiConnected}
-    >
-      <>
-        <div className={styles.appWrapper}>
-          <Header isOnLending={isOnLending} />
-          <div className={styles.main}>
-            {routes}
-            <Notifications />
-          </div>
-        </div>
-        <Footer isOnLending={isOnLending} />
-      </>
-    </PreloadComponent>
+    <Routes>
+      <Route
+        path="/git-auth"
+        element={
+          <div>git auth</div>
+        }
+      />
+      <Route
+        path="/download"
+        element={<DownloadPage />}
+      />
+      <Route
+        path="/*"
+        element={(
+          <PreloadComponent
+            Fallback={HeadlessPreloadFallback}
+            callback={connectBeamApi}
+            isLoaded={isApiConnected}
+          >
+            <>
+              <div className={styles.appWrapper}>
+                <Header isOnLending={isOnLending} />
+                <div className={styles.main}>
+                  {routes}
+                  <Notifications />
+                </div>
+              </div>
+              <Footer isOnLending={isOnLending} />
+            </>
+          </PreloadComponent>
+        )}
+      />
 
+    </Routes>
   );
 }
 
