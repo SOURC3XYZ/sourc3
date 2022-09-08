@@ -20,6 +20,7 @@
 #include <string_view>
 #include <string>
 #include <cassert>
+#include <algorithm>
 
 // struct git_repository;
 // struct git_odb;
