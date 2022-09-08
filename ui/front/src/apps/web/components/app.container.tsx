@@ -15,6 +15,7 @@ import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
+import { GitProfile } from '@components/shared/git-auth';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -53,13 +54,18 @@ function Main() {
       path: 'download',
       element: <DownloadPage />
     },
-    {
-      path: '404',
-      element: <FailPage />
-    },
+
     {
       path: 'add-web',
       element: <CreateProjectWeb />
+    },
+    {
+      path: 'profile',
+      element: <GitProfile />
+    },
+    {
+      path: '/*',
+      element: <FailPage />
     }
   ];
 
