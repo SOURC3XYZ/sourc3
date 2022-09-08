@@ -6,10 +6,14 @@ import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
 import classNames from 'classnames';
 import { useCallApi, useUpload } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
+import { useSelector } from '@libs/redux';
+import Avatar from 'boring-avatars';
 import styles from './project-list.module.scss';
 
 type ListItemProps = {
@@ -21,6 +25,7 @@ type ListItemProps = {
 function MemberListItem({
   item, path, searchText
 }:ListItemProps) {
+  const pkey = useSelector((state) => state.app.pkey);
   const [callApi] = useCallApi();
   const [itemData, setItemData] = useState <Member | null>(null);
   const [src, setSrc] = useState<string | undefined>(undefined);
@@ -57,6 +62,45 @@ function MemberListItem({
     <Menu onClick={onClick} />
   );
 
+  const status = useMemo(() => (pkey === item.member ? 'creator' : 'member'), []);
+
+  const colors = [
+    '#FF791F',
+    '#3FD05A',
+    '#000000',
+    '#C271B4',
+    '#4DA2E6',
+    '#DDDDDD',
+    '#92A1C6',
+    '#146A7C',
+    '#F0AB3D',
+    '#C271B4',
+    '#C20D90'
+  ];
+
+  const avatar = itemData?.user_avatar_ipfs_hash ? (
+    <img
+      className={classNames(styles.memberPicture, {
+        [styles.memberPictureActive]: !!src
+      })}
+      src={src}
+      alt="avatar"
+    />
+  )
+    : (
+      <Avatar
+        size="56px"
+        variant="beam"
+        name={item.member}
+        colors={colors}
+      />
+    );
+
+  const image = useMemo(() => (
+    itemData
+      ? avatar
+      : <img className={styles.memberPicture} src={src} alt="avatar" />), [src]);
+
   return (
     <List.Item
       className={styles.listItem}
@@ -78,15 +122,7 @@ function MemberListItem({
       ]}
     >
       <List.Item.Meta
-        avatar={(
-          <img
-            className={classNames(styles.memberPicture, {
-              [styles.memberPictureActive]: !!src
-            })}
-            src={src}
-            alt="avatar"
-          />
-        )}
+        avatar={image}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: item.member }}>
@@ -94,7 +130,7 @@ function MemberListItem({
             </Link>
           </div>
         )}
-        description={<span className={styles.memberDescription}>member</span>}
+        description={<span className={styles.memberDescription}>{status}</span>}
       />
     </List.Item>
   );

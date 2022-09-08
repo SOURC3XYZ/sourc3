@@ -6,10 +6,10 @@ import {
 import styles from './entity-manager.module.scss';
 
 type EntityManagerProps = {
+  navItems?: NavItem[];
   type: OwnerListType;
   pkey: string;
   searchText: string;
-  navItems: NavItem[];
   placeholder:string;
   setInputText: (str: string) => void;
   showModal?: () => void;
@@ -35,7 +35,7 @@ const EntityManager = ({
   const repoManager = useMemo(() => (
     <div className={styles.repoHeader}>
 
-      {pkey && <Nav type={type} items={navItems} />}
+      {pkey && navItems && <Nav type={type} items={navItems} />}
 
       <div className={styles.manage}>
         <div className={styles.searchWrapper}>

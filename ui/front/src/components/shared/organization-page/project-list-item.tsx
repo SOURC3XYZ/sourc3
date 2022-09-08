@@ -9,6 +9,7 @@ import { textEllipsis } from '@libs/utils';
 import { useCallback, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import { useUpload } from '@libs/hooks/shared';
+import Avatar from 'boring-avatars';
 import styles from './project-list.module.scss';
 
 type ListItemProps = {
@@ -58,6 +59,38 @@ function ProjectListItem({
     )
   );
 
+  const colors = [
+    '#FF791F',
+    '#3FD05A',
+    '#000000',
+    '#C271B4',
+    '#4DA2E6',
+    '#DDDDDD',
+    '#92A1C6',
+    '#146A7C',
+    '#F0AB3D',
+    '#C271B4',
+    '#C20D90'
+  ];
+
+  const image = item.project_logo_ipfs_hash ? (
+    <img
+      className={classNames(styles.entityPicture, {
+        [styles.entityPictureActive]: !!src
+      })}
+      src={src}
+      alt="avatar"
+    />
+  )
+    : (
+      <Avatar
+        size="56px"
+        square
+        variant="pixel"
+        name={`${project_id}${item.project_name}${item.project_creator}`}
+        colors={colors}
+      />
+    );
   return (
     <List.Item
       className={styles.listItem}
@@ -75,15 +108,7 @@ function ProjectListItem({
       ]}
     >
       <List.Item.Meta
-        avatar={(
-          <img
-            className={classNames(styles.entityPicture, {
-              [styles.entityPictureActive]: !!src
-            })}
-            src={src}
-            alt="avatar"
-          />
-        )}
+        avatar={image}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: organization_id }}>

@@ -3,7 +3,7 @@ import { RC } from '@libs/action-creators';
 import { useCallApi, useModal } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
-import { unorderedRemove } from '@libs/utils';
+import { getQueryParam, unorderedRemove } from '@libs/utils';
 import {
   MemberId,
   MemberList,
@@ -25,8 +25,12 @@ type LocationState = {
 
 const useProject = () => {
   const { pathname } = useLocation();
-  const { type, page, orgId } = useParams<'type' & 'page' & 'orgId'>() as LocationState;
+  const { page, orgId } = useParams<'page' & 'orgId'>() as LocationState;
   const path = pathname.split('projects/')[0];
+
+  const type:OwnerListType = useMemo(() => (
+    getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
+  ), [window.location.href]);
 
   const [callApi] = useCallApi();
 

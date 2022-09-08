@@ -1,7 +1,4 @@
-import {
-  EntityManager, NavItem, Tab
-} from '@components/shared';
-import { OwnerListType } from '@types';
+import { Tab } from '@components/shared';
 import { useMemo } from 'react';
 import styles from './entity-wrapper.module.scss';
 import EntityHeader, { SocialLinks } from './entity-header';
@@ -20,27 +17,15 @@ type HeaderFields = {
 type EntityWrapperProps = {
   title: string;
   headerFields?: HeaderFields
-  type: OwnerListType;
   pkey:string;
-  searchText: string;
-  navItems: NavItem[];
   children:JSX.Element;
-  placeholder: string;
-  setInputText:(str: string) => void
-  showModal?: () => void;
 };
 
 function EntityWrapper({
   title,
   headerFields,
-  type,
   pkey,
-  searchText,
-  navItems,
-  children,
-  placeholder,
-  showModal,
-  setInputText
+  children
 }:EntityWrapperProps) {
   const header = useMemo(() => !!headerFields && (
     <EntityHeader
@@ -58,15 +43,6 @@ function EntityWrapper({
   return (
     <div className={styles.content}>
       {header}
-      <EntityManager
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      />
       {children}
     </div>
   );

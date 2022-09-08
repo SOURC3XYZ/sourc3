@@ -3,7 +3,8 @@ import {
   BackButton,
   RepoItem,
   usePathPattern,
-  EditOrgForm
+  EditOrgForm,
+  NavItem
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
 import { CSSProperties, useCallback, useMemo } from 'react';
@@ -14,14 +15,14 @@ import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
 
 type RoutesType<T> = {
+  headerElements?: HeaderElements;
   path: string,
   items: T[],
   navTitle:string,
+  navItems?: NavItem[]
+  placeholder:string;
   itemComponent: (item: T) => JSX.Element;
-  headerElements?: HeaderElements;
 };
-
-const placeholder = 'Enter name of your project';
 
 function Projects() {
   const {
@@ -40,8 +41,6 @@ function Projects() {
 
   const {
     isModal,
-    setInputText,
-    showModal,
     handleOk,
     closeModal
   } = modalApi;
@@ -108,32 +107,61 @@ function Projects() {
   const routes: RoutesType<any>[] = [
     {
       path: 'projects',
-      itemComponent: projectListItem,
       items: projects,
       navTitle: 'Projects',
+      placeholder: 'enter project name or id',
       headerElements: {
         placeholder: 'Search by project name or ID'
-      }
+      },
+      itemComponent: projectListItem,
+      navItems: [
+        {
+          key: 'all',
+          to: `${path}projects/${id}/1/projects?type=all`,
+          text: 'All Projects'
+        },
+        {
+          key: 'my',
+          to: `${path}projects/${id}/1/projects?type=my`,
+          text: 'My Projects'
+        }
+      ]
     },
     {
       path: 'repos',
-      itemComponent: repoListItem,
       items: repos,
       navTitle: 'Repositories',
+      placeholder: 'enter repo name or id',
       headerElements: {
         placeholder: 'Search by repo name or ID'
-      }
+      },
+      itemComponent: repoListItem,
+      navItems: [
+        {
+          key: 'all',
+          to: `${path}projects/${id}/1/repos?type=all`,
+          text: 'All Repositories'
+        },
+        {
+          key: 'my',
+          to: `${path}projects/${id}/1/repos?type=my`,
+          text: 'My Repositories'
+        }
+      ]
     },
     {
       path: 'users',
-      itemComponent: memberListItem,
       items: members,
       navTitle: 'Projects',
+      placeholder: 'enter user name',
       headerElements: {
         placeholder: 'Search by username of pid'
-      }
+      },
+      itemComponent: memberListItem
     }
   ];
+
+  const currentRoute = usePathPattern(routes.map((el) => el.path));
 
   const headerFields = {
     pkey,
@@ -153,21 +181,6 @@ function Projects() {
     tabData
   };
 
-  const currentRoute = usePathPattern(routes.map((el) => el.path));
-
-  const navItems = [
-    {
-      key: 'all',
-      to: `${path}projects/${id}/all/1/${currentRoute}`,
-      text: 'All Projects'
-    },
-    {
-      key: 'my',
-      to: `${path}projects/${id}/my/1/${currentRoute}`,
-      text: 'My Projects'
-    }
-  ];
-
   const RoutesView = useMemo(() => routes.map(
     (el) => (
       <Route
@@ -176,14 +189,16 @@ function Projects() {
         element={(
           <ProjectList
             id={id}
+            pkey={pkey}
+            placeholder={el.placeholder}
             route={el.path}
             isModal={isModal}
-            searchText={searchText}
             projects={el.items}
             header={el.headerElements}
             path={path}
             page={page}
             type={type}
+            navItems={el.navItems}
             handleOk={handleOk}
             closeModal={closeModal}
             listItem={el.itemComponent}
@@ -204,13 +219,7 @@ function Projects() {
             <EntityWrapper
               headerFields={headerFields}
               title={org.organization_name || 'NO NAME'}
-              type={type}
               pkey={pkey}
-              searchText={searchText}
-              navItems={navItems}
-              setInputText={setInputText}
-              placeholder={placeholder}
-              showModal={showModal}
             >
               <Routes>
                 {RoutesView}
