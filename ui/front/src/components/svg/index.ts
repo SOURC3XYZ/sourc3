@@ -11,3 +11,4 @@ export { default as IconTelegram } from './iconTelegram';
 export { default as IconLinkedIn } from './iconLinkedIn';
 export { default as IconCopy } from './iconCopy';
 export { default as IconLocation } from './iconLocation';
+export { default as avatarDefault } from './iconDefautlAvatar';

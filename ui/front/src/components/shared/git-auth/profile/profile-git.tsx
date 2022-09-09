@@ -1,10 +1,10 @@
-import React, {
-} from 'react';
+import React from 'react';
 import { IconTwitter, IconCopy, IconLocation } from '@components/svg';
 import { useSelector } from '@libs/redux';
 import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import styles from './profiles-git.module.scss';
+import IconDefaultAvatar from "@components/svg/iconDefautlAvatar";
 
 function GitProfile() {
   const {
@@ -21,7 +21,7 @@ function GitProfile() {
       <div className={styles.content}>
         <div className={styles.side}>
           <div className={styles.avatar}>
-            <Avatar url={avatar_url} />
+            {avatar_url ? <Avatar url={avatar_url} /> : <IconDefaultAvatar /> }
           </div>
           <div className={styles.info}>
             {location && (
@@ -51,19 +51,21 @@ function GitProfile() {
           <div className={styles.supHeader}>
             {login && <span>{login}</span>}
             {email && <span>{email}</span>}
-            <span>
-              id:
-              {' '}
-              {id}
-              {' '}
-              <button
-                type="button"
-                // onClick={copyId}
-                className={styles.copyButton}
-              >
-                <IconCopy />
-              </button>
-            </span>
+            {id && (
+              <span>
+                id:
+                {' '}
+                {id}
+                {' '}
+                <button
+                  type="button"
+                  // onClick={copyId}
+                  className={styles.copyButton}
+                >
+                  <IconCopy />
+                </button>
+              </span>
+            )}
           </div>
           <div className={styles.wrapperData}>
             {/* <UserData description={profile.user_description} /> */}
@@ -71,9 +73,10 @@ function GitProfile() {
               <div className={styles.description_text}>
                 {' '}
                 <span className={styles.welcome}>
-                  Thank you for joining the community that is shaping the new web
+                  Thank you for joining the community that is shaping the new
+                  web
                   {' '}
-                  <span className={styles.nick}>{login || name}</span>
+                  <span className={styles.nick}>{!(login || name) && 'user name'}</span>
                   {' '}
                   !
                 </span>
@@ -87,14 +90,15 @@ function GitProfile() {
                   {' '}
                   <b>1,345</b>
                   {' '}
-                  developers that have already claimed their repos.
+                  developers that have
+                  already claimed their repos.
                   {' '}
                 </span>
                 <br />
                 <span>
-                  As an early adopter,
-                  you will receive benefits including exclusive airdrops,
-                  and early access to new features and products.
+                  As an early adopter, you will receive benefits including
+                  exclusive airdrops, and early access to new features and
+                  products.
                 </span>
               </div>
               <img
