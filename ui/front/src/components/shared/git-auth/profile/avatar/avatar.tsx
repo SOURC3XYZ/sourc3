@@ -20,7 +20,7 @@ function Avatar({ small, url }: AvatarProps) {
       src={src}
       alt="avatar"
       loading="lazy"
-      crossOrigin='anonymous'
+      crossOrigin="anonymous"
     />
   );
 }

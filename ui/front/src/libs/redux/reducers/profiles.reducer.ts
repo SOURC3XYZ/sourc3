@@ -4,6 +4,15 @@ import { ACTIONS } from '@libs/constants';
 export interface IProfiles {
   id: string,
   login: string,
+  created_at: string,
+  updated_at: string,
+  token: string,
+  github_profile: IProfilesGit
+}
+
+export interface IProfilesGit {
+  id: string,
+  login: string,
   email: string,
   name: string,
   avatar_url: string,
@@ -15,12 +24,10 @@ export interface IProfiles {
 const defaultValue: IProfiles = {
   id: '',
   login: '',
-  email: '',
-  name: '',
-  avatar_url: '',
-  blo: '',
-  location: '',
-  twitter_username: ''
+  created_at: '',
+  updated_at: '',
+  token: '',
+  github_profile:[]
 };
 
 const initialState = {

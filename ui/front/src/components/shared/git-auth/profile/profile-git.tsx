@@ -8,8 +8,9 @@ import styles from './profiles-git.module.scss';
 
 function GitProfile() {
   const {
-    id, avatar_url, email, name, twitter_username, login, location
-  } = useSelector((state) => state.profile.data.github_profile);
+    id, github_profile
+  } = useSelector((state) => state.profile.data);
+  // console.log(profile);
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -21,13 +22,13 @@ function GitProfile() {
       <div className={styles.content}>
         <div className={styles.side}>
           <div className={styles.avatar}>
-            {avatar_url ? <Avatar url={avatar_url} /> : <IconDefaultAvatar /> }
+            {github_profile.avatar_url ? <Avatar url={github_profile.avatar_url} /> : <IconDefaultAvatar /> }
           </div>
           <div className={styles.info}>
-            {location && (
+            {github_profile.location && (
               <div className={styles.info_location}>
                 <IconLocation className={styles.info_icon} />
-                <span>{location}</span>
+                <span>{github_profile.location}</span>
               </div>
             )}
           </div>
@@ -35,12 +36,12 @@ function GitProfile() {
         </div>
         <div className={styles.main}>
           <div className={styles.mainHeader}>
-            <div className={styles.name}>{name || login}</div>
+            <div className={styles.name}>{github_profile.name || github_profile.login}</div>
             <div className={styles.social}>
-              {twitter_username && (
+              {github_profile.twitter_username && (
                 <a
                   target="_blank"
-                  href={`https://twitter.com/${twitter_username}`}
+                  href={`https://twitter.com/${github_profile.twitter_username}`}
                   rel="noreferrer"
                 >
                   <IconTwitter />
@@ -49,8 +50,8 @@ function GitProfile() {
             </div>
           </div>
           <div className={styles.supHeader}>
-            {login && <span>{login}</span>}
-            {email && <span>{email}</span>}
+            {github_profile.login && <span>{github_profile.login}</span>}
+            {github_profile.email && <span>{github_profile.email}</span>}
             {id && (
               <span>
                 id:
@@ -76,7 +77,7 @@ function GitProfile() {
                   Thank you for joining the community that is shaping the new
                   web
                   {' '}
-                  <span className={styles.nick}>{!(login || name) && 'user name'}</span>
+                  <span className={styles.nick}>{github_profile.login || github_profile.name}</span>
                   {' '}
                   !
                 </span>
