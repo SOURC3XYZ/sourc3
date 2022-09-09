@@ -85,11 +85,11 @@ function GitProfile() {
                 <span>
                   You are the
                   {' '}
-                  <b>566</b>
+                  <b>{id}</b>
                   {' '}
                   th of
                   {' '}
-                  <b>1,345</b>
+                  <b>687</b>
                   {' '}
                   developers that have
                   already claimed their repos.

@@ -21,11 +21,11 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if (window.localStorage.getItem('token')) {
-  //     setIsDisabled(true);
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (window.localStorage.getItem('token')) {
+      setIsDisabled(true);
+    }
+  }, []);
 
   return (
     <>
