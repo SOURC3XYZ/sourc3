@@ -32,7 +32,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
       <div className={styles.wrapper}>
         <LoginSocialGithub
           client_id={clientId}
-          redirect_uri={`${window.location.origin}/git-auth`}
+          redirect_uri={window.location.href}
           onResolve={({ data }) => {
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
