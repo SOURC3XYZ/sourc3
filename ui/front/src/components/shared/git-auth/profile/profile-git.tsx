@@ -3,13 +3,13 @@ import { IconTwitter, IconCopy, IconLocation } from '@components/svg';
 import { useSelector } from '@libs/redux';
 import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
+import IconDefaultAvatar from '@components/svg/iconDefautlAvatar';
 import styles from './profiles-git.module.scss';
-import IconDefaultAvatar from "@components/svg/iconDefautlAvatar";
 
 function GitProfile() {
   const {
     id, avatar_url, email, name, twitter_username, login, location
-  } = useSelector((state) => state.profile.data);
+  } = useSelector((state) => state.profile.data.github_profile);
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
