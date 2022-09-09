@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconTwitter, IconCopy, IconLocation } from '@components/svg';
 import { useSelector } from '@libs/redux';
 import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import IconDefaultAvatar from '@components/svg/iconDefautlAvatar';
+import axios from 'axios';
 import styles from './profiles-git.module.scss';
 
 function GitProfile() {
   const {
     id, github_profile
   } = useSelector((state) => state.profile.data);
-  // console.log(profile);
+
+  const [allUsers, setAllUsers] = useState(0);
+
+  useEffect(() => {
+    axios.get('https://poap-api.sourc3.xyz/stats/users').then((res) => {
+      setAllUsers(res.data.users_count);
+    });
+  }, []);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -89,7 +98,7 @@ function GitProfile() {
                   {' '}
                   th of
                   {' '}
-                  <b>687</b>
+                  <b>{allUsers + 687}</b>
                   {' '}
                   developers that have
                   already claimed their repos.
