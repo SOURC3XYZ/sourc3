@@ -21,18 +21,18 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (window.localStorage.getItem('token')) {
-      setIsDisabled(true);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (window.localStorage.getItem('token')) {
+  //     setIsDisabled(true);
+  //   }
+  // }, []);
 
   return (
     <>
       <div className={styles.wrapper}>
         <LoginSocialGithub
           client_id={clientId}
-          redirect_uri={window.location.href}
+          redirect_uri={`${window.location.host}/git-auth`}
           onResolve={({ data }) => {
             axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
               .then((res) => {
@@ -40,7 +40,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 window.localStorage.setItem('token', res.data.token);
                 axios({
                   method: 'get',
-                  url: 'https://poap-api.sourc3.xyz/users/me',
+                  url: 'https://poap-api.sourc3.xyz/user',
                   withCredentials: false,
                   headers: {
                     'Content-Type': 'application/json',

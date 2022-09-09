@@ -94,7 +94,7 @@ function Main() {
       <Route
         path="/git-auth"
         element={
-          <div>git auth</div>
+          <GitProfile />
         }
       />
       <Route
