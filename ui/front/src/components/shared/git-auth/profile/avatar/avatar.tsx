@@ -9,7 +9,7 @@ type AvatarProps = {
   url?: string
 };
 function Avatar({ small, url }: AvatarProps) {
-  const src = useSelector((state) => state.profile.data.avatar_url);
+  const src = useSelector((state) => state.profile.data.github_profile.avatar_url);
   const navigate = useNavigate();
   // const [src, setSrc] = useState<string | null>(null);
 
