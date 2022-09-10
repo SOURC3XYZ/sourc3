@@ -10,7 +10,6 @@ import { useMemo } from 'react';
 import { GitConnectAuth } from '@components/shared/git-auth';
 import styles from './header.module.scss';
 
-
 type HeaderPropsType = {
   isOnLending?: boolean,
   desktop?: boolean,
