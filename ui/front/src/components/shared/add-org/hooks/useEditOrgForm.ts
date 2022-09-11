@@ -18,7 +18,7 @@ export const useEditOrgForm = (props:Organization) => {
     instagram: props.organization_instagram,
     logo_addr: props.organization_logo_ipfs_hash,
     twitter: props.organization_twitter,
-    linkedin: props.organization_twitter
+    linkedin: props.organization_linkedin
   });
   const [imgParams, setImgParams] = useState<{ link: string, blob?: Blob } | null>(null);
 

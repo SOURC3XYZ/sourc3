@@ -15,8 +15,8 @@ type HeaderFields = {
 };
 
 type EntityWrapperProps = {
-  title: string;
   headerFields?: HeaderFields
+  title: string;
   pkey:string;
   children:JSX.Element;
 };

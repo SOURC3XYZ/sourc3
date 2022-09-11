@@ -30,7 +30,7 @@ function EntityList<T>({
   useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      navigate(`${path}${route}/${type}/${1}`, { replace: true });
+      // navigate(`${path}${route}/${type}/${1}`, { replace: true });
     }
   }, [searchText]);
 

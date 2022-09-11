@@ -43,7 +43,6 @@ function MemberListItem({
       if (link) setSrc(link);
     }
   }, [itemData]);
-
   useEffect(() => {
     getItemData();
   }, []);

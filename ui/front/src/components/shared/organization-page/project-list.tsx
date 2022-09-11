@@ -4,8 +4,9 @@ import {
   EntityManager,
   NavItem
 } from '@components/shared';
+import { useSearch } from '@libs/hooks/shared/useSearch';
 import { OwnerListType } from '@types';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 export type HeaderElements = {
   title?: string,
@@ -15,13 +16,14 @@ export type HeaderElements = {
 
 type ProjectListProps<T> = {
   id: number;
-  isModal: boolean;
   projects: T[];
   path:string;
   page: number;
   pkey: string;
   type: OwnerListType;
   placeholder:string;
+  isShowNav: boolean;
+  fieldsToSearch:(keyof T)[]
   navItems?: NavItem[];
   header?: {
     title?: string,
@@ -29,15 +31,12 @@ type ProjectListProps<T> = {
     placeholder?: string
   },
   route: string;
-  showModal?: () => void;
-  listItem: (item: T) => JSX.Element;
-  handleOk: (name: string) => void;
-  closeModal: () => void;
+  handleOk?: (name: string) => void;
+  listItem: (searchText:string) => (item: T) => JSX.Element;
 };
 
 function ProjectList<T>({
   id,
-  isModal,
   navItems,
   placeholder,
   path,
@@ -47,44 +46,54 @@ function ProjectList<T>({
   page,
   header,
   route,
-  showModal,
+  isShowNav,
+  fieldsToSearch,
   listItem,
-  handleOk,
-  closeModal
+  handleOk
 }:ProjectListProps<T>) {
   const [searchText, setSearchText] = useState('');
 
-  const setInputText = (str: string) => {
-    setSearchText(str);
-  };
+  const foundedItems = useSearch(searchText, projects, fieldsToSearch);
+
+  const [isModalVisile, showModal] = useState(false);
+
+  const setInputText = useCallback((str: string) => setSearchText(str), [searchText]);
+
+  const showModalHandler = useCallback(() => showModal((prev) => !prev), [isModalVisile]);
+
+  const closeModal = useCallback(() => showModal(false), []);
+
+  const isAddBtnVisible = useMemo(() => !!handleOk, [handleOk]);
 
   return (
     <>
       <EntityManager
         type={type}
         pkey={pkey}
-        searchText={searchText}
         navItems={navItems}
-        setInputText={setInputText}
+        isShowNav={isShowNav}
         placeholder={placeholder}
-        showModal={showModal}
+        searchText={searchText}
+        isAddBtnVisible={isAddBtnVisible}
+        setInputText={setInputText}
+        showModal={showModalHandler}
       />
       <CreateModal
         title={header?.title || ''}
         label={header?.label || ''}
-        isModalVisible={isModal}
         placeholder={header?.placeholder || ''}
+        isModalVisible={isModalVisile}
         handleCreate={handleOk}
         handleCancel={closeModal}
       />
       <EntityList
         searchText={searchText}
-        renderItem={listItem}
         route={`${route}/${id}`}
         path={path}
         page={page}
-        items={projects}
+        items={foundedItems}
         type={type}
+        renderItem={listItem(searchText)}
       />
     </>
   );

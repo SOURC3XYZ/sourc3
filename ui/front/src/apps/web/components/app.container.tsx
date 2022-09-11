@@ -7,7 +7,6 @@ import {
   Organizations,
   Projects,
   ProjectRepos,
-  Uploader,
   ProfilesPage
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
@@ -42,7 +41,7 @@ function Main() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page/*',
+      path: 'projects/:orgId/:page/*',
       element: <Projects />
     },
     {
@@ -52,10 +51,6 @@ function Main() {
     {
       path: 'download',
       element: <DownloadPage />
-    },
-    {
-      path: 'upload',
-      element: <Uploader />
     },
     {
       path: 'profiles/:id/*',

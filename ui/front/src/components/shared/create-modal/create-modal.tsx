@@ -10,7 +10,7 @@ type InputChange = React.ChangeEventHandler<HTMLInputElement>;
 
 type AddModalType = {
   isModalVisible: boolean;
-  handleCreate: (name:string) => void;
+  handleCreate?: (name:string) => void;
   handleCancel: () => void;
   closePopup?: () => void;
   placeholder: string;
@@ -37,9 +37,11 @@ function CreateModal({
   };
 
   const handleOk = () => {
-    handleCreate(inputName);
-    setInputName('');
-    if (closePopup) closePopup();
+    if (handleCreate) {
+      handleCreate(inputName);
+      setInputName('');
+      if (closePopup) closePopup();
+    }
   };
 
   const handleCanceled = () => {

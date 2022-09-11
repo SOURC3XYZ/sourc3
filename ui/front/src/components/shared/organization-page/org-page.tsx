@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import {
   EntityWrapper,
   BackButton,
@@ -16,12 +17,14 @@ import ProjectListItem from './project-list-item';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
-  path: string,
-  items: T[],
-  navTitle:string,
-  navItems?: NavItem[]
+  navItems?: NavItem[];
+  path: string;
+  items: T[];
+  navTitle:string;
   placeholder:string;
-  itemComponent: (item: T) => JSX.Element;
+  fieldsToSearch: (keyof T)[];
+  createEntity?: (name: string) => void;
+  itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
 
 function Projects() {
@@ -32,7 +35,6 @@ function Projects() {
     path,
     type,
     pkey,
-    searchText,
     projects,
     modalApi,
     repos,
@@ -40,9 +42,7 @@ function Projects() {
   } = useProject();
 
   const {
-    isModal,
-    handleOk,
-    closeModal
+    handleOk
   } = modalApi;
 
   const navigate = useNavigate();
@@ -78,31 +78,37 @@ function Projects() {
     }
   ], [repos, projects, members]);
 
-  const projectListItem = (item: typeof projects[number]) => (
-    <ProjectListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      type={type}
-    />
-  );
+  const projectListItem = (searchText:string) => function (item: typeof projects[number]) {
+    return (
+      <ProjectListItem
+        item={item}
+        path={path}
+        searchText={searchText}
+        type={type}
+      />
+    );
+  };
 
-  const repoListItem = (item: typeof repos[number]) => (
-    <RepoItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      deleteRepo={() => {}}
-    />
-  );
+  const repoListItem = (searchText:string) => function (item: typeof repos[number]) {
+    return (
+      <RepoItem
+        item={item}
+        path={path}
+        searchText={searchText}
+        deleteRepo={() => {}}
+      />
+    );
+  };
 
-  const memberListItem = (item: typeof members[number]) => (
-    <MemberListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-    />
-  );
+  const memberListItem = (searchText:string) => function (item: typeof members[number]) {
+    return (
+      <MemberListItem
+        item={item}
+        path={path}
+        searchText={searchText}
+      />
+    );
+  };
 
   const routes: RoutesType<any>[] = [
     {
@@ -113,7 +119,6 @@ function Projects() {
       headerElements: {
         placeholder: 'Search by project name or ID'
       },
-      itemComponent: projectListItem,
       navItems: [
         {
           key: 'all',
@@ -125,7 +130,10 @@ function Projects() {
           to: `${path}projects/${id}/1/projects?type=my`,
           text: 'My Projects'
         }
-      ]
+      ],
+      fieldsToSearch: ['project_name', 'project_id'],
+      itemComponent: projectListItem,
+      createEntity: handleOk
     },
     {
       path: 'repos',
@@ -135,7 +143,6 @@ function Projects() {
       headerElements: {
         placeholder: 'Search by repo name or ID'
       },
-      itemComponent: repoListItem,
       navItems: [
         {
           key: 'all',
@@ -147,7 +154,10 @@ function Projects() {
           to: `${path}projects/${id}/1/repos?type=my`,
           text: 'My Repositories'
         }
-      ]
+      ],
+      fieldsToSearch: ['repo_id', 'repo_name'],
+      itemComponent: repoListItem
+
     },
     {
       path: 'users',
@@ -157,6 +167,7 @@ function Projects() {
       headerElements: {
         placeholder: 'Search by username of pid'
       },
+      fieldsToSearch: ['member'],
       itemComponent: memberListItem
     }
   ];
@@ -188,20 +199,20 @@ function Projects() {
         path={`/${el.path}`}
         element={(
           <ProjectList
+            isShowNav={pkey === org.organization_creator}
             id={id}
             pkey={pkey}
-            placeholder={el.placeholder}
-            route={el.path}
-            isModal={isModal}
-            projects={el.items}
-            header={el.headerElements}
             path={path}
             page={page}
             type={type}
+            placeholder={el.placeholder}
+            route={el.path}
+            projects={el.items}
+            header={el.headerElements}
             navItems={el.navItems}
-            handleOk={handleOk}
-            closeModal={closeModal}
+            fieldsToSearch={el.fieldsToSearch}
             listItem={el.itemComponent}
+            handleOk={el.createEntity}
           />
         )}
       />
@@ -212,7 +223,10 @@ function Projects() {
     <>
       {backButton}
       <Routes>
-        <Route path="/edit" element={<EditOrgForm pkey={pkey} {...org} />} />
+        <Route
+          path="/edit"
+          element={<EditOrgForm pkey={pkey} {...org} />}
+        />
         <Route
           path="/*"
           element={(
