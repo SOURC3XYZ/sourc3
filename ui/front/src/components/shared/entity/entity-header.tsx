@@ -8,6 +8,7 @@ import {
   InstagrammIcon,
   LinkedinIcon,
   SettingsIcon,
+  SiteIcon,
   Tab,
   Tabs,
   TelegramIcon,
@@ -40,23 +41,50 @@ type EntityHeaderProps = {
   title: string
 };
 
-const socialLinksData = new Map<keyof SocialLinks, React.FC>()
-  .set('discord', () => <DiscordIcon className={styles.icon} />)
-  .set('telegram', () => <TelegramIcon className={styles.icon} />)
-  .set('twitter', () => <TwitterIcon className={styles.icon} />)
-  .set('instagram', () => <InstagrammIcon className={styles.icon} />)
-  .set('linkedin', () => <LinkedinIcon className={styles.icon} />);
-
-function SocialLinkHOC({ Component, key, link }: {
+type SocialLinkMapObject = {
   Component: React.FC,
-  key: string,
   link: string
+};
+
+const socialLinksData = new Map<keyof SocialLinks, SocialLinkMapObject>()
+  .set('website', {
+    Component: () => (<SiteIcon className={styles.icon} />),
+    link: ' https://'
+  })
+  .set('discord', {
+    Component: () => (<DiscordIcon className={styles.icon} />),
+    link: ' https://www.discord.com/invite/'
+  })
+  .set('telegram', {
+    Component: () => <TelegramIcon className={styles.icon} />,
+    link: 'https://telegram.me/'
+  })
+  .set('twitter', {
+    Component: () => <TwitterIcon className={styles.icon} />,
+    link: 'https://twitter.com/'
+  })
+  .set('instagram', {
+    Component: () => <InstagrammIcon className={styles.icon} />,
+    link: 'https://www.instagram.com/'
+  })
+  .set('linkedin', {
+    Component: () => <LinkedinIcon className={styles.icon} />,
+    link: 'https://www.linkedin.com/'
+  });
+
+function SocialLinkHOC({ key, value }: {
+  key: keyof SocialLinks,
+  value: string
 }) {
+  const data = socialLinksData.get(key);
+  if (!data || !value) return null;
+
+  const { Component, link } = data;
   return (
     <a
       className={styles.icon}
       key={key}
-      href={`http://${link}`}
+      href={`${link}${value}`}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -102,10 +130,8 @@ function EntityHeader({
   const socialLinksView = useMemo(() => {
     const entries = Object.entries(socialLinks) as Entries<SocialLinks>;
     const links = entries.map((el) => {
-      const [key, link] = el;
-      const Component = socialLinksData.get(key);
-      if (!Component) return null;
-      return SocialLinkHOC({ key, link, Component });
+      const [key, value] = el;
+      return SocialLinkHOC({ key, value });
     })
       .filter((el) => el);
     return links;

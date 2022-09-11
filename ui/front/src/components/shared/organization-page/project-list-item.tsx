@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
-import { useCallback, useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { useUpload } from '@libs/hooks/shared';
 import Avatar from 'boring-avatars';
+import { useGetIpfsImage } from '@libs/hooks/shared/useGetIpfsImage';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './project-list.module.scss';
 
 type ListItemProps = {
@@ -22,20 +22,7 @@ type ListItemProps = {
 function ProjectListItem({
   item, path, searchText, type
 }:ListItemProps) {
-  const [src, setSrc] = useState<string | undefined>(undefined);
-
-  const { getImgUrlFromIpfs } = useUpload();
-
-  const handleLoadPic = useCallback(async () => {
-    if (item.project_logo_ipfs_hash) {
-      const link = await getImgUrlFromIpfs(item.project_logo_ipfs_hash);
-      if (link) setSrc(link);
-    }
-  }, []);
-
-  useEffect(() => {
-    handleLoadPic();
-  }, []);
+  const src = useGetIpfsImage(item.project_logo_ipfs_hash);
 
   const {
     organization_id, project_creator, project_name, project_id
@@ -59,26 +46,12 @@ function ProjectListItem({
     )
   );
 
-  const colors = [
-    '#FF791F',
-    '#3FD05A',
-    '#000000',
-    '#C271B4',
-    '#4DA2E6',
-    '#DDDDDD',
-    '#92A1C6',
-    '#146A7C',
-    '#F0AB3D',
-    '#C271B4',
-    '#C20D90'
-  ];
-
   const image = item.project_logo_ipfs_hash ? (
     <img
       className={classNames(styles.entityPicture, {
         [styles.entityPictureActive]: !!src
       })}
-      src={src}
+      src={src ?? undefined}
       alt="avatar"
     />
   )
@@ -88,7 +61,7 @@ function ProjectListItem({
         square
         variant="pixel"
         name={`${project_id}${item.project_name}${item.project_creator}`}
-        colors={colors}
+        colors={AVATAR_COLORS}
       />
     );
   return (

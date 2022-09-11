@@ -1,5 +1,16 @@
 @import '@styles/vars.scss';
+.entityPicture {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 8px;
+    visibility: hidden;
+    display: block;
 
+    &Active {
+        visibility: visible;
+    }
+}
 
 .list {
     border: 1px solid rgba(0, 0, 0, 0.1);

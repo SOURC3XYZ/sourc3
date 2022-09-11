@@ -113,10 +113,10 @@ function AddButton() {
         );
       case MODAL.EXISTING:
         return (
-            <CreateExisting
-                handleCancel={handleCancel}
-                closePopup={handleOk}
-            />
+          <CreateExisting
+            handleCancel={handleCancel}
+            closePopup={handleOk}
+          />
         );
       default:
         return null;

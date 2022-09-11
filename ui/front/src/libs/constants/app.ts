@@ -82,6 +82,20 @@ export enum COLORS {
   RED = '#EA0000'
 }
 
+export const AVATAR_COLORS = [
+  '#FF791F',
+  '#3FD05A',
+  '#000000',
+  '#C271B4',
+  '#4DA2E6',
+  '#DDDDDD',
+  '#92A1C6',
+  '#146A7C',
+  '#F0AB3D',
+  '#C271B4',
+  '#C20D90'
+];
+
 export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
 
 export enum RestoreStatus { SEED, PASS, OK, LOADING }
