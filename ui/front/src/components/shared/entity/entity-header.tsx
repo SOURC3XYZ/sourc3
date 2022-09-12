@@ -138,11 +138,11 @@ function EntityHeader({
   }, []);
 
   const settings = useMemo(() => (
-    pkey === owner && (
-      <Link className={styles.settingLink} to="edit">
-        <SettingsIcon className={styles.icon} />
-      </Link>
-    )
+    // pkey === owner && (
+    <Link className={styles.settingLink} to="edit">
+      <SettingsIcon className={styles.icon} />
+    </Link>
+    // )
   ), []);
 
   return (
