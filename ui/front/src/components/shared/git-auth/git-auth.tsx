@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useDispatch } from '@libs/redux';
+import { useDispatch, useSelector } from '@libs/redux';
 import { AC } from '@libs/action-creators';
 import { NavButton } from '../nav-button';
 import styles from './git-auth.module.scss';
@@ -14,6 +14,7 @@ type GitConnectAuthProps = {
 };
 
 function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
+  const isAuth = Boolean(useSelector((state) => state.profile.data.token));
   const className = small ? styles.headerBtn : styles.buttonAuth;
   const clientId = 'bfa3e88331da0771663c';
   const [isVisible, setVisible] = useState(false);
@@ -22,10 +23,12 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (window.localStorage.getItem('token')) {
+    if (isAuth) {
       setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
     }
-  }, []);
+  }, [isAuth]);
 
   return (
     <>
@@ -53,7 +56,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 setIsDisabled(true);
               })
               .catch(() => {
-                setVisible(true);
+                setVisible(false);
                 setIsErr(true);
               });
           }}
