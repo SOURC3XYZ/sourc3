@@ -28,7 +28,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
     onConnect
   } = containerProps;
 
-  const isAuth = Boolean(useSelector((state) => state.profile.data.github_profile.id));
+  const isAuth = Boolean(useSelector((state) => state.profile.data.token));
   const autoCompleteClassName = isOnLending ? styles.lendosInput : '';
 
   const headerClassName = isOnLending ? styles.header : styles.headerActive;

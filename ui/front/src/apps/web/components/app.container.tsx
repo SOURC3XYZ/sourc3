@@ -60,7 +60,7 @@ function Main() {
       element: <CreateProjectWeb />
     },
     {
-      path: 'profile',
+      path: 'profile/:id',
       element: <GitProfile />
     },
     {

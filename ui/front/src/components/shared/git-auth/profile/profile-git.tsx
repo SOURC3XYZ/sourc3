@@ -5,12 +5,25 @@ import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import IconDefaultAvatar from '@components/svg/iconDefautlAvatar';
 import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { IProfiles, defaultValue, IProfilesGit } from '@libs/redux/reducers/profiles.reducer';
 import styles from './profiles-git.module.scss';
 
 function GitProfile() {
-  const {
-    id, github_profile
-  } = useSelector((state) => state.profile.data);
+  // const {
+  //   id
+  // } = useSelector((state) => state.profile.data);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const urlId = pathname.split('/profile/')[1];
+  useEffect(() => {
+    axios.get(`https://poap-api.sourc3.xyz/users/${urlId}`).then((res) => {
+      setGitHubProfile(res.data);
+      console.log(res.data);
+    })
+      .catch((err) => err && navigate('/404'));
+  }, []);
+  const [{ github_profile, id }, setGitHubProfile] = useState(defaultValue);
 
   const [allUsers, setAllUsers] = useState(0);
 
@@ -61,7 +74,7 @@ function GitProfile() {
           <div className={styles.supHeader}>
             {github_profile.login && <span>{github_profile.login}</span>}
             {github_profile.email && <span>{github_profile.email}</span>}
-            {id && (
+            {urlId && (
               <span>
                 id:
                 {' '}
@@ -94,11 +107,11 @@ function GitProfile() {
                 <span>
                   You are the
                   {' '}
-                  <b>{id + 687}</b>
+                  <b>{id}</b>
                   {' '}
                   th of
                   {' '}
-                  <b>{allUsers + 687}</b>
+                  <b>{allUsers}</b>
                   {' '}
                   developers that have
                   already claimed their repos.

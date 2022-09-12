@@ -10,14 +10,15 @@ type AvatarProps = {
 };
 function Avatar({ small, url }: AvatarProps) {
   const src = useSelector((state) => state.profile.data.github_profile.avatar_url);
+  const id = useSelector((state) => state.profile.data.id);
   const navigate = useNavigate();
   // const [src, setSrc] = useState<string | null>(null);
 
   return (
     <img
-      onClick={() => { navigate('/profile'); }}
+      onClick={() => { navigate(`/profile/${id}`); }}
       className={small ? styles.small : styles.avatar}
-      src={src}
+      src={url || src}
       alt="avatar"
       loading="lazy"
       crossOrigin="anonymous"

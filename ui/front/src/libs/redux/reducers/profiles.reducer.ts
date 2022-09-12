@@ -21,7 +21,7 @@ export interface IProfilesGit {
   twitter_username: string,
 }
 
-const defaultValue: IProfiles = {
+export const defaultValue: IProfiles = {
   id: '',
   login: '',
   created_at: '',
