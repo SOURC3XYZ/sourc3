@@ -47,7 +47,7 @@ function App() {
       element: <Projects />
     },
     {
-      path: 'project/:projId/:type/:page',
+      path: 'project/:projId/:page/*',
       element: <ProjectRepos />
     },
     {

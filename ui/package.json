@@ -25,6 +25,7 @@
     "commander": "^9.0.0",
     "cors": "^2.8.5",
     "dotenv": "^11.0.0",
+    "electron-process-manager": "^1.0.0",
     "express": "^4.17.2",
     "ipc-express": "^0.3.1",
     "nodegit": "^0.28.0-alpha.10",

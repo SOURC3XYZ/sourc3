@@ -1,6 +1,6 @@
 import { CONFIG } from '@libs/constants';
 import {
-  CommitHash, IProfile, Organization, PropertiesType, RepoId, TreeElementOid, TreeOid
+  CommitHash, IProfile, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
 
 export const RC = {
@@ -390,6 +390,18 @@ export const RC = {
         role: 'user',
         action: 'list_organization_members',
         organization_id
+      }
+    }
+  } as const),
+  getProjectMembers: (project_id: number) => ({
+    callID: 'list_project_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_project_members',
+        project_id
       }
     }
   } as const),

@@ -45,7 +45,7 @@ function Main() {
       element: <Projects />
     },
     {
-      path: 'project/:projId/:type/:page',
+      path: 'project/:projId/:page/*',
       element: <ProjectRepos />
     },
     {
@@ -81,7 +81,7 @@ function Main() {
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
-      callback={connectBeamApi}
+      callback={(connectBeamApi)}
       isLoaded={isApiConnected}
     >
       <>

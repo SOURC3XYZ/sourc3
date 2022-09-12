@@ -10,6 +10,7 @@ import {
 import { useProject } from '@libs/hooks/container/organization';
 import { CSSProperties, useCallback, useMemo } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
+import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
 import MemberListItem from './member-list-item';
 import ProjectList, { HeaderElements } from './project-list';
@@ -174,11 +175,16 @@ function Projects() {
 
   const currentRoute = usePathPattern(routes.map((el) => el.path));
 
-  const headerFields = {
+  const headerFields:HeaderFields = {
     pkey,
     owner: org.organization_creator,
     routes: routes.map((el) => el.path),
-    avatar: org.organization_logo_ipfs_hash,
+    avatar: {
+      name: `${org.organization_id}${org.organization_name}${org.organization_creator}`,
+      ipfs: org.organization_logo_ipfs_hash,
+      variant: 'ring',
+      square: false
+    },
     shortTitle: org.organization_short_title,
     description: org.organization_about,
     socialLinks: {

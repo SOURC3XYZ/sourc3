@@ -9,12 +9,12 @@ import { textEllipsis } from '@libs/utils';
 import {
   useCallback, useEffect, useMemo, useState
 } from 'react';
-import classNames from 'classnames';
-import { useCallApi, useUpload } from '@libs/hooks/shared';
+import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
 import { useSelector } from '@libs/redux';
-import Avatar from 'boring-avatars';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './project-list.module.scss';
+import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
 
 type ListItemProps = {
   item: MemberId;
@@ -28,28 +28,15 @@ function MemberListItem({
   const pkey = useSelector((state) => state.app.pkey);
   const [callApi] = useCallApi();
   const [itemData, setItemData] = useState <Member | null>(null);
-  const [src, setSrc] = useState<string | undefined>(undefined);
-
-  const { getImgUrlFromIpfs } = useUpload();
 
   const getItemData = useCallback(async () => {
     const recievedItem = await callApi<Member>(RC.getUser(item.member));
     if (recievedItem) setItemData(recievedItem);
   }, []);
 
-  const handleLoadPic = useCallback(async () => {
-    if (itemData?.user_avatar_ipfs_hash) {
-      const link = await getImgUrlFromIpfs(itemData.user_avatar_ipfs_hash);
-      if (link) setSrc(link);
-    }
-  }, [itemData]);
   useEffect(() => {
     getItemData();
   }, []);
-
-  useEffect(() => {
-    handleLoadPic();
-  }, [itemData]);
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
@@ -63,42 +50,15 @@ function MemberListItem({
 
   const status = useMemo(() => (pkey === item.member ? 'creator' : 'member'), []);
 
-  const colors = [
-    '#FF791F',
-    '#3FD05A',
-    '#000000',
-    '#C271B4',
-    '#4DA2E6',
-    '#DDDDDD',
-    '#92A1C6',
-    '#146A7C',
-    '#F0AB3D',
-    '#C271B4',
-    '#C20D90'
-  ];
-
-  const avatar = itemData?.user_avatar_ipfs_hash ? (
-    <img
-      className={classNames(styles.memberPicture, {
-        [styles.memberPictureActive]: !!src
-      })}
-      src={src}
-      alt="avatar"
+  const image = useMemo(() => itemData && (
+    <IpfsAvatar
+      colors={AVATAR_COLORS}
+      name={item.member}
+      size={56}
+      variant="beam"
+      ipfs={itemData?.user_avatar_ipfs_hash}
     />
-  )
-    : (
-      <Avatar
-        size="56px"
-        variant="beam"
-        name={item.member}
-        colors={colors}
-      />
-    );
-
-  const image = useMemo(() => (
-    itemData
-      ? avatar
-      : <img className={styles.memberPicture} src={src} alt="avatar" />), [src]);
+  ), [itemData]);
 
   return (
     <List.Item

@@ -34,3 +34,4 @@ export * from './profiles-page';
 export * from './icons';
 export * from './tabs';
 export * from './usePathPattern';
+export * from './ipfs-avatar';

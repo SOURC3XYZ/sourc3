@@ -4,11 +4,8 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
-import classNames from 'classnames';
-import Avatar from 'boring-avatars';
-import { useGetIpfsImage } from '@libs/hooks/shared';
 import { AVATAR_COLORS } from '@libs/constants';
 import styles from './org-list.module.scss';
 
@@ -22,8 +19,6 @@ type ListItemProps = {
 function OrgListItem({
   item, path, searchText, type
 }:ListItemProps) {
-  const src = useGetIpfsImage(item.organization_logo_ipfs_hash);
-
   const { organization_name, organization_id, organization_creator } = item;
 
   const onClick = ({ key }: { key:string }) => {
@@ -35,25 +30,6 @@ function OrgListItem({
   const menuRender = (
     <Menu onClick={onClick} />
   );
-
-  const image = item.organization_logo_ipfs_hash ? (
-    <img
-      className={classNames(styles.entityPicture, {
-        [styles.entityPictureActive]: !!src
-      })}
-      src={src ?? undefined}
-      alt="avatar"
-    />
-  )
-    : (
-      <Avatar
-        size="56px"
-        square
-        variant="sunset"
-        name={`${item.organization_id}${item.organization_name}${item.organization_creator}`}
-        colors={AVATAR_COLORS}
-      />
-    ); // TOOD: MAKE SHARED COMPONENT
 
   return (
     <List.Item
@@ -72,7 +48,15 @@ function OrgListItem({
       ]}
     >
       <List.Item.Meta
-        avatar={image}
+        avatar={(
+          <IpfsAvatars
+            ipfs={item.organization_logo_ipfs_hash}
+            colors={AVATAR_COLORS}
+            name={`${item.organization_id}${item.organization_name}${item.organization_creator}`}
+            size={56}
+            variant="ring"
+          />
+        )}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: organization_id }}>
