@@ -16,6 +16,7 @@ import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
 import { GitProfile } from '@components/shared/git-auth';
+import GitAuth from '@components/shared/git-auth/gitAuth';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -60,7 +61,7 @@ function Main() {
       element: <CreateProjectWeb />
     },
     {
-      path: 'profile',
+      path: 'profile/:id',
       element: <GitProfile />
     },
     {
@@ -93,9 +94,7 @@ function Main() {
     <Routes>
       <Route
         path="/git-auth"
-        element={
-          <div>git auth</div>
-        }
+        element={<GitAuth />}
       />
       <Route
         path="/download"

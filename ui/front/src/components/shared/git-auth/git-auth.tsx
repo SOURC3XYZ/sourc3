@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useDispatch } from '@libs/redux';
+import { useDispatch, useSelector } from '@libs/redux';
 import { AC } from '@libs/action-creators';
+import { HOST } from '@components/shared/git-auth/profile/constants';
+import { useNavigate } from 'react-router-dom';
 import { NavButton } from '../nav-button';
 import styles from './git-auth.module.scss';
 import { Popup } from '../popup';
@@ -14,46 +16,56 @@ type GitConnectAuthProps = {
 };
 
 function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
+  const isAuth = Boolean(useSelector((state) => state.profile.data.token));
   const className = small ? styles.headerBtn : styles.buttonAuth;
   const clientId = 'bfa3e88331da0771663c';
+  const navigate = useNavigate();
   const [isVisible, setVisible] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isErr, setIsErr] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (window.localStorage.getItem('token')) {
+    if (isAuth) {
       setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
     }
-  }, []);
+  }, [isAuth]);
 
   return (
     <>
       <div className={styles.wrapper}>
         <LoginSocialGithub
           client_id={clientId}
-          redirect_uri={window.location.href}
+          redirect_uri={`${window.location.origin}/git-auth`}
           onResolve={({ data }) => {
-            axios.get(`https://poap-api.sourc3.xyz/login?code=${data.code}`)
+            axios.get(`${HOST}/login?code=${data.code}`)
               .then((res) => {
-                setVisible(true);
                 window.localStorage.setItem('token', res.data.token);
                 axios({
                   method: 'get',
-                  url: 'https://poap-api.sourc3.xyz/users/me',
+                  url: `${HOST}/user`,
                   withCredentials: false,
                   headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${res.data.token}`
                   }
                 }).then((result) => {
-                  dispatch(AC.getAuthGitUser(result));
+                  try {
+                    if (result) {
+                      dispatch(AC.getAuthGitUser(result));
+                      navigate(`/profile/${result.data.id}`);
+                    }
+                  } catch (err) {
+                    setIsErr(true);
+                  }
                 })
                   .catch((err) => (console.log(err)));
                 setIsDisabled(true);
               })
               .catch(() => {
-                setVisible(true);
+                setVisible(false);
                 setIsErr(true);
               });
           }}
