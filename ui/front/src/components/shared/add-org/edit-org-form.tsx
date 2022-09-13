@@ -38,6 +38,7 @@ function EditOrg({ pkey, ...props }: EditOrgProps) {
 
   return (
     <div className={styles.main}>
+      <h4>Add new project</h4>
       <div className={styles.name}>
         <InputCustom
           id="org-name"
