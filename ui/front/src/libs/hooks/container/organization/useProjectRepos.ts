@@ -1,26 +1,36 @@
-import { useModal } from '@libs/hooks/shared';
-import { useSearch } from '@libs/hooks/shared/useSearch';
+import { RC } from '@libs/action-creators';
+import { useCallApi, useModal } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
-import { OwnerListType } from '@types';
-import { useMemo } from 'react';
+import { getQueryParam } from '@libs/utils';
+import {
+  MemberId, MemberList, OwnerListType, Project
+} from '@types';
+import {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
   projId: string,
-  type: OwnerListType,
   page: string
 };
 
 const useProjectRepos = () => {
   const { pathname } = useLocation();
-  const { type, page, projId } = useParams<'type' & 'page' & 'projId'>() as LocationState;
+  const { page, projId } = useParams<keyof LocationState>() as LocationState;
   const path = pathname.split('project/')[0];
+
+  const type:OwnerListType = useMemo(() => (
+    getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
+  ), [window.location.href]);
 
   const id = useMemo(() => +projId, [projId]);
 
   const { setInputText, createRepo } = useEntitiesAction();
+
+  const [callApi] = useCallApi();
 
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
@@ -28,21 +38,31 @@ const useProjectRepos = () => {
   const repos = useSelector(
     (state) => getReposByProject(id, state.entities.repos, type, pkey)
   );
-  const projectName = useSelector(
-    (state) => getProjectName(id, state.entities.projects) || 'NO_NAME'
+  const project = useSelector(
+    (state) => getProjectName(id, state.entities.projects)
   );
-
-  const items = useSearch(searchText, repos, ['repo_name', 'repo_id']);
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
     (name: string) => createRepo(name, id, pid)
   );
 
+  const [members, setMembers] = useState<MemberId[]>([]);
+
+  const getOrgMembers = useCallback(async () => {
+    const recievedMembers = await callApi<MemberList>(RC.getProjectMembers(id));
+    if (recievedMembers) setMembers(recievedMembers.members);
+  }, []);
+
+  useEffect(() => {
+    getOrgMembers();
+  }, []);
+
   const deleteRepo = () => {};
   return {
-    items,
-    projectName,
+    repos,
+    members,
+    project: project as Project,
     path,
     pkey,
     type,

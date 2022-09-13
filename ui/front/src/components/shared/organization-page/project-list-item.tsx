@@ -4,11 +4,8 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
-import classNames from 'classnames';
-import Avatar from 'boring-avatars';
-import { useGetIpfsImage } from '@libs/hooks/shared/useGetIpfsImage';
 import { AVATAR_COLORS } from '@libs/constants';
 import styles from './project-list.module.scss';
 
@@ -22,8 +19,6 @@ type ListItemProps = {
 function ProjectListItem({
   item, path, searchText, type
 }:ListItemProps) {
-  const src = useGetIpfsImage(item.project_logo_ipfs_hash);
-
   const {
     organization_id, project_creator, project_name, project_id
   } = item;
@@ -32,7 +27,7 @@ function ProjectListItem({
     message.info(key);
   };
 
-  const link = `${path}project/${project_id}/${type}/1`;
+  const link = `${path}project/${project_id}/1/repos?type=${type}`;
 
   const menuRender = (
     <Menu onClick={onClick} />
@@ -46,24 +41,6 @@ function ProjectListItem({
     )
   );
 
-  const image = item.project_logo_ipfs_hash ? (
-    <img
-      className={classNames(styles.entityPicture, {
-        [styles.entityPictureActive]: !!src
-      })}
-      src={src ?? undefined}
-      alt="avatar"
-    />
-  )
-    : (
-      <Avatar
-        size="56px"
-        square
-        variant="pixel"
-        name={`${project_id}${item.project_name}${item.project_creator}`}
-        colors={AVATAR_COLORS}
-      />
-    );
   return (
     <List.Item
       className={styles.listItem}
@@ -81,7 +58,15 @@ function ProjectListItem({
       ]}
     >
       <List.Item.Meta
-        avatar={image}
+        avatar={(
+          <IpfsAvatars
+            colors={AVATAR_COLORS}
+            name={`${project_id}${item.project_name}${item.project_creator}`}
+            size={56}
+            variant="pixel"
+            square
+          />
+        )}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: organization_id }}>

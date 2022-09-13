@@ -23,7 +23,7 @@ export const getOrg = (orgId: number, items: Organization[]) => items
   .find((el) => el.organization_id === orgId);
 
 export const getProjectName = (id: number, items: Project[]) => items
-  .find((el) => el.project_id === id)?.project_name;
+  .find((el) => el.project_id === id);
 
 export const getReposByProject = (
   id: number,

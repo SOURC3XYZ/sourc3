@@ -1,17 +1,17 @@
 import { Tab } from '@components/shared';
 import { useMemo } from 'react';
 import styles from './entity-wrapper.module.scss';
-import EntityHeader, { SocialLinks } from './entity-header';
+import EntityHeader, { AvatarParams, SocialLinks } from './entity-header';
 
-type HeaderFields = {
+export type HeaderFields = {
   pkey: string,
   owner: string,
-  shortTitle?:string,
+  shortTitle:string,
   tabData: Tab[],
   routes: string[],
-  avatar: string,
-  description: string,
-  socialLinks: SocialLinks
+  avatar: AvatarParams,
+  description?: string,
+  socialLinks: SocialLinks,
 };
 
 type EntityWrapperProps = {

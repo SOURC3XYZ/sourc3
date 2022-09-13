@@ -1,8 +1,5 @@
-import { useUpload } from '@libs/hooks/shared';
 import { Entries } from '@types';
-import {
-  useCallback, useEffect, useMemo, useState
-} from 'react';
+import { useMemo, useState } from 'react';
 import {
   DiscordIcon,
   InstagrammIcon,
@@ -14,11 +11,13 @@ import {
   TelegramIcon,
   TwitterIcon
 } from '@components/shared';
-import classNames from 'classnames';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import { Link, useNavigate } from 'react-router-dom';
+import { AVATAR_COLORS } from '@libs/constants';
+import { AvatarProps } from 'boring-avatars';
 import styles from './entity-wrapper.module.scss';
+import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
 
 export type SocialLinks = {
   website: string
@@ -29,16 +28,23 @@ export type SocialLinks = {
   discord: string
 };
 
+export type AvatarParams = {
+  name: string;
+  ipfs: string;
+  variant: AvatarProps['variant'];
+  square: boolean;
+};
+
 type EntityHeaderProps = {
   pkey: string,
   owner:string,
-  shortTitle?:string,
+  shortTitle:string,
   routes:string[],
   tabData: Tab[]
-  avatar: string,
-  description: string,
+  avatar: AvatarParams,
+  description?: string,
   socialLinks: SocialLinks,
-  title: string
+  title: string;
 };
 
 type SocialLinkMapObject = {
@@ -96,26 +102,13 @@ function SocialLinkHOC({ key, value }: {
 function EntityHeader({
   pkey, owner, shortTitle, routes, tabData, avatar, description, socialLinks, title
 }:EntityHeaderProps) {
-  const { getImgUrlFromIpfs } = useUpload();
-
   const [showMore, setShowMore] = useState(false);
-  const [src, setSrc] = useState<string | undefined>(undefined);
   const [currentTab, setCurrentTab] = useState(0);
 
   const navigate = useNavigate();
 
-  const handleLoadPic = useCallback(async () => {
-    if (avatar) {
-      const link = await getImgUrlFromIpfs(avatar);
-      if (link) setSrc(link);
-    }
-  }, []);
-
-  useEffect(() => {
-    handleLoadPic();
-  }, []);
-
   const showMoreBtn = useMemo(() => {
+    if (!description) return null;
     const text = showMore ? 'Show less' : 'Show more';
     const onChangeHandler = () => setShowMore((prev) => !prev);
     return (
@@ -123,7 +116,7 @@ function EntityHeader({
         {text}
       </button>
     );
-  }, [showMore]);
+  }, [showMore, description]);
 
   const descriptionClass = showMore ? styles.descriptionActive : styles.description;
 
@@ -148,12 +141,10 @@ function EntityHeader({
   return (
     <div className={styles.specBlock}>
       <div className={styles.entityHeader}>
-        <img
-          className={classNames(styles.entityPicture, {
-            [styles.entityPictureActive]: !!src
-          })}
-          src={src}
-          alt="avatar"
+        <IpfsAvatar
+          size={80}
+          colors={AVATAR_COLORS}
+          {...avatar}
         />
         <div className={styles.titleBlock}>
           <Title className={styles.title} level={3}>
