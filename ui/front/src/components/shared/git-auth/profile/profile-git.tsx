@@ -8,22 +8,24 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IProfiles, defaultValue, IProfilesGit } from '@libs/redux/reducers/profiles.reducer';
 import styles from './profiles-git.module.scss';
+import {HOST} from "@components/shared/git-auth/profile/constants";
 
 function GitProfile() {
-  // const {
-  //   id
-  // } = useSelector((state) => state.profile.data);
+  // // const {
+  // //   id,
+  // github_profile
+  // // } = useSelector((state) => state.profile.data);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const urlId = pathname.split('/profile/')[1];
+  const [{ github_profile, id }, setGitHubProfile] = useState(defaultValue);
   useEffect(() => {
-    axios.get(`https://poap-api.sourc3.xyz/users/${urlId}`).then((res) => {
+    axios.get(`https://${HOST}/users/${urlId}`).then((res) => {
       setGitHubProfile(res.data);
       console.log(res.data);
     })
       .catch((err) => err && navigate('/404'));
   }, []);
-  const [{ github_profile, id }, setGitHubProfile] = useState(defaultValue);
 
   const [allUsers, setAllUsers] = useState(0);
 

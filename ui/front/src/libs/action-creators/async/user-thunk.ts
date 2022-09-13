@@ -14,6 +14,7 @@ import { ToastMessages } from '@libs/constants';
 import { CustomAction } from '@libs/redux';
 import { parseToBeam, parseToGroth } from '@libs/utils';
 import axios from 'axios';
+import { HOST } from '@components/shared/git-auth/profile/constants';
 import { AC } from '../action-creators';
 import { thunkCatch } from '../error-handlers';
 import { RC } from '../request-schemas';
@@ -80,7 +81,7 @@ export const userThunk = ({
       await setIsConnected(dispatch);
       await axios({
         method: 'get',
-        url: 'https://poap-api.sourc3.xyz/user',
+        url: `${HOST}/user`,
         withCredentials: false,
         headers: {
           'Content-Type': 'application/json',
