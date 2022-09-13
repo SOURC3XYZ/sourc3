@@ -20,7 +20,7 @@ function GitProfile() {
   const urlId = pathname.split('/profile/')[1];
   const [{ github_profile, id }, setGitHubProfile] = useState(defaultValue);
   useEffect(() => {
-    axios.get(`https://${HOST}/users/${urlId}`).then((res) => {
+    axios.get(`${HOST}/users/${urlId}`).then((res) => {
       setGitHubProfile(res.data);
       console.log(res.data);
     })
