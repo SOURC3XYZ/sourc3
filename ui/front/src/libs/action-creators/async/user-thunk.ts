@@ -85,21 +85,21 @@ export const userThunk = ({
       if (!isWebHeadless || !setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
 
-      await callApi(RC.subUnsub()); // subscribe to api events
+      // await callApi(RC.subUnsub()); // subscribe to api events
 
-      if (isWebHeadless()) {
-        await query<PKeyRes>(
-          dispatch,
-          RC.getPublicKey(),
-          (output) => [AC.setPublicKey(output.key)]
-        );
-      } else {
-        notification.open({
-          message: ToastMessages.HEADLESS_CONNECTED,
-          placement: 'bottomRight' as NotificationPlacement,
-          style: { fontWeight: 600 }
-        });
-      }
+      // if (isWebHeadless()) {
+      //   await query<PKeyRes>(
+      //     dispatch,
+      //     RC.getPublicKey(),
+      //     (output) => [AC.setPublicKey(output.key)]
+      //   );
+      // } else {
+      notification.open({
+        message: ToastMessages.HEADLESS_CONNECTED,
+        placement: 'bottomRight' as NotificationPlacement,
+        style: { fontWeight: 600 }
+      });
+      // }
     } catch (error) { thunkCatch(error, dispatch); }
   };
 
@@ -178,6 +178,6 @@ export const userThunk = ({
     checkTxStatus,
     createAddress,
     getTxStatus,
-    startTx,
+    startTx
   };
 };
