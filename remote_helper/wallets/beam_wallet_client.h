@@ -77,6 +77,10 @@ public:
         return transactions_.size();
     }
 
+    boost::asio::io_context& GetContext() final {
+        return ioc_;
+    }
+
 private:
     std::string InvokeWallet(std::string args) {
         args.append(",repo_id=")

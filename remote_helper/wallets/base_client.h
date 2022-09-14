@@ -65,6 +65,7 @@ struct IWalletClient {
     virtual bool WaitForCompletion(WaitFunc&&) = 0;
 
     virtual size_t GetTransactionCount() const = 0;
+    virtual boost::asio::io_context& GetContext() = 0;
 
     const Options& GetOptions() const {
         return options_;
