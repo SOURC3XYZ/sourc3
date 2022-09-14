@@ -1,3 +1,6 @@
+import { PreloadComponent } from '@components/hoc';
+import { Preload } from '@components/shared/preload';
+import { LoadingMessages } from '@libs/constants';
 import { useCommitsTree } from '@libs/hooks/container/user-repos';
 import {
   actualTime, dateCreator, getDateFromMs, getDay, getMsFromDays
@@ -5,40 +8,24 @@ import {
 import {
   Branch,
   BranchCommit,
-  DataNode,
-  List,
-  RepoId
+  List
 } from '@types';
+import { Skeleton } from 'antd';
 import Avatar from 'boring-avatars';
 import {
   useCallback, useEffect, useMemo, useState
 } from 'react';
-import { Preload } from '@components/shared/preload';
-import { LoadingMessages } from '@libs/constants';
-import { FailPage } from '@components/shared/fail-page';
-import { Link } from 'react-router-dom';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Skeleton } from 'antd';
-import styles from '../repo.module.scss';
+import { Link } from 'react-router-dom';
 import { UpperMenu } from '../repo-content/upper-menu';
+import styles from '../repo.module.scss';
 
 const ITEMS_COUNT = 5;
 
 export type UpperMenuProps = {
-  id: RepoId;
   goTo: (path: string) => void;
-  tree: DataNode[] | null;
   branches: Branch[];
   prevReposHref: string | null;
-};
-
-const splitUrl = (branch: string, fullUrl: string) => {
-  const [baseUrl, params] = fullUrl.split(branch);
-  return {
-    baseUrl: `${baseUrl}${branch}`,
-    params: params.split('/').filter((el) => el)
-  };
 };
 
 function CommitsTree({
@@ -47,7 +34,7 @@ function CommitsTree({
   prevReposHref
 }: UpperMenuProps) {
   const {
-    pathname,
+    params,
     branchName,
     loading,
     commitsMap,
@@ -55,8 +42,6 @@ function CommitsTree({
     goToBranch,
     goToCommit
   } = useCommitsTree({ goTo });
-
-  const { params } = splitUrl(`commits/${branchName}`, pathname);
 
   const RefsPreloadFallback = useCallback(() => (
     <Preload
@@ -123,6 +108,7 @@ function CommitsTree({
   const [data, setData] = useState<JSX.Element[]>([]);
 
   const commitsBlock = useMemo(() => {
+    if (data.length) setData([]);
     if (repoMap) {
       const commits = repoMap.get(branchName);
       if (!commits) return null;
@@ -140,26 +126,23 @@ function CommitsTree({
     } return null;
   }, [repoMap, loading, branchName]);
 
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
-  const loadMoreData = ():void => {
+  const loadMoreData = useCallback(():void => {
     if (commitsBlock && commitsBlock.length) {
-      const { length } = data;
-      if (!length) setTimeout(() => setData(commitsBlock.slice(0, ITEMS_COUNT)));
-      else {
-        setTimeout(() => setData(
-          (prev) => [...prev, ...commitsBlock.slice(length, length + ITEMS_COUNT)]
-        ));
-      }
+      setTimeout(() => {
+        const { length } = data;
+        if (!length) return setData(commitsBlock.slice(0, ITEMS_COUNT));
+        const lastIndex = length - 1;
+        return setData(
+          (prev) => [...prev, ...commitsBlock.slice(lastIndex, lastIndex + ITEMS_COUNT)]
+        );
+      });
     }
-  };
+  }, [commitsBlock, data]);
 
-  useEffect(loadMoreData, [commitsBlock]);
-
-  useEffect(() => setData([]), [branchName]);
+  useEffect(() => {
+    if (data.length) setData([]);
+    loadMoreData();
+  }, [commitsBlock]);
 
   return (
     <>
@@ -172,24 +155,22 @@ function CommitsTree({
         branches={branches}
         goToBranch={goToBranch}
       />
-      <ErrorBoundary fallback={fallback}>
-        <PreloadComponent
-          isLoaded={loading && !!data && !!commitsBlock}
-          Fallback={RefsPreloadFallback}
-        >
-          {commitsBlock ? (
-            <InfiniteScroll
-              dataLength={data.length}
-              next={loadMoreData}
-              loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-              hasMore={data.length < commitsBlock.length}
-            >
-              {data}
-            </InfiniteScroll>
-          ) : null}
+      <PreloadComponent
+        isLoaded={loading && !!data && !!commitsBlock}
+        Fallback={RefsPreloadFallback}
+      >
+        {commitsBlock ? (
+          <InfiniteScroll
+            dataLength={data.length}
+            next={loadMoreData}
+            loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
+            hasMore={data.length < commitsBlock.length}
+          >
+            {data}
+          </InfiniteScroll>
+        ) : null}
 
-        </PreloadComponent>
-      </ErrorBoundary>
+      </PreloadComponent>
     </>
   );
 }

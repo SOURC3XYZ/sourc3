@@ -17,6 +17,8 @@ import batcher from '../batcher';
 import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
 
+const CASH_PREFIX = [CONFIG.NETWORK, CONFIG.CID].join('-');
+
 export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   const [,,getOutput] = contractCall(callApi);
 
@@ -26,19 +28,22 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
-      dispatch(AC.setCommits(null));
-      const cache = await caches.open([CONFIG.CID, id].join('-'));
+      let stopPending = false;
+      const stopPendingHandler = () => { stopPending = true; };
+      window.addEventListener('stop-commit-pending', stopPendingHandler, { once: true });
+      batcher(dispatch, [
+        AC.setCommits(null),
+        AC.setTreeData(null)
+      ]);
+      const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
-      if (metaArray) {
-        metaArray.objects.forEach((el) => {
-          metas.set(el.object_hash, el);
-        });
-      }
+      if (metaArray) metaArray.objects.forEach((el) => metas.set(el.object_hash, el));
+
       dispatch(AC.setRepoMeta(metas));
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
-      if (branches) {
+      if (branches && !stopPending) {
         if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
         if (resolve) resolve();
 
@@ -67,6 +72,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
           ]);
         }
       }
+      if (stopPending) throw new Error('commit pending stopped');
+      window.removeEventListener('stop-commit-pending', stopPendingHandler);
     } catch (error) { errHandler(error as Error); }
   };
 
@@ -74,7 +81,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     id, oid, key, resolve
   }: UpdateProps, errHandler: (err: Error) => void):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CONFIG.CID, id].join('-'));
+      const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
@@ -95,7 +102,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CONFIG.CID, repoId].join('-'));
+      const cache = await caches.open([CASH_PREFIX, repoId].join('-'));
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {

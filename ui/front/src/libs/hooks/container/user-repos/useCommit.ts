@@ -1,4 +1,5 @@
-import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
+import { useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 import { clipString } from '@libs/utils';
 import {
@@ -26,7 +27,7 @@ export const useCommit = (
 ) => {
   const commitsMap = useSelector((state) => state.repo.commitsMap);
   const [commit, setCommit] = useState<BranchCommit | null>(null);
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
   const [callApi, callIpfs, loading, err] = useCallApi();
   const { pathname } = useLocation();
   const { hash, type } = useParams<'hash' | 'type'>() as LocationState;

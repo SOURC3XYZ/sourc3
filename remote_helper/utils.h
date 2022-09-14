@@ -25,4 +25,8 @@ using ByteBuffer = std::vector<uint8_t>;
 
 std::string ToHex(const void* p, size_t size);
 
+ByteBuffer Compress(const ByteBuffer& buffer);
+ByteBuffer Compress(const uint8_t* data, size_t size);
+ByteBuffer DeCompress(const ByteBuffer& buffer);
+
 }  // namespace sourc3

@@ -14,8 +14,8 @@
     align-items: center;
     width: 100%;
     justify-content: space-between;
-
-    span {
+    padding: 0 44px;
+   &span {
       color: #fff;
       font-family: PublicSans-Bold;
       font-size: 18px;
@@ -73,17 +73,18 @@
 
 .connect {
   display: flex;
-  width: 425px;
-  margin-right: 40px;
+  // width: 425px;
+  // margin-right: 40px;
   justify-content: space-between;
+  align-items: center;
 
   input {
     margin-right: 5px;
   }
 
-  button {
-    margin-left: auto;
-  }
+  //button {
+  //  margin-left: auto;
+  //}
 }
 
 .lendosInput {

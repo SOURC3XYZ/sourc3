@@ -3,6 +3,9 @@
 
     ul {
         border-bottom: none;
+        li{
+            border-bottom: 4px solid transparent;
+        }
     }
 
     a {
@@ -12,7 +15,7 @@
     }
 
     [class~=ant-menu-item-active][class~=ant-menu-item-active][class~=ant-menu-item-active]:after {
-        border-bottom: 4px solid #000000;
+        border-bottom: 4px solid transparent !important;
         opacity: 1;
 
         a {
@@ -22,7 +25,7 @@
     }
 
     [class~=ant-menu-item][class~=ant-menu-item]:hover:after {
-        border-bottom: 4px solid transparent;
+        border-bottom: 4px solid transparent !important;
         opacity: 1;
     }
 
@@ -36,7 +39,7 @@
     }
 
     [class~=ant-menu-item-selected] {
-        border-bottom: 4px solid #000000;
+        border-bottom: 4px solid #000000 !important;
 
         a {
             color: #000000;
@@ -45,7 +48,7 @@
     }
 
     [class~=ant-menu-item-selected][class~=ant-menu-item-selected]:after {
-        border-bottom: 4px solid transparent;
+        border-bottom: 4px solid transparent !important;
         opacity: 1;
     }
 

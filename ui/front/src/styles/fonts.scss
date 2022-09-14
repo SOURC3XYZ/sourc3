@@ -31,6 +31,12 @@
     font-weight: 900;
     src: local('VisbyExtraBold'), url("@assets/fonts/VisbyCF-ExtraBold.woff") format("woff")
 }
+@font-face {
+    font-family: "VisbyHeavy";
+    font-style: normal;
+    font-weight: 900;
+    src: local('VisbyHeavy'), url("@assets/fonts/VisbyCF-Heavy.woff") format("woff")
+}
 
 @font-face {
     font-family: "PublicSans-Thin";

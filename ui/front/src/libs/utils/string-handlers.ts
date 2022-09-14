@@ -134,9 +134,12 @@ export const dateCreator = (mls: number) => {
 };
 
 export const actualTime = (commit: BranchCommit) => {
-  const { create_time_sec, create_time_tz_offset_min, create_time_positive } = commit;
+  const localTimeOffser = new Date().getTimezoneOffset();
+  const {
+    commit_time_tz_offset_min, commit_time_positive, create_time_sec
+  } = commit;
   return (create_time_sec + (
-    create_time_tz_offset_min * 60 * (create_time_positive === 1 ? -1 : 1)
+    ((commit_time_tz_offset_min + localTimeOffser) * 60) * (commit_time_positive === 0 ? 1 : -1)
   )) * 1000;
 };
 

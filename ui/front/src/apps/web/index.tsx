@@ -10,12 +10,12 @@ import { App } from './components';
 const container = document.querySelector('#root') as NonNullable<HTMLElement>;
 
 ReactDOM.render(
-  <BeamWebApi>
-    <Provider store={store}>
-      <BrowserRouter>
+  <BrowserRouter>
+    <BeamWebApi>
+      <Provider store={store}>
         <App />
-      </BrowserRouter>
-    </Provider>
-  </BeamWebApi>,
+      </Provider>
+    </BeamWebApi>
+  </BrowserRouter>,
   container
 );

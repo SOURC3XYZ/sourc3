@@ -1,4 +1,5 @@
-import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
+import { useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 
 import {
@@ -29,10 +30,12 @@ const useRepoContent = (
 ) => {
   const commitsMap = useSelector((state) => state.repo.commitsMap);
   const [commit, setCommit] = useState<BranchCommit | null>(null);
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
   const [callApi, callIpfs, loading, err] = useCallApi();
   const { pathname } = useLocation();
   const { branchName, type } = useParams<'branchName' | 'type'>() as LocationState;
+
+  const branchParsed = useMemo(() => branchName.replaceAll('-', '/'), [branchName]);
 
   const { baseUrl, params } = useMemo(
     () => splitUrl(`${type}/${branchName}`, pathname),
@@ -57,7 +60,7 @@ const useRepoContent = (
   const goToBranch = useCallback(
     (newBranch: string) => {
       fetchCommit(newBranch);
-      goTo(`branch/${type}/${newBranch}/${params.join('/')}`);
+      goTo(`branch/${type}/${newBranch.replaceAll('/', '-')}/${params.join('/')}`);
     },
     [params]
   );
@@ -67,7 +70,10 @@ const useRepoContent = (
     else fetchCommit(branchName);
   }, []);
 
-  const goToCommitTree = useCallback((branch: string) => goTo(`commits/${branch}`), []);
+  const goToCommitTree = useCallback((branch: string) => {
+    console.log('BRANCH', branch);
+    goTo(`commits/${branch.replaceAll('/', '-')}`);
+  }, []);
 
   const isLoading = loading || !commit;
 
@@ -77,7 +83,7 @@ const useRepoContent = (
   }, [params]);
 
   return {
-    branchName,
+    branchName: branchParsed,
     baseUrl,
     params,
     commit,

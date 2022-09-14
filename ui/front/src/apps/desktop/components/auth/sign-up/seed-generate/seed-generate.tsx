@@ -41,6 +41,7 @@ function SignUp({
           readOnly
           data={seed}
           errors={errors}
+          next={next}
         />
         <div className={styles.btnBlock}>
           <NavButton

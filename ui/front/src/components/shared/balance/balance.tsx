@@ -2,8 +2,7 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector } from '@libs/redux';
 import Send from './send';
 import Receive from './receive';
 import styles from './balance.module.scss';
@@ -37,13 +36,6 @@ function Balance() {
       <Menu.Item>
         <Button type="link" onClick={showModals} className={styles.button}>Receive</Button>
       </Menu.Item>
-      <Menu.Item>
-        <Button type="link" className={styles.button}>
-          <Link type="link" to="manager">
-            Get More
-          </Link>
-        </Button>
-      </Menu.Item>
     </Menu>
   );
 
@@ -54,8 +46,9 @@ function Balance() {
         placement="bottomCenter"
         trigger={['click']}
         overlayClassName={styles.dropdown}
+        overlayStyle={{ position: 'fixed' }}
       >
-        <Button>
+        <Button className={styles.button}>
           {balance}
           {' '}
           SC3

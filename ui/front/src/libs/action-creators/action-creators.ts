@@ -17,7 +17,8 @@ import {
   MetaHash,
   TxInfo,
   Organization,
-  Project
+  Project,
+  User
 } from '@types';
 
 export const AC = {
@@ -32,6 +33,11 @@ export const AC = {
     payload: Map<string, BranchCommit> | null
   ) => ({
     type: ACTIONS.SET_COMMITS_MAP,
+    payload
+  }),
+
+  setUsers: (payload: User[]) => ({
+    type: ACTIONS.SET_USERS,
     payload
   }),
 
@@ -131,12 +137,12 @@ export const AC = {
     payload
   } as const),
 
-  setRepoId: (payload: RepoId) => ({
+  setRepoId: (payload: RepoId | null) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
   } as const),
 
-  setPreviousReposPage: (payload: string) => ({
+  setPreviousReposPage: (payload: string | null) => ({
     type: ACTIONS.SET_PREV_REPO_HREF,
     payload
   } as const),
@@ -173,6 +179,11 @@ export const AC = {
 
   setBranchRefList: (payload: Branch[]) => ({
     type: ACTIONS.SET_BRANCH_REF_LIST,
+    payload
+  } as const),
+
+  getAuthGitUser: (payload: any) => ({
+    type: ACTIONS.GET_GIT_USER,
     payload
   } as const)
 };

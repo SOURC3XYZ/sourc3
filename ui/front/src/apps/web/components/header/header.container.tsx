@@ -4,9 +4,12 @@ import {
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
-import img from '@assets/img/source-header-logo.svg';
+import img from '@assets/img/source-header-logo-alpha.svg';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
+import { GitConnectAuth } from '@components/shared/git-auth';
+import { useSelector } from '@libs/redux';
+import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
@@ -20,9 +23,12 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const containerProps = useHeader();
   const {
     pkey,
+    users,
+    isVisible,
     onConnect
   } = containerProps;
 
+  const isAuth = Boolean(useSelector((state) => state.profile.data.token));
   const autoCompleteClassName = isOnLending ? styles.lendosInput : '';
 
   const headerClassName = isOnLending ? styles.header : styles.headerActive;
@@ -56,26 +62,37 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         />
       )}
       { !desktop ? (
-        <ConnectBtn
-          pkey={pkey}
-          onConnect={onConnect}
-        />
+        <>
+          {pkey && (<ProfileBlock pKey={pkey} />)}
+          <ConnectBtn
+            pkey={pkey}
+            users={users}
+            onConnect={onConnect}
+          />
+          {!isOnLending && <GitConnectAuth small name="Connect Github" />}
+          {isAuth ? <ProfileBlock git /> : null}
+        </>
       ) : (
+
         <ProfileBlock
+          balance
+          profile
           pKey={pkey}
         />
       ) }
     </div>
-  ), [isOnLending, pkey]);
+  ), [isOnLending, pkey, users, isAuth]);
 
-  return (
+  const header = useMemo(() => (isVisible ? (
     <header className={headerClassName}>
       <div className={styles.nav}>
         {headerElements}
         {searchElement}
       </div>
     </header>
-  );
+  ) : null), [isVisible, pkey, isOnLending, isAuth]);
+
+  return header;
 }
 
 export default Header;

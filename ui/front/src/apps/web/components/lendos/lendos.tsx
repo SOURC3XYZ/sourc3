@@ -1,13 +1,12 @@
 /* eslint-disable max-len */
 import img from '@assets/img/source-logo.svg';
+import { GitConnectAuth } from '@components/shared/git-auth';
 import { useNavigate } from 'react-router-dom';
 import styles from './lendos.module.scss';
 
 function Lendos() {
   const navigate = useNavigate();
   const onClick = () => navigate('/repos/all/1', { replace: false });
-
-  console.log(img);
   return (
     <div className={styles.bg}>
       <div className={styles.wrapper}>
@@ -18,12 +17,13 @@ function Lendos() {
           <h1>
             Building
             <br />
-            the Web3-way
+            the Web3 way
           </h1>
           <p>
-            SOURC3 is a decentralized software development platform, enabling self-sovereignty and recognizing contribution.
+            Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development.
           </p>
-          <button style={{ cursor: 'pointer' }} onClick={onClick} type="button">Explore</button>
+          <button className={styles.button} onClick={onClick} type="button">Explore</button>
+          <GitConnectAuth why name="Connect Github" />
         </div>
       </div>
     </div>

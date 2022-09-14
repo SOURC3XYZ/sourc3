@@ -21,14 +21,16 @@
     width: 410px;
     height: 44px;
     line-height: 20px;
-    font-weight: 600;
-    font-size: 16px;
     border-radius: 8px;
     caret-color: orange;
     padding: 0 41px 0 10px;
     border:none;
     outline: none;
     background: rgba(0, 0, 0, 0.03);
+    color: #000;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
     font-family: "PublicSans-Regular";
     &[type="password"]
     {
@@ -68,4 +70,39 @@
   position: relative;
   top: 5px;
   text-align: left;
+}
+
+.wrapperInput{
+  composes: wrapper;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.labelUp{
+  color: black;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: 'PublicSans-Bold';
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+}
+.inputText{
+composes:input;
+height: 36px;
+width: 100%;
+background-color: #fff;
+border: solid 1px rgba(0,0,0, 0.1);
+
+}
+.invalid{
+  composes: inputText;
+  background: rgba(234, 0, 0, 0.03);
+  color: rgba(234, 0, 0, 1);
+  border: solid 1px rgba(234, 0, 0, 1);
+  &::placeholder {
+      border: solid 1px rgba(234, 0, 0, 1);
+  }
 }

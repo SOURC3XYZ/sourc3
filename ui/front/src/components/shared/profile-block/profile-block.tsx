@@ -1,16 +1,23 @@
 import { AddButtonOrg, Balance, Profile } from '@components/shared';
-import styles from './profile-block.scss';
+import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
+import styles from './profile-block.module.scss';
 
 type HeaderPropsType = {
-  pKey:string
+  pKey?:string,
+  profile?: boolean,
+  balance?: boolean,
+  git?: boolean,
 };
 
-function ProfileBlock({ pKey }:HeaderPropsType) {
+function ProfileBlock({
+  pKey, profile, balance, git
+}:HeaderPropsType) {
   return (
     <div className={styles.wrapper}>
-      <AddButtonOrg />
-      <Balance />
-      <Profile pKey={pKey} />
+      {pKey && <AddButtonOrg />}
+      {balance && <Balance />}
+      {profile && <Profile pKey={pKey} />}
+      {git && <Avatar small /> }
     </div>
   );
 }

@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { IconBackArrow } from '@components/svg';
 import { useNavigate } from 'react-router-dom';
 import styles from './back-button.module.scss';
 
 type buttonProps = {
   link?: string;
-  onClick?: () => void
+  onClick?: () => void;
+  inlineStyles?: CSSProperties
 };
 
 function BackButton({
-  link, onClick
+  link, onClick, inlineStyles
 }: buttonProps) {
   const navigate = useNavigate();
   const onClickHandler = () => link && navigate(link);
@@ -19,6 +20,7 @@ function BackButton({
       className={styles.button}
       type="button"
       onClick={onClick || onClickHandler}
+      style={inlineStyles}
     >
       <IconBackArrow />
       Back

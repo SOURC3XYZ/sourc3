@@ -1,16 +1,12 @@
-import { ErrorBoundary } from '@components/hoc';
-import { FailPage, Preload } from '@components/shared';
+import { Preload } from '@components/shared';
 import { Route, Routes } from 'react-router-dom';
 import { useAuth } from '@libs/hooks/container/auth';
+import { ErrorBoundary } from '@components/context';
 import styles from './auth.module.scss';
 import { Start } from './start';
 import { SignUp } from './sign-up';
 import { Login } from './login';
 import { Restore } from './restore';
-
-type FallbackProps = {
-  message: string
-};
 
 function Auth() {
   const {
@@ -41,12 +37,6 @@ function Auth() {
     }
   ];
 
-  const fallback = ({ message }:FallbackProps) => (
-    <div style={{ margin: '0 auto' }}>
-      <FailPage comeBack="/auth/" subTitle={message || 'invalid pass'} isBtn />
-    </div>
-  );
-
   const routeElements = data.map((el, i) => (
     <Route
       key={el.link}
@@ -54,7 +44,7 @@ function Auth() {
       element={(
         i
           ? (
-            <ErrorBoundary fallback={fallback}>
+            <ErrorBoundary>
               {el.component}
             </ErrorBoundary>
           )

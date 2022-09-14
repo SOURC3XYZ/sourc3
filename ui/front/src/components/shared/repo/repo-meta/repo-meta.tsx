@@ -1,5 +1,7 @@
 import { Info } from '@components/shared';
-import { dateCreator, textEllipsis } from '@libs/utils';
+import {
+  actualTime, textEllipsis, timeSince
+} from '@libs/utils';
 import { BranchCommit } from '@types';
 import { Col } from 'antd';
 import styles from './repo-meta.module.scss';
@@ -27,7 +29,7 @@ function RepoMeta({ commit }: RepoMetaProps) {
     },
     {
       title: 'Updated: ',
-      message: `${dateCreator(commit.create_time_sec * 1000)} ago`,
+      message: `${timeSince(actualTime(commit))} ago`,
       link: commit.raw_header
     }
   ];

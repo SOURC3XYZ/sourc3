@@ -1,19 +1,74 @@
-import { PromiseArg } from '@types';
-import { useEffect } from 'react';
-import useObjectState from './useObjectState';
+import { EVENTS } from '@libs/constants';
+import {
+  useEffect, useReducer, useRef
+} from 'react';
+import { useCustomEvent } from './useCustomEvent';
 
-function useTimeoutFetch<T extends object>(statusFetcher: (arg: PromiseArg<Partial<T>>
-) => void, initialState: T, errorCatcher: (e:Error) => void) {
-  const [status, setStatus] = useObjectState(initialState);
-
-  useEffect(() => {
-    new Promise((resolve) => {
-      setTimeout(() => statusFetcher(resolve), 1000);
-    }).then((data) => setStatus(data as Partial<T>))
-      .catch((err) => errorCatcher(err));
-  }, [status]);
-
-  return status;
+interface State<T> {
+  data?: T
+  error?: Error,
+  loading?:boolean
 }
 
-export default useTimeoutFetch;
+type Action<T> =
+  | { type: 'loading' }
+  | { type: 'fetched'; payload: T }
+  | { type: 'error'; payload: Error };
+
+function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boolean): State<T> {
+  const cancelRequest = useRef<boolean>(false);
+
+  const initialState: State<T> = {
+    error: undefined,
+    data: undefined
+  };
+
+  const fetchReducer = (state: State<T>, action: Action<T>): State<T> => {
+    switch (action.type) {
+      case 'loading':
+        return { ...initialState };
+      case 'fetched':
+        return { ...initialState, data: action.payload };
+      case 'error':
+        return { ...initialState, error: action.payload };
+      default:
+        return state;
+    }
+  };
+
+  const [state, dispatch] = useReducer(fetchReducer, initialState);
+
+  const fetchData = async () => {
+    if (!url) return;
+
+    cancelRequest.current = false;
+
+    if (loading) dispatch({ type: 'loading' });
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const data = (await response.json()) as T;
+      if (cancelRequest.current) return;
+
+      dispatch({ type: 'fetched', payload: data });
+    } catch (error) {
+      if (cancelRequest.current) return;
+
+      dispatch({ type: 'error', payload: error as Error });
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [url]);
+
+  useCustomEvent(EVENTS.SUBUNSUB, fetchData);
+
+  return state;
+}
+
+export default useFetch;

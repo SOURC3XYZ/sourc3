@@ -18,6 +18,8 @@
 
 #include <iterator>
 
+#include "zlib.h"
+
 namespace sourc3 {
 std::string ToHex(const void* p, size_t size) {
     std::string res;
@@ -26,4 +28,32 @@ std::string ToHex(const void* p, size_t size) {
     boost::algorithm::hex(pp, pp + size, std::back_inserter(res));
     return res;
 }
+
+ByteBuffer Compress(const uint8_t* data, size_t size) {
+    ByteBuffer compressed(size);
+    uLongf compressed_size;
+    auto error = compress2((Bytef*) compressed.data(), &compressed_size,
+                           (Bytef*) data, size,
+                           Z_BEST_COMPRESSION);
+    if (error != F_OK) { // We cannot compress for some reason, use uncompressed
+        return ByteBuffer{data, data + size};
+    }
+    return compressed;
+}
+
+ByteBuffer Compress(const ByteBuffer& buffer) {
+    return Compress(buffer.data(), buffer.size());
+}
+
+ByteBuffer DeCompress(const ByteBuffer& buffer) {
+    ByteBuffer uncompressed(buffer.size());
+    uLongf uncompressed_size;
+    auto error = uncompress((Bytef*) uncompressed.data(), &uncompressed_size,
+                            (Bytef*) buffer.data(), buffer.size());
+    if (error != F_OK) { // We cannot compress for some reason, use uncompressed
+        return buffer;
+    }
+    return uncompressed;
+}
+
 }  // namespace sourc3

@@ -2,7 +2,7 @@ import { RC } from '@libs/action-creators';
 import { BranchCommit, RepoCommitResp, RepoMeta } from '@types';
 import AbstractParser, { ParserProps } from './abstract-parser';
 
-const MAX_CALL = 300;
+const MAX_CALL = 50;
 
 type CommitList = {
   commits: RepoMeta[];
@@ -15,13 +15,22 @@ export default class CommitListParser extends AbstractParser {
 
   private readonly callQueue = [] as (string[])[];
 
+  private stopPending = false;
+
   constructor(parserProps: ParserProps & CommitList) {
     super(parserProps);
     this.commits = parserProps.commits;
+    window.addEventListener('stop-commit-pending', this.handleStopPending, { once: true });
   }
+
+  private readonly handleStopPending = () => {
+    console.log('cancel!!');
+    this.stopPending = true;
+  };
 
   readonly getCommitMap = async () => {
     const commits = await this.buildQueue();
+    window.removeEventListener('stop-commit-pending', this.handleStopPending);
     return commits;
   };
 
@@ -38,6 +47,10 @@ export default class CommitListParser extends AbstractParser {
   };
 
   startPin = async ():Promise<Map<string, BranchCommit>> => {
+    if (this.stopPending) {
+      window.removeEventListener('stop-commit-pending', this.handleStopPending);
+      throw new Error('pending stopped');
+    }
     const commitPack = this.callQueue.shift();
     if (!commitPack) return this.commitMap;
     const commits = commitPack.map(this.getCommit);

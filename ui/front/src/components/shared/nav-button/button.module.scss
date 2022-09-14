@@ -14,7 +14,7 @@
     // transition: background-color, color .1s;
     outline: none;
     cursor: pointer;
-    &:hover{
+    &:hover, &:focus{
         background-color: #EA6A13;
         border: solid 1px rgba(0, 0, 0, 0.05);
     }
@@ -26,7 +26,7 @@
             pointer-events: none;
             // background-color: transparent;
             background: rgba(0, 0, 0, 0.15);
-            border: none;
+            border-color: rgba(0, 0, 0, 0) ;
         }
 }
 
@@ -49,7 +49,7 @@
     border: 1px solid #FF791F;
     color: #FF791F;
 
-    &:hover{
+    &:hover, &:focus{
         background-color: transparent;
         color: #EA6A13;
         border: 1px solid #EA6A13;

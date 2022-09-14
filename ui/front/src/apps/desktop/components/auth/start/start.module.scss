@@ -1,15 +1,19 @@
 .wrapper {
   margin: 0 auto;
+  display: flex;
+  max-height: 100vh;
+  flex-direction: column;
 }
 
 .btnNav {
-  margin-top: 176px;
+  margin-top: 23vh;
   display: flex;
   justify-content: space-between;
   display: flex;
   flex-direction: column;
   align-items: center;
-  button:not(:last-child){
+
+  button:not(:last-child) {
     margin-bottom: 16px;
   }
 }
@@ -33,7 +37,7 @@
   margin: 0 auto;
   font-family: PublicSans-Regular;
   color: white;
-  padding-top: 116px;
+  padding-top: 10vh;
 
   .logo {
     position: relative;
@@ -49,8 +53,12 @@
       color: white;
       margin: 0 auto;
       text-align: center;
-      font-weight: 600;
-      font-family: VisbyRegular;
+      font-family: 'VisbyRegular';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 20px;
+      line-height: 24px;
+      letter-spacing: -0.006em;
     }
   }
 
@@ -59,7 +67,6 @@
     content: '';
     left: -10px;
     background: url('@assets/img/orange-half-square.png') no-repeat;
-    width: 60px;
     height: 146px;
     display: block;
     animation: fadein 4s alternate;
@@ -83,9 +90,9 @@
     max-width: 609px;
     margin-bottom: 16px;
     font-weight: 900;
-		font-size: 40px;
-		line-height: 37.6px;
-		font-family: "VisbyExtraBold";
+    font-size: 40px;
+    line-height: 37.6px;
+    font-family: "VisbyExtraBold";
 
     span {
       border-bottom: 5px solid #3FD05A;
@@ -93,16 +100,20 @@
   }
 
   .version {
-    margin-top: 60px;
+    margin-top: 8vh;
     color: #FFFFFF;
     opacity: 0.5;
     text-align: center;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .intro {
     position: relative;
     width: max-content;
-    margin: 111px auto 0;
+    margin: 14.5vh auto 0;
 
     h1 {
       color: white;
@@ -149,21 +160,28 @@
     }
   }
 }
-.wrapper_light{
+
+.wrapper_light {
   composes: wrapper;
   color: black;
-  .logo{
-    h3{color: black}
+
+  .logo {
+    h3 {
+      color: black
+    }
   }
-  .intro{
-    h2{
+
+  .intro {
+    h2 {
       color: black;
     }
   }
-  .version{
+
+  .version {
     color: black;
   }
 }
+
 @keyframes fadein {
   from {
     opacity: 0;

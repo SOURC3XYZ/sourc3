@@ -1,6 +1,9 @@
+/* eslint-disable react/jsx-no-useless-fragment */
 import { STATUS } from '@libs/constants';
-import { SetPropertiesType, TxItem, TxResponse } from '@types';
-import { notification } from 'antd';
+import {
+  SetPropertiesType, TxInfo, TxItem, TxResponse
+} from '@types';
+import { notification, Typography } from 'antd';
 import { NotificationPlacement } from 'antd/lib/notification';
 import React from 'react';
 
@@ -8,7 +11,7 @@ type NotificationElementProps = {
   txItem: TxItem;
   removeTx: (txItem: TxItem) => void
   checkTxStatus: (
-    txId: string, callback: SetPropertiesType<TxResponse>) => void;
+    txId: string, callback: SetPropertiesType<TxInfo>) => void;
   setNotifiedTrue: (txItem: TxItem) => void
 };
 
@@ -18,12 +21,12 @@ function NotificationElement({
   removeTx,
   setNotifiedTrue
 }: NotificationElementProps) {
-  const [properties, setProperties] = React.useState<TxResponse | null>(null);
+  const [properties, setProperties] = React.useState<TxInfo | null>(null);
   const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const checkTx = (time: number = 0) => {
     timeoutIdRef.current = setTimeout(() => {
-      checkTxStatus(txItem.id, setProperties as SetPropertiesType<TxResponse>);
+      checkTxStatus(txItem.id, setProperties as SetPropertiesType<TxInfo>);
     }, time);
     return () => {
       if (timeoutIdRef.current) {
@@ -43,8 +46,11 @@ function NotificationElement({
   const notificationManager = () => {
     if (properties) {
       const notificationProps = {
-        message: properties.message,
-        description: txItem.id as React.ReactNode,
+        message: properties.comment,
+        description: (
+          <Typography.Text copyable={{ text: JSON.stringify(properties) as string }}>
+            {properties.failure_reason}
+          </Typography.Text>),
         placement: 'bottomRight' as NotificationPlacement
       };
 

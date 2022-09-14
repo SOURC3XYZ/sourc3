@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import {
   AllRepos,
-  FailPage,
   Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
 } from '@components/shared';
 import { useSelector } from '@libs/redux';
@@ -9,13 +8,14 @@ import React, { useCallback, useMemo } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useUserAction } from '@libs/hooks/thunk';
 import { LoadingMessages } from '@libs/constants';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
+import { PreloadComponent } from '@components/hoc';
+import { ErrorBoundary } from '@components/context';
 import Header from '../../../web/components/header/header.container';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
 
 function App() {
-  const { isApiConnected, balance } = useSelector((state) => {
+  const { isApiConnected } = useSelector((state) => {
     const { isApiConnected, balance } = state.app;
     return { isApiConnected, balance };
   });
@@ -25,7 +25,7 @@ function App() {
   const data = [
     {
       path: '/',
-      element: <Navigate replace to="repos/all/1" />
+      element: <Navigate replace to="/repos/all/1" />
     },
     {
       path: 'repos/:type/:page',
@@ -67,19 +67,12 @@ function App() {
     />
   ), []);
 
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
-
-  const View = useMemo(() => {
+  const main = useMemo(() => {
     const Component = isApiConnected
       ? <Routes>{routes}</Routes>
       : <Preload message="loading" />;
-    return () => Component;
+    return Component;
   }, [isApiConnected]);
-
-  console.log(balance);
 
   return (
     <PreloadComponent
@@ -87,15 +80,15 @@ function App() {
       callback={connectToDesktopApi}
       isLoaded={isApiConnected}
     >
-      <ErrorBoundary fallback={fallback}>
-        <>
-          <Header desktop balance={balance} />
-          <div className={styles.wrapper}>
-            <View />
-            <Notifications />
-          </div>
-        </>
-      </ErrorBoundary>
+      <>
+        <Header desktop />
+        <div className={styles.wrapper}>
+          <ErrorBoundary>
+            {main}
+          </ErrorBoundary>
+          <Notifications />
+        </div>
+      </>
     </PreloadComponent>
   );
 }

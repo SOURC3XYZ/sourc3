@@ -2,6 +2,8 @@
 import { spawn, ChildProcess } from 'child_process';
 
 import { app } from 'electron';
+import {loggerLevel} from "../middlewares";
+import {configPath} from "../common";
 
 type BufferHandler = (data: Buffer) => undefined | void;
 
@@ -23,7 +25,7 @@ export const runSpawnProcess = (
   const {
     path, args, detached, onData, onError, onClose, setCurrentProcess
   } = params;
-  const childProcess = spawn(path, args, { detached });
+  const childProcess = spawn(path, args, { detached: detached, cwd: configPath });
 
   if (onData) childProcess.stdout.on('data', onData);
 
@@ -45,16 +47,18 @@ export const runSpawnProcess = (
 
   childProcess.stdout.on('data', (data: Buffer) => {
     const bufferString = data.toString('utf-8');
-    console.log(`Got process output: ${bufferString}`);
+    loggerLevel("info", 'stdout: ' + bufferString);
+    console.log('stdout: ' + bufferString);
   });
 
   childProcess.stderr.on('data', (data: Buffer) => {
     const bufferString = data.toString('utf-8');
-    console.log(`Got process error: ${bufferString}`);
+    loggerLevel("info", 'stderr: ' + bufferString);
+    console.log('stderr: ' + bufferString);
   });
 
   app.on('window-all-closed', () => {
-    console.log(`Kill ${path}!`);
+    loggerLevel("info", `Kill ${path}!`);
     childProcess.kill('SIGTERM');
   });
 

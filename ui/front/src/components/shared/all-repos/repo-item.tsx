@@ -8,9 +8,27 @@ import shareImg from '@assets/img/share.svg';
 import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
-import { useSelector } from '@libs/redux';
 import { actualTime, clipString, dateCreator } from '@libs/utils';
+import React, { useMemo } from 'react';
+import { SyncOutlined } from '@ant-design/icons';
 import styles from './list-item.module.scss';
+import PendingIndicator from './pending-indicator';
+import { useRepoItem } from './useRepoItem';
+
+const iteractionItems = [
+  {
+    alt: 'fork',
+    src: forkImg
+  },
+  {
+    alt: 'share',
+    src: shareImg
+  },
+  {
+    alt: 'star',
+    src: starImg
+  }
+];
 
 type ListItemProps = {
   item: RepoType;
@@ -22,25 +40,16 @@ type ListItemProps = {
 function RepoItem({
   item, path, searchText, deleteRepo
 }:ListItemProps) {
-  const pkey = useSelector((state) => state.app.pkey);
-  const { repo_id, repo_name, repo_owner } = item;
+  const { repo_id, repo_name } = item;
 
-  const repoLink = `sourc3://${repo_owner}/${repo_name}`;
+  const {
+    pkey,
+    meta,
+    repoLink
+    // getLastMasterCommit
+  } = useRepoItem(item);
 
-  const iteractionItems = [
-    {
-      alt: 'fork',
-      src: forkImg
-    },
-    {
-      alt: 'share',
-      src: shareImg
-    },
-    {
-      alt: 'star',
-      src: starImg
-    }
-  ];
+  const { commit, masterBranch, loading } = meta;
 
   const handleCloneRepo = () => navigator.clipboard.writeText(repoLink);
 
@@ -53,12 +62,10 @@ function RepoItem({
     </div>
   ));
 
-  const onClick = ({ key }: { key:string }) => {
-    message.info(key);
-  };
+  const onClick = ({ key }: { key:string }) => message.info(key);
 
   const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
-    item.masterBranch ? clipString(item.masterBranch?.name) : ''
+    masterBranch ? clipString(masterBranch.name) : ''
   }`;
 
   const menuRender = (
@@ -74,15 +81,18 @@ function RepoItem({
     </Menu>
   );
 
-  const time = item.lastCommit
-    ? `${dateCreator(actualTime(item.lastCommit))} ago`
-    : 'empty';
+  const time = useMemo(() => (
+    loading
+      ? <SyncOutlined spin />
+      : commit
+        ? `${dateCreator(actualTime(commit))} ago`
+        : 'empty'), [commit, loading]);
 
   const handleRepoLink:React.MouseEventHandler<HTMLAnchorElement> = (e) => {
-    if (!item.masterBranch) e.preventDefault();
+    if (!masterBranch) e.preventDefault();
   };
 
-  const titleClassname = item.masterBranch ? styles.title : styles.titleDisabled;
+  const titleClassname = commit ? styles.title : styles.titleDisabled;
 
   return (
     <List.Item
@@ -94,7 +104,7 @@ function RepoItem({
           className={styles.time}
         >
           {time}
-
+          <PendingIndicator id={item.repo_id} />
         </span>,
         (
           <Dropdown

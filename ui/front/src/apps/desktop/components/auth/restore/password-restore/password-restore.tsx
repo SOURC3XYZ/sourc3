@@ -74,7 +74,6 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
         return 'black';
     }
   };
-
   return (
     <>
       {' '}
@@ -94,6 +93,7 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
             password
             placeholder="Enter your password"
             onChange={(e) => setBase(e.target.value)}
+            type="password"
           />
           <InputCustom
             valid={valid}
@@ -101,6 +101,8 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
             placeholder="Confirm your password"
             onChange={(e) => setRepeat(e.target.value)}
             password={!!useRef}
+            type="password"
+            onKeyDown={(e) => (e.key === 'Enter' && onClickDecor())}
           />
 
         </div>

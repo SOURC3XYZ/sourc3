@@ -63,6 +63,8 @@ function Organizations() {
     >
       <>
         <CreateModal
+          title="Add organization"
+          label="Organizations name"
           isModalVisible={isModal}
           placeholder="Enter your organization name"
           handleCreate={handleOk}
