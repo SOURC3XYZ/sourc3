@@ -30,7 +30,9 @@ target_link_libraries(helper_lib
 		Boost::container
 		Boost::json
 		Boost::regex
+		Boost::context
 		Boost::coroutine
+		Boost::thread
 )
 
 target_link_libraries(${TARGET_NAME} 
