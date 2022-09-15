@@ -44,7 +44,8 @@ public:
         std::string apiPort;
         std::string apiTarget;
         std::string appPath;
-        std::string repoOwner;
+        std::string organizationName;
+        std::string projectName;
         std::string repoName;
         std::string repoPath = ".";
         bool useIPFS = true;
@@ -100,16 +101,24 @@ public:
 
 private:
     std::string InvokeWallet(std::string args, bool create_tx) {
-        args.append(",repo_id=")
-            .append(GetRepoID())
+        args.append(",organization_name=")
+            .append(options_.organizationName)
+            .append(",project_name=")
+            .append(options_.projectName)
+            .append(",repo_name=")
+            .append(options_.repoName)
             .append(",cid=")
             .append(GetCID());
         return InvokeShader(std::move(args), create_tx);
     }
     std::string InvokeWalletAsync(std::string args, bool create_tx,
                                   net::yield_context yield) {
-        args.append(",repo_id=")
-            .append(GetRepoIDAsync(yield))
+        args.append(",organization_name=")
+            .append(options_.organizationName)
+            .append(",project_name=")
+            .append(options_.projectName)
+            .append(",repo_name=")
+            .append(options_.repoName)
             .append(",cid=")
             .append(GetCID());
         return InvokeShaderAsync(std::move(args), create_tx, yield);
@@ -123,8 +132,6 @@ private:
     std::string InvokeShaderAsync(const std::string& args, bool create_tx,
                                   net::yield_context yield);
     const char* GetCID() const;
-    const std::string& GetRepoID();
-    const std::string& GetRepoIDAsync(net::yield_context yield);
     std::string CallAPI(std::string&& request);
     std::string CallAPIAsync(std::string request, net::yield_context yield);
     std::string ReadAPI();
