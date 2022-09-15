@@ -1,25 +1,37 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
+import { IGitOrgs, IProfiles, IProfilesGit } from '@types';
 
-export interface IProfiles {
-  id: string,
-  login: string,
-  created_at: string,
-  updated_at: string,
-  token: string,
-  github_profile: IProfilesGit
-}
-
-export interface IProfilesGit {
-  id: string,
-  login: string,
-  email: string,
-  name: string,
-  avatar_url: string,
-  blo: string,
-  location: string,
-  twitter_username: string,
-}
+export const defaultValueOrg: IGitOrgs = {
+  id: 0,
+  login: '',
+  node_id: '',
+  name: '',
+  avatar_url: '',
+  description: '',
+  users: []
+};
+export const defaultValueProf: IProfilesGit = {
+  id: 0,
+  login: '',
+  node_id: '',
+  name: '',
+  avatar_url: '',
+  blog_url: '',
+  company: '',
+  location: '',
+  email: '',
+  hireable: '',
+  bio: '',
+  twitter_username: '',
+  public_repos: 0,
+  followers: 0,
+  following: 0,
+  mutual_followers: 0,
+  created_at: '',
+  updated_at: '',
+  user: 0
+};
 
 export const defaultValue: IProfiles = {
   id: '',
@@ -27,7 +39,9 @@ export const defaultValue: IProfiles = {
   created_at: '',
   updated_at: '',
   token: '',
-  github_profile:[]
+  github_profile: defaultValueProf,
+  github_orgs: [defaultValueOrg],
+  github_owned_repos: []
 };
 
 const initialState = {

@@ -9,7 +9,6 @@ import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
 import { GitConnectAuth } from '@components/shared/git-auth';
 import { useSelector } from '@libs/redux';
-import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {

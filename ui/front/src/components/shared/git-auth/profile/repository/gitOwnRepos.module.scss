@@ -1,0 +1,103 @@
+.wrapper{
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  margin-bottom: 8px;
+  .header{
+    text-align: end;
+  }
+  .block{
+    display: flex;
+    flex-direction: row;
+    &_left{
+      width: 50%;
+      padding-left: 1rem;
+      display: flex;
+      flex-direction: column;
+
+      .wrapper_title{
+        display: flex;
+        width: 100%;
+        align-items: center;
+        margin-bottom: 16px;
+        .name{
+          font-family: 'PublicSans-Bold';
+          font-style: normal;
+          font-weight: 700;
+          font-size: 14px;
+          line-height: 20px;
+        }
+
+      }
+      .forked{
+        margin-bottom: 32px;
+        font-family: 'PublicSans-Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 20px;
+        color: #808080;
+        &_from{
+          display: flex;
+          width: 100%;
+          align-items: center;
+          &>span{
+            &>span{
+              color: #FF791F;
+            }
+          }
+        }
+      }
+    }
+    &_right{
+      width: 50%;
+      padding-right: 2.875rem;
+      .contribution{
+        font-family: 'PublicSans-Bold';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 20px;
+        color:rgba(0,0,0,.5);
+        &>span{
+          font-family: 'PublicSans-Regular';
+          font-style: normal;
+          font-weight: 400;
+          font-size: 14px;
+          line-height: 20px;
+        }
+      }
+      .commits{
+        margin-top: 15px;
+        font-family: 'PublicSans-Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 20px;
+        color: rgba(0,0,0,0.5);
+      }
+      .langStone{
+        padding-top: 18px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+
+  }
+  .stargazers{
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+    color:rgba(0,0,0,.5);
+    font-family: 'PublicSans-Bold';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
