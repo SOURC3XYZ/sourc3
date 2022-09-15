@@ -102,6 +102,7 @@
     "cross-env": "^7.0.3",
     "github-oauth-popup": "^1.2.0",
     "hexdump-js": "^0.1.0",
+    "moment": "^2.29.4",
     "qwebchannel": "^5.9.0",
     "rc-virtual-list": "^3.4.8",
     "react": "^17.0.2",
