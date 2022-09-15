@@ -35,6 +35,7 @@ enum Tag : uint8_t {
     kOrganizationMember,
     kProjectMember,
     kUser,
+    kNameToId,
 };
 
 #pragma pack(push, 1)
@@ -53,6 +54,24 @@ inline Hash256 GetNameHash(const char* name, size_t len) {
 
 struct ContractState {
     Amount faucet_balance;
+    uint64_t organizations_num;
+    uint64_t projects_num;
+    uint64_t repos_num;
+};
+
+template <class T>
+struct IdByName {
+    struct Key {
+        Tag tag = Tag::kNameToId;
+        typename T::NameId name_id;
+        explicit Key(const typename T::NameId& id) : name_id{id} {
+        }
+        // explicit Key(const Id& id) : id{id} {
+        // }
+        Key() : name_id{} {
+        }
+    };
+    typename T::Id id;
 };
 
 struct OrganizationData {
@@ -87,16 +106,23 @@ struct OrganizationData {
 };
 
 struct Organization {
-    struct Id {
+    using Id = uint64_t;
+
+    struct NameId {
         Hash256 org_name_hash;
+        // bool operator==(const Id& other) {
+        // return this->org_name_hash == other.org_name_hash;
+        //};
     };
 
     struct Key {
         Tag tag = Tag::kOrganization;
         Id id;
-        explicit Key(const Hash256& h) : id{h} {
+        // explicit Key(const Hash256& h) : id{h} {
+        // }
+        explicit Key(const Id& id) : id{id} {
         }
-        explicit Key(const Id& id) : id(id) {
+        Key() : id{} {
         }
     };
     enum Permissions : uint8_t {
@@ -145,16 +171,20 @@ struct ProjectData {
 };
 
 struct Project {
-    struct Id : Organization::Id {
+    using Id = uint64_t;
+
+    struct NameId : Organization::NameId {
         Hash256 proj_name_hash;
     };
     struct Key {
         Tag tag = Tag::kProject;
         Id id;
-        Key(const Hash256& org_hash, const Hash256& proj_hash)
-            : id{{org_hash}, proj_hash} {
-        }
+        // Key(const Hash256& org_hash, const Hash256& proj_hash)
+        //: id{{org_hash}, proj_hash} {
+        //}
         explicit Key(const Id& id) : id(id) {
+        }
+        Key() : id{} {
         }
     };
     enum Permissions : uint8_t {
@@ -176,6 +206,8 @@ struct Project {
 };
 
 struct Repo {
+    using Id = uint64_t;
+
     enum Permissions : uint8_t {
         kModifyRepo = 0b00001,
         kAddMember = 0b00010,
@@ -185,24 +217,27 @@ struct Repo {
         kAll = kModifyRepo | kAddMember | kRemoveMember | kPush | kModifyMember,
     };
 
-    static constexpr size_t kMaxNameSize = 100;
+    static constexpr size_t kMaxNameSize = 100 + 1;
 
-    struct Id : Project::Id {
+    struct NameId : Project::NameId {
         Hash256 repo_name_hash;
     };
 
     struct Key {
         Tag tag = Tag::kRepo;
         Id id;
-        Key(const Hash256& org_hash, const Hash256& proj_hash,
-            const Hash256& repo_hash)
-            : id{{{org_hash}, proj_hash}, repo_hash} {
+        // Key(const Hash256& org_hash, const Hash256& proj_hash,
+        // const Hash256& repo_hash)
+        //: id{{{org_hash}, proj_hash}, repo_hash} {
+        //}
+        explicit Key(const Id& id) : id{id} {
         }
-        explicit Key(const Id& id) : id(id) {
+        Key() : id{} {
         }
     };
 
-    Id id;
+    // Id id;
+    Project::Id project_id;
     size_t cur_objs_number;
     PubKey owner;
     uint32_t is_private;
@@ -212,16 +247,18 @@ struct Repo {
     static const Tag kMemberTag = Tag::kRepoMember;
 };
 
+template <class T>
 struct Member {
-    template <class T>
     struct Key {
         Tag tag = T::kMemberTag;
-        PubKey user;
         typename T::Id id;
+        PubKey user;
         Key(const PubKey& u, typename T::Id id) : user(u), id(id) {
         }
+        Key() : user{}, id{} {
+        }
     };
-    uint8_t permissions;
+    typename T::Permissions permissions;
 };
 
 struct GitObject {
@@ -283,6 +320,8 @@ struct GitRef {
         Key(Repo::Id rid, const char* name, size_t len)
             : repo_id(rid), name_hash(GetNameHash(name, len)) {
         }
+        Key() : repo_id{}, name_hash{} {
+        }
     };
 
     GitOid commit_hash;
@@ -339,12 +378,13 @@ struct UserData {
 };
 
 struct User {
+    using Id = PubKey;
     struct Key {
         explicit Key(PubKey id) : id(id) {
         }
 
         Tag tag = Tag::kUser;
-        PubKey id;
+        Id id;
     };
     IpfsAddr avatar_addr;
     UserData data;
@@ -365,7 +405,7 @@ struct PushObjects {
         uint32_t data_size;
         // followed by data
     };
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey user;
     size_t objects_number;
     // packed objects after this
@@ -373,7 +413,7 @@ struct PushObjects {
 
 struct PushRefs {
     static const uint32_t kMethod = 4;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey user;
     RefsInfo refs_info;
 };
@@ -388,7 +428,7 @@ struct CreateOrganization {
 struct ModifyOrganization {
     static const uint32_t kMethod = 6;
     PubKey caller;
-    Organization::Id id;
+    Organization::NameId organization_name_id;
     IpfsAddr logo_addr;
     OrganizationData data;
 };
@@ -396,12 +436,12 @@ struct ModifyOrganization {
 struct RemoveOrganization {
     static const uint32_t kMethod = 7;
     PubKey caller;
-    Organization::Id id;
+    Organization::NameId id;
 };
 
 struct CreateRepo {
     static const uint32_t kMethod = 8;
-    Project::Id project_id;
+    Project::NameId project_name_id;
     PubKey caller;
     uint32_t is_private;
     size_t name_len;
@@ -410,7 +450,7 @@ struct CreateRepo {
 
 struct ModifyRepo {
     static const uint32_t kMethod = 9;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey caller;
     uint32_t is_private;
     size_t name_len;
@@ -420,12 +460,12 @@ struct ModifyRepo {
 struct RemoveRepo {
     static const uint32_t kMethod = 10;
     PubKey caller;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
 };
 
 struct CreateProject {
     static const uint32_t kMethod = 11;
-    Organization::Id organization_id;
+    Organization::NameId organization_name_id;
     PubKey caller;
     IpfsAddr logo_addr;
     ProjectData data;
@@ -433,8 +473,7 @@ struct CreateProject {
 
 struct ModifyProject {
     static const uint32_t kMethod = 12;
-    Organization::Id organization_id;
-    Project::Id project_id;
+    Project::NameId project_name_id;
     PubKey caller;
     IpfsAddr logo_addr;
     ProjectData data;
@@ -448,69 +487,69 @@ struct RemoveProject {
 
 struct AddRepoMember {
     static const uint32_t kMethod = 14;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey member;
     PubKey caller;
-    uint8_t permissions;
+    Repo::Permissions permissions;
 };
 
 struct ModifyRepoMember {
     static const uint32_t kMethod = 15;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey member;
-    uint8_t permissions;
+    Repo::Permissions permissions;
     PubKey caller;
 };
 
 struct RemoveRepoMember {
     static const uint32_t kMethod = 16;
-    Repo::Id repo_id;
+    Repo::NameId repo_name_id;
     PubKey member;
     PubKey caller;
 };
 
 struct AddProjectMember {
     static const uint32_t kMethod = 17;
-    Project::Id project_id;
+    Project::NameId project_name_id;
     PubKey member;
-    uint8_t permissions;
+    Project::Permissions permissions;
     PubKey caller;
 };
 
 struct ModifyProjectMember {
     static const uint32_t kMethod = 18;
-    Project::Id project_id;
+    Project::NameId project_name_id;
     PubKey member;
-    uint8_t permissions;
+    Project::Permissions permissions;
     PubKey caller;
 };
 
 struct RemoveProjectMember {
     static const uint32_t kMethod = 19;
-    Project::Id project_id;
+    Project::NameId project_name_id;
     PubKey member;
     PubKey caller;
 };
 
 struct AddOrganizationMember {
     static const uint32_t kMethod = 20;
-    Organization::Id organization_id;
+    Organization::NameId organization_name_id;
     PubKey member;
-    uint8_t permissions;
+    Organization::Permissions permissions;
     PubKey caller;
 };
 
 struct ModifyOrganizationMember {
     static const uint32_t kMethod = 21;
-    Organization::Id organization_id;
+    Organization::NameId organization_name_id;
     PubKey member;
-    uint8_t permissions;
+    Organization::Permissions permissions;
     PubKey caller;
 };
 
 struct RemoveOrganizationMember {
     static const uint32_t kMethod = 22;
-    Organization::Id organization_id;
+    Organization::NameId organization_name_id;
     PubKey member;
     PubKey caller;
 };

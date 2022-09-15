@@ -32,27 +32,6 @@ namespace Env {  // NOLINT
 #include "libgit2/full_git.h"
 
 namespace sourc3 {
-namespace v0 {
-// SID: 5ca7c7e30f066942e47d803a4e016ca9ff08ccbcb84384662525b8bfe07246eb
-static const ShaderID s_SID = {  // NOLINT
-    0x5c, 0xa7, 0xc7, 0xe3, 0x0f, 0x06, 0x69, 0x42, 0xe4, 0x7d, 0x80,
-    0x3a, 0x4e, 0x01, 0x6c, 0xa9, 0xff, 0x08, 0xcc, 0xbc, 0xb8, 0x43,
-    0x84, 0x66, 0x25, 0x25, 0xb8, 0xbf, 0xe0, 0x72, 0x46, 0xeb};
-}  // namespace v0
-namespace v1 {
-// SID: ea1765cc92875862660dea1e15cc342281bf0c840b0f9928ccfc8f7e8eeb0048
-static const ShaderID s_SID = {  // NOLINT
-    0xea, 0x17, 0x65, 0xcc, 0x92, 0x87, 0x58, 0x62, 0x66, 0x0d, 0xea,
-    0x1e, 0x15, 0xcc, 0x34, 0x22, 0x81, 0xbf, 0x0c, 0x84, 0x0b, 0x0f,
-    0x99, 0x28, 0xcc, 0xfc, 0x8f, 0x7e, 0x8e, 0xeb, 0x00, 0x48};
-}  // namespace v1
-namespace v2 {
-// SID: 2318cf637149d6b47a4801329f985f276d497dbbf221aebdd49a5916c2ccaf3d
-static const ShaderID s_SID = {  // NOLINT
-    0x23, 0x18, 0xcf, 0x63, 0x71, 0x49, 0xd6, 0xb4, 0x7a, 0x48, 0x01,
-    0x32, 0x9f, 0x98, 0x5f, 0x27, 0x6d, 0x49, 0x7d, 0xbb, 0xf2, 0x21,
-    0xae, 0xbd, 0xd4, 0x9a, 0x59, 0x16, 0xc2, 0xcc, 0xaf, 0x3d};
-}  // namespace v2
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -84,8 +63,7 @@ struct MyKeyID : public Env::KeyID {
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID,
-                         sourc3::v2::s_SID, sourc3::s_SID};
+const ShaderID kSid[] = {sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
@@ -232,7 +210,8 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     Env::DocAddText("project_discord", value->data.discord_len ? cur_ptr : "");
     Env::DocAddText("project_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("project_creator", value->creator);
-    Env::DocAddNum("organization_id", value->organization_id);
+    // TODO: print org name
+    Env::DocAddNum64("organization_id", value->organization_id);
 }
 
 size_t GetOrganizationData(sourc3::OrganizationData& buf) {
@@ -281,6 +260,53 @@ size_t GetOrganizationData(sourc3::OrganizationData& buf) {
     cur_ptr += buf.discord_len;
 
     return cur_ptr - reinterpret_cast<char*>(&buf);
+}
+
+sourc3::Organization::NameId ReadOrganizationNameId() {
+    using sourc3::OrganizationData;
+    char org_name[OrganizationData::kMaxNameLen];
+    size_t org_name_len{};
+    if (!(org_name_len = Env::DocGetText("organization_name", org_name,
+                                         OrganizationData::kMaxNameLen))) {
+        OnError("no 'organization_name'");
+        return {};
+    }
+    return {sourc3::GetNameHash(org_name, org_name_len)};
+}
+
+sourc3::Project::NameId ReadProjectNameId() {
+    using sourc3::ProjectData;
+    char proj_name[ProjectData::kMaxNameLen];
+    size_t proj_name_len = 0;
+    if (!(proj_name_len = Env::DocGetText("project_name", proj_name,
+                                          ProjectData::kMaxNameLen))) {
+        OnError("no 'project_name'");
+        return {};
+    }
+    return {{ReadOrganizationNameId()},
+            sourc3::GetNameHash(proj_name, proj_name_len)};
+}
+
+sourc3::Repo::NameId ReadRepoNameId() {
+    using sourc3::Repo;
+    char repo_name[Repo::kMaxNameSize];
+    size_t repo_name_len = 0;
+    if (!(repo_name_len =
+              Env::DocGetText("repo_name", repo_name, Repo::kMaxNameSize))) {
+        OnError("no 'repo_name'");
+        return {};
+    }
+    return {{ReadProjectNameId()}, sourc3::GetNameHash(repo_name, repo_name_len)};
+}
+
+template <class T>
+typename T::Id GetIdByName(const ContractID& cid, const typename T::NameId& name_id) {
+    Env::Key_T<typename sourc3::IdByName<T>::Key> key;
+    key.m_Prefix.m_Cid = cid;
+    key.m_KeyInContract.name_id = name_id;
+    typename T::Id obj_id{};
+    Env::VarReader::Read_T(key, obj_id);
+    return obj_id;
 }
 
 void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
@@ -432,31 +458,24 @@ private:
 #pragma pack(pop)
 
 void OnActionCreateRepo(const ContractID& cid) {
-    using sourc3::Project;
     using sourc3::Repo;
     using sourc3::method::CreateRepo;
 
-    char repo_name[Repo::kMaxNameSize + 1];
+    char repo_name[Repo::kMaxNameSize];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
     if (name_len <= 1) {
         return OnError("'repo_name' required");
     }
-    Project::Id project_id;
-    if (!Env::DocGet("project_id", project_id)) {
-        return OnError("'project_id' required");
-    }
-    --name_len;  // remove 0-term
     auto args_size = sizeof(CreateRepo) + name_len;
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateRepo*>(buf.get());
     Env::DocGetNum32("private", &request->is_private);
-    request->project_id = project_id;
+    request->project_name_id = ReadProjectNameId();
     UserKey user_key(cid);
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -491,27 +510,32 @@ void OnActionModifyRepo(const ContractID& cid) {
     using sourc3::Repo;
     using sourc3::method::ModifyRepo;
 
-    char repo_name[Repo::kMaxNameSize + 1];
+    char repo_name[Repo::kMaxNameSize];
     auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
     if (name_len <= 1) {
         return OnError("'repo_name' required");
     }
-    Repo::Id repo_id;
-    if (!Env::DocGet("repo_id", repo_id)) {
-        return OnError("'repo_id' required");
-    }
-    --name_len;  // remove 0-term
     auto args_size = sizeof(ModifyRepo) + name_len;
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<ModifyRepo*>(buf.get());
     Env::DocGetNum32("private", &request->is_private);
-    request->repo_id = repo_id;
+
+    char repo_old_name[Repo::kMaxNameSize];
+    size_t repo_old_name_len = 0;
+
+    if (!(repo_old_name_len = Env::DocGetText("repo_old_name", repo_old_name,
+                                              Repo::kMaxNameSize))) {
+        return OnError("no 'repo_old_name'");
+    }
+
+    request->repo_name_id = {{ReadProjectNameId()},
+                        sourc3::GetNameHash(repo_old_name, repo_old_name_len)};
+
     UserKey user_key(cid);
     user_key.Get(request->caller);
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
-    auto hash = sourc3::GetNameHash(request->name, request->name_len);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -544,15 +568,13 @@ void OnActionCreateProject(const ContractID& cid) {
 
     args_size += sizeof(CreateProject);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->caller);
 
-    if (!Env::DocGet("organization_id", buf->organization_id)) {
-        return OnError("'organization_id' required");
-    }
+    buf->organization_name_id = ReadOrganizationNameId();
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -579,10 +601,9 @@ void OnActionListProjects(const ContractID& cid) {
     auto buf = std::unique_ptr<Project>(
         static_cast<Project*>(::operator new(max_args_size)));
 
-    ProjectKey start{.m_Prefix = {.m_Cid = cid},
-                     .m_KeyInContract = Project::Key{0}};
+    ProjectKey start{.m_Prefix = {.m_Cid = cid}, .m_KeyInContract{}};
     ProjectKey end = start;
-    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
@@ -590,70 +611,26 @@ void OnActionListProjects(const ContractID& cid) {
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup project_object("");
-        Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
-        Env::DocAddNum("project_id", key.m_KeyInContract.id);
         PrintProject(buf);
         value_len = max_args_size;
-    }
-}
-
-void OnActionProjectByName(const ContractID& cid) {
-    using sourc3::Project;
-    using sourc3::ProjectData;
-    using ProjectKey = Env::Key_T<Project::Key>;
-
-    char name[ProjectData::kMaxNameLen];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    PubKey owner;
-    if (!Env::DocGet("owner", owner)) {
-        return OnError("'owner' required");
-    }
-
-    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
-    auto buf = std::unique_ptr<Project>(
-        static_cast<Project*>(::operator new(max_args_size)));
-
-    ProjectKey start{.m_Prefix = {.m_Cid = cid},
-                     .m_KeyInContract = Project::Key{0}};
-    ProjectKey end = start;
-    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
-
-    ProjectKey key = start;
-    Env::DocArray projects("projects");
-    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
-    for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
-        if (Env::Strcmp(buf->data.data, name) == 0 &&
-            _POD_(buf->creator) == owner) {  // NOLINT
-            Env::DocGroup project_object("");
-            Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
-            Env::DocAddNum("project_id", key.m_KeyInContract.id);
-            PrintProject(buf);
-            return;
-        }
     }
 }
 
 void OnActionListProjectMembers(const ContractID& cid) {
     using sourc3::Member;
     using sourc3::Project;
-    using MemberKey = Env::Key_T<Member::Key<Project>>;
+    using MemberKey = Env::Key_T<Member<Project>::Key>;
 
-    MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member::Key<Project>{PubKey{}, 0}};
-    if (!Env::DocGet("project_id", start.m_KeyInContract.id)) {
-        return OnError("no 'project_id'");
-    }
+    MemberKey start{.m_Prefix = {.m_Cid = cid}};
+    start.m_KeyInContract.id = GetIdByName<Project>(cid, ReadProjectNameId());
+
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
     MemberKey key = start;
     Env::DocArray projects("members");
-    sourc3::Member member;
+    sourc3::Member<Project> member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);
@@ -677,24 +654,27 @@ void OnActionModifyProject(const ContractID& cid) {
 
     args_size += sizeof(ModifyProject);
 
-    Env::DocGetText("logo_ipfs_hash", buf->logo_addr.data(),
+    char proj_old_name[ProjectData::kMaxNameLen];
+    size_t proj_old_name_len = 0;
+
+    if (!(proj_old_name_len = Env::DocGetText("old_name", proj_old_name,
+                                              ProjectData::kMaxNameLen))) {
+        return OnError("no 'old_name'");
+    }
+    buf->project_name_id = {{ReadOrganizationNameId()},
+                       sourc3::GetNameHash(proj_old_name, proj_old_name_len)};
+
+    Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->caller);
 
-    /*    if (!Env::DocGet("organization_id", request->organization_id)) {
-            return OnError("'organization_id' required");
-        }
-    */
-
-    if (!Env::DocGet("project_id", buf->project_id)) {
-        return OnError("'project_id' required");
-    }
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
-    CompensateFee(cid, 0);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyProject::kMethod,
                         /*pArgs=*/buf.get(),
@@ -704,9 +684,10 @@ void OnActionModifyProject(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"modify project",
-                        /*nCharge=*/0);
+                        /*nCharge=*/charge);
 }
 
+/*
 void OnActionRemoveProject(const ContractID& cid) {
     using sourc3::Project;
     using sourc3::method::RemoveProject;
@@ -721,32 +702,30 @@ void OnActionRemoveProject(const ContractID& cid) {
     user_key.FillSigRequest(sig);
 
     CompensateFee(cid, 0);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/RemoveProject::kMethod,
-                        /*pArgs=*/&request,
-                        /*nArgs=*/sizeof(request),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&sig,
-                        /*nSig=*/1,
-                        /*szComment=*/"modify project",
-                        /*nCharge=*/0);
+    Env::GenerateKernel(&cid,
+                        RemoveProject::kMethod,
+                        &request,
+                        sizeof(request),
+                        nullptr,
+                        0,
+                        &sig,
+                        1,
+                        "modify project",
+                        0);
 }
+*/
 
 void OnActionListProjectRepos(const ContractID& cid) {
     using sourc3::Project;
     using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
 
-    Project::Id project_id;
-    if (!Env::DocGet("project_id", project_id)) {
-        return OnError("'project_id' required");
-    }
+    Project::Id project_id{GetIdByName<Project>(cid, ReadProjectNameId())};
 
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(end) = start;
-    end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
     RepoKey key;
     PubKey my_key;
@@ -761,9 +740,9 @@ void OnActionListProjectRepos(const ContractID& cid) {
         auto* value = reinterpret_cast<Repo*>(buf.get());
         if (value->project_id == project_id) {
             Env::DocGroup repo_object("");
-            Env::DocAddNum("repo_id", value->repo_id);
+            // Env::DocAddNum("repo_id", value->repo_id);
             Env::DocAddText("repo_name", value->name);
-            Env::DocAddNum("project_id", value->project_id);
+            // Env::DocAddNum("project_id", value->project_id);
             Env::DocAddNum64("cur_objects", value->cur_objs_number);
             Env::DocAddBlob_T("repo_owner", value->owner);
             Env::DocAddNum32("private", value->is_private);
@@ -821,9 +800,9 @@ void OnActionListOrganizations(const ContractID& cid) {
         static_cast<Organization*>(::operator new(max_args_size)));
 
     OrganizationKey start{.m_Prefix = {.m_Cid = cid},
-                          .m_KeyInContract = Organization::Key{0}};
+                          .m_KeyInContract = Organization::Key{}};
     auto end = start;
-    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
     OrganizationKey key = start;
     Env::DocArray organizations("organizations");
@@ -831,52 +810,8 @@ void OnActionListOrganizations(const ContractID& cid) {
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup org_object("");
-        Env::DocAddNum("organization_tag", (uint32_t)key.m_KeyInContract.tag);
-        Env::DocAddNum("organization_id", key.m_KeyInContract.id);
         PrintOrganization(buf);
         value_len = max_args_size;
-    }
-}
-
-void OnActionOrganizationByName(const ContractID& cid) {
-    using sourc3::Organization;
-    using sourc3::OrganizationData;
-    using OrganizationKey = Env::Key_T<Organization::Key>;
-
-    char name[OrganizationData::kMaxNameLen];
-    auto name_len = Env::DocGetText("name", name, sizeof(name));
-    if (name_len <= 1) {
-        return OnError("'name' required");
-    }
-    PubKey owner;
-    if (!Env::DocGet("owner", owner)) {
-        return OnError("'owner' required");
-    }
-
-    constexpr auto max_args_size =
-        sizeof(Organization) + OrganizationData::GetMaxSize();
-    auto buf = std::unique_ptr<Organization>(
-        static_cast<Organization*>(::operator new(max_args_size)));
-
-    OrganizationKey start{.m_Prefix = {.m_Cid = cid},
-                          .m_KeyInContract = Organization::Key{0}};
-    auto end = start;
-    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
-
-    OrganizationKey key = start;
-    Env::DocArray organizations("organizations");
-    uint32_t value_len = max_args_size, key_len = sizeof(OrganizationKey);
-    for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
-        if (Env::Strcmp(buf->data.data, name) == 0 &&
-            _POD_(buf->creator) == owner) {  // NOLINT
-            Env::DocGroup org_object("");
-            Env::DocAddNum("organization_tag",
-                           (uint32_t)key.m_KeyInContract.tag);
-            Env::DocAddNum("organization_id", key.m_KeyInContract.id);
-            PrintOrganization(buf);
-            return;
-        }
     }
 }
 
@@ -891,14 +826,11 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
         static_cast<Project*>(::operator new(max_args_size)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
-                     .m_KeyInContract = Project::Key{0}};
+                     .m_KeyInContract = Project::Key{}};
     ProjectKey end = start;
-    end.m_KeyInContract.id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
-    Organization::Id org_id;
-    if (!Env::DocGet("organization_id", org_id)) {
-        return OnError("no 'organization_id'");
-    }
+    Organization::Id org_id{GetIdByName<Organization>(cid, ReadOrganizationNameId())};
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
@@ -907,8 +839,6 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         if (buf->organization_id == org_id) {
             Env::DocGroup project_object("");
-            Env::DocAddNum("project_tag", (uint32_t)key.m_KeyInContract.tag);
-            Env::DocAddNum("project_id", key.m_KeyInContract.id);
             PrintProject(buf);
         }
         value_len = max_args_size;
@@ -918,20 +848,18 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 void OnActionListOrganizationMembers(const ContractID& cid) {
     using sourc3::Member;
     using sourc3::Organization;
-    using MemberKey = Env::Key_T<Member::Key<Organization>>;
+    using MemberKey = Env::Key_T<Member<Organization>::Key>;
 
-    MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = Member::Key<Organization>{PubKey{}, 0}};
-    if (!Env::DocGet("organization_id", start.m_KeyInContract.id)) {
-        return OnError("no 'organization_id'");
-    }
+    MemberKey start{.m_Prefix = {.m_Cid = cid}};
+
+    start.m_KeyInContract.id = GetIdByName<Organization>(cid, ReadOrganizationNameId());
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
     MemberKey key = start;
     Env::DocArray members("members");
-    sourc3::Member member;
+    sourc3::Member<Organization> member;
     for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
         Env::DocGroup member_object("");
         Env::DocAddBlob_T("member", key.m_KeyInContract.user);
@@ -955,20 +883,28 @@ void OnActionModifyOrganization(const ContractID& cid) {
 
     args_size += sizeof(ModifyOrganization);
 
+    char org_old_name[OrganizationData::kMaxNameLen];
+    size_t org_old_name_len = 0;
+
+    if (!(org_old_name_len =
+              Env::DocGetText("old_name", org_old_name,
+                              OrganizationData::kMaxNameLen))) {
+        return OnError("no 'old_name'");
+    }
+    buf->organization_name_id = {
+        sourc3::GetNameHash(org_old_name, org_old_name_len)};
+
     Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
 
     UserKey user_key(cid);
     user_key.Get(buf->caller);
 
-    if (!Env::DocGet("organization_id", buf->id)) {
-        return OnError("'organization_id' required");
-    }
-
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
-    CompensateFee(cid, 0);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyOrganization::kMethod,
                         /*pArgs=*/buf.get(),
@@ -978,9 +914,10 @@ void OnActionModifyOrganization(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"modify organization",
-                        /*nCharge=*/0);
+                        /*nCharge=*/charge);
 }
 
+/*
 void OnActionRemoveOrganization(const ContractID& cid) {
     using sourc3::Organization;
     using sourc3::method::RemoveOrganization;
@@ -988,34 +925,33 @@ void OnActionRemoveOrganization(const ContractID& cid) {
     RemoveOrganization request;
     UserKey user_key(cid);
     user_key.Get(request.caller);
-    if (!Env::DocGet("organization_id", request.id)) {
-        return OnError("'organization_id' required");
-    }
+    //if (!Env::DocGet("organization_id", request.id)) {
+        //return OnError("'organization_id' required");
+    //}
 
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
     CompensateFee(cid, 0);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/RemoveOrganization::kMethod,
-                        /*pArgs=*/&request,
-                        /*nArgs=*/sizeof(request),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&sig,
-                        /*nSig=*/1,
-                        /*szComment=*/"modify organization",
-                        /*nCharge=*/0);
+    Env::GenerateKernel(&cid,
+                        RemoveOrganization::kMethod,
+                        &request,
+                        sizeof(request),
+                        nullptr,
+                        0,
+                        &sig,
+                        1,
+                        "modify organization",
+                        0);
 }
+*/
 
 void OnActionAddProjectMember(const ContractID& cid) {
     using sourc3::Project;
     using sourc3::method::AddProjectMember;
 
     AddProjectMember request{};
-    if (!Env::DocGet("project_id", request.project_id)) {
-        return OnError("no 'project_id'");
-    }
+    request.project_name_id = ReadProjectNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1028,7 +964,7 @@ void OnActionAddProjectMember(const ContractID& cid) {
         return OnError("permission overflow");
     }
 
-    request.permissions = permissions;
+    request.permissions = static_cast<Project::Permissions>(permissions);
     UserKey user_key(cid);
     user_key.Get(request.caller);
 
@@ -1053,9 +989,7 @@ void OnActionModifyProjectMember(const ContractID& cid) {
     using sourc3::method::ModifyProjectMember;
 
     ModifyProjectMember request{};
-    if (!Env::DocGet("project_id", request.project_id)) {
-        return OnError("no 'project_id'");
-    }
+    request.project_name_id = ReadProjectNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1068,7 +1002,7 @@ void OnActionModifyProjectMember(const ContractID& cid) {
         return OnError("permission overflow");
     }
 
-    request.permissions = permissions;
+    request.permissions = static_cast<Project::Permissions>(permissions);
     UserKey user_key(cid);
     user_key.Get(request.caller);
 
@@ -1093,9 +1027,7 @@ void OnActionRemoveProjectMember(const ContractID& cid) {
     using sourc3::method::RemoveProjectMember;
 
     RemoveProjectMember request{};
-    if (!Env::DocGet("project_id", request.project_id)) {
-        return OnError("no 'project_id'");
-    }
+    request.project_name_id = ReadProjectNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1124,9 +1056,7 @@ void OnActionAddOrganizationMember(const ContractID& cid) {
     using sourc3::method::AddOrganizationMember;
 
     AddOrganizationMember request{};
-    if (!Env::DocGet("organization_id", request.organization_id)) {
-        return OnError("no 'organization_id'");
-    }
+    request.organization_name_id = ReadOrganizationNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1139,7 +1069,7 @@ void OnActionAddOrganizationMember(const ContractID& cid) {
         return OnError("permission overflow");
     }
 
-    request.permissions = permissions;
+    request.permissions = static_cast<Organization::Permissions>(permissions);
     UserKey user_key(cid);
     user_key.Get(request.caller);
 
@@ -1164,9 +1094,7 @@ void OnActionModifyOrganizationMember(const ContractID& cid) {
     using sourc3::method::ModifyOrganizationMember;
 
     ModifyOrganizationMember request{};
-    if (!Env::DocGet("organization_id", request.organization_id)) {
-        return OnError("no 'organization_id'");
-    }
+    request.organization_name_id = ReadOrganizationNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1179,7 +1107,7 @@ void OnActionModifyOrganizationMember(const ContractID& cid) {
         return OnError("permission overflow");
     }
 
-    request.permissions = permissions;
+    request.permissions = static_cast<Organization::Permissions>(permissions);
     UserKey user_key(cid);
     user_key.Get(request.caller);
 
@@ -1204,9 +1132,7 @@ void OnActionRemoveOrganizationMember(const ContractID& cid) {
     using sourc3::method::RemoveOrganizationMember;
 
     RemoveOrganizationMember request{};
-    if (!Env::DocGet("organization_id", request.organization_id)) {
-        return OnError("no 'organization_id'");
-    }
+    request.organization_name_id = ReadOrganizationNameId();
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1236,7 +1162,7 @@ void OnActionMyRepos(const ContractID& cid) {
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(end) = start;
-    end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
     RepoKey key;
     PubKey my_key;
@@ -1251,7 +1177,6 @@ void OnActionMyRepos(const ContractID& cid) {
         auto* value = reinterpret_cast<Repo*>(buf.get());
         if ((_POD_(value->owner) == my_key) != 0u) {
             Env::DocGroup repo_object("");
-            Env::DocAddNum("repo_id", value->repo_id);
             Env::DocAddText("repo_name", value->name);
             Env::DocAddNum32("private", value->is_private);
         }
@@ -1265,7 +1190,7 @@ void OnActionAllRepos(const ContractID& cid) {
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(end) = start;
-    end.m_KeyInContract.repo_id = std::numeric_limits<uint64_t>::max();
+    _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
     RepoKey key;
     PubKey my_key;
@@ -1279,9 +1204,8 @@ void OnActionAllRepos(const ContractID& cid) {
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<Repo*>(buf.get());
         Env::DocGroup repo_object("");
-        Env::DocAddNum("repo_id", value->repo_id);
         Env::DocAddText("repo_name", value->name);
-        Env::DocAddNum("project_id", value->project_id);
+        // Env::DocAddNum("project_id", value->project_id);
         Env::DocAddNum64("cur_objects", value->cur_objs_number);
         Env::DocAddBlob_T("repo_owner", value->owner);
         Env::DocAddNum32("private", value->is_private);
@@ -1290,6 +1214,7 @@ void OnActionAllRepos(const ContractID& cid) {
 }
 
 void OnActionDeleteRepo(const ContractID& cid) {
+    /*
     using sourc3::method::RemoveRepo;
     uint64_t repo_id;
     if (!Env::DocGet("repo_id", repo_id)) {
@@ -1297,7 +1222,7 @@ void OnActionDeleteRepo(const ContractID& cid) {
     }
 
     RemoveRepo request;
-    request.repo_id = repo_id;
+    //request.repo_id = repo_id;
     UserKey user_key(cid);
     user_key.Get(request.caller);
 
@@ -1306,22 +1231,24 @@ void OnActionDeleteRepo(const ContractID& cid) {
 
     Amount charge = 10000000;
     CompensateFee(cid, charge);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/RemoveRepo::kMethod,
-                        /*pArgs=*/&request,
-                        /*nArgs=*/sizeof(request),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&sig,
-                        /*nSig=*/1,
-                        /*szComment=*/"delete repo",
-                        /*nCharge=*/charge);
+    Env::GenerateKernel(&cid,
+                        RemoveRepo::kMethod,
+                        &request,
+                        sizeof(request),
+                        nullptr,
+                        0,
+                        &sig,
+                        1,
+                        "delete repo",
+                        charge);
+    */
 }
 
 void OnActionAddRepoMember(const ContractID& cid) {
     using sourc3::method::AddRepoMember;
+    using sourc3::Repo;
     AddRepoMember request;
-    Env::DocGet("repo_id", request.repo_id);
+    request.repo_name_id = ReadRepoNameId();
     Env::DocGet("user", request.member);
 
     uint32_t read_permissions;
@@ -1332,7 +1259,7 @@ void OnActionAddRepoMember(const ContractID& cid) {
     if (permissions != read_permissions) {
         return OnError("permission overflow");
     }
-    request.permissions = permissions;
+    request.permissions = static_cast<Repo::Permissions>(permissions);
 
     UserKey user_key(cid);
     user_key.Get(request.caller);
@@ -1354,8 +1281,9 @@ void OnActionAddRepoMember(const ContractID& cid) {
 
 void OnActionModifyRepoMember(const ContractID& cid) {
     using sourc3::method::ModifyRepoMember;
+    using sourc3::Repo;
     ModifyRepoMember request;
-    Env::DocGet("repo_id", request.repo_id);
+    request.repo_name_id = ReadRepoNameId();
     Env::DocGet("user", request.member);
 
     uint32_t read_permissions;
@@ -1366,7 +1294,7 @@ void OnActionModifyRepoMember(const ContractID& cid) {
     if (permissions != read_permissions) {
         return OnError("permission overflow");
     }
-    request.permissions = permissions;
+    request.permissions = static_cast<Repo::Permissions>(permissions);
 
     UserKey user_key(cid);
     user_key.Get(request.caller);
@@ -1389,7 +1317,7 @@ void OnActionModifyRepoMember(const ContractID& cid) {
 void OnActionRemoveRepoMember(const ContractID& cid) {
     using sourc3::method::RemoveRepoMember;
     RemoveRepoMember request;
-    Env::DocGet("repo_id", request.repo_id);
+    request.repo_name_id = ReadRepoNameId();
     Env::DocGet("user", request.member);
 
     UserKey user_key(cid);
@@ -1416,10 +1344,7 @@ void OnActionPushObjects(const ContractID& cid) {
     using sourc3::method::PushRefs;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
 
-    sourc3::Repo::Id repo_id;
-    if (!Env::DocGet("repo_id", repo_id)) {
-        return OnError("failed to read 'repo_id'");
-    }
+    sourc3::Repo::NameId repo_name_id{ReadRepoNameId()};
 
     UserKey user_key(cid);
     SigRequest sig;
@@ -1435,7 +1360,7 @@ void OnActionPushObjects(const ContractID& cid) {
         auto ref_args_size = sizeof(PushRefs) + sizeof(GitRef) + name_len;
         auto res_memory = std::make_unique<uint8_t[]>(ref_args_size);
         auto* refs_params = reinterpret_cast<PushRefs*>(res_memory.get());
-        refs_params->repo_id = repo_id;
+        refs_params->repo_name_id = repo_name_id;
         refs_params->refs_info.refs_number = refs_count;
         auto* ref = reinterpret_cast<GitRef*>(refs_params + 1);
         if (Env::DocGetBlob("ref_target", &ref->commit_hash,
@@ -1481,10 +1406,7 @@ void OnActionPushObjects(const ContractID& cid) {
     if (Env::DocGetBlob("data", p, data_len) != data_len) {
         return OnError("failed to read push data");
     }
-    if (!Env::DocGet("repo_id", params->repo_id)) {
-        return OnError("failed to read 'repo_id'");
-    }
-    Env::DocAddNum("repo_id", params->repo_id);
+    params->repo_name_id = ReadRepoNameId();
 
     // dump objects for debug
     Env::DocGroup gr("objects");
@@ -1527,12 +1449,9 @@ void OnActionListRefs(const ContractID& cid) {
     using sourc3::Repo;
     using Key = Env::Key_T<GitRef::Key>;
     Key start, end;
-    Repo::Id repo_id = 0;
-    if (!Env::DocGet("repo_id", repo_id)) {
-        return OnError("failed to read 'repo_id'");
-    }
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
 
-    start.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
+    start.m_KeyInContract.repo_id = repo_id;
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(start.m_KeyInContract.name_hash).SetZero();
     _POD_(end) = start;
@@ -1562,31 +1481,6 @@ void OnActionUserGetKey(const ContractID& cid) {
     Env::DocAddBlob_T("key", pk);
 }
 
-void OnActionUserGetRepo(const ContractID& cid) {
-    using RepoKey = sourc3::Repo::NameKey;
-    using sourc3::Repo;
-    char repo_name[Repo::kMaxNameSize + 1];
-    auto name_len = Env::DocGetText("repo_name", repo_name, sizeof(repo_name));
-    if (name_len <= 1) {
-        return OnError("'repo_name' required");
-    }
-    --name_len;  // remove 0-term
-    PubKey my_key;
-    Env::DocGet("repo_owner", my_key);
-    // TODO: new RepoKey
-    /*
-    sourc3::Hash256 name_hash = sourc3::GetNameHash(repo_name, name_len);
-    RepoKey key(my_key, name_hash);
-    Env::Key_T<RepoKey> reader_key = {.m_KeyInContract = key};
-    reader_key.m_Prefix.m_Cid = cid;
-    Repo::Id repo_id = 0;
-    if (!Env::VarReader::Read_T(reader_key, repo_id)) {
-        return OnError("Failed to read repo ids");
-    }
-    Env::DocAddNum("repo_id", repo_id);
-    */
-}
-
 using MetaKey = Env::Key_T<sourc3::GitObject::Meta::Key>;
 using DataKey = Env::Key_T<sourc3::GitObject::Data::Key>;
 
@@ -1594,8 +1488,7 @@ std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::Repo;
 
-    Repo::Id repo_id;
-    Env::DocGet("repo_id", repo_id);
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
     MetaKey start{.m_KeyInContract = {repo_id, 0}};
     MetaKey end{.m_KeyInContract = {repo_id,
                                     std::numeric_limits<GitObject::Id>::max()}};
@@ -1624,9 +1517,8 @@ void OnActionGetRepoData(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id;
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
     GitOid hash;
-    Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
     key.m_Prefix.m_Cid = cid;
@@ -1720,9 +1612,8 @@ void OnActionGetCommit(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id;
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
     GitOid hash;
-    Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
     key.m_Prefix.m_Cid = cid;
@@ -1757,9 +1648,8 @@ void OnActionGetTree(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id;
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
     GitOid hash;
-    Env::DocGet("repo_id", repo_id);
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
     key.m_Prefix.m_Cid = cid;
@@ -1958,7 +1848,8 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("create_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("private", "Is repo private");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -1966,7 +1857,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("create_project");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("name", "Name of project");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("logo_addr", "IpfsAddr");
                 Env::DocAddText("description", "Project description");
                 Env::DocAddText("website", "Project website");
@@ -1980,9 +1871,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_project");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("name", "Name of project");
-                Env::DocAddText("project_id", "Project ID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("name", "New name of project");
+                Env::DocAddText("old_name", "current name of project");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("logo_addr", "IpfsAddr");
                 Env::DocAddText("description", "Project description");
                 Env::DocAddText("website", "Project website");
@@ -1993,12 +1884,14 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("discord", "Project discord");
                 Env::DocAddText("pid", "uint32_t");
             }
+            /*
             {
                 Env::DocGroup gr_method("remove_project");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("project_id", "Project ID");
                 Env::DocAddText("pid", "uint32_t");
             }
+            */
             {
                 Env::DocGroup gr_method("create_organization");
                 Env::DocAddText("cid", "ContractID");
@@ -2017,7 +1910,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_organization");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("name", "Name of organization");
+                Env::DocAddText("old_name",
+                                "Current name of organization");
+                Env::DocAddText("name", "New name of organization");
                 Env::DocAddText("logo_addr", "IpfsAddr");
                 Env::DocAddText("short_title", "Short title");
                 Env::DocAddText("about", "Organization about");
@@ -2027,15 +1922,16 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("instagram", "Organization instagram");
                 Env::DocAddText("telegram", "Organization telegram");
                 Env::DocAddText("discord", "Organization discord");
-                Env::DocAddText("organization_id", "Organization ID");
                 Env::DocAddText("pid", "uint32_t");
             }
+            /*
             {
                 Env::DocGroup gr_method("remove_organization");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("organization_id", "Organization ID");
                 Env::DocAddText("pid", "uint32_t");
             }
+            */
             {
                 Env::DocGroup gr_method("my_repos");
                 Env::DocAddText("cid", "ContractID");
@@ -2049,20 +1945,25 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("modify_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("private", "Is repo private");
                 Env::DocAddText("pid", "uint32_t");
             }
+            /*
             {
                 Env::DocGroup gr_method("delete_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_id", "Repo ID");
                 Env::DocAddText("pid", "uint32_t");
             }
+            */
             {
                 Env::DocGroup gr_method("add_repo_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("user", "User PubKey");
                 Env::DocAddText("permissions", "permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2070,7 +1971,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_repo_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("user", "User PubKey");
                 Env::DocAddText("permissions", "permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2078,14 +1981,18 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("remove_repo_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("user", "User PubKey");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup gr_method("push_objects");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("data", "Push objects");
                 Env::DocAddText("ref", "Objects ref");
                 Env::DocAddText("ref_target", "Objects ref target");
@@ -2094,7 +2001,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("list_refs");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
@@ -2103,38 +2012,26 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
-                Env::DocGroup gr_method("repo_id_by_name");
-                Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_name", "Name of repo");
-                Env::DocAddText("repo_owner", "Owner key of repo");
-            }
-            {
-                Env::DocGroup gr_method("project_id_by_name");
-                Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("name", "Name of project");
-                Env::DocAddText("owner", "Owner key of project");
-            }
-            {
-                Env::DocGroup gr_method("organization_id_by_name");
-                Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("name", "Name of organization");
-                Env::DocAddText("owner", "Owner key of organization");
-            }
-            {
                 Env::DocGroup gr_method("repo_get_data");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
                 Env::DocGroup gr_method("repo_get_meta");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("repo_get_commit");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
@@ -2146,7 +2043,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("repo_get_tree");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
@@ -2158,12 +2057,16 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("list_commits");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("list_trees");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("list_projects");
@@ -2172,12 +2075,14 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("list_project_repos");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("list_project_members");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project Name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("list_organizations");
@@ -2186,17 +2091,18 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("list_organization_projects");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
             }
             {
                 Env::DocGroup gr_method("list_organization_members");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
             }
             {
                 Env::DocGroup gr_method("add_project_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project Name");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2204,7 +2110,8 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_project_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project Name");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2212,14 +2119,15 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("remove_project_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("project_id", "Project ID");
+                Env::DocAddText("project_name", "Project Name");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
                 Env::DocGroup gr_method("add_organization_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2227,7 +2135,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_organization_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("permissions", "Permissions");
                 Env::DocAddText("pid", "uint32_t");
@@ -2235,7 +2143,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("remove_organization_member");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("organization_id", "Organization ID");
+                Env::DocAddText("organization_name", "Organization Name");
                 Env::DocAddText("member", "Member");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -2279,23 +2187,20 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"create_repo", OnActionCreateRepo},
         {"create_project", OnActionCreateProject},
         {"modify_project", OnActionModifyProject},
-        {"remove_project", OnActionRemoveProject},
+        ////{"remove_project", OnActionRemoveProject},
         {"create_organization", OnActionCreateOrganization},
         {"modify_organization", OnActionModifyOrganization},
-        {"remove_organization", OnActionRemoveOrganization},
+        ////{"remove_organization", OnActionRemoveOrganization},
         {"my_repos", OnActionMyRepos},
         {"all_repos", OnActionAllRepos},
         {"modify_repo", OnActionModifyRepo},
-        {"delete_repo", OnActionDeleteRepo},
+        ////{"delete_repo", OnActionDeleteRepo},
         {"add_repo_member", OnActionAddRepoMember},
         {"modify_repo_member", OnActionModifyRepoMember},
         {"remove_repo_member", OnActionRemoveRepoMember},
         {"push_objects", OnActionPushObjects},
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},
-        {"repo_id_by_name", OnActionUserGetRepo},
-        {"project_id_by_name", OnActionProjectByName},
-        {"organization_id_by_name", OnActionOrganizationByName},
         {"repo_get_data", OnActionGetRepoData},
         {"repo_get_meta", OnActionGetRepoMeta},
         {"repo_get_commit", OnActionGetCommit},
