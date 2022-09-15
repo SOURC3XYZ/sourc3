@@ -296,11 +296,13 @@ sourc3::Repo::NameId ReadRepoNameId() {
         OnError("no 'repo_name'");
         return {};
     }
-    return {{ReadProjectNameId()}, sourc3::GetNameHash(repo_name, repo_name_len)};
+    return {{ReadProjectNameId()},
+            sourc3::GetNameHash(repo_name, repo_name_len)};
 }
 
 template <class T>
-typename T::Id GetIdByName(const ContractID& cid, const typename T::NameId& name_id) {
+typename T::Id GetIdByName(const ContractID& cid,
+                           const typename T::NameId& name_id) {
     Env::Key_T<typename sourc3::IdByName<T>::Key> key;
     key.m_Prefix.m_Cid = cid;
     key.m_KeyInContract.name_id = name_id;
@@ -528,8 +530,9 @@ void OnActionModifyRepo(const ContractID& cid) {
         return OnError("no 'repo_old_name'");
     }
 
-    request->repo_name_id = {{ReadProjectNameId()},
-                        sourc3::GetNameHash(repo_old_name, repo_old_name_len)};
+    request->repo_name_id = {
+        {ReadProjectNameId()},
+        sourc3::GetNameHash(repo_old_name, repo_old_name_len)};
 
     UserKey user_key(cid);
     user_key.Get(request->caller);
@@ -661,8 +664,9 @@ void OnActionModifyProject(const ContractID& cid) {
                                               ProjectData::kMaxNameLen))) {
         return OnError("no 'old_name'");
     }
-    buf->project_name_id = {{ReadOrganizationNameId()},
-                       sourc3::GetNameHash(proj_old_name, proj_old_name_len)};
+    buf->project_name_id = {
+        {ReadOrganizationNameId()},
+        sourc3::GetNameHash(proj_old_name, proj_old_name_len)};
 
     Env::DocGetText("logo_addr", buf->logo_addr.data(),
                     sourc3::kIpfsAddressSize + 1);
@@ -830,7 +834,8 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
     ProjectKey end = start;
     _POD_(end.m_KeyInContract.id).SetObject(0xff);
 
-    Organization::Id org_id{GetIdByName<Organization>(cid, ReadOrganizationNameId())};
+    Organization::Id org_id{
+        GetIdByName<Organization>(cid, ReadOrganizationNameId())};
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
@@ -852,7 +857,8 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 
     MemberKey start{.m_Prefix = {.m_Cid = cid}};
 
-    start.m_KeyInContract.id = GetIdByName<Organization>(cid, ReadOrganizationNameId());
+    start.m_KeyInContract.id =
+        GetIdByName<Organization>(cid, ReadOrganizationNameId());
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
@@ -886,9 +892,8 @@ void OnActionModifyOrganization(const ContractID& cid) {
     char org_old_name[OrganizationData::kMaxNameLen];
     size_t org_old_name_len = 0;
 
-    if (!(org_old_name_len =
-              Env::DocGetText("old_name", org_old_name,
-                              OrganizationData::kMaxNameLen))) {
+    if (!(org_old_name_len = Env::DocGetText("old_name", org_old_name,
+                                             OrganizationData::kMaxNameLen))) {
         return OnError("no 'old_name'");
     }
     buf->organization_name_id = {
@@ -1245,8 +1250,8 @@ void OnActionDeleteRepo(const ContractID& cid) {
 }
 
 void OnActionAddRepoMember(const ContractID& cid) {
-    using sourc3::method::AddRepoMember;
     using sourc3::Repo;
+    using sourc3::method::AddRepoMember;
     AddRepoMember request;
     request.repo_name_id = ReadRepoNameId();
     Env::DocGet("user", request.member);
@@ -1280,8 +1285,8 @@ void OnActionAddRepoMember(const ContractID& cid) {
 }
 
 void OnActionModifyRepoMember(const ContractID& cid) {
-    using sourc3::method::ModifyRepoMember;
     using sourc3::Repo;
+    using sourc3::method::ModifyRepoMember;
     ModifyRepoMember request;
     request.repo_name_id = ReadRepoNameId();
     Env::DocGet("user", request.member);
@@ -1910,8 +1915,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("modify_organization");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("old_name",
-                                "Current name of organization");
+                Env::DocAddText("old_name", "Current name of organization");
                 Env::DocAddText("name", "New name of organization");
                 Env::DocAddText("logo_addr", "IpfsAddr");
                 Env::DocAddText("short_title", "Short title");

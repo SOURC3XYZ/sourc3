@@ -66,8 +66,6 @@ struct IdByName {
         typename T::NameId name_id;
         explicit Key(const typename T::NameId& id) : name_id{id} {
         }
-        // explicit Key(const Id& id) : id{id} {
-        // }
         Key() : name_id{} {
         }
     };
@@ -110,16 +108,11 @@ struct Organization {
 
     struct NameId {
         Hash256 org_name_hash;
-        // bool operator==(const Id& other) {
-        // return this->org_name_hash == other.org_name_hash;
-        //};
     };
 
     struct Key {
         Tag tag = Tag::kOrganization;
         Id id;
-        // explicit Key(const Hash256& h) : id{h} {
-        // }
         explicit Key(const Id& id) : id{id} {
         }
         Key() : id{} {
@@ -179,9 +172,6 @@ struct Project {
     struct Key {
         Tag tag = Tag::kProject;
         Id id;
-        // Key(const Hash256& org_hash, const Hash256& proj_hash)
-        //: id{{org_hash}, proj_hash} {
-        //}
         explicit Key(const Id& id) : id(id) {
         }
         Key() : id{} {
@@ -226,17 +216,12 @@ struct Repo {
     struct Key {
         Tag tag = Tag::kRepo;
         Id id;
-        // Key(const Hash256& org_hash, const Hash256& proj_hash,
-        // const Hash256& repo_hash)
-        //: id{{{org_hash}, proj_hash}, repo_hash} {
-        //}
         explicit Key(const Id& id) : id{id} {
         }
         Key() : id{} {
         }
     };
 
-    // Id id;
     Project::Id project_id;
     size_t cur_objs_number;
     PubKey owner;

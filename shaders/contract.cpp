@@ -293,7 +293,6 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     std::unique_ptr<Repo> repo(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
     repo->owner = params.caller;
-    // repo_info->id = {{params.project_id}, repo_name_hash};
     repo->name_len = params.name_len;
     repo->cur_objs_number = 0;
     repo->is_private = params.is_private;
@@ -330,7 +329,6 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
 
     new_repo->owner = repo->owner;
-    // new_repo->id = repo->id;
     new_repo->name_len = params.name_len;
     new_repo->cur_objs_number = repo->cur_objs_number;
     new_repo->is_private = params.is_private;
