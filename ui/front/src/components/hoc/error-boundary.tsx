@@ -1,24 +1,24 @@
-import React, { ReactElement } from 'react';
+import { FailPage } from '@components/shared';
+import React from 'react';
 
 type ErrorBoundaryProps = {
-  fallback: (props:any) => JSX.Element;
-  children: ReactElement<any, any>
+  children: JSX.Element
 };
 
 type ErrorBoundaryState = {
   hasError: boolean;
-  message: string;
+  // message: string;
 };
 
-class ErrorBoundary extends React
+class ErrorCatcher extends React
   .Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+  constructor(props:ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, message: '' };
+    this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(err: Error) {
-    return { hasError: true, message: err.message };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
   shouldComponentUpdate(_:typeof this.props, nextState: typeof this.state) {
@@ -33,14 +33,12 @@ class ErrorBoundary extends React
   };
 
   render() {
-    const { children, fallback } = this.props;
-    const { hasError, message } = this.state;
+    const { hasError } = this.state;
+    const { children } = this.props;
     const { resetErrState } = this;
-    if (hasError) {
-      return fallback({ resetErrState, message });
-    }
+    if (hasError) return <FailPage resetErrState={resetErrState} />;
     return children;
   }
 }
 
-export default ErrorBoundary;
+export default ErrorCatcher;

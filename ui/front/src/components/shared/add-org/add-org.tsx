@@ -142,6 +142,7 @@ function AddButton() {
           placement="bottomCenter"
           trigger={['click']}
           overlayClassName={styles.dropdown}
+          overlayStyle={{ position: 'fixed' }}
         >
           <Button className={styles.addButton}>
             Add

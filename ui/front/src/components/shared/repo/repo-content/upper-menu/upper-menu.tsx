@@ -40,11 +40,11 @@ function UpperMenu({
   branches,
   params,
   commitsMap,
-  goToBranch,
-  goToCommitTree,
   branch,
   prevReposHref,
-  baseUrl
+  baseUrl,
+  goToBranch,
+  goToCommitTree
 }:UpperMenuProps) {
   const breadcrumbs = useMemo(() => (
     baseUrl ? (
@@ -64,12 +64,12 @@ function UpperMenu({
   const commits = useMemo(() => (
     commitsMap
       ? (
-        <Link onClick={onCommitMapClickHandle} to="">
+        <Link onClick={onCommitMapClickHandle} to="" className={styles.commits}>
           {`${commitsMap.size} commits`}
         </Link>
       )
       : <div>Building commit tree...</div>
-  ), [commitsMap]);
+  ), [commitsMap, branch]);
 
   return (
     <>

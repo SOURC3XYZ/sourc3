@@ -5,12 +5,16 @@ export enum CONFIG {
   CID = 'd3c3c4449384f475ee4b12e75b41c04b29b7ef44e0813de104bccf282b192c02',  // MIGRATE TO IPFS
   // '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3' - DEV
   // ec90c6258019107543e0726c415f8b92c78805afcdb1336a61345b97486d2832 - DEMO
+  // dappnet demo e95c0ab0b2ccbd79f542ea307bf6aa6f1898dcc607a4faedf187e7309e8d38b9
   // '7aaec975d0348348d82e72bd66d508ac93cb6f9e683bd136d2a879f41c32e8d8'
   // 'fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10',
   // IPFS_HOST = 'http://3.209.99.179:8070'
-  IPFS_HOST = 'https://proxi-beam.herokuapp.com',
+  DOWNLOAD_LINK = 'https://apps-dappnet.beam.mw/ipfs',
+  HEADLESS_NODE = 'eu-node02.dappnet.beam.mw:8200',
+  IPFS_HOST = 'https://cache.sourc3.xyz',
   ASSET_ID = 0,
-  IPFS_TIMEOUT = 5000
+  IPFS_TIMEOUT = 20000,
+  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master'
 }
 // fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10
 // 126c94dad2a409d1af5beb1667972ebcbd165d940159049f4a0ad6b5f4b8e976

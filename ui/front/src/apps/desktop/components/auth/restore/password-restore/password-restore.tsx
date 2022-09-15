@@ -74,7 +74,6 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
         return 'black';
     }
   };
-
   return (
     <>
       {' '}
@@ -103,6 +102,7 @@ function PasswordRestore({ onClick, back }: PasswordRestoreType) {
             onChange={(e) => setRepeat(e.target.value)}
             password={!!useRef}
             type="password"
+            onKeyDown={(e) => (e.key === 'Enter' && onClickDecor())}
           />
 
         </div>

@@ -12,10 +12,10 @@ import {
 import { Col, Row } from 'antd';
 import { useCallback, useMemo } from 'react';
 import { RepoMeta } from '../repo-meta';
+import styles from '../repo.module.scss';
 import { FileText } from './file-text';
 import { FileTreeBlock } from './file-tree-block';
 import { UpperMenu } from './upper-menu';
-import styles from '../repo.module.scss';
 
 export type UpperMenuProps = {
   id: RepoId;
@@ -34,10 +34,10 @@ export type UpperMenuProps = {
 function RepoContent({
   id,
   branches,
-  goTo,
   tree,
   filesMap,
   prevReposHref,
+  goTo,
   killTree,
   updateTree,
   getFileData

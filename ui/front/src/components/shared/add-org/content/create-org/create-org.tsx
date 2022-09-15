@@ -15,7 +15,7 @@ function CreateOrg({ handleCancel, closePopup }: CRORG) {
 
   return (
     <CreateModal
-      title="Add organization name"
+      title="Add organization"
       label="Organizations name"
       isModalVisible
       placeholder="Enter your organization name"

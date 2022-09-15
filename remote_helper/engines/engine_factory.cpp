@@ -15,7 +15,14 @@
 #include "engine_factory.h"
 
 #include "engines/ipfs/ipfs_engine.h"
+#include "engines/ipfs-bc/ipfs_bc_engine.h"
+#include "wallets/base_client.h"
 
 std::unique_ptr<IEngine> CreateEngine(IWalletClient& client) {
-    return std::make_unique<FullIPFSEngine>(client);
+    const auto& options = client.GetOptions();
+    if (options.useIPFS && options.useFullIPFS) {
+        return std::make_unique<FullIPFSEngine>(client);
+    } else {
+        return std::make_unique<IPFSBlockChainEngine>(client);
+    }
 }

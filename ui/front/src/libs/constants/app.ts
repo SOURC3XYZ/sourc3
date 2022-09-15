@@ -31,7 +31,13 @@ export enum ACTIONS {
   SET_TX_LIST = 'SET_TX_LIST',
   SET_ORGANIZATIONS = 'SET_ORGANIZATIONS',
   SET_PROJECTS = 'SET_PROJECTS',
-  SET_COMMITS_MAP = 'SET_COMMITS_MAP'
+  SET_COMMITS_MAP = 'SET_COMMITS_MAP',
+  SET_USERS = 'SET_USERS',
+  GET_GIT_USER = 'GET_GIT_USER'
+}
+
+export enum EVENTS {
+  SUBUNSUB = 'subunsub'
 }
 
 export enum ActionColor {
@@ -71,8 +77,8 @@ export enum ToastMessages {
 
 export enum COLORS {
   GREEN = '#3FD05A',
-  ORANGE = '#FF791F',
-  RED = '#FF3346'
+  ORANGE = '#FFBD2E',
+  RED = '#EA0000'
 }
 
 export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }

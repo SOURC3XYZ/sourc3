@@ -9,16 +9,19 @@ import {
   Projects,
   ProjectRepos
 } from '@components/shared';
-import { ErrorBoundary, PreloadComponent } from '@components/hoc';
-import {
-  useCallback, useMemo
-} from 'react';
-import { Footer } from 'antd/lib/layout/layout';
+import { PreloadComponent } from '@components/hoc';
+import { useCallback, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
+import { ErrorBoundary } from '@components/context';
+import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
+import { GitProfile } from '@components/shared/git-auth';
+import GitAuth from '@components/shared/git-auth/gitAuth';
+import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
+import DownloadPage from '../../../components/shared/download-page/download-page';
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -47,15 +50,25 @@ function Main() {
     {
       path: 'project/:projId/:type/:page',
       element: <ProjectRepos />
+    },
+    {
+      path: 'download',
+      element: <DownloadPage />
+    },
+
+    {
+      path: 'add-web',
+      element: <CreateProjectWeb />
+    },
+    {
+      path: 'profile/:id',
+      element: <GitProfile />
+    },
+    {
+      path: '/*',
+      element: <FailPage />
     }
   ];
-
-  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
-
-  const fallback = (props:any) => {
-    const updatedProps = { ...props, subTitle: props.message || 'no data' };
-    return <FailPage {...updatedProps} isBtn />;
-  };
 
   const HeadlessPreloadFallback = useCallback(() => (
     <Preload
@@ -65,39 +78,51 @@ function Main() {
   ), []);
 
   const routes = useMemo(() => (
-    <Routes>
-      {
-        routesData
-          .map((
-            { path, element }
-          ) => <Route key={`route-${path}`} path={path} element={element} />)
-      }
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        {
+          routesData
+            .map((
+              { path, element }
+            ) => <Route key={`route-${path}`} path={path} element={element} />)
+        }
+      </Routes>
+    </ErrorBoundary>
   ), [isApiConnected]);
 
   return (
-    <PreloadComponent
-      Fallback={HeadlessPreloadFallback}
-      callback={connectBeamApi}
-      isLoaded={isApiConnected}
-    >
-      <ErrorBoundary fallback={fallback}>
-        <>
-          <div className={styles.appWrapper}>
-            <Header isOnLending={isOnLending} />
-            <div className={styles.main}>
-              {routes}
-              <Notifications />
-            </div>
-          </div>
-          <Footer className={footerClassname}>
-            © 2022 by SOURC3
-          </Footer>
-        </>
-      </ErrorBoundary>
+    <Routes>
+      <Route
+        path="/git-auth"
+        element={<GitAuth />}
+      />
+      <Route
+        path="/download"
+        element={<DownloadPage />}
+      />
+      <Route
+        path="/*"
+        element={(
+          <PreloadComponent
+            Fallback={HeadlessPreloadFallback}
+            callback={connectBeamApi}
+            isLoaded={isApiConnected}
+          >
+            <>
+              <div className={styles.appWrapper}>
+                <Header isOnLending={isOnLending} />
+                <div className={styles.main}>
+                  {routes}
+                  <Notifications />
+                </div>
+              </div>
+              <Footer isOnLending={isOnLending} />
+            </>
+          </PreloadComponent>
+        )}
+      />
 
-    </PreloadComponent>
-
+    </Routes>
   );
 }
 

@@ -1,8 +1,9 @@
-import { useAsyncError, useCallApi } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
+import { useCallApi } from '@libs/hooks/shared';
 import { useRepoAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 type LocationState = {
@@ -11,15 +12,17 @@ type LocationState = {
 
 const useUserRepos = () => {
   const {
-    id: currentId, branches, filesMap, tree, prevReposHref, repoMetas
+    id: currentId, branches, commitsMap, filesMap, tree, prevReposHref, repoMetas
   } = useSelector(({ repo }) => repo);
 
   const [callApi, isLoading, callApiErr] = useCallApi();
 
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
+
   const {
-    getRepo, updateTree, getFileData, killTree
+    getRepo, updateTree, getFileData, killTree, clearRepo
   } = useRepoAction();
+
   const location = useParams<'repoParams'>() as LocationState;
   const { repoParams } = location;
   const [id, repoName] = repoParams.split('&');
@@ -34,6 +37,14 @@ const useUserRepos = () => {
       .catch((err) => setError(err));
   }, []);
 
+  useEffect(() => () => {
+    const cancelCommitPendingEvent = new Event('stop-commit-pending');
+    window.dispatchEvent(cancelCommitPendingEvent);
+    clearRepo();
+  }, []);
+
+  const startLoading = useCallback(() => setIsLoaded(false), []);
+
   return {
     id: numId,
     branches,
@@ -43,10 +54,13 @@ const useUserRepos = () => {
     tree,
     prevReposHref,
     repoMetas,
+    commitsMap,
+    callApiErr,
     callApi,
     isLoading,
-    callApiErr,
+    setIsLoaded,
     updateTree: update,
+    startLoading,
     killTree,
     loadingHandler,
     getFileData

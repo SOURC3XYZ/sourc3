@@ -1,14 +1,14 @@
 import { InputCustom } from '@components/shared/input';
 import { NavButton } from '@components/shared/nav-button';
 import { Popup } from '@components/shared/popup';
-import { RC } from '@libs/action-creators';
-import { useProjectRepos } from '@libs/hooks/container/organization';
-import { getProjectName, getProjectsByOrgId, getReposByProject, itemsFilter } from '@libs/hooks/container/organization/selectors';
+import { useSelector } from '@libs/redux';
+import {
+  getProjectsByOrgId, getReposByProject, itemsFilter
+} from '@libs/hooks/container/organization/selectors';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import {
 } from 'antd';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import styles from './create-modal.module.scss';
 
 type CreateModalProps = {
@@ -23,7 +23,6 @@ function CreateModal({
   // createRepo
 }: CreateModalProps) {
   const [name, setName] = useState('');
-  const dispatch = useDispatch();
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
@@ -34,6 +33,8 @@ function CreateModal({
     handleCancel();
   };
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
+
   const items = useSelector((state) => itemsFilter(state.entities.organizations, 'my', pkey));
   const repos = useSelector(
     (state) => getReposByProject(6, state.entities.repos, 'my', pkey)
@@ -47,7 +48,7 @@ function CreateModal({
   console.log(items);
 
   const onSubmit = (nameRep: string) => {
-    createRepo(nameRep, 0);
+    createRepo(nameRep, pid);
     handleOk();
   };
   return (

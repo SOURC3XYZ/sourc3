@@ -33,10 +33,9 @@ namespace sourc3 {
 constexpr const char kJsonRpcHeader[] = "jsonrpc";
 constexpr const char kJsonRpcVersion[] = "2.0";
 
-namespace beast = boost::beast;  // from <boost/beast.hpp>
-namespace http = beast::http;    // from <boost/beast/http.hpp>
-namespace net = boost::asio;     // from <boost/asio.hpp>
-using Tcp = net::ip::tcp;        // from <boost/asio/ip/tcp.hpp>
+namespace beast = boost::beast;    // from <boost/beast.hpp>
+namespace http = beast::http;      // from <boost/beast/http.hpp>
+using Tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
 class BeamWalletClient final : public IWalletClient {
 public:
@@ -53,16 +52,13 @@ public:
 
             if (ec && ec != beast::errc::not_connected) {
                 // doesn't throw, simply report
-                std::cerr << "Error: " << beast::system_error{ec}.what()
-                          << std::endl;
+                std::cerr << "Error: " << beast::system_error{ec}.what() << std::endl;
             }
         }
     }
 
-    std::string PushObjects(const State& expected_state,
-                            const State& desired_state,
-                            uint32_t new_object_count,
-                            uint32_t new_metas_count) final;
+    std::string PushObjects(const State& expected_state, const State& desired_state,
+                            uint32_t new_object_count, uint32_t new_metas_count) final;
     std::string LoadActualState() final;
     uint64_t GetUploadedObjectCount() final;
 
@@ -82,28 +78,40 @@ public:
     }
 
 private:
-    std::string InvokeWallet(std::string args) {
-        args.append(",repo_id=")
-            .append(GetRepoID())
-            .append(",cid=")
-            .append(GetCID());
-        return InvokeShader(std::move(args));
+    std::string InvokeWallet(std::string args, bool create_tx) {
+        args.append(",repo_id=").append(GetRepoID()).append(",cid=").append(GetCID());
+        return InvokeShader(std::move(args), create_tx);
     }
+    std::string InvokeWalletAsync(std::string args, bool create_tx, AsyncContext context) {
+        args.append(",repo_id=").append(GetRepoIDAsync(context)).append(",cid=").append(GetCID());
+        return InvokeShaderAsync(std::move(args), create_tx, context);
+    }
+
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
     void EnsureConnectedAsync(AsyncContext context);
     std::string ExtractResult(const std::string& response);
-    std::string InvokeShader(const std::string& args);
-    const std::string& GetCID();
+    std::string InvokeShader(const std::string& args, bool create_tx);
+    std::string InvokeShaderAsync(const std::string& args, bool create_tx, AsyncContext context);
+    const char* GetCID() const;
     const std::string& GetRepoID();
+    const std::string& GetRepoIDAsync(AsyncContext context);
     std::string CallAPI(std::string&& request);
     std::string CallAPIAsync(std::string request, AsyncContext context);
     std::string ReadAPI();
     std::string ReadAPIAsync(AsyncContext context);
     void PrintVersion();
 
+public:
+    std::string PushObjects(const std::string& data, const std::vector<sourc3::Ref>& refs,
+                            bool push_refs) override;
+    std::string GetAllObjectsMetadata() override;
+    std::string GetObjectData(const std::string& obj_id) override;
+    std::string GetObjectDataAsync(const std::string& obj_id, AsyncContext context) override;
+    std::string GetReferences() override;
+
 private:
-    net::io_context ioc_;
+    boost::asio::io_context ioc_;
     Tcp::resolver resolver_;
     beast::tcp_stream stream_;
     bool connected_ = false;

@@ -28,7 +28,7 @@ std::string BeamWalletClient::PushObjects(const State& expected_state, const Sta
     auto expected_hash = ToHex(expected_state.hash.c_str(), expected_state.hash.size());
     ss << "role=user,action=push_state,expected=" << expected_hash << ",desired=" << desired_hash
        << ",objects=" << new_object_count << ",metas=" << new_metas_count;
-    return InvokeWallet(ss.str());
+    return InvokeWallet(ss.str(), true);
 }
 
 std::string BeamWalletClient::LoadObjectFromIPFS(std::string hash) {
@@ -139,8 +139,7 @@ void BeamWalletClient::EnsureConnectedAsync(AsyncContext context) {
         return;
     }
 
-    auto const results =
-        resolver_.async_resolve(options_.apiHost, options_.apiPort, context);
+    auto const results = resolver_.async_resolve(options_.apiHost, options_.apiPort, context);
 
     // Make the connection on the IP address we get from a lookup
     stream_.async_connect(results, context);
@@ -159,30 +158,53 @@ std::string BeamWalletClient::ExtractResult(const std::string& response) {
     return r.as_object()["result"].as_object()["output"].as_string().c_str();
 }
 
-std::string BeamWalletClient::InvokeShader(const std::string& args) {
-    // std::cerr << "Args: " << args << std::endl;
-    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
-                           {"id", 1},
-                           {"method", "invoke_contract"},
-                           {"params", {{"contract_file", options_.appPath}, {"args", args}}}};
+std::string BeamWalletClient::InvokeShader(const std::string& args, bool create_tx) {
+    auto msg = json::value{
+        {kJsonRpcHeader, kJsonRpcVersion},
+        {"id", 1},
+        {"method", "invoke_contract"},
+        {"params",
+         {{"contract_file", options_.appPath}, {"args", args}, {"create_tx", create_tx}}}};
 
     return ExtractResult(CallAPI(json::serialize(msg)));
 }
 
-const std::string& BeamWalletClient::GetCID() {
-    if (cid_.empty()) {
-        auto root = json::parse(InvokeShader("role=manager,action=view_contracts"));
+std::string BeamWalletClient::InvokeShaderAsync(const std::string& args, bool create_tx,
+                                                IWalletClient::AsyncContext context) {
+    auto msg = json::value{
+        {kJsonRpcHeader, kJsonRpcVersion},
+        {"id", 1},
+        {"method", "invoke_contract"},
+        {"params",
+         {{"contract_file", options_.appPath}, {"args", args}, {"create_tx", create_tx}}}};
 
-        assert(root.is_object());
-        auto& contracts = root.as_object()["contracts"];
-        if (contracts.is_array() && !contracts.as_array().empty()) {
-            cid_ = contracts.as_array()[0].as_object()["cid"].as_string().c_str();
-        }
-    }
-    return cid_;
+    return ExtractResult(CallAPIAsync(json::serialize(msg), context));
+}
+
+const char* BeamWalletClient::GetCID() const {
+    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
 }
 
 const std::string& BeamWalletClient::GetRepoID() {
+    if (repo_id_.empty()) {
+        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
+        request.append(options_.repoName)
+            .append("\",repo_owner=")
+            .append(options_.repoOwner)
+            .append(",cid=")
+            .append(GetCID());
+
+        auto root = json::parse(InvokeShader(request, false));
+        assert(root.is_object());
+        if (auto it = root.as_object().find("repo_id"); it != root.as_object().end()) {
+            auto& id = *it;
+            repo_id_ = std::to_string(id.value().to_number<uint32_t>());
+        }
+    }
+    return repo_id_;
+}
+
+const std::string& BeamWalletClient::GetRepoIDAsync(AsyncContext context) {
     if (repo_id_.empty()) {
         std::string request = "role=user,action=repo_id_by_name,repo_name=";
         request.append(options_.repoName)
@@ -191,7 +213,7 @@ const std::string& BeamWalletClient::GetRepoID() {
             .append(",cid=")
             .append(GetCID());
 
-        auto root = json::parse(InvokeShader(request));
+        auto root = json::parse(InvokeShaderAsync(request, false, context));
         assert(root.is_object());
         if (auto it = root.as_object().find("repo_id"); it != root.as_object().end()) {
             auto& id = *it;
@@ -216,8 +238,7 @@ std::string BeamWalletClient::CallAPIAsync(std::string request, AsyncContext con
     EnsureConnectedAsync(context);
     request.push_back('\n');
     size_t s = request.size();
-    size_t transferred =
-        boost::asio::async_write(stream_, boost::asio::buffer(request), context);
+    size_t transferred = boost::asio::async_write(stream_, boost::asio::buffer(request), context);
     if (s != transferred) {
         return "";
     }
@@ -232,8 +253,8 @@ std::string BeamWalletClient::ReadAPI() {
 }
 
 std::string BeamWalletClient::ReadAPIAsync(AsyncContext context) {
-    auto n = boost::asio::async_read_until(
-        stream_, boost::asio::dynamic_buffer(data_), '\n', context);
+    auto n =
+        boost::asio::async_read_until(stream_, boost::asio::dynamic_buffer(data_), '\n', context);
     auto line = data_.substr(0, n);
     data_.erase(0, n);
     return line;
@@ -255,17 +276,54 @@ void BeamWalletClient::PrintVersion() {
 }
 
 std::string BeamWalletClient::LoadActualState() {
-    return InvokeWallet("role=user,action=repo_get_state");
+    return InvokeWallet("role=user,action=repo_get_state", false);
 }
 
 uint64_t BeamWalletClient::GetUploadedObjectCount() {
-    auto res = json::parse(InvokeWallet("role=user,action=repo_get_statistic"));
+    auto res = json::parse(InvokeWallet("role=user,action=repo_get_statistic", false));
     if (!res.is_object() || !res.as_object().contains("cur_objects") ||
         !res.as_object().contains("cur_metas")) {
         return 0;
     }
     auto res_obj = res.as_object();
     return res_obj["cur_objects"].as_uint64() + res_obj["cur_metas"].as_uint64();
+}
+
+std::string BeamWalletClient::PushObjects(const std::string& data,
+                                          const std::vector<sourc3::Ref>& refs, bool push_refs) {
+    std::stringstream ss;
+    ss << "role=user,action=push_objects";
+    if (!data.empty()) {
+        ss << ",data=" << data;
+    }
+
+    if (push_refs) {
+        for (const auto& r : refs) {
+            ss << ",ref=" << r.name << ",ref_target=" << ToHex(&r.target, sizeof(r.target));
+        }
+    }
+    return InvokeWallet(ss.str(), true);
+}
+
+std::string BeamWalletClient::GetAllObjectsMetadata() {
+    return InvokeWallet("role=user,action=repo_get_meta", false);
+}
+
+std::string BeamWalletClient::GetObjectData(const std::string& obj_id) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    return InvokeWallet(ss.str(), false);
+}
+
+std::string BeamWalletClient::GetObjectDataAsync(const std::string& obj_id,
+                                                 IWalletClient::AsyncContext context) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    return InvokeWalletAsync(ss.str(), false, context);
+}
+
+std::string BeamWalletClient::GetReferences() {
+    return InvokeWallet("role=user,action=list_refs", false);
 }
 
 }  // namespace sourc3

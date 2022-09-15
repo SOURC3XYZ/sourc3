@@ -1,4 +1,4 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
 import { getTree } from '@libs/utils';
 import {
   UpdateProps,
@@ -21,9 +21,9 @@ export type FileTextProps = {
 };
 
 export const useFileText = ({
-  id, tree, params, pathname, filesMap, getFileData, updateTree
+  id, tree, params, filesMap, getFileData, updateTree
 }: FileTextProps) => {
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
   const [ext, setExt] = useState('');
   const [text, setText] = useState<string | null>(null);
 

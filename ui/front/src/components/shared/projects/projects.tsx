@@ -1,9 +1,12 @@
 import {
   CreateModal,
   EntityList,
-  EntityWrapper
+  EntityWrapper,
+  BackButton
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
+import { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectListItem from './project-list-item';
 
 const placeholder = 'Enter name of your project';
@@ -51,6 +54,21 @@ function Projects() {
     />
   );
 
+  const navigate = useNavigate();
+
+  const back = useCallback(() => navigate(-1), []);
+
+  const isElectron = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /SOURC3-DESKTOP/i.test(ua);
+  }, []);
+
+  const style = {
+    position: 'relative',
+    left: '0',
+    top: '-150px'
+  };
+
   return (
     <EntityWrapper
       title={`${orgName} projects`}
@@ -63,6 +81,7 @@ function Projects() {
       showModal={showModal}
     >
       <>
+        {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
         <CreateModal
           title="Add new project to organization"
           label="Project name"

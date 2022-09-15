@@ -45,10 +45,13 @@ protected:
         int64_t verbosity = 0;
         uint32_t depth = kInfiniteDepth;
         bool is_async = true;
+        bool cloning = false;
 
         virtual ~BaseOptions() = default;
 
         virtual SetResult Set(std::string_view option,
                               std::string_view value) = 0;
+
+        SetResult SetBool(bool& opt, std::string_view value);
     };
 };

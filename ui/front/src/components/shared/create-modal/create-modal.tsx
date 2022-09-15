@@ -12,7 +12,7 @@ type AddModalType = {
   isModalVisible: boolean;
   handleCreate: (name:string) => void;
   handleCancel: () => void;
-  closePopup?: (() => void)
+  closePopup?: () => void;
   placeholder: string;
   label: string;
   title: string;
@@ -28,24 +28,35 @@ function CreateModal({
   title
 }:AddModalType) {
   const [inputName, setInputName] = useState('');
+  const [valid, setValid] = useState(true);
 
-  const handleChange:InputChange = (e) => setInputName(e.target.value);
+  const handleChange:InputChange = (e) => {
+    const regExp = /[А-я]+/;
+    setInputName(e.target.value);
+    setValid(!regExp.test(e.target.value));
+  };
 
   const handleOk = () => {
     handleCreate(inputName);
-    closePopup();
+    setInputName('');
+    if (closePopup) closePopup();
+  };
+
+  const handleCanceled = () => {
+    handleCancel();
+    setInputName('');
   };
 
   return (
     <Popup
       title={title}
       visible={isModalVisible}
-      onCancel={handleCancel}
+      onCancel={handleCanceled}
       confirmButton={(
         <NavButton
           key="all-repos-addBtn"
           onClick={handleOk}
-          isDisabled={!inputName}
+          isDisabled={!inputName || !valid}
           name="Continue"
           active
         />
@@ -58,6 +69,7 @@ function CreateModal({
         placeholder={placeholder}
         value={inputName}
         onChange={handleChange}
+        valid={valid}
       />
     </Popup>
   );

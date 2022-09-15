@@ -2,8 +2,7 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector } from '@libs/redux';
 import Send from './send';
 import Receive from './receive';
 import styles from './balance.module.scss';
@@ -47,6 +46,7 @@ function Balance() {
         placement="bottomCenter"
         trigger={['click']}
         overlayClassName={styles.dropdown}
+        overlayStyle={{ position: 'fixed' }}
       >
         <Button className={styles.button}>
           {balance}

@@ -19,6 +19,8 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
     setIsPopup(false);
   };
 
+  const handleSetPopup = () => setIsPopup(true);
+
   return (
     <>
       <InputCustom
@@ -29,12 +31,11 @@ function Password({ pass, onInput, onSubmit }:PasswordProps) {
         type="password"
         password
         onKeyDown={(e) => (e.key === 'Enter' && onSubmit())}
+        data-index={-1}
       />
-
-      <Button type="link" className={styles.forgot} onClick={() => (setIsPopup(true))}>
-        Forgot password?
+      <Button type="link" className={styles.forgot} onClick={handleSetPopup}>
+        Forgot password? Secret phrase restore
       </Button>
-
       <div className={styles.btnNav}>
         <NavButton
           name="Sign in"

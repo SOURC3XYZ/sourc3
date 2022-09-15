@@ -20,6 +20,8 @@
 
 #include <boost/asio/spawn.hpp>
 
+#include "git/object_collector.h"
+
 struct State;
 
 struct IWalletClient {
@@ -34,19 +36,21 @@ struct IWalletClient {
         std::string repoName;
         std::string repoPath = ".";
         bool useIPFS = true;
+        bool useFullIPFS = true;
         bool async = true;
     };
 
-    explicit IWalletClient(const Options& options)
-        : options_(options) {
+    explicit IWalletClient(const Options& options) : options_(options) {
     }
 
     virtual ~IWalletClient() = default;
 
-    virtual std::string PushObjects(const State& expected_state,
-                            const State& desired_state,
-                            uint32_t new_object_count,
-                            uint32_t new_metas_count) = 0;
+    virtual std::string PushObjects(const State& expected_state, const State& desired_state,
+                                    uint32_t new_object_count, uint32_t new_metas_count) = 0;
+
+    virtual std::string PushObjects(const std::string& data, const std::vector<sourc3::Ref>& refs,
+                                    bool push_refs);
+
     virtual std::string LoadActualState() = 0;
     virtual uint64_t GetUploadedObjectCount() = 0;
 
@@ -59,6 +63,12 @@ struct IWalletClient {
     virtual std::string SaveObjectToIPFS(const uint8_t* data, size_t size) = 0;
     virtual std::string SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
                                               AsyncContext context) = 0;
+
+    virtual std::string GetAllObjectsMetadata();
+    virtual std::string GetObjectData(const std::string& obj_id);
+    virtual std::string GetObjectDataAsync(const std::string& obj_id,
+                                           AsyncContext context);
+    virtual std::string GetReferences();
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
 

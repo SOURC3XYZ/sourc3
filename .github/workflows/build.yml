@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
+    
     - name: Submodule update
       shell: bash
       run: |
@@ -71,7 +71,7 @@ jobs:
         sudo apt-get install libssl-dev curl libxi-dev libcups2-dev -y
         sudo apt-get install npm fakeroot rpm -y
         sudo apt-get install libkrb5-dev -y
-
+      
     - name: Create Build Environment [ubuntu-18.04]
       shell: bash
       if: matrix.os == 'ubuntu-18.04'
@@ -98,7 +98,7 @@ jobs:
         git clone --depth=1 https://github.com/BeamMW/boost_prebuild_${{matrix.os}}.git ${{runner.workspace}}/boost_prebuild
         echo "BOOST_INCLUDEDIR=${{runner.workspace}}/boost_prebuild/include" >> $GITHUB_ENV
         echo "BOOST_LIBRARYDIR=${{runner.workspace}}/boost_prebuild/lib/" >> $GITHUB_ENV
-
+    
     - name: Beam Shader SDK
       if: ${{false}}
       shell: bash
@@ -111,7 +111,7 @@ jobs:
         ./shade init
         echo "BEAM_SHADER_SDK=$WORKSPACE/shader-sdk" >> $GITHUB_ENV
         echo "WASI_SDK_PREFIX=$WORKSPACE/shader-sdk/wasi-sdk-12.0" >> $GITHUB_ENV
-
+        
 ###############################################################################
 # Configure CMake
 ###############################################################################
@@ -161,7 +161,7 @@ jobs:
         cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
-        
+
         npm install --global yarn
 
     - name: Prepare for electron build [macos-11 && ubuntu all]
@@ -264,7 +264,7 @@ jobs:
         fi
 
         ./node_modules/.bin/electron-rebuild
-    
+
 
 ###############################################################################
 # Build
@@ -393,7 +393,7 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         mkdir pdb
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.pdb pdb/git-remote-sourc3{{env.BEAM_TARGET_SUFFIX}}.pdb
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.pdb pdb/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}.pdb
 
     - name: Checksum [windows]
       if: matrix.os == 'windows-2019'
@@ -475,7 +475,7 @@ jobs:
         name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.dmg
         if-no-files-found: error
-
+        
     - uses: actions/upload-artifact@v2
       if: matrix.os == 'windows-2019'
       with:

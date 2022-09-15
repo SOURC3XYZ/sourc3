@@ -23,18 +23,53 @@
 
 using namespace sourc3;
 namespace {
-template <Tag Tg, class T>
-void CheckPermissions(const PubKey& user, typename T::Id id,
-                      typename T::Permissions p) {
-    typename Members<Tg, T>::Key key(user, id);
-    UserInfo user_info;
+void CheckOrganizationData(const OrganizationData& org_data) {
+    Env::Halt_if(org_data.name_len > org_data.kMaxNameLen);
+    Env::Halt_if(org_data.short_title_len > org_data.kMaxShortTitleLen);
+    Env::Halt_if(org_data.about_len > org_data.kMaxAboutLen);
+    Env::Halt_if(org_data.website_len > org_data.kMaxWebsiteLen);
+    Env::Halt_if(org_data.twitter_len > org_data.kMaxSocialNickLen);
+    Env::Halt_if(org_data.linkedin_len > org_data.kMaxSocialNickLen);
+    Env::Halt_if(org_data.instagram_len > org_data.kMaxSocialNickLen);
+    Env::Halt_if(org_data.telegram_len > org_data.kMaxSocialNickLen);
+    Env::Halt_if(org_data.discord_len > org_data.kMaxSocialNickLen);
+}
+
+void CheckProjectData(const ProjectData& proj_data) {
+    Env::Halt_if(proj_data.name_len > proj_data.kMaxNameLen);
+    Env::Halt_if(proj_data.description_len > proj_data.kMaxDescriptionLen);
+    Env::Halt_if(proj_data.website_len > proj_data.kMaxWebsiteLen);
+    Env::Halt_if(proj_data.twitter_len > proj_data.kMaxSocialNickLen);
+    Env::Halt_if(proj_data.linkedin_len > proj_data.kMaxSocialNickLen);
+    Env::Halt_if(proj_data.instagram_len > proj_data.kMaxSocialNickLen);
+    Env::Halt_if(proj_data.telegram_len > proj_data.kMaxSocialNickLen);
+    Env::Halt_if(proj_data.discord_len > proj_data.kMaxSocialNickLen);
+}
+
+void CheckUserData(const UserData& user_data) {
+    Env::Halt_if(user_data.name_len > user_data.kMaxNameLen);
+    Env::Halt_if(user_data.nickname_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.email_len > user_data.kMaxEmailLen);
+    Env::Halt_if(user_data.description_len > user_data.kMaxDescriptionLen);
+    Env::Halt_if(user_data.website_len > user_data.kMaxWebsiteLen);
+    Env::Halt_if(user_data.twitter_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.linkedin_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.instagram_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.telegram_len > user_data.kMaxSocialNickLen);
+    Env::Halt_if(user_data.discord_len > user_data.kMaxSocialNickLen);
+}
+
+template <class T>
+void CheckPermissions(const PubKey& user, typename T::Id id, typename T::Permissions p) {
+    typename Member::Key<T> key(user, id);
+    Member user_info;
     Env::Halt_if(!Env::LoadVar_T(key, user_info));
     Env::Halt_if((user_info.permissions & p) != p);
 }
 
-// Loads object with variable length name
+// Loads variable length object
 template <class T>
-std::unique_ptr<T> LoadNamedObject(const typename T::Id& id) {
+std::unique_ptr<T> LoadVLObject(const typename T::Id& id) {
     typename T::Key key(id);
     size_t size = Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
     Env::Halt_if(size == 0u);
@@ -43,13 +78,11 @@ std::unique_ptr<T> LoadNamedObject(const typename T::Id& id) {
     return object;
 }
 
-// Saves object with variable length name
-// The object must have name_len field
+// Saves variable length object
 template <class T>
-void SaveNamedObject(const typename T::Key& key,
-                     const std::unique_ptr<T>& object) {
-    Env::SaveVar(&key, sizeof(key), object.get(), sizeof(T) + object->name_len,
-                 KeyTag::Internal);
+void SaveVLObject(const typename T::Key& key, const std::unique_ptr<T>& object,
+                  uint32_t obj_size = sizeof(T)) {
+    Env::SaveVar(&key, sizeof(key), object.get(), obj_size, KeyTag::Internal);
 }
 
 template <class T>
@@ -57,7 +90,7 @@ bool ObjectExists(const typename T::Id& id) {
     typename T::Key key(id);
     return Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal);
 }
-}  // namespace 
+}  // namespace
 
 BEAM_EXPORT void Ctor(const method::Initial& params) {
     params.m_Stgs.TestNumApprovers();
@@ -73,113 +106,134 @@ BEAM_EXPORT void Dtor(void*) {
     Env::DelVar_T(0);
 }
 
-namespace Upgradable3 { // NOLINT
-void OnUpgraded(uint32_t /*nPrevVersion*/) {
+namespace Upgradable3 {  // NOLINT
+void OnUpgraded(uint32_t n_prev_version) {
+    // TODO: temporary code to set faucet balance to 0, delete next upgrade
+    if (n_prev_version == 1) {
+        ContractState cs;
+        Env::LoadVar_T(0, cs);
+        cs.faucet_balance = 0;
+        Env::SaveVar_T(0, cs);
+    }
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 1;
+    return 2;
 }
-}
+}  // namespace Upgradable3
 
-BEAM_EXPORT void Method_3(const method::PushState& params) { // NOLINT
-    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
-                                             Repo::Permissions::kPush);
+BEAM_EXPORT void Method_3(const method::PushState& params) {  // NOLINT
+    std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
+    CheckPermissions<Repo>(params.user, repo_info->repo_id, Repo::Permissions::kPush);
     Env::Halt_if(Env::Memcmp(params.expected_state, repo_info->cur_state, kIpfsAddressSize) != 0);
     Env::Memcpy(repo_info->cur_state, params.desired_state, kIpfsAddressSize);
     repo_info->cur_objs_number += params.new_objects;
     repo_info->cur_metas_number += params.new_metas;
     Repo::Key key_repo(repo_info->repo_id);
-    SaveNamedObject(key_repo, repo_info);
+    SaveVLObject(key_repo, repo_info, sizeof(Repo) + repo_info->name_len);
     Env::AddSig(params.user);
 }
 
-BEAM_EXPORT void Method_4(const method::LoadState&) { // NOLINT
+BEAM_EXPORT void Method_4(const method::LoadState&) {  // NOLINT
     // No-op
 }
 
-//BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
-//    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+// BEAM_EXPORT void Method_3(const method::PushObjects& params) {  // NOLINT
+//     std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
 //
-//    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
-//                                             Repo::Permissions::kPush);
+//     CheckPermissions<Repo>(params.user, repo_info->repo_id,
+//                            Repo::Permissions::kPush);
 //
-//    auto* obj =
-//        reinterpret_cast<const method::PushObjects::PackedObject*>(&params + 1);
-//    for (uint32_t i = 0; i < params.objects_number; ++i) {
-//        GitObject::Meta meta;
-//        meta.type = GitObject::Meta::Type(obj->type);
-//        meta.hash = obj->hash;
-//        meta.id = repo_info->cur_objs_number++;
-//        meta.data_size = obj->data_size;
-//        GitObject::Meta::Key meta_key(params.repo_id, meta.id);
-//        GitObject::Data::Key data_key(params.repo_id, obj->hash);
-//        Env::Halt_if(Env::LoadVar(&data_key, sizeof(data_key), nullptr, 0,
-//                                  KeyTag::Internal) !=
-//                     0u);  // halt if object exists
-//        Env::SaveVar(&data_key, sizeof(data_key), obj + 1, obj->data_size,
-//                     KeyTag::Internal);
+//     auto* obj =
+//         reinterpret_cast<const method::PushObjects::PackedObject*>(&params + 1);
+//     for (uint32_t i = 0; i < params.objects_number; ++i) {
+//         GitObject::Meta meta;
+//         meta.type = GitObject::Meta::Type(obj->type);
+//         meta.hash = obj->hash;
+//         meta.id = repo_info->cur_objs_number++;
+//         meta.data_size = obj->data_size;
+//         GitObject::Meta::Key meta_key(params.repo_id, meta.id);
+//         GitObject::Data::Key data_key(params.repo_id, obj->hash);
+//         Env::Halt_if(Env::LoadVar(&data_key, sizeof(data_key), nullptr, 0,
+//                                   KeyTag::Internal) !=
+//                      0u);  // halt if object exists
+//         Env::SaveVar(&data_key, sizeof(data_key), obj + 1, obj->data_size,
+//                      KeyTag::Internal);
 //
-//        Env::SaveVar(&meta_key, sizeof(meta_key), &meta, sizeof(meta),
-//                     KeyTag::Internal);
-//        auto size = obj->data_size;
-//        ++obj;  // skip header
-//        obj = reinterpret_cast<const method::PushObjects::PackedObject*>(
-//            reinterpret_cast<const uint8_t*>(obj) +
-//            size);  // move to next object
-//    }
+//         Env::SaveVar(&meta_key, sizeof(meta_key), &meta, sizeof(meta),
+//                      KeyTag::Internal);
+//         auto size = obj->data_size;
+//         ++obj;  // skip header
+//         obj = reinterpret_cast<const method::PushObjects::PackedObject*>(
+//             reinterpret_cast<const uint8_t*>(obj) +
+//             size);  // move to next object
+//     }
 //
-//    Repo::Key key_repo(repo_info->repo_id);
-//    SaveNamedObject(key_repo, repo_info);
+//     Repo::Key key_repo(repo_info->repo_id);
+//     SaveVLObject(key_repo, repo_info, sizeof(Repo) + repo_info->name_len);
 //
-//    Env::AddSig(params.user);
-//}
+//     Env::AddSig(params.user);
+// }
+
+// BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
+//     std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
 //
-//BEAM_EXPORT void Method_4(const method::PushRefs& params) {  // NOLINT
-//    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
+//     CheckPermissions<Repo>(params.user, repo_info->repo_id,
+//                            Repo::Permissions::kPush);
 //
-//    CheckPermissions<Tag::kRepoMember, Repo>(params.user, repo_info->repo_id,
-//                                             Repo::Permissions::kPush);
+//     auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
+//     for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
+//         auto size = ref->name_length;
+//         GitRef::Key key(params.repo_id, ref->name, ref->name_length);
+//         Env::SaveVar(&key, sizeof(key), ref, sizeof(GitRef) + size,
+//                      KeyTag::Internal);
+//         ++ref;  // skip
+//         ref = reinterpret_cast<const GitRef*>(
+//             reinterpret_cast<const uint8_t*>(ref) + size);  // move to next ref
+//     }
 //
-//    auto* ref = reinterpret_cast<const GitRef*>(&params + 1);
-//    for (size_t i = 0; i < params.refs_info.refs_number; ++i) {
-//        auto size = ref->name_length;
-//        GitRef::Key key(params.repo_id, ref->name, ref->name_length);
-//        Env::SaveVar(&key, sizeof(key), ref, sizeof(GitRef) + size,
-//                     KeyTag::Internal);
-//        ++ref;  // skip
-//        ref = reinterpret_cast<const GitRef*>(
-//            reinterpret_cast<const uint8_t*>(ref) + size);  // move to next ref
-//    }
-//
-//    Env::AddSig(params.user);
-//}
+//     Env::AddSig(params.user);
+// }
 
 BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
-    std::unique_ptr<Organization> org(static_cast<Organization*>(
-        ::operator new(sizeof(Organization) + params.name_len)));
+    CheckOrganizationData(params.data);
+    size_t data_len = params.data.GetTotalLen();
+    std::unique_ptr<Organization> org(
+        static_cast<Organization*>(::operator new(sizeof(Organization) + data_len)));
 
     org->creator = params.caller;
-    org->name_len = params.name_len;
-    Env::Memcpy(org->name, params.name, params.name_len);
+    org->logo_addr = params.logo_addr;
+    Env::Memcpy(&org->data, &params.data, sizeof(params.data) + data_len);
 
     ContractState cs;
     Env::LoadVar_T(0, cs);
     Organization::Key org_key(cs.last_organization_id++);
     Env::SaveVar_T(0, cs);
-    SaveNamedObject(org_key, org);
+    SaveVLObject(org_key, org, sizeof(Organization) + data_len);
 
-    Members<Tag::kOrganizationMember, Organization>::Key member_key(
-        org->creator, org_key.id);
-    UserInfo member_info{.permissions = Organization::Permissions::kAll};
+    Member::Key<Organization> member_key(org->creator, org_key.id);
+    Member member_info{.permissions = Organization::Permissions::kAll};
     Env::SaveVar_T(member_key, member_info);
 
     Env::AddSig(org->creator);
 }
 
 BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
-    // TODO
+    CheckOrganizationData(params.data);
+    std::unique_ptr<Organization> organization = LoadVLObject<Organization>(params.id);
+    CheckPermissions<Organization>(params.caller, params.id,
+                                   Organization::Permissions::kModifyOrganization);
+    Env::AddSig(params.caller);
+
+    size_t total_len = params.data.GetTotalLen();
+    std::unique_ptr<Organization> new_organization(
+        static_cast<Organization*>(::operator new(sizeof(Organization) + total_len)));
+
+    new_organization->creator = organization->creator;
+    new_organization->logo_addr = params.logo_addr;
+    Env::Memcpy(&new_organization->data, &params.data, total_len + sizeof(OrganizationData));
+
+    SaveVLObject(Organization::Key(params.id), new_organization, sizeof(Organization) + total_len);
 }
 
 BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT
@@ -188,8 +242,7 @@ BEAM_EXPORT void Method_7(const method::RemoveOrganization& params) {  // NOLINT
 
 BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, params.project_id, Project::Permissions::kAddRepo);
+    CheckPermissions<Project>(params.caller, params.project_id, Project::Permissions::kAddRepo);
 
     auto repo_name_hash = GetNameHash(params.name, params.name_len);
 
@@ -215,21 +268,20 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     repo_info->name_len = params.name_len;
     repo_info->cur_objs_number = 0;
     repo_info->project_id = params.project_id;
+    repo_info->is_private = params.is_private;
     Env::Memcpy(repo_info->name, params.name, repo_info->name_len);
 
-    Members<Tag::kRepoMember, Repo>::Key key_user(params.caller,
-                                                  repo_info->repo_id);
-    Env::SaveVar_T(key_user, UserInfo{.permissions = Repo::Permissions::kAll});
+    Member::Key<Repo> key_user(params.caller, repo_info->repo_id);
+    Env::SaveVar_T(key_user, Member{.permissions = Repo::Permissions::kAll});
 
-    SaveNamedObject(Repo::Key(repo_info->repo_id), repo_info);
+    SaveVLObject(Repo::Key(repo_info->repo_id), repo_info, sizeof(Repo) + repo_info->name_len);
 
     Env::AddSig(repo_info->owner);
 }
 
 BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
-    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-    CheckPermissions<Tag::kRepoMember, Repo>(params.caller, repo_info->repo_id,
-                                             Repo::Permissions::kModifyRepo);
+    std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
+    CheckPermissions<Repo>(params.caller, repo_info->repo_id, Repo::Permissions::kModifyRepo);
     Env::AddSig(params.caller);
 
     std::unique_ptr<Repo> new_repo_info(
@@ -242,23 +294,22 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     new_repo_info->name_len = params.name_len;
     new_repo_info->cur_objs_number = repo_info->cur_objs_number;
     new_repo_info->project_id = repo_info->project_id;
-    Env::Memcpy(new_repo_info->name, params.name, repo_info->name_len);
+    new_repo_info->is_private = params.is_private;
+    Env::Memcpy(new_repo_info->name, params.name, params.name_len);
 
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
     Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
-    SaveNamedObject(Repo::Key(new_repo_info->repo_id), new_repo_info);
-    Env::SaveVar_T(Repo::NameKey(new_repo_info->owner, new_repo_name_hash),
-                   new_repo_info->repo_id);
+    SaveVLObject(Repo::Key(new_repo_info->repo_id), new_repo_info,
+                 sizeof(Repo) + new_repo_info->name_len);
+    Env::SaveVar_T(Repo::NameKey(new_repo_info->owner, new_repo_name_hash), new_repo_info->repo_id);
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
-    std::unique_ptr<Repo> repo_info = LoadNamedObject<Repo>(params.repo_id);
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
+    std::unique_ptr<Repo> repo_info = LoadVLObject<Repo>(params.repo_id);
+    CheckPermissions<Project>(params.caller, repo_info->repo_id, Project::Permissions::kRemoveRepo);
     Env::AddSig(params.caller);
     Env::DelVar_T(Repo::NameKey(repo_info->owner, repo_info->name_hash));
-    Env::DelVar_T(Members<Tag::kRepoMember, Repo>::Key(repo_info->owner,
-                                                       repo_info->repo_id));
+    Env::DelVar_T(Member::Key<Repo>(repo_info->owner, repo_info->repo_id));
     Env::DelVar_T(Repo::Key(repo_info->repo_id));
     // TODO: delete all repo members
     // TODO: delete all git refs and objects
@@ -266,33 +317,47 @@ BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
 
 BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
-    std::unique_ptr<Project> project(static_cast<Project*>(
-        ::operator new(sizeof(Project) + params.name_len)));
+    CheckProjectData(params.data);
+    size_t data_len = params.data.GetTotalLen();
+    std::unique_ptr<Project> project(
+        static_cast<Project*>(::operator new(sizeof(Project) + data_len)));
 
-    CheckPermissions<Tag::kOrganizationMember, Organization>(
-        params.caller, params.organization_id,
-        Organization::Permissions::kAddProject);
+    CheckPermissions<Organization>(params.caller, params.organization_id,
+                                   Organization::Permissions::kAddProject);
     project->creator = params.caller;
-    project->name_len = params.name_len;
+    project->logo_addr = params.logo_addr;
     project->organization_id = params.organization_id;
-    Env::Memcpy(project->name, params.name, params.name_len);
+    Env::Memcpy(&project->data, &params.data, sizeof(params.data) + data_len);
 
     ContractState cs;
     Env::LoadVar_T(0, cs);
     Project::Key project_key(cs.last_project_id++);
     Env::SaveVar_T(0, cs);
-    SaveNamedObject(project_key, project);
+    SaveVLObject(project_key, project, sizeof(Project) + data_len);
 
-    Members<Tag::kProjectMember, Project>::Key member_key(project->creator,
-                                                          project_key.id);
-    UserInfo member_info{.permissions = Project::Permissions::kAll};
+    Member::Key<Project> member_key(project->creator, project_key.id);
+    Member member_info{.permissions = Project::Permissions::kAll};
     Env::SaveVar_T(member_key, member_info);
 
     Env::AddSig(project->creator);
 }
 
 BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
-    // TODO
+    std::unique_ptr<Project> project = LoadVLObject<Project>(params.project_id);
+    CheckPermissions<Project>(params.caller, params.project_id,
+                              Project::Permissions::kModifyProject);
+    Env::AddSig(params.caller);
+
+    size_t total_len = params.data.GetTotalLen();
+    std::unique_ptr<Project> new_project(
+        static_cast<Project*>(::operator new(sizeof(Project) + total_len)));
+
+    new_project->creator = project->creator;
+    new_project->organization_id = project->organization_id;
+    new_project->logo_addr = params.logo_addr;
+    Env::Memcpy(&new_project->data, &params.data, total_len + sizeof(ProjectData));
+
+    SaveVLObject(Project::Key(params.project_id), new_project, sizeof(Project) + total_len);
 }
 
 BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
@@ -302,32 +367,25 @@ BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
 BEAM_EXPORT void Method_14(const method::AddRepoMember& params) {  // NOLINT
     // TODO: do not allow to modify repo owner
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
-    Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
-                                                    params.repo_id);
-    CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
-                                             Repo::Permissions::kAddMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Repo> member_key(params.member, params.repo_id);
+    CheckPermissions<Repo>(params.caller, params.repo_id, Repo::Permissions::kAddMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_15(const method::ModifyRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
-    Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
-                                                    params.repo_id);
-    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
-    CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
-                                             Repo::Permissions::kModifyMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Repo> member_key(params.member, params.repo_id);
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0, KeyTag::Internal) == 0u);
+    CheckPermissions<Repo>(params.caller, params.repo_id, Repo::Permissions::kModifyMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_16(const method::RemoveRepoMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Repo>(params.repo_id));
-    Members<Tag::kRepoMember, Repo>::Key member_key(params.member,
-                                                    params.repo_id);
-    CheckPermissions<Tag::kRepoMember, Repo>(params.caller, params.repo_id,
-                                             Repo::Permissions::kRemoveMember);
+    Member::Key<Repo> member_key(params.member, params.repo_id);
+    CheckPermissions<Repo>(params.caller, params.repo_id, Repo::Permissions::kRemoveMember);
     Env::DelVar_T(member_key);
     Env::AddSig(params.caller);
 }
@@ -335,32 +393,27 @@ BEAM_EXPORT void Method_16(const method::RemoveRepoMember& params) {  // NOLINT
 BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
     // TODO: do not allow to modify project owner
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
-    Members<Tag::kProjectMember, Project>::Key member_key(params.member,
-                                                          params.project_id);
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, params.project_id, Project::Permissions::kAddMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Project> member_key(params.member, params.project_id);
+    CheckPermissions<Project>(params.caller, params.project_id, Project::Permissions::kAddMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_18(const method::ModifyProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
-    Members<Tag::kProjectMember, Project>::Key member_key(params.member,
-                                                          params.project_id);
-    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, params.project_id, Project::Permissions::kModifyMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Project> member_key(params.member, params.project_id);
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0, KeyTag::Internal) == 0u);
+    CheckPermissions<Project>(params.caller, params.project_id,
+                              Project::Permissions::kModifyMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_19(const method::RemoveProjectMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Project>(params.project_id));
-    Members<Tag::kProjectMember, Project>::Key member_key(params.member,
-                                                          params.project_id);
-    CheckPermissions<Tag::kProjectMember, Project>(
-        params.caller, params.project_id, Project::Permissions::kRemoveMember);
+    Member::Key<Project> member_key(params.member, params.project_id);
+    CheckPermissions<Project>(params.caller, params.project_id,
+                              Project::Permissions::kRemoveMember);
     Env::DelVar_T(member_key);
     Env::AddSig(params.caller);
 }
@@ -368,35 +421,56 @@ BEAM_EXPORT void Method_19(const method::RemoveProjectMember& params) {  // NOLI
 BEAM_EXPORT void Method_20(const method::AddOrganizationMember& params) {  // NOLINT
     // TODO: do not allow to modify org owner
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
-    Members<Tag::kOrganizationMember, Organization>::Key member_key(
-        params.member, params.organization_id);
-    CheckPermissions<Tag::kOrganizationMember, Organization>(
-        params.caller, params.organization_id,
-        Organization::Permissions::kAddMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Organization> member_key(params.member, params.organization_id);
+    CheckPermissions<Organization>(params.caller, params.organization_id,
+                                   Organization::Permissions::kAddMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_21(const method::ModifyOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
-    Members<Tag::kOrganizationMember, Organization>::Key member_key(
-        params.member, params.organization_id);
-    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0,
-                               KeyTag::Internal) == 0u);
-    CheckPermissions<Tag::kOrganizationMember, Organization>(
-        params.caller, params.organization_id,
-        Organization::Permissions::kModifyMember);
-    Env::SaveVar_T(member_key, UserInfo{.permissions = params.permissions});
+    Member::Key<Organization> member_key(params.member, params.organization_id);
+    Env::Halt_if(Env::LoadVar(&member_key, sizeof(member_key), nullptr, 0, KeyTag::Internal) == 0u);
+    CheckPermissions<Organization>(params.caller, params.organization_id,
+                                   Organization::Permissions::kModifyMember);
+    Env::SaveVar_T(member_key, Member{.permissions = params.permissions});
     Env::AddSig(params.caller);
 }
 
 BEAM_EXPORT void Method_22(const method::RemoveOrganizationMember& params) {  // NOLINT
     Env::Halt_if(!ObjectExists<Organization>(params.organization_id));
-    Members<Tag::kOrganizationMember, Organization>::Key member_key(
-        params.member, params.organization_id);
-    CheckPermissions<Tag::kOrganizationMember, Organization>(
-        params.caller, params.organization_id,
-        Organization::Permissions::kRemoveMember);
+    Member::Key<Organization> member_key(params.member, params.organization_id);
+    CheckPermissions<Organization>(params.caller, params.organization_id,
+                                   Organization::Permissions::kRemoveMember);
     Env::DelVar_T(member_key);
     Env::AddSig(params.caller);
+}
+
+BEAM_EXPORT void Method_23(const method::Deposit& params) {  // NOLINT
+    Env::FundsLock(0, params.amount);
+    ContractState cs;
+    Env::LoadVar_T(0, cs);
+    Strict::Add(cs.faucet_balance, params.amount);
+    Env::SaveVar_T(0, cs);
+}
+
+BEAM_EXPORT void Method_24(const method::Withdraw& params) {  // NOLINT
+    ContractState cs;
+    Env::LoadVar_T(0, cs);
+    Strict::Sub(cs.faucet_balance, params.amount);
+    Env::SaveVar_T(0, cs);
+    Env::FundsUnlock(0, params.amount);
+}
+
+BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
+    CheckUserData(params.data);
+    size_t data_len = params.data.GetTotalLen();
+    std::unique_ptr<User> user(static_cast<User*>(::operator new(sizeof(user) + data_len)));
+
+    user->avatar_addr = params.avatar_addr;
+    Env::Memcpy(&user->data, &params.data, sizeof(UserData) + data_len);
+
+    SaveVLObject(User::Key{params.id}, user, sizeof(User) + data_len);
+    Env::AddSig(params.id);
 }

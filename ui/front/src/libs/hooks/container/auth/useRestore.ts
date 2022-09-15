@@ -1,5 +1,5 @@
+import { useErrorBoundary } from '@components/context';
 import { RestoreStatus, WALLET } from '@libs/constants';
-import { useAsyncError } from '@libs/hooks/shared';
 import { useWalletAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { message } from 'antd';
@@ -10,7 +10,7 @@ export const useRestore = () => {
   const seed2Validation = useSelector((state) => state.wallet.seed2Validation);
   const { statusFetcher, restoreWallet, validate } = useWalletAction();
 
-  const throwError = useAsyncError();
+  const throwError = useErrorBoundary();
   const [mode, toggleMode] = useState<RestoreStatus>(RestoreStatus.SEED);
   const { seed, errors } = seed2Validation;
   const navigate = useNavigate();

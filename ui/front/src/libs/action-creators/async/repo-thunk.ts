@@ -28,19 +28,22 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
     try {
-      dispatch(AC.setCommits(null));
+      let stopPending = false;
+      const stopPendingHandler = () => { stopPending = true; };
+      window.addEventListener('stop-commit-pending', stopPendingHandler, { once: true });
+      batcher(dispatch, [
+        AC.setCommits(null),
+        AC.setTreeData(null)
+      ]);
       const cache = await caches.open([CASH_PREFIX, id].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
       const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
-      if (metaArray) {
-        metaArray.objects.forEach((el) => {
-          metas.set(el.object_hash, el);
-        });
-      }
+      if (metaArray) metaArray.objects.forEach((el) => metas.set(el.object_hash, el));
+
       dispatch(AC.setRepoMeta(metas));
       const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
-      if (branches) {
+      if (branches && !stopPending) {
         if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
         if (resolve) resolve();
 
@@ -69,6 +72,8 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
           ]);
         }
       }
+      if (stopPending) throw new Error('commit pending stopped');
+      window.removeEventListener('stop-commit-pending', stopPendingHandler);
     } catch (error) { errHandler(error as Error); }
   };
 

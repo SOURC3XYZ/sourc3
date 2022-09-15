@@ -35,7 +35,7 @@ function Start({ restore }:StartProps) {
             {' '}
             <span>Web3</span>
             {' '}
-            Builds.
+            Builds
           </h2>
         </div>
         <div className={styles.btnNav}>
@@ -43,12 +43,13 @@ function Start({ restore }:StartProps) {
             restore ? (
               <NavButton
                 name={btnNameLeft}
+                data-index={0}
                 onClick={() => (setIsPopup(true))}
                 active
               />
             ) : (
               <NavButton
-                name="Sign in"
+                name="Sign in or restore"
                 link="/auth/login"
                 active
                 inlineStyles={{ color: '#000' }}

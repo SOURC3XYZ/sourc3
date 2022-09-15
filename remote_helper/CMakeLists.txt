@@ -13,9 +13,12 @@ target_sources(helper_lib
 		wallets/beam_wallet_client.cpp
 		engines/ipfs/ipfs_engine.cpp
 		engines/engine_factory.cpp
+		engines/base_engine.cpp
         wallets/client_factory.cpp
+		wallets/base_client.cpp
 		engines/ipfs/types.cpp
 		engines/ipfs/parsing.cpp
+		engines/ipfs-bc/ipfs_bc_engine.cpp
 )
 
 target_include_directories(helper_lib PUBLIC ${LIBGIT2_INCLUDES})

@@ -1,9 +1,10 @@
-import avatar from '@assets/icons/icon-avatar.png';
 import {
   Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
+import Avatar from 'boring-avatars';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './profile.module.scss';
 
 type profileType = {
@@ -11,27 +12,28 @@ type profileType = {
 };
 
 function Profile({ pKey }:profileType) {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const showModal = () => {
-    setVisible(true);
-  };
+  // const showModal = () => {
+  //   setVisible(true);
+  // };
 
-  const handleCancel = () => {
-    setVisible(false);
-  };
-  const handleOk = () => {
-    handleCancel();
-  };
+  const handleCancel = () => setVisible(false);
+  const handleOk = () => handleCancel();
+  const logOut = () => navigate('/');
+  const myOrg = () => navigate('/organizations/my/1');
+  const myRep = () => navigate('/repos/my/1');
 
   const data = [
-    { title: 'Profile', onClick: showModal },
-    { title: 'My repositories', isDisabled: true },
+    { title: 'Profile', isDisabled: true },
+    { title: 'My repositories', onClick: myRep },
+    { title: 'My organization', onClick: myOrg },
     { title: 'Settings', isDisabled: true },
     { title: 'Help', isDisabled: true },
     { title: 'Support', isDisabled: true },
     { title: 'Twitter', link: 'https://twitter.com/SOURC3xyz' },
     { title: 'Discord', link: 'https://discord.gg/nqTTMXrhMc' },
-    { title: 'Logout', link: '/' }
+    { title: 'Logout', onClick: logOut }
   ];
   const menu = (
     <Menu>
@@ -45,7 +47,7 @@ function Profile({ pKey }:profileType) {
             href={link}
             onClick={onClick}
             disabled={isDisabled}
-            target={link}
+            target="_blank"
           >
             {title}
 
@@ -63,9 +65,27 @@ function Profile({ pKey }:profileType) {
           placement="bottomCenter"
           trigger={['click']}
           overlayClassName={styles.dropdown}
+          overlayStyle={{ position: 'fixed' }}
         >
           <div>
-            <img src={avatar} alt="" />
+            <Avatar
+              size={40}
+              name={pKey}
+              variant="beam"
+              colors={[
+                '#FF791F',
+                '#3FD05A',
+                '#000000',
+                '#C271B4',
+                '#4DA2E6',
+                '#DDDDDD',
+                '#92A1C6',
+                '#146A7C',
+                '#F0AB3D',
+                '#C271B4',
+                '#C20D90'
+              ]}
+            />
           </div>
         </Dropdown>
       </div>

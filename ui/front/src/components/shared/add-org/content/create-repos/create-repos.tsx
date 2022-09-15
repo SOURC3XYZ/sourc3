@@ -9,6 +9,8 @@ import SelectPopup from '@components/shared/selectPopup/selectPopup';
 import { Select } from 'antd';
 import styles from './create-repos.module.scss';
 
+type InputChange = React.ChangeEventHandler<HTMLInputElement>;
+
 type CreateReposType = {
   handleCancel: ()=>void;
   closePopup: ()=>void;
@@ -18,7 +20,14 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
   const [inputName, setInputName] = useState('');
   const { createRepo } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
-  const handleChange = (e:any) => setInputName(e.target?.value);
+  const pid = useSelector((state) => state.app.pid);
+  const [valid, setValid] = useState(true);
+
+  const handleChange:InputChange = (e) => {
+    const regExp = /[А-я]+/;
+    setInputName(e.target.value);
+    setValid(!regExp.test(e.target.value));
+  };
 
   const organizations = useSelector((
     state
@@ -32,10 +41,8 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
 
   const [idProject, setIdProject] = useState('');
 
-  console.log(projects);
-
   const handleOk = (name:string, id:number) => {
-    createRepo(name, id);
+    createRepo(`"${name}"`, id, pid);
     closePopup();
   };
 
@@ -46,8 +53,6 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
     setIdProject(value);
   };
 
-  console.log(idOrg);
-  console.log(idProject);
   return (
     <Popup
       title="Add new repository to project"
@@ -57,7 +62,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
         <NavButton
           key="all-repos-addBtn"
           onClick={() => handleOk(inputName, +idProject)}
-          isDisabled={!inputName || !idProject}
+          isDisabled={!inputName || !idProject ! || !valid}
           name="Add"
           active
         />
@@ -85,7 +90,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           defaultValue={idProject}
           value={idProject}
           onChange={handleChangeProject}
-          title="Select organization"
+          title="Select project"
         >
           {projects?.map(({ project_id, project_name }) => (
             <Select.Option
@@ -98,10 +103,11 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           ))}
         </SelectPopup>
         <InputCustom
-          label="Project name"
+          label="Repository name"
           type="text"
           value={inputName}
           onChange={handleChange}
+          valid={valid}
         />
       </div>
     </Popup>

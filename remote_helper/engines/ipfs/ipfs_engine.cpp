@@ -722,13 +722,7 @@ IEngine::BaseOptions::SetResult FullIPFSEngine::Options::Set(std::string_view op
         }
         return SetResult::Ok;
     } else if (option == "is_async") {
-        if (value == "true") {
-            is_async = true;
-        } else if (value == "false") {
-            is_async = false;
-        } else {
-            return SetResult::InvalidValue;
-        }
+        SetBool(is_async, value);
     } /* else if (option == "verbosity") {
          char* endPos;
          auto v = std::strtol(value.data(), &endPos, 10);

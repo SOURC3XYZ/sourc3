@@ -5,9 +5,9 @@
 }
 
 .addButton {
-    color: black !important;
+    color: white !important;
     border: none;
-    background-color: $color-orage !important;
+    background-color: $color-orange !important;
     border-radius: 8px;
     height: 36px;
     width: 76px;
@@ -20,7 +20,7 @@
         letter-spacing: 0.1px;
     }
     &:hover, &:target{
-        background-color: $color-orage !important;
+        background-color: $color-orange !important;
         color: white !important;
     }
 }
@@ -37,7 +37,7 @@
     text-align: left;
 &:hover{
     background-color: transparent;
-    color: $color-orage;
+    color: $color-orange;
 }
 &:disabled{
     pointer-events: none;
