@@ -85,7 +85,11 @@ int main(int argc, char* argv[]) {
             po::value<string>(&options.appPath)->default_value("app.wasm"),
             "Path to the app shader file")(
             "use-ipfs", po::value<bool>(&options.useIPFS)->default_value(true),
-            "Use IPFS to store large blobs");
+            "Use IPFS to store large blobs")(
+            "use-full-ipfs", po::value<bool>(&options.useFullIPFS)->default_value(true),
+            "Use Full IPFS engine (Warning: shader-specific option, check it!)")(
+            "use-async", po::value<bool>(&options.async)->default_value(true),
+            "Use async clients for more faster work");
         po::variables_map vm;
 #ifdef WIN32
         const auto* home_dir = std::getenv("USERPROFILE");
