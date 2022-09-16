@@ -44,6 +44,10 @@ const useEntitiesAction = () => {
     dispatch(mutations.setModifyOrganization(...args));
   };
 
+  const setModifyProject = (...args: ArgumentTypes<typeof mutations.setModifyProject>) => {
+    dispatch(mutations.setModifyProject(...args));
+  };
+
   return {
     setInputText,
     setPrevHref,
@@ -55,7 +59,8 @@ const useEntitiesAction = () => {
     createRepo,
     deleteRepo,
     setModifyUser,
-    setModifyOrg
+    setModifyOrg,
+    setModifyProject
   };
 };
 

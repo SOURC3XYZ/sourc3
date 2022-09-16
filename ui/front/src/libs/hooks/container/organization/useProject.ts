@@ -14,7 +14,7 @@ import {
   useEffect,
   useMemo, useState
 } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getOrg, getProjectsByOrgId } from './selectors';
 
 type LocationState = {
@@ -51,6 +51,8 @@ const useProject = () => {
 
   const allRepos = useSelector((state) => state.entities.repos);
 
+  const navigate = useNavigate();
+
   const repos = useMemo(() => {
     const allReposCopy = [...allRepos];
     const foundRepos = [];
@@ -74,6 +76,7 @@ const useProject = () => {
     (txt: string) => setInputText(txt),
     (name: string) => createProject(name, id, pid)
   );
+  const goBack = useCallback(() => navigate('projects'), []);
 
   const getOrgMembers = useCallback(async () => {
     const recievedMembers = await callApi<MemberList>(RC.getOrgMembers(id));
@@ -95,7 +98,8 @@ const useProject = () => {
     searchText,
     id,
     modalApi,
-    repos
+    repos,
+    goBack
   };
 };
 

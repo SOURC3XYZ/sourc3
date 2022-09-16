@@ -5,10 +5,12 @@ import {
   RepoItem,
   NavItem,
   usePathPattern,
-  BackButton
+  BackButton,
+  EditOrgForm
 } from '@components/shared';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
+import { useEntitiesAction } from '@libs/hooks/thunk';
 import ProjectList, { HeaderElements } from './project-list';
 import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
@@ -36,7 +38,8 @@ function ProjectRepos() {
     page,
     modalApi,
     members,
-    project
+    project,
+    goBack
   } = useProjectRepos();
 
   const {
@@ -114,6 +117,8 @@ function ProjectRepos() {
     }
   ];
 
+  const { setModifyProject } = useEntitiesAction();
+
   const currentRoute = usePathPattern(routes.map((el) => el.path));
 
   const headerFields:HeaderFields = {
@@ -136,6 +141,20 @@ function ProjectRepos() {
       discord: project.project_discord
     },
     tabData
+  };
+
+  const projectFields = {
+    organization_id: project.organization_id,
+    project_id: project.project_id,
+    name: project.project_name,
+    short_title: project.project_description,
+    telegram: project.project_telegram,
+    discord: project.project_discord,
+    website: project.project_website,
+    instagram: project.project_instagram,
+    logo_addr: project.project_logo_ipfs_hash,
+    twitter: project.project_twitter,
+    linkedin: project.project_linkedin
   };
 
   const navigate = useNavigate();
@@ -186,7 +205,16 @@ function ProjectRepos() {
       <Routes>
         <Route
           path="/edit"
-          element={<div>nothing</div>}
+          element={(
+            <EditOrgForm
+              goBack={goBack}
+              callback={setModifyProject}
+              pkey={pkey}
+              isDescription
+              title="Modify Project"
+              {...projectFields}
+            />
+          )}
         />
         <Route
           path="/*"

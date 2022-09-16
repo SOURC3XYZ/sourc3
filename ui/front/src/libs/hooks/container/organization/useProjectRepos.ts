@@ -9,7 +9,7 @@ import {
 import {
   useCallback, useEffect, useMemo, useState
 } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
@@ -31,6 +31,8 @@ const useProjectRepos = () => {
   const { setInputText, createRepo } = useEntitiesAction();
 
   const [callApi] = useCallApi();
+
+  const navigate = useNavigate();
 
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
@@ -54,6 +56,8 @@ const useProjectRepos = () => {
     if (recievedMembers) setMembers(recievedMembers.members);
   }, []);
 
+  const goBack = useCallback(() => navigate('repos'), []);
+
   useEffect(() => {
     getOrgMembers();
   }, []);
@@ -70,7 +74,8 @@ const useProjectRepos = () => {
     searchText,
     id,
     modalApi,
-    deleteRepo
+    deleteRepo,
+    goBack
   };
 };
 

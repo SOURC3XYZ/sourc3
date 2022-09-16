@@ -5,7 +5,6 @@ import path from 'path';
 import fs from 'fs';
 import { IpcServer } from 'ipc-express';
 import crypto from 'crypto';
-import { openProcessManager } from 'electron-process-manager';
 import { tryBDConnect } from './utils/typeorm-handler';
 import expressApp from './app';
 import { addwebContentSender } from './resources/beam-api/beam.repository';
@@ -58,7 +57,6 @@ function createWindow() {
       contextIsolation: true
     }
   });
-  openProcessManager({ how: 'descending', path: 'cpu.percentCPUUsage' });
 
   ipcMain.on('select-dirs', async () => {
     const result = await dialog.showOpenDialog(win, {

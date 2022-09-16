@@ -1,25 +1,27 @@
 import { useObjectState, useUpload } from '@libs/hooks/shared';
-import { useEntitiesAction } from '@libs/hooks/thunk';
-import { Entries, Organization } from '@types';
+import { Entries } from '@types';
 import { useCallback, useEffect, useState } from 'react';
 import { regExes } from './regex';
 
 type InputChange<T> = React.ChangeEventHandler<T>;
 
-export const useEditOrgForm = (props:Organization) => {
-  const [state, setState] = useObjectState({
-    organization_id: props.organization_id,
-    name: props.organization_name,
-    short_title: props.organization_short_title,
-    about: props.organization_about,
-    telegram: props.organization_telegram,
-    discord: props.organization_discord,
-    website: props.organization_website,
-    instagram: props.organization_instagram,
-    logo_addr: props.organization_logo_ipfs_hash,
-    twitter: props.organization_twitter,
-    linkedin: props.organization_linkedin
-  });
+export type FormFields = {
+  organization_id:number;
+  project_id?: number;
+  name:string;
+  short_title:string;
+  about?:string;
+  telegram:string;
+  discord:string;
+  website:string;
+  instagram:string;
+  logo_addr:string;
+  twitter:string;
+  linkedin:string;
+};
+
+export const useEditOrgForm = (props:FormFields, callback: (props:FormFields) => void) => {
+  const [state, setState] = useObjectState({ ...props });
   const [imgParams, setImgParams] = useState<{ link: string, blob?: Blob } | null>(null);
 
   const { uploadToIpfs, getImgUrlFromIpfs } = useUpload();
@@ -35,8 +37,6 @@ export const useEditOrgForm = (props:Organization) => {
   const removeKey = (key:keyof typeof regExes) => setNotValidItems(
     (prev) => new Set([...prev].filter((x) => x !== key))
   );
-
-  const { setModifyOrg } = useEntitiesAction();
 
   const validate = (str:string, key:keyof typeof regExes) => {
     if (!str.length) return true;
@@ -82,7 +82,7 @@ export const useEditOrgForm = (props:Organization) => {
       const { hash } = await uploadToIpfs(imgParams.blob);
       if (hash) toSend.logo_addr = hash;
     }
-    setModifyOrg(toSend);
+    callback(toSend);
   };
 
   const getImgHandler = useCallback((link:string, blob: Blob) => {

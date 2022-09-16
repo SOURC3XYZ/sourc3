@@ -4,17 +4,21 @@ import {
   DiscordIcon, InstagrammIcon, LinkedinIcon, SiteIcon, TelegramIcon, TwitterIcon, Uploader
 } from '@components/shared';
 import TextArea from 'antd/lib/input/TextArea';
-import { Organization } from '@types';
-import { Link } from 'react-router-dom';
 import styles from './edit-form.module.scss';
 import { InputCustom } from '../input';
 import { NavButton } from '../nav-button';
-import { useEditOrgForm } from './hooks';
+import { FormFields, useEditOrgForm } from './hooks';
 
-interface EditOrgProps extends Organization {
-  pkey: string
+interface EditOrgProps extends FormFields {
+  pkey: string;
+  title: string;
+  isDescription:boolean;
+  callback: (state: any) => void;
+  goBack: () => void;
 }
-function EditOrg({ pkey, ...props }: EditOrgProps) {
+function EditOrg({
+  pkey, title, goBack, isDescription, callback, ...props
+}: EditOrgProps) {
   const {
     name,
     about,
@@ -32,13 +36,13 @@ function EditOrg({ pkey, ...props }: EditOrgProps) {
     handleChange,
     getImgHandler,
     handleTextareaChange
-  } = useEditOrgForm(props);
+  } = useEditOrgForm(props, callback);
 
   const avatar = imgParams && <img src={imgParams.link} alt="avatar" />;
 
   return (
     <div className={styles.main}>
-      <h4>Add new project</h4>
+      <h4>{title}</h4>
       <div className={styles.name}>
         <InputCustom
           id="org-name"
@@ -68,17 +72,19 @@ function EditOrg({ pkey, ...props }: EditOrgProps) {
         {avatar}
       </div>
 
-      <div className={styles.description}>
-        <h4>Full description</h4>
-        <TextArea
-          id="org-about"
-          value={about}
-          placeholder="Organization description"
-          onChange={handleTextareaChange}
-          maxLength={1024}
-          autoSize={{ minRows: 3, maxRows: 5 }}
-        />
-      </div>
+      {'about' in props && (
+        <div className={styles.description}>
+          <h4>Full description</h4>
+          <TextArea
+            id="org-about"
+            value={about}
+            placeholder="Organization description"
+            onChange={handleTextareaChange}
+            maxLength={1024}
+            autoSize={{ minRows: 3, maxRows: 5 }}
+          />
+        </div>
+      )}
 
       <div className={styles.social}>
         <h4>Social networks</h4>
@@ -151,11 +157,10 @@ function EditOrg({ pkey, ...props }: EditOrgProps) {
         </div>
       </div>
       <div className={styles.buttons}>
-        <Link to="projects">
-          <NavButton
-            name="Cancel"
-          />
-        </Link>
+        <NavButton
+          onClick={goBack}
+          name="Cancel"
+        />
         <NavButton
           onClick={handleOk}
           name="Add"

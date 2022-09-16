@@ -58,6 +58,11 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.setModifyOrganization({ ...state })
   );
 
+  const setModifyProject = (state:any):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.setModifyProject({ ...state })
+  );
+
   const setModifyUser = (state:any):CustomAction => async (dispatch) => contractMutation(
     dispatch,
     RC.setModifyUser(state)
@@ -100,6 +105,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     createOrganization,
     setModifyOrganization,
     deleteRepo,
-    createRepo
+    createRepo,
+    setModifyProject
   }] as const;
 };

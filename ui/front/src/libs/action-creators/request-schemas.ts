@@ -440,6 +440,44 @@ export const RC = {
         pid
       }
     }
+  } as const),
+  setModifyProject: ({
+    organization_id,
+    project_id,
+    name,
+    logo_addr = '',
+    short_title = '',
+    about = '',
+    website = '',
+    twitter = '',
+    linkedin = '',
+    instagram = '',
+    telegram = '',
+    discord = '',
+    pid = 0
+  }: any) => ({
+    callID: 'modify_project',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_project',
+        organization_id,
+        project_id,
+        name,
+        logo_addr,
+        description: short_title,
+        about,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord,
+        pid
+      }
+    }
   } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

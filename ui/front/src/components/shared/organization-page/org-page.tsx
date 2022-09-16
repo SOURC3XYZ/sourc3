@@ -8,6 +8,7 @@ import {
   NavItem
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
+import { useEntitiesAction } from '@libs/hooks/thunk';
 import { CSSProperties, useCallback, useMemo } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { HeaderFields } from '../entity/entity-wrapper';
@@ -39,8 +40,11 @@ function Projects() {
     projects,
     modalApi,
     repos,
-    members
+    members,
+    goBack
   } = useProject();
+
+  const { setModifyOrg } = useEntitiesAction();
 
   const {
     handleOk
@@ -198,6 +202,20 @@ function Projects() {
     tabData
   };
 
+  const orgFields = {
+    organization_id: org.organization_id,
+    name: org.organization_name,
+    short_title: org.organization_short_title,
+    about: org.organization_about,
+    telegram: org.organization_telegram,
+    discord: org.organization_discord,
+    website: org.organization_website,
+    instagram: org.organization_instagram,
+    logo_addr: org.organization_logo_ipfs_hash,
+    twitter: org.organization_twitter,
+    linkedin: org.organization_linkedin
+  };
+
   const RoutesView = useMemo(() => routes.map(
     (el) => (
       <Route
@@ -231,7 +249,16 @@ function Projects() {
       <Routes>
         <Route
           path="/edit"
-          element={<EditOrgForm pkey={pkey} {...org} />}
+          element={(
+            <EditOrgForm
+              pkey={pkey}
+              isDescription
+              title="Modify Organization"
+              goBack={goBack}
+              callback={setModifyOrg}
+              {...orgFields}
+            />
+          )}
         />
         <Route
           path="/*"

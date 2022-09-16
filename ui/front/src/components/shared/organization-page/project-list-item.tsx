@@ -60,6 +60,7 @@ function ProjectListItem({
       <List.Item.Meta
         avatar={(
           <IpfsAvatars
+            ipfs={item.project_logo_ipfs_hash}
             colors={AVATAR_COLORS}
             name={`${project_id}${item.project_name}${item.project_creator}`}
             size={56}
