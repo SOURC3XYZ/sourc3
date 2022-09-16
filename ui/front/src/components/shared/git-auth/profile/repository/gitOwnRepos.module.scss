@@ -30,6 +30,13 @@
           font-weight: 700;
           font-size: 14px;
           line-height: 20px;
+          margin-right: 1rem;
+          &>a{
+            color: black;
+          }
+          &>a:hover{
+            color: #FF791F;
+          }
         }
 
       }
@@ -45,7 +52,9 @@
           display: flex;
           width: 100%;
           align-items: center;
+          flex-wrap: wrap;
           &>span{
+            margin-right: 1rem;
             &>span{
               color: #FF791F;
             }
@@ -92,12 +101,24 @@
   .stargazers{
     display: flex;
     align-items: center;
-    margin-left: 1rem;
     color:rgba(0,0,0,.5);
     font-family: 'PublicSans-Bold';
     font-style: normal;
     font-weight: 700;
     font-size: 14px;
     line-height: 20px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .wrapper{
+    .block{
+      flex-direction: column;
+      &_left{
+        padding-left: 0;
+      }
+      &_left, &_right{
+        width: max-content;
+      }
+    }
   }
 }

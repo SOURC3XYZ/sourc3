@@ -14,21 +14,15 @@ function GitOwnRepos({ data }:GitOwnReposType) {
   function formatDateTime(dateTime: string, formatString = 'DD.MM.YYYY') {
     return moment(new Date(dateTime)).format(formatString);
   }
-  const getProcent = (total:number, own:number) => {
-    console.log(total);
-    console.log(own);
-    return +((own / total) * 100).toFixed(1);
-  };
+  const getPercent = (total:number, own:number) => +((own / total) * 100).toFixed(1);
 
   return (
     <List
       dataSource={data}
       pagination={{
-        onChange: (page) => {
-          console.log(page);
-        },
         pageSize: 5
       }}
+      loading={!data}
       renderItem={(rep) => (
         <div className={styles.wrapper} key={rep.id}>
           <div className={styles.header}>
@@ -37,7 +31,15 @@ function GitOwnRepos({ data }:GitOwnReposType) {
           <div className={styles.block}>
             <div className={styles.block_left}>
               <div className={styles.wrapper_title}>
-                <div className={styles.name}>{rep.full_name}</div>
+                <div className={styles.name}>
+                  <a
+                    target="_blank"
+                    href={`https://github.com/${rep.full_name}`}
+                    rel="noreferrer"
+                  >
+                    {rep.full_name}
+                  </a>
+                </div>
                 <div className={styles.stargazers}>
                   <IconStar />
                   {' '}
@@ -52,7 +54,15 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                     <span>
                       Forked from
                       {' '}
-                      <span>{rep.parent}</span>
+                      <span>
+                        <a
+                          target="_blank"
+                          href={`https://gitgub.com/${rep.parent}`}
+                          rel="noreferrer"
+                        >
+                          {rep.parent}
+                        </a>
+                      </span>
                     </span>
                     <div className={styles.stargazers}>
                       <IconStar />
@@ -75,7 +85,11 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 {' '}
                 <span>{`${formatDateTime(rep.created_at)}-${formatDateTime(rep.pushed_at)}`}</span>
               </div>
-              <div className={styles.commits}>{`${rep.owner_commits_cnt} commit${rep.owner_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getProcent(rep.total_commits_cnt, rep.owner_commits_cnt)}%)`}</div>
+              <div
+                className={styles.commits}
+              >
+                {`${rep.owner_commits_cnt} commit${rep.owner_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getPercent(rep.total_commits_cnt, rep.owner_commits_cnt)}%)`}
+              </div>
               {rep.language && (
                 <div className={styles.langStone}>
                   <Milestone title={rep.language} />
