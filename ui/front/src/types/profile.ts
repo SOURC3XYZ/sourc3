@@ -72,7 +72,7 @@ export interface IGitRepos {
   created_at: string,
   updated_at: string,
   owner: number,
-  owner_commits_cnt: number,
+  user_commits_cnt: number,
   total_commits_cnt: number,
   parent:string,
   parent_stargazers_count: string
