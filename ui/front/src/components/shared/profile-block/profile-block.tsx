@@ -5,7 +5,7 @@ import { useSelector } from '@libs/redux';
 import styles from './profile-block.module.scss';
 
 type HeaderPropsType = {
-  pKey?:string,
+  pKey?: string,
   profile?: boolean,
   balance?: boolean,
   git?: boolean,

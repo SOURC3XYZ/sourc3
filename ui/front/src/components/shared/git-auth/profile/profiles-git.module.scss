@@ -1,10 +1,16 @@
+@import '@styles/vars.scss';
+
 .wrapper{
   width: 100%;
-  max-width: 65.1rem;
+  height: auto;
   margin: 0 auto;
   padding: .5rem 2.5rem;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  max-width: max-content;
   .header{
-    width: 100%;
+    width: max-content;
     .title {
       display: flex;
       justify-content: space-between;
@@ -286,3 +292,38 @@
     }
   }
 }
+
+@media screen and (max-width: 600px) {
+  .wrapper{
+    .header{
+      .breadcrumbs{
+        margin: 0
+      }
+    }
+    .content{
+      flex-direction: column;
+      margin: 0 auto;
+      .side{
+        display: flex;
+        align-items: center
+      }
+      .sideBlock{
+        display: flex;
+        align-items: center;
+        width: 100%;
+        justify-content: space-evenly;
+        .info{
+          width: min-content;
+        }
+        .wrapperOrganization{
+          width: max-content;
+          align-items: center;
+        }
+      }
+      .main{
+        align-items: center;
+        margin: 10px 0;
+      }
+    }
+  }
+  }
