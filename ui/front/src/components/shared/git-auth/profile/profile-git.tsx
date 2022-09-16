@@ -8,10 +8,10 @@ import IconDefaultAvatar from '@components/svg/iconDefautlAvatar';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { HOST } from '@components/shared/git-auth/profile/constants';
-import { useSelector } from '@libs/redux';
 import { GitConnectAuth, GitOwnRepos } from '@components/shared/git-auth';
 import { Popup } from '@components/shared/popup';
 import MyLoader from '@components/shared/git-auth/profile/skeletonProfile';
+import { Spin } from 'antd';
 import styles from './profiles-git.module.scss';
 import Organizations from './organization';
 
@@ -24,20 +24,24 @@ function GitProfile() {
   }, setGitHubProfile] = useState([]);
   const [allUsers, setAllUsers] = useState(0);
   const [visiblePopup, setVisiblePopup] = useState(false);
+  const [taskStatus, setTaskStatus] = useState(false);
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
         case 'done': axios.get(`${HOST}/users/${urlId}`).then((res) => {
           setGitHubProfile(res.data);
+          setTaskStatus(true);
         });
           break;
         case 'running':
         case 'delayed':
         case 'enqueued':
+          setTaskStatus(false);
           setTimeout(() => { checkStatus(result); }, 30000);
           break;
         case 'failed':
         case 'skipped':
+          setTaskStatus(false);
           window.localStorage.removeItem('token');
           setVisiblePopup(true);
           break;
@@ -51,7 +55,10 @@ function GitProfile() {
       if (res.data.github_task) {
         axios.get(`${HOST}/tasks/${res.data.github_task}`).then((staskStatus) => {
           if (staskStatus.data.status === 'running') {
+            setTaskStatus(false);
             setTimeout(() => { checkStatus(res.data.github_task); }, 30000);
+          } else if (staskStatus.data.status === 'done') {
+            setTaskStatus(true);
           }
         });
       }
@@ -194,6 +201,7 @@ function GitProfile() {
                   />
                 </div>
               </div>
+              {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
               { github_owned_repos.length > 0 && <GitOwnRepos data={github_owned_repos} />}
             </div>
           </div>

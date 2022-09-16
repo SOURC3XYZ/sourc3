@@ -88,7 +88,7 @@ function GitOwnRepos({ data }:GitOwnReposType) {
               <div
                 className={styles.commits}
               >
-                {`${rep.owner_commits_cnt} commit${rep.owner_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getPercent(rep.total_commits_cnt, rep.owner_commits_cnt)}%)`}
+                {`${rep.user_commits_cnt} commit${rep.user_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getPercent(rep.total_commits_cnt, rep.user_commits_cnt)}%)`}
               </div>
               {rep.language && (
                 <div className={styles.langStone}>
