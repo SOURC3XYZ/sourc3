@@ -189,25 +189,28 @@ size_t GetUserData(sourc3::UserData& buf) {
 
 void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("project_name", value->data.name_len ? cur_ptr : "");
+    Env::DocAddText("project_name", value->data.name_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.name_len;
     Env::DocAddText("project_description",
-                    value->data.description_len ? cur_ptr : "");
+                    value->data.description_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.description_len;
-    Env::DocAddText("project_website", value->data.website_len ? cur_ptr : "");
+    Env::DocAddText("project_website",
+                    value->data.website_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.website_len;
-    Env::DocAddText("project_twitter", value->data.twitter_len ? cur_ptr : "");
+    Env::DocAddText("project_twitter",
+                    value->data.twitter_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
     Env::DocAddText("project_linkedin",
-                    value->data.linkedin_len ? cur_ptr : "");
+                    value->data.linkedin_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
     Env::DocAddText("project_instagram",
-                    value->data.instagram_len ? cur_ptr : "");
+                    value->data.instagram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
     Env::DocAddText("project_telegram",
-                    value->data.telegram_len ? cur_ptr : "");
+                    value->data.telegram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
-    Env::DocAddText("project_discord", value->data.discord_len ? cur_ptr : "");
+    Env::DocAddText("project_discord",
+                    value->data.discord_len != 0u ? cur_ptr : "");
     Env::DocAddText("project_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("project_creator", value->creator);
     // TODO: print org name
@@ -266,8 +269,8 @@ sourc3::Organization::NameId ReadOrganizationNameId() {
     using sourc3::OrganizationData;
     char org_name[OrganizationData::kMaxNameLen];
     size_t org_name_len{};
-    if (!(org_name_len = Env::DocGetText("organization_name", org_name,
-                                         OrganizationData::kMaxNameLen))) {
+    if ((org_name_len = Env::DocGetText("organization_name", org_name,
+                                        OrganizationData::kMaxNameLen)) == 0u) {
         OnError("no 'organization_name'");
         return {};
     }
@@ -278,8 +281,8 @@ sourc3::Project::NameId ReadProjectNameId() {
     using sourc3::ProjectData;
     char proj_name[ProjectData::kMaxNameLen];
     size_t proj_name_len = 0;
-    if (!(proj_name_len = Env::DocGetText("project_name", proj_name,
-                                          ProjectData::kMaxNameLen))) {
+    if ((proj_name_len = Env::DocGetText("project_name", proj_name,
+                                         ProjectData::kMaxNameLen)) == 0u) {
         OnError("no 'project_name'");
         return {};
     }
@@ -291,8 +294,8 @@ sourc3::Repo::NameId ReadRepoNameId() {
     using sourc3::Repo;
     char repo_name[Repo::kMaxNameSize];
     size_t repo_name_len = 0;
-    if (!(repo_name_len =
-              Env::DocGetText("repo_name", repo_name, Repo::kMaxNameSize))) {
+    if ((repo_name_len = Env::DocGetText("repo_name", repo_name,
+                                         Repo::kMaxNameSize)) == 0u) {
         OnError("no 'repo_name'");
         return {};
     }
@@ -313,56 +316,65 @@ typename T::Id GetIdByName(const ContractID& cid,
 
 void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("organization_name", value->data.name_len ? cur_ptr : "");
+    Env::DocAddText("organization_name",
+                    value->data.name_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.name_len;
     Env::DocAddText("organization_short_title",
-                    value->data.short_title_len ? cur_ptr : "");
+                    value->data.short_title_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.short_title_len;
-    Env::DocAddText("organization_about", value->data.about_len ? cur_ptr : "");
+    Env::DocAddText("organization_about",
+                    value->data.about_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.about_len;
     Env::DocAddText("organization_website",
-                    value->data.website_len ? cur_ptr : "");
+                    value->data.website_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.website_len;
     Env::DocAddText("organization_twitter",
-                    value->data.twitter_len ? cur_ptr : "");
+                    value->data.twitter_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
     Env::DocAddText("organization_linkedin",
-                    value->data.linkedin_len ? cur_ptr : "");
+                    value->data.linkedin_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
     Env::DocAddText("organization_instagram",
-                    value->data.instagram_len ? cur_ptr : "");
+                    value->data.instagram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
     Env::DocAddText("organization_telegram",
-                    value->data.telegram_len ? cur_ptr : "");
+                    value->data.telegram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
     Env::DocAddText("organization_discord",
-                    value->data.discord_len ? cur_ptr : "");
+                    value->data.discord_len != 0u ? cur_ptr : "");
     Env::DocAddText("organization_logo_ipfs_hash", value->logo_addr.data());
     Env::DocAddBlob_T("organization_creator", value->creator);
 }
 
 void PrintUser(std::unique_ptr<sourc3::User>& value) {
     auto cur_ptr = value->data.data;
-    Env::DocAddText("user_name", value->data.name_len ? cur_ptr : "");
+    Env::DocAddText("user_name", value->data.name_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.name_len;
-    Env::DocAddText("user_nickname", value->data.nickname_len ? cur_ptr : "");
+    Env::DocAddText("user_nickname",
+                    value->data.nickname_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.nickname_len;
-    Env::DocAddText("user_email", value->data.email_len ? cur_ptr : "");
+    Env::DocAddText("user_email", value->data.email_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.email_len;
     Env::DocAddText("user_description",
-                    value->data.description_len ? cur_ptr : "");
+                    value->data.description_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.description_len;
-    Env::DocAddText("user_website", value->data.website_len ? cur_ptr : "");
+    Env::DocAddText("user_website",
+                    value->data.website_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.website_len;
-    Env::DocAddText("user_twitter", value->data.twitter_len ? cur_ptr : "");
+    Env::DocAddText("user_twitter",
+                    value->data.twitter_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.twitter_len;
-    Env::DocAddText("user_linkedin", value->data.linkedin_len ? cur_ptr : "");
+    Env::DocAddText("user_linkedin",
+                    value->data.linkedin_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.linkedin_len;
-    Env::DocAddText("user_instagram", value->data.instagram_len ? cur_ptr : "");
+    Env::DocAddText("user_instagram",
+                    value->data.instagram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.instagram_len;
-    Env::DocAddText("user_telegram", value->data.telegram_len ? cur_ptr : "");
+    Env::DocAddText("user_telegram",
+                    value->data.telegram_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.telegram_len;
-    Env::DocAddText("user_discord", value->data.discord_len ? cur_ptr : "");
+    Env::DocAddText("user_discord",
+                    value->data.discord_len != 0u ? cur_ptr : "");
     Env::DocAddText("user_avatar_ipfs_hash", value->avatar_addr.data());
 }
 
@@ -525,8 +537,8 @@ void OnActionModifyRepo(const ContractID& cid) {
     char repo_old_name[Repo::kMaxNameSize];
     size_t repo_old_name_len = 0;
 
-    if (!(repo_old_name_len = Env::DocGetText("repo_old_name", repo_old_name,
-                                              Repo::kMaxNameSize))) {
+    if ((repo_old_name_len = Env::DocGetText("repo_old_name", repo_old_name,
+                                             Repo::kMaxNameSize)) == 0u) {
         return OnError("no 'repo_old_name'");
     }
 
@@ -560,14 +572,15 @@ void OnActionCreateProject(const ContractID& cid) {
     using sourc3::ProjectData;
     using sourc3::method::CreateProject;
 
-    constexpr auto max_args_size =
+    constexpr auto kMaxArgsSize =
         sizeof(CreateProject) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<CreateProject>(
-        static_cast<CreateProject*>(::operator new(max_args_size)));
+        static_cast<CreateProject*>(::operator new(kMaxArgsSize)));
     size_t args_size = GetProjectData(buf->data);
 
-    if (!args_size)
+    if (args_size == 0u) {
         return;
+    }
 
     args_size += sizeof(CreateProject);
 
@@ -600,9 +613,9 @@ void OnActionListProjects(const ContractID& cid) {
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
 
-    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
+    constexpr auto kMaxArgsSize = sizeof(Project) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<Project>(
-        static_cast<Project*>(::operator new(max_args_size)));
+        static_cast<Project*>(::operator new(kMaxArgsSize)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid}, .m_KeyInContract{}};
     ProjectKey end = start;
@@ -610,12 +623,12 @@ void OnActionListProjects(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
+    uint32_t value_len = kMaxArgsSize, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup project_object("");
         PrintProject(buf);
-        value_len = max_args_size;
+        value_len = kMaxArgsSize;
     }
 }
 
@@ -646,22 +659,23 @@ void OnActionModifyProject(const ContractID& cid) {
     using sourc3::ProjectData;
     using sourc3::method::ModifyProject;
 
-    constexpr auto max_args_size =
+    constexpr auto kMaxArgsSize =
         sizeof(ModifyProject) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<ModifyProject>(
-        static_cast<ModifyProject*>(::operator new(max_args_size)));
+        static_cast<ModifyProject*>(::operator new(kMaxArgsSize)));
     size_t args_size = GetProjectData(buf->data);
 
-    if (!args_size)
+    if (args_size == 0u) {
         return;
+    }
 
     args_size += sizeof(ModifyProject);
 
     char proj_old_name[ProjectData::kMaxNameLen];
     size_t proj_old_name_len = 0;
 
-    if (!(proj_old_name_len = Env::DocGetText("old_name", proj_old_name,
-                                              ProjectData::kMaxNameLen))) {
+    if ((proj_old_name_len = Env::DocGetText("old_name", proj_old_name,
+                                             ProjectData::kMaxNameLen)) == 0u) {
         return OnError("no 'old_name'");
     }
     buf->project_name_id = {
@@ -760,14 +774,15 @@ void OnActionCreateOrganization(const ContractID& cid) {
     using sourc3::OrganizationData;
     using sourc3::method::CreateOrganization;
 
-    constexpr auto max_args_size =
+    constexpr auto kMaxArgsSize =
         sizeof(CreateOrganization) + OrganizationData::GetMaxSize();
     auto buf = std::unique_ptr<CreateOrganization>(
-        static_cast<CreateOrganization*>(::operator new(max_args_size)));
+        static_cast<CreateOrganization*>(::operator new(kMaxArgsSize)));
     size_t args_size = GetOrganizationData(buf->data);
 
-    if (!args_size)
+    if (args_size == 0u) {
         return;
+    }
 
     args_size += sizeof(CreateOrganization);
 
@@ -798,10 +813,10 @@ void OnActionListOrganizations(const ContractID& cid) {
     using sourc3::OrganizationData;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
-    constexpr auto max_args_size =
+    constexpr auto kMaxArgsSize =
         sizeof(Organization) + OrganizationData::GetMaxSize();
     auto buf = std::unique_ptr<Organization>(
-        static_cast<Organization*>(::operator new(max_args_size)));
+        static_cast<Organization*>(::operator new(kMaxArgsSize)));
 
     OrganizationKey start{.m_Prefix = {.m_Cid = cid},
                           .m_KeyInContract = Organization::Key{}};
@@ -810,12 +825,12 @@ void OnActionListOrganizations(const ContractID& cid) {
 
     OrganizationKey key = start;
     Env::DocArray organizations("organizations");
-    uint32_t value_len = max_args_size, key_len = sizeof(OrganizationKey);
+    uint32_t value_len = kMaxArgsSize, key_len = sizeof(OrganizationKey);
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         Env::DocGroup org_object("");
         PrintOrganization(buf);
-        value_len = max_args_size;
+        value_len = kMaxArgsSize;
     }
 }
 
@@ -825,9 +840,9 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
 
-    constexpr auto max_args_size = sizeof(Project) + ProjectData::GetMaxSize();
+    constexpr auto kMaxArgsSize = sizeof(Project) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<Project>(
-        static_cast<Project*>(::operator new(max_args_size)));
+        static_cast<Project*>(::operator new(kMaxArgsSize)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid},
                      .m_KeyInContract = Project::Key{}};
@@ -839,14 +854,14 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = max_args_size, key_len = sizeof(ProjectKey);
+    uint32_t value_len = kMaxArgsSize, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         if (buf->organization_id == org_id) {
             Env::DocGroup project_object("");
             PrintProject(buf);
         }
-        value_len = max_args_size;
+        value_len = kMaxArgsSize;
     }
 }
 
@@ -878,22 +893,23 @@ void OnActionModifyOrganization(const ContractID& cid) {
     using sourc3::OrganizationData;
     using sourc3::method::ModifyOrganization;
 
-    constexpr auto max_args_size =
+    constexpr auto kMaxArgsSize =
         sizeof(ModifyOrganization) + OrganizationData::GetMaxSize();
     auto buf = std::unique_ptr<ModifyOrganization>(
-        static_cast<ModifyOrganization*>(::operator new(max_args_size)));
+        static_cast<ModifyOrganization*>(::operator new(kMaxArgsSize)));
     size_t args_size = GetOrganizationData(buf->data);
 
-    if (!args_size)
+    if (args_size == 0u) {
         return;
+    }
 
     args_size += sizeof(ModifyOrganization);
 
     char org_old_name[OrganizationData::kMaxNameLen];
     size_t org_old_name_len = 0;
 
-    if (!(org_old_name_len = Env::DocGetText("old_name", org_old_name,
-                                             OrganizationData::kMaxNameLen))) {
+    if ((org_old_name_len = Env::DocGetText(
+             "old_name", org_old_name, OrganizationData::kMaxNameLen)) == 0u) {
         return OnError("no 'old_name'");
     }
     buf->organization_name_id = {
@@ -1725,13 +1741,14 @@ void OnActionModifyUser(const ContractID& cid) {
     using sourc3::UserData;
     using sourc3::method::ModifyUser;
 
-    constexpr auto max_args_size = sizeof(ModifyUser) + UserData::GetMaxSize();
+    constexpr auto kMaxArgsSize = sizeof(ModifyUser) + UserData::GetMaxSize();
     auto buf = std::unique_ptr<ModifyUser>(
-        static_cast<ModifyUser*>(::operator new(max_args_size)));
+        static_cast<ModifyUser*>(::operator new(kMaxArgsSize)));
     size_t args_size = GetUserData(buf->data);
 
-    if (!args_size)
+    if (args_size == 0u) {
         return;
+    }
 
     args_size += sizeof(ModifyUser);
 
@@ -1762,13 +1779,13 @@ void OnActionViewUser(const ContractID& cid) {
     using sourc3::UserData;
     using UserKey = Env::Key_T<User::Key>;
 
-    constexpr auto max_args_size = sizeof(User) + UserData::GetMaxSize();
-    auto buf = std::unique_ptr<User>(
-        static_cast<User*>(::operator new(max_args_size)));
+    constexpr auto kMaxArgsSize = sizeof(User) + UserData::GetMaxSize();
+    auto buf =
+        std::unique_ptr<User>(static_cast<User*>(::operator new(kMaxArgsSize)));
 
     PubKey pub_key;
     Env::DocGetBlob("id", &pub_key, sizeof(PubKey));
-    if (_POD_(pub_key).IsZero()) {
+    if (_POD_(pub_key).IsZero() != 0u) {
         OnError("user id is missing");
         return;
     }
@@ -1779,7 +1796,7 @@ void OnActionViewUser(const ContractID& cid) {
     auto end = start;
 
     auto key = start;
-    uint32_t value_len = max_args_size, key_len = sizeof(UserKey);
+    uint32_t value_len = kMaxArgsSize, key_len = sizeof(UserKey);
     Env::VarReader reader(start, end);
     reader.MoveNext(&key, key_len, buf.get(), value_len, 0);
     Env::DocAddBlob_T("user_id", key.m_KeyInContract.id);

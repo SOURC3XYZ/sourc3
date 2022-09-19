@@ -236,8 +236,8 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     Env::Halt_if(Env::SaveVar_T(
         OrgIdByNameKey{{GetNameHash(org->data.data, org->data.name_len)}},
         org_id));
-    Env::Halt_if(
-        SaveVLObject(OrgKey{org_id}, org, sizeof(Organization) + data_len));
+    Env::Halt_if(SaveVLObject(OrgKey{org_id}, org,
+                              sizeof(Organization) + data_len) != 0u);
     Env::Halt_if(Env::SaveVar_T(OrgMemberKey{org->creator, org_id},
                                 OrgMember{Organization::Permissions::kAll}));
 
@@ -266,8 +266,8 @@ BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
     Env::Memcpy(&new_organization->data, &params.data,
                 total_len + sizeof(OrganizationData));
 
-    Env::Halt_if(!SaveVLObject(OrgKey{org_id}, new_organization,
-                               sizeof(Organization) + total_len));
+    Env::Halt_if(SaveVLObject(OrgKey{org_id}, new_organization,
+                              sizeof(Organization) + total_len) == 0u);
     Env::DelVar_T(OrgIdByNameKey{params.organization_name_id});
     Env::Halt_if(Env::SaveVar_T(
         OrgIdByNameKey{{GetNameHash(new_organization->data.data,
@@ -307,8 +307,8 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
         RepoIdByNameKey{
             {params.project_name_id, GetNameHash(repo->name, repo->name_len)}},
         repo_id));
-    Env::Halt_if(
-        SaveVLObject(RepoKey{repo_id}, repo, sizeof(repo) + repo->name_len));
+    Env::Halt_if(SaveVLObject(RepoKey{repo_id}, repo,
+                              sizeof(repo) + repo->name_len) != 0u);
     Env::Halt_if(Env::SaveVar_T(RepoMemberKey{repo->owner, repo_id},
                                 RepoMember{Repo::Permissions::kAll}));
 
@@ -334,8 +334,8 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     new_repo->is_private = params.is_private;
     Env::Memcpy(new_repo->name, params.name, params.name_len);
 
-    Env::Halt_if(!SaveVLObject(RepoKey{repo_id}, new_repo,
-                               sizeof(Repo) + new_repo->name_len));
+    Env::Halt_if(SaveVLObject(RepoKey{repo_id}, new_repo,
+                              sizeof(Repo) + new_repo->name_len) == 0u);
     Env::DelVar_T(RepoIdByNameKey{params.repo_name_id});
     Env::Halt_if(Env::SaveVar_T(
         RepoIdByNameKey{Repo::NameId{
@@ -390,8 +390,8 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
             {{params.organization_name_id},
              GetNameHash(project->data.data, project->data.name_len)}},
         proj_id));
-    Env::Halt_if(
-        SaveVLObject(ProjKey{proj_id}, project, sizeof(Project) + data_len));
+    Env::Halt_if(SaveVLObject(ProjKey{proj_id}, project,
+                              sizeof(Project) + data_len) != 0u);
     Env::Halt_if(Env::SaveVar_T(ProjMemberKey{project->creator, proj_id},
                                 ProjMember{Project::Permissions::kAll}));
 
@@ -418,8 +418,8 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     Env::Memcpy(&new_project->data, &params.data,
                 total_len + sizeof(ProjectData));
 
-    Env::Halt_if(!SaveVLObject(ProjKey{proj_id}, new_project,
-                               sizeof(Project) + total_len));
+    Env::Halt_if(SaveVLObject(ProjKey{proj_id}, new_project,
+                              sizeof(Project) + total_len) == 0u);
     Env::DelVar_T(ProjIdByNameKey{params.project_name_id});
     Env::Halt_if(Env::SaveVar_T(
         ProjIdByNameKey{Project::NameId{
@@ -454,35 +454,35 @@ BEAM_EXPORT void Method_17(const method::AddProjectMember& params) {  // NOLINT
                              params.member, params.permissions);
 }
 
-BEAM_EXPORT void Method_18(
-    const method::ModifyProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_18(  // NOLINT
+    const method::ModifyProjectMember& params) {
     // TODO: do not allow to modify project owner
     HandleModifyMember<Project>(params.project_name_id, params.caller,
                                 params.member, params.permissions);
 }
 
-BEAM_EXPORT void Method_19(
-    const method::RemoveProjectMember& params) {  // NOLINT
+BEAM_EXPORT void Method_19(  // NOLINT
+    const method::RemoveProjectMember& params) {
     // TODO: do not allow to modify project owner
     HandleRemoveMember<Project>(params.project_name_id, params.caller,
                                 params.member);
 }
 
-BEAM_EXPORT void Method_20(
-    const method::AddOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_20(  // NOLINT
+    const method::AddOrganizationMember& params) {
     HandleAddMember<Organization>(params.organization_name_id, params.caller,
                                   params.member, params.permissions);
 }
 
-BEAM_EXPORT void Method_21(
-    const method::ModifyOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_21(  // NOLINT
+    const method::ModifyOrganizationMember& params) {
     // TODO: do not allow to modify org owner
     HandleModifyMember<Organization>(params.organization_name_id, params.caller,
                                      params.member, params.permissions);
 }
 
-BEAM_EXPORT void Method_22(
-    const method::RemoveOrganizationMember& params) {  // NOLINT
+BEAM_EXPORT void Method_22(  // NOLINT
+    const method::RemoveOrganizationMember& params) {
     // TODO: do not allow to modify org owner
     HandleRemoveMember<Organization>(params.organization_name_id, params.caller,
                                      params.member);
