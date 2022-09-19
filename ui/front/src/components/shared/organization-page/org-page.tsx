@@ -4,15 +4,16 @@ import {
   BackButton,
   RepoItem,
   usePathPattern,
-  EditOrgForm,
   NavItem
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
-import { useEntitiesAction } from '@libs/hooks/thunk';
 import { CSSProperties, useCallback, useMemo } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
+import {
+  CreateOrgRepo, CreateProject, ModifyOrganization
+} from './forms';
 import MemberListItem from './member-list-item';
 import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
@@ -25,7 +26,7 @@ type RoutesType<T> = {
   navTitle:string;
   placeholder:string;
   fieldsToSearch: (keyof T)[];
-  createEntity?: (name: string) => void;
+  createEntity?: () => void;
   itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
 
@@ -38,19 +39,11 @@ function Projects() {
     type,
     pkey,
     projects,
-    modalApi,
     repos,
     members,
+    navigate,
     goBack
   } = useProject();
-
-  const { setModifyOrg } = useEntitiesAction();
-
-  const {
-    handleOk
-  } = modalApi;
-
-  const navigate = useNavigate();
 
   const back = useCallback(() => navigate(-1), []);
 
@@ -127,18 +120,18 @@ function Projects() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${id}/1/projects?type=all`,
+          to: `${path}projects/${id}/projects?type=all&page=1`,
           text: 'All Projects'
         },
         {
           key: 'my',
-          to: `${path}projects/${id}/1/projects?type=my`,
+          to: `${path}projects/${id}/projects?type=my&page=1`,
           text: 'My Projects'
         }
       ],
       fieldsToSearch: ['project_name', 'project_id'],
       itemComponent: projectListItem,
-      createEntity: handleOk
+      createEntity: () => navigate('create-project')
     },
     {
       path: 'repos',
@@ -151,18 +144,18 @@ function Projects() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${id}/1/repos?type=all`,
+          to: `${path}projects/${id}/repos?type=all&page=1`,
           text: 'All Repositories'
         },
         {
           key: 'my',
-          to: `${path}projects/${id}/1/repos?type=my`,
+          to: `${path}projects/${id}/repos?type=my&page=1`,
           text: 'My Repositories'
         }
       ],
       fieldsToSearch: ['repo_id', 'repo_name'],
-      itemComponent: repoListItem
-
+      itemComponent: repoListItem,
+      createEntity: () => navigate('create-repo')
     },
     {
       path: 'users',
@@ -202,20 +195,6 @@ function Projects() {
     tabData
   };
 
-  const orgFields = {
-    organization_id: org.organization_id,
-    name: org.organization_name,
-    short_title: org.organization_short_title,
-    about: org.organization_about,
-    telegram: org.organization_telegram,
-    discord: org.organization_discord,
-    website: org.organization_website,
-    instagram: org.organization_instagram,
-    logo_addr: org.organization_logo_ipfs_hash,
-    twitter: org.organization_twitter,
-    linkedin: org.organization_linkedin
-  };
-
   const RoutesView = useMemo(() => routes.map(
     (el) => (
       <Route
@@ -236,12 +215,12 @@ function Projects() {
             navItems={el.navItems}
             fieldsToSearch={el.fieldsToSearch}
             listItem={el.itemComponent}
-            handleOk={el.createEntity}
+            createEntity={el.createEntity}
           />
         )}
       />
     )
-  ), [projects, members, repos, currentRoute]);
+  ), [projects, members, repos, currentRoute, routes]);
 
   return (
     <>
@@ -250,13 +229,29 @@ function Projects() {
         <Route
           path="/edit"
           element={(
-            <EditOrgForm
+            <ModifyOrganization
+              item={org}
               pkey={pkey}
-              isDescription
-              title="Modify Organization"
               goBack={goBack}
-              callback={setModifyOrg}
-              {...orgFields}
+            />
+          )}
+        />
+        <Route
+          path="/create-project"
+          element={(
+            <CreateProject
+              pkey={pkey}
+              orgId={org.organization_id}
+              goBack={goBack}
+            />
+          )}
+        />
+        <Route
+          path="/create-repo"
+          element={(
+            <CreateOrgRepo
+              goBack={goBack}
+              projects={projects}
             />
           )}
         />

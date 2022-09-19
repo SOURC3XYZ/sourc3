@@ -5,16 +5,15 @@ import {
   RepoItem,
   NavItem,
   usePathPattern,
-  BackButton,
-  EditOrgForm
+  BackButton
 } from '@components/shared';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
-import { useEntitiesAction } from '@libs/hooks/thunk';
 import ProjectList, { HeaderElements } from './project-list';
 import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
 import { HeaderFields } from '../entity/entity-wrapper';
+import { CreateProjectRepo, ModifyProject } from './forms';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -24,7 +23,7 @@ type RoutesType<T> = {
   navTitle:string;
   placeholder:string;
   fieldsToSearch: (keyof T)[];
-  createEntity?: (name: string) => void;
+  createEntity?: () => void;
   itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
 
@@ -36,15 +35,11 @@ function ProjectRepos() {
     id,
     repos,
     page,
-    modalApi,
     members,
     project,
+    navigate,
     goBack
   } = useProjectRepos();
-
-  const {
-    handleOk
-  } = modalApi;
 
   const tabData = useMemo(() => [
     {
@@ -90,19 +85,18 @@ function ProjectRepos() {
       navItems: [
         {
           key: 'all',
-          to: `${path}project/${id}/1/repos?type=all`,
+          to: `${path}project/${id}/repos?type=all&page=1`,
           text: 'All Repositories'
         },
         {
           key: 'my',
-          to: `${path}project/${id}/1/repos?type=my`,
+          to: `${path}project/${id}/repos?type=my&page=1`,
           text: 'My Repositories'
         }
       ],
       fieldsToSearch: ['repo_id', 'repo_name'],
-      createEntity: handleOk,
+      createEntity: () => navigate('create-repo'),
       itemComponent: repoListItem
-
     },
     {
       path: 'users',
@@ -116,8 +110,6 @@ function ProjectRepos() {
       itemComponent: memberListItem
     }
   ];
-
-  const { setModifyProject } = useEntitiesAction();
 
   const currentRoute = usePathPattern(routes.map((el) => el.path));
 
@@ -142,22 +134,6 @@ function ProjectRepos() {
     },
     tabData
   };
-
-  const projectFields = {
-    organization_id: project.organization_id,
-    project_id: project.project_id,
-    name: project.project_name,
-    short_title: project.project_description,
-    telegram: project.project_telegram,
-    discord: project.project_discord,
-    website: project.project_website,
-    instagram: project.project_instagram,
-    logo_addr: project.project_logo_ipfs_hash,
-    twitter: project.project_twitter,
-    linkedin: project.project_linkedin
-  };
-
-  const navigate = useNavigate();
 
   const back = useCallback(() => navigate(-1), []);
 
@@ -192,13 +168,12 @@ function ProjectRepos() {
             navItems={el.navItems}
             fieldsToSearch={el.fieldsToSearch}
             listItem={el.itemComponent}
-            handleOk={el.createEntity}
+            createEntity={el.createEntity}
           />
         )}
       />
     )
   ), [members, repos, currentRoute]);
-
   return (
     <>
       {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
@@ -206,13 +181,19 @@ function ProjectRepos() {
         <Route
           path="/edit"
           element={(
-            <EditOrgForm
-              goBack={goBack}
-              callback={setModifyProject}
+            <ModifyProject
               pkey={pkey}
-              isDescription
-              title="Modify Project"
-              {...projectFields}
+              project={project}
+              goBack={goBack}
+            />
+          )}
+        />
+        <Route
+          path="/create-repo"
+          element={(
+            <CreateProjectRepo
+              goBack={goBack}
+              idProject={id}
             />
           )}
         />

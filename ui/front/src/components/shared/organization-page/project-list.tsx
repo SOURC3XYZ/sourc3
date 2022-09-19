@@ -6,7 +6,9 @@ import {
 } from '@components/shared';
 import { useSearch } from '@libs/hooks/shared/useSearch';
 import { OwnerListType } from '@types';
-import { useCallback, useMemo, useState } from 'react';
+import {
+  useCallback, useMemo, useState
+} from 'react';
 
 export type HeaderElements = {
   title?: string,
@@ -31,7 +33,7 @@ type ProjectListProps<T> = {
     placeholder?: string
   },
   route: string;
-  handleOk?: (name: string) => void;
+  createEntity?: () => void;
   listItem: (searchText:string) => (item: T) => JSX.Element;
 };
 
@@ -49,7 +51,7 @@ function ProjectList<T>({
   isShowNav,
   fieldsToSearch,
   listItem,
-  handleOk
+  createEntity
 }:ProjectListProps<T>) {
   const [searchText, setSearchText] = useState('');
 
@@ -59,11 +61,11 @@ function ProjectList<T>({
 
   const setInputText = useCallback((str: string) => setSearchText(str), [searchText]);
 
-  const showModalHandler = useCallback(() => showModal((prev) => !prev), [isModalVisile]);
+  const showModalHandler = useCallback(() => createEntity && createEntity(), [createEntity]);
 
   const closeModal = useCallback(() => showModal(false), []);
 
-  const isAddBtnVisible = useMemo(() => !!handleOk, [handleOk]);
+  const isAddBtnVisible = useMemo(() => !!createEntity, [createEntity]);
 
   return (
     <>
@@ -83,7 +85,7 @@ function ProjectList<T>({
         label={header?.label || ''}
         placeholder={header?.placeholder || ''}
         isModalVisible={isModalVisile}
-        handleCreate={handleOk}
+        handleCreate={createEntity}
         handleCancel={closeModal}
       />
       <EntityList

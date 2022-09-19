@@ -27,7 +27,7 @@ function ProjectListItem({
     message.info(key);
   };
 
-  const link = `${path}project/${project_id}/1/repos?type=${type}`;
+  const link = `${path}project/${project_id}/repos?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />

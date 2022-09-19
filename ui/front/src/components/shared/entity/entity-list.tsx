@@ -57,7 +57,7 @@ function EntityList<T>({
       className={styles.list}
       bordered
       size="small"
-      pagination={paginationVisible}
+      // pagination={paginationVisible}
       dataSource={items}
       renderItem={renderItem}
     />

@@ -92,7 +92,9 @@ function RepoItem({
     if (!masterBranch) e.preventDefault();
   };
 
-  const titleClassname = commit ? styles.title : styles.titleDisabled;
+  const titleClassname = commit ? styles.titleWrapper : styles.titleWrapperDisabled;
+
+  const secure = !!item.private && <div className={styles.privateLabel}>Private</div>;
 
   return (
     <List.Item
@@ -120,9 +122,12 @@ function RepoItem({
       <List.Item.Meta
         title={(
           <div className={titleClassname}>
-            <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
-              <Excretion name={repo_name} inputText={searchText} />
-            </Link>
+            <div className={styles.title}>
+              <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
+                <Excretion name={repo_name} inputText={searchText} />
+              </Link>
+            </div>
+            {secure}
           </div>
         )}
         description={(

@@ -19,12 +19,21 @@ type LocationState = {
 
 const useProjectRepos = () => {
   const { pathname } = useLocation();
-  const { page, projId } = useParams<keyof LocationState>() as LocationState;
+  const { projId } = useParams<keyof LocationState>() as LocationState;
   const path = pathname.split('project/')[0];
 
   const type:OwnerListType = useMemo(() => (
     getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
   ), [window.location.href]);
+
+  const page = useMemo(
+    () => {
+      const curPage = getQueryParam(window.location.href, 'page');
+      if (curPage) return +curPage;
+      return 1;
+    },
+    [window.location.href]
+  );
 
   const id = useMemo(() => +projId, [projId]);
 
@@ -74,6 +83,7 @@ const useProjectRepos = () => {
     searchText,
     id,
     modalApi,
+    navigate,
     deleteRepo,
     goBack
   };

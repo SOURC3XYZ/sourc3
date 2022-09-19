@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import { RC } from '@libs/action-creators';
-import { useCallApi, useModal } from '@libs/hooks/shared';
-import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 import { getQueryParam, unorderedRemove } from '@libs/utils';
 import {
@@ -25,12 +24,21 @@ type LocationState = {
 
 const useProject = () => {
   const { pathname } = useLocation();
-  const { page, orgId } = useParams<'page' & 'orgId'>() as LocationState;
+  const { orgId } = useParams<'page' & 'orgId'>() as LocationState;
   const path = pathname.split('projects/')[0];
 
   const type:OwnerListType = useMemo(() => (
     getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
   ), [window.location.href]);
+
+  const page = useMemo(
+    () => {
+      const curPage = getQueryParam(window.location.href, 'page');
+      if (curPage) return +curPage;
+      return 1;
+    },
+    [window.location.href]
+  );
 
   const [callApi] = useCallApi();
 
@@ -38,9 +46,9 @@ const useProject = () => {
 
   const [members, setMembers] = useState<MemberId[]>([]);
 
-  const { setInputText, createProject } = useEntitiesAction();
+  // const { setInputText, createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
-  const pid = useSelector((state) => state.app.pid);
+  // const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
     (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
@@ -72,10 +80,10 @@ const useProject = () => {
     return foundRepos;
   }, [projects, allRepos]);
 
-  const modalApi = useModal(
-    (txt: string) => setInputText(txt),
-    (name: string) => createProject(name, id, pid)
-  );
+  // const modalApi = useModal(
+  //   (txt: string) => setInputText(txt),
+  //   (name: string) => createProject(name, id, pid)
+  // );
   const goBack = useCallback(() => navigate('projects'), []);
 
   const getOrgMembers = useCallback(async () => {
@@ -97,8 +105,9 @@ const useProject = () => {
     type,
     searchText,
     id,
-    modalApi,
+    // modalApi,
     repos,
+    navigate,
     goBack
   };
 };

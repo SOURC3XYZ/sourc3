@@ -292,7 +292,19 @@ export const RC = {
       }
     }
   }),
-  createProject: (name:string, organization_id:number, pid = 0) => ({
+  createProject: ({
+    name,
+    organization_id,
+    logo_addr = '',
+    short_title = '',
+    website = '',
+    twitter = '',
+    linkedin = '',
+    instagram = '',
+    telegram = '',
+    discord = '',
+    pid = 0
+  }:any) => ({
     callID: 'create_project',
     method: 'invoke_contract',
     params: {
@@ -302,12 +314,20 @@ export const RC = {
         action: 'create_project',
         name,
         organization_id,
-        pid
+        pid,
+        logo_addr,
+        description: short_title,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord
       }
     }
   }),
 
-  createRepo: (repo_name:string, project_id: number, pid = 0) => ({
+  createRepo: (repo_name:string, project_id: number, secure: 0 | 1, pid = 0) => ({
     callID: 'create_repo',
     method: 'invoke_contract',
     params: {
@@ -315,6 +335,7 @@ export const RC = {
       args: {
         role: 'user',
         action: 'create_repo',
+        private: secure,
         repo_name,
         project_id,
         pid
@@ -447,7 +468,6 @@ export const RC = {
     name,
     logo_addr = '',
     short_title = '',
-    about = '',
     website = '',
     twitter = '',
     linkedin = '',
@@ -468,7 +488,6 @@ export const RC = {
         name,
         logo_addr,
         description: short_title,
-        about,
         website,
         twitter,
         linkedin,

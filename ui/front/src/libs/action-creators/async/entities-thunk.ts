@@ -17,10 +17,11 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
   const createRepo = (
     name: string,
     projectId: number,
+    priv: 0 | 1,
     pid = 0
   ):CustomAction => async (dispatch) => contractMutation(
     dispatch,
-    RC.createRepo(name, projectId, pid)
+    RC.createRepo(name, projectId, priv, pid)
   );
 
   const deleteRepo = (
@@ -38,13 +39,9 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.createOrganization(name, pid)
   );
 
-  const createProject = (
-    name: string,
-    organizationId:number,
-    pid = 0
-  ):CustomAction => async (dispatch) => contractMutation(
+  const createProject = (state: any):CustomAction => async (dispatch) => contractMutation(
     dispatch,
-    RC.createProject(name, organizationId, pid)
+    RC.createProject({ ...state })
   );
 
   const getOrganizations = ():CustomAction => async (dispatch) => contractQuery(

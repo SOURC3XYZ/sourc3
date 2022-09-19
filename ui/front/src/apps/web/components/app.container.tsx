@@ -41,11 +41,11 @@ function Main() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:page/*',
+      path: 'projects/:orgId/*',
       element: <Projects />
     },
     {
-      path: 'project/:projId/:page/*',
+      path: 'project/:projId/*',
       element: <ProjectRepos />
     },
     {
