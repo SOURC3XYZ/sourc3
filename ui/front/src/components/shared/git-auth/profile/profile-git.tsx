@@ -34,8 +34,6 @@ function GitProfile() {
         });
           break;
         case 'running':
-        case 'delayed':
-        case 'enqueued':
           setTaskStatus(false);
           setTimeout(() => { checkStatus(result); }, 30000);
           break;
@@ -56,7 +54,9 @@ function GitProfile() {
         axios.get(`${HOST}/tasks/${res.data.github_task}`).then((staskStatus) => {
           if (staskStatus.data.status === 'running') {
             setTaskStatus(false);
-            setTimeout(() => { checkStatus(res.data.github_task); }, 30000);
+            checkStatus(res.data.github_task);
+          } else if (staskStatus.data.status === 'delayed') {
+            setTaskStatus(true);
           } else if (staskStatus.data.status === 'done') {
             setTaskStatus(true);
           }
@@ -201,7 +201,7 @@ function GitProfile() {
                   />
                 </div>
               </div>
-              {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
+              {!taskStatus && github_owned_repos > 0 ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
               { github_owned_repos.length > 0 && <GitOwnRepos data={github_owned_repos} />}
             </div>
           </div>

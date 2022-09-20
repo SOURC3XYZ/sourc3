@@ -75,5 +75,15 @@ export interface IGitRepos {
   user_commits_cnt: number,
   total_commits_cnt: number,
   parent:string,
-  parent_stargazers_count: string
+  parent_stargazers_count: string,
+  user_total_prs_cnt: number,
+  user_pending_prs_cnt: number,
+  user_accepted_prs_cnt: number,
+  user_rejected_prs_cnt: number,
+  total_releases_cnt: number,
+  user_releases_cnt: number,
+  user_first_commit_time: string,
+  user_last_commit_time: string,
+  user_first_pr_time: string,
+  user_last_pr_time: string,
 }
