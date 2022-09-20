@@ -33,107 +33,109 @@
           font-size: 14px;
           line-height: 20px;
           margin-right: .3rem;
+          width: max-content;
           &>a{
             color: black;
-          }
-          &>a:hover{
-            color: #FF791F;
-          }
-        }
-
+            word-wrap: break-word;
       }
-      .forked{
-        margin-bottom: 32px;
-        font-family: 'PublicSans-Regular';
-        font-style: normal;
-        font-weight: 400;
-        font-size: 12px;
-        line-height: 20px;
-        color: #808080;
-        &_from{
-          display: flex;
-          width: 100%;
-          align-items: center;
-          flex-wrap: wrap;
-          &>span{
-            margin-right: .3rem;
-            &>span{
-              color: #FF791F;
-            }
-          }
-        }
+      &>a:hover{
+        color: #FF791F;
       }
     }
-    &_right{
-      width: 50%;
-      .contribution{
-        font-family: 'PublicSans-Bold';
-        font-style: normal;
-        font-weight: 700;
-        font-size: 14px;
-        line-height: 20px;
-        color:rgba(0,0,0,.5);
+
+  }
+  .forked{
+    margin-bottom: 32px;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    color: #808080;
+    &_from{
+      display: flex;
+      width: 100%;
+      align-items: center;
+      flex-wrap: wrap;
+      &>span{
+        margin-right: .3rem;
         &>span{
-          font-family: 'PublicSans-Regular';
-          font-style: normal;
-          font-weight: 400;
-          font-size: 14px;
-          line-height: 20px;
-        }
-  }
-      .commits{
-        margin-top: 15px;
-        font-family: 'PublicSans-Regular';
-        font-style: normal;
-        font-weight: 400;
-        font-size: 12px;
-        line-height: 20px;
-        color: rgba(0,0,0,0.5);
-      }
-      .langStone{
-        padding-top: 18px;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .releases {
-        display: flex;
-        flex-wrap: wrap;
-        font-family: 'PublicSans-Regular';
-        font-style: normal;
-        font-weight: 400;
-        font-size: 12px;
-        line-height: 20px;
-        width: 100%;
-        color: rgba(0,0,0, 0.5);
-        span:not(:last-child):after{
-          content: '/';
+          color: #FF791F;
         }
       }
     }
-
   }
-  .stargazers{
-    display: flex;
-    align-items: center;
-    color:rgba(0,0,0,.5);
+}
+&_right{
+  width: 50%;
+  .contribution{
     font-family: 'PublicSans-Bold';
     font-style: normal;
     font-weight: 700;
     font-size: 14px;
     line-height: 20px;
-  }
+    color:rgba(0,0,0,.5);
+    &>span{
+      font-family: 'PublicSans-Regular';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+    }
 }
-@media screen and (max-width: 768px) {
-  .wrapper{
-    .block{
-      flex-direction: column;
-      &_left{
-        padding-left: 0;
-      }
-      &_left, &_right{
-        width: max-content;
-      }
+  .commits{
+    margin-top: 15px;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    color: rgba(0,0,0,0.5);
+  }
+  .langStone{
+    padding-top: 18px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .releases {
+    display: flex;
+    flex-wrap: wrap;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    width: 100%;
+    color: rgba(0,0,0, 0.5);
+    span:not(:last-child):after{
+      content: '/';
     }
   }
+}
+
+}
+.stargazers{
+display: flex;
+align-items: center;
+color:rgba(0,0,0,.5);
+font-family: 'PublicSans-Bold';
+font-style: normal;
+font-weight: 700;
+font-size: 14px;
+line-height: 20px;
+}
+}
+@media screen and (max-width: 768px) {
+.wrapper{
+.block{
+  flex-direction: column;
+  &_left{
+    padding-left: 0;
+  }
+  &_left, &_right{
+    width: max-content;
+  }
+}
+}
 }
