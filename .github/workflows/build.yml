@@ -175,7 +175,7 @@ jobs:
         cp ./downloads/wasm-client* ./ui/front/dist
         sudo npm install --global yarn
 
-    - name: Cache node modules
+    - name: Cache Electron node modules
       uses: actions/cache@v3
       id: cache-electron-modules
       if: ${{false}}
@@ -183,7 +183,6 @@ jobs:
         cache-name: electron-node-modules
       with:
         path: |
-          ui/front/node_modules
           ui/node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
@@ -222,8 +221,8 @@ jobs:
         cd ui
         npm i dmg-license
 
-    - name: Install wasm [windows-2019]
-      if: matrix.os == 'windows-2019'
+    - name: Install nasm [windows-2019]
+      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: ilammy/setup-nasm@v1
 
     - name: Set up perl [windows-2019]
