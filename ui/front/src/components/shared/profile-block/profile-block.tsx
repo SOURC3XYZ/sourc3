@@ -14,7 +14,7 @@ type HeaderPropsType = {
 function ProfileBlock({
   pKey, profile, balance, git
 }:HeaderPropsType) {
-  const id = useSelector((state) => state.profile.data.id);
+  const login = useSelector((state) => state.profile.data.github_login);
 
   return (
     <div className={styles.wrapper}>
@@ -22,7 +22,7 @@ function ProfileBlock({
       {balance && <Balance />}
       {profile && <Profile pKey={pKey} />}
       {git && (
-        <Link to={`/profile/${id}`}>
+        <Link to={`/profile/${login}`}>
           <Avatar small />
         </Link>
       ) }
