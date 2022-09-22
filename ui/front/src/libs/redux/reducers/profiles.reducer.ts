@@ -39,6 +39,7 @@ export const defaultValue: IProfiles = {
   created_at: '',
   updated_at: '',
   token: '',
+  github_login: '',
   github_profile: defaultValueProf,
   github_orgs: [defaultValueOrg],
   github_owned_repos: []

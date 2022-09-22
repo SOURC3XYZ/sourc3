@@ -12,6 +12,7 @@ import { GitConnectAuth, GitOwnRepos } from '@components/shared/git-auth';
 import { Popup } from '@components/shared/popup';
 import MyLoader from '@components/shared/git-auth/profile/skeletonProfile';
 import { Spin } from 'antd';
+import { useSelector } from '@libs/redux';
 import styles from './profiles-git.module.scss';
 import Organizations from './organization';
 
@@ -20,11 +21,14 @@ function GitProfile() {
   const navigate = useNavigate();
   const urlId = pathname.split('/profile/')[1];
   const [{
-    github_profile, id, github_orgs, github_owned_repos
+    github_profile, github_orgs, github_owned_repos, id
   }, setGitHubProfile] = useState([]);
   const [allUsers, setAllUsers] = useState(0);
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
+  const own = useSelector((state) => state.profile.data.github_login);
+  console.log({ own });
+  console.log({ urlId });
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
@@ -139,7 +143,7 @@ function GitProfile() {
               <div className={styles.supHeader}>
                 {github_profile.login && <span>{github_profile.login}</span>}
                 {github_profile.email && <span>{github_profile.email}</span>}
-                {urlId && (
+                {urlId === own && (
                   <span>
                     id:
                     {' '}

@@ -30,6 +30,7 @@ export interface IGitOrgs {
 }
 export interface IProfiles {
   id: string,
+  github_login: string,
   login: string,
   created_at: string,
   updated_at: string,
