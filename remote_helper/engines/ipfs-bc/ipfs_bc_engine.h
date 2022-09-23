@@ -36,6 +36,8 @@ private:
     CommandResult DoFetchAsync(const std::vector<std::string_view>& args);
 
     CommandResult DoPush(const std::vector<std::string_view>& args);
+    CommandResult DoPushSync(const std::vector<std::string_view>& args);
+    CommandResult DoPushAsync(const std::vector<std::string_view>& args);
 
     CommandResult DoCapabilities([[maybe_unused]] const std::vector<std::string_view>& args);
 

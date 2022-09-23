@@ -21,6 +21,10 @@
 namespace sourc3 {
 namespace json = boost::json;
 
+constexpr size_t kIpfsAddressSize = 46;
+constexpr const char kJsonRpcHeader[] = "jsonrpc";
+constexpr const char kJsonRpcVersion[] = "2.0";
+
 std::string BeamWalletClient::PushObjects(const State& expected_state, const State& desired_state,
                                           uint32_t new_object_count, uint32_t new_metas_count) {
     std::stringstream ss;
@@ -44,8 +48,27 @@ std::string BeamWalletClient::LoadObjectFromIPFSAsync(std::string hash,
     auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
                            {"id", 1},
                            {"method", "ipfs_get"},
-                           {"params", {{"hash", std::move(hash)}}}};
+                           {"params", {{"hash", hash}}}};
     return CallAPIAsync(json::serialize(msg), context);
+}
+
+void BeamWalletClient::LoadObjectFromIPFSAsync2(std::string hash,
+                                                boost::asio::yield_context context) {
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
+                           {"id", 1},
+                           {"method", "ipfs_get"},
+                           {"params", {{"hash", hash}}}};
+    // return CallAPIAsync(json::serialize(msg), context);
+    SendAPIRequestAsync(json::serialize(msg), context);
+}
+
+void BeamWalletClient::LoadObjectFromIPFSAsync(size_t id, const std::string& hash,
+                                               boost::asio::yield_context context) {
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
+                           {"id", id},
+                           {"method", "ipfs_get"},
+                           {"params", {{"hash", hash}}}};
+    SendAPIRequestAsync(json::serialize(msg), context);
 }
 
 std::string BeamWalletClient::SaveObjectToIPFS(const uint8_t* data, size_t size) {
@@ -69,6 +92,198 @@ std::string BeamWalletClient::SaveObjectToIPFSAsync(const uint8_t* data, size_t 
                                 {"data", json::array(data, data + size)},
                             }}};
     return CallAPIAsync(json::serialize(msg), context);
+}
+
+void BeamWalletClient::SendObjectToIPFSAsync(size_t id, const uint8_t* data, size_t size,
+                                             AsyncContext context) {
+    auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
+                           {"id", id},
+                           {"method", "ipfs_add"},
+                           {"params",
+                            {
+                                {"data", json::array(data, data + size)},
+                            }}};
+
+    SendAPIRequestAsync(json::serialize(msg), context);
+}
+
+std::string BeamWalletClient::ReadAPIResponceAsync(AsyncContext context) {
+    return ReadAPIAsync(context);
+}
+
+void BeamWalletClient::Load(std::set<std::string> object_hashes, ReadCallback read_callback) {
+    // size_t done = 0;
+    // while (!object_hashes.empty()) {
+    //     auto it_to_receive = object_hashes.begin();
+    //     const auto& object_to_receive = *it_to_receive;
+
+    //    auto res = GetObjectsDataAsync(object_to_receive);
+    //    auto root = ParseJsonAndTest(res);
+    //    git_oid oid;
+    //    git_oid_fromstr(&oid, object_to_receive.data());
+
+    //    auto it = std::find_if(objects.begin(), objects.end(), [&](auto&& o) {
+    //        return o.hash == oid;
+    //    });
+    //    if (it == objects.end()) {
+    //        received_objects.insert(object_to_receive);  // move to received
+    //        object_hashes.erase(it_to_receive);
+
+    //        continue;
+    //    }
+    //    received_objects.insert(object_to_receive);
+
+    //    auto data = root.as_object()["object_data"].as_string();
+
+    //    ByteBuffer buf;
+    //    if (it->IsIPFSObject()) {
+    //        auto hash = FromHex(data);
+    //        auto responce =
+    //            wallet_client_.LoadObjectFromIPFS(std::string(hash.cbegin(), hash.cend()));
+    //        auto r = ParseJsonAndTest(responce);
+    //        if (r.as_object().find("result") == r.as_object().end()) {
+    //            cerr << "message: " << r.as_object()["error"].as_object()["message"].as_string()
+    //                 << "\ndata:    " << r.as_object()["error"].as_object()["data"].as_string()
+    //                 << endl;
+    //            return CommandResult::Failed;
+    //        }
+    //        auto d = r.as_object()["result"].as_object()["data"].as_array();
+    //        buf.reserve(d.size());
+    //        for (auto&& v : d) {
+    //            buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+    //        }
+    //    } else {
+    //        buf = FromHex(data);
+    //    }
+
+    //    git_oid res_oid;
+    //    auto type = it->GetObjectType();
+    //    git_oid r;
+    //    git_odb_hash(&r, buf.data(), buf.size(), type);
+    //    if (r != oid) {
+    //        // invalid hash
+    //        return CommandResult::Failed;
+    //    }
+    //    if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
+    //        return CommandResult::Failed;
+    //    }
+    //    if (!options_.cloning) {
+    //        if (type == GIT_OBJECT_TREE) {
+    //            git::Tree tree;
+    //            git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
+
+    //            auto count = git_tree_entrycount(*tree);
+    //            for (size_t i = 0; i < count; ++i) {
+    //                auto* entry = git_tree_entry_byindex(*tree, i);
+    //                auto s = ToString(*git_tree_entry_id(entry));
+    //                enuque_object(s);
+    //            }
+    //        } else if (type == GIT_OBJECT_COMMIT) {
+    //            git::Commit commit;
+    //            git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+    //            if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+    //                auto count = git_commit_parentcount(*commit);
+    //                for (unsigned i = 0; i < count; ++i) {
+    //                    auto* id = git_commit_parent_id(*commit, i);
+    //                    auto s = ToString(*id);
+    //                    enuque_object(s);
+    //                }
+    //                ++depth;
+    //            }
+    //            enuque_object(ToString(*git_commit_tree_id(*commit)));
+    //        }
+    //    }
+    //    if (progress) {
+    //        progress->UpdateProgress(++done);
+    //    }
+
+    //    object_hashes.erase(it_to_receive);
+    //}
+}
+
+void BeamWalletClient::LoadObjectsFromIPFSAsync(const std::vector<std::string>& objects,
+                                                ReadCallback read_callback) {
+    size_t processed = 0;
+    namespace ba = boost::asio;
+    ba::io_context& io_context = GetContext();
+    boost::asio::steady_timer timer(io_context);
+
+    ba::spawn(io_context, [&](ba::yield_context yield) {
+        size_t requested = 0;
+        bool requests_done = false;
+        std::function<void(std::string)> cb;
+        cb = [&requests_done, &cb, this, &processed, &requested,
+              read_callback = std::move(read_callback)](std::string responce) {
+            read_callback(std::move(responce), ++processed);
+
+            if (requests_done == false || processed < requested) {
+                ListenAPIResponceAsync(cb);
+            }
+        };
+
+        ListenAPIResponceAsync(cb);
+
+        for (size_t i = 0; i < objects.size(); ++i) {
+            LoadObjectFromIPFSAsync(i, objects[i], yield);
+            ++requested;
+            if (requested - processed > 100) {
+                timer.expires_from_now(std::chrono::milliseconds(100));
+                timer.async_wait(yield);
+            }
+        }
+        requests_done = true;
+        while (processed < requested) {
+            timer.expires_from_now(std::chrono::milliseconds(100));
+            timer.async_wait(yield);
+        }
+    });
+    io_context.run();
+}
+
+void BeamWalletClient::SaveObjectsToIPFSAsync(const std::vector<ObjectInfo>& objects,
+                                              ReadCallback read_callback) {
+    size_t processed = 0;
+    namespace ba = boost::asio;
+    ba::io_context& io_context = GetContext();
+    boost::asio::steady_timer timer(io_context);
+
+    ba::spawn(io_context, [&](ba::yield_context yield) {
+        size_t requested = 0;
+        bool requests_done = false;
+        std::function<void(std::string)> cb;
+        cb = [&requests_done, &cb, this, &processed, &requested,
+              read_callback = std::move(read_callback)](std::string responce) {
+            read_callback(std::move(responce), ++processed);
+
+            if (requests_done == false || processed < requested) {
+                ListenAPIResponceAsync(cb);
+            }
+        };
+
+        ListenAPIResponceAsync(cb);
+
+        for (size_t i = 0; i < objects.size(); ++i) {
+            const auto& obj = objects[i];
+            if (obj.selected) {
+                continue;
+            }
+
+            if (obj.GetSize() > kIpfsAddressSize) {
+                SendObjectToIPFSAsync(i, obj.GetData(), obj.GetSize(), yield);
+                ++requested;
+            }
+            if (requested - processed > 100) {
+                timer.expires_from_now(std::chrono::milliseconds(100));
+                timer.async_wait(yield);
+            }
+        }
+        requests_done = true;
+        while (processed < requested) {
+            timer.expires_from_now(std::chrono::milliseconds(100));
+            timer.async_wait(yield);
+        }
+    });
+    io_context.run();
 }
 
 bool BeamWalletClient::WaitForCompletion(WaitFunc&& func) {
@@ -159,30 +374,28 @@ std::string BeamWalletClient::ExtractResult(const std::string& response) {
 }
 
 std::string BeamWalletClient::InvokeShader(const std::string& args, bool create_tx) {
+    return ExtractResult(CallAPI(GetInvokeShaderRequest(1, args, create_tx)));
+}
+
+std::string BeamWalletClient::GetInvokeShaderRequest(size_t id, const std::string& args,
+                                                     bool create_tx) {
     auto msg = json::value{
         {kJsonRpcHeader, kJsonRpcVersion},
-        {"id", 1},
+        {"id", "invoke" + std::to_string(id)},
         {"method", "invoke_contract"},
         {"params",
          {{"contract_file", options_.appPath}, {"args", args}, {"create_tx", create_tx}}}};
 
-    return ExtractResult(CallAPI(json::serialize(msg)));
+    return json::serialize(msg);
 }
 
 std::string BeamWalletClient::InvokeShaderAsync(const std::string& args, bool create_tx,
                                                 IWalletClient::AsyncContext context) {
-    auto msg = json::value{
-        {kJsonRpcHeader, kJsonRpcVersion},
-        {"id", 1},
-        {"method", "invoke_contract"},
-        {"params",
-         {{"contract_file", options_.appPath}, {"args", args}, {"create_tx", create_tx}}}};
-
-    return ExtractResult(CallAPIAsync(json::serialize(msg), context));
+    return ExtractResult(CallAPIAsync(GetInvokeShaderRequest(1, args, create_tx), context));
 }
 
 const char* BeamWalletClient::GetCID() const {
-    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
+    return "1cf687aa590904eb75f567ed504760ab7eeffee31ec5d5bbac7465a1d982798c";
 }
 
 const std::string& BeamWalletClient::GetRepoID() {
@@ -234,12 +447,26 @@ std::string BeamWalletClient::CallAPI(std::string&& request) {
     return ReadAPI();
 }
 
-std::string BeamWalletClient::CallAPIAsync(std::string request, AsyncContext context) {
+void BeamWalletClient::ListenAPIResponceAsync(std::function<void(std::string)> cb) {
+    boost::asio::async_read_until(
+        stream_, boost::asio::dynamic_buffer(data_), "\n",
+        [this, cb = std::move(cb)](boost::system::error_code /*error*/, std::size_t size) {
+            auto line = data_.substr(0, size);
+            data_.erase(0, size);
+            cb(std::move(line));
+        });
+}
+
+bool BeamWalletClient::SendAPIRequestAsync(std::string request, AsyncContext context) {
     EnsureConnectedAsync(context);
     request.push_back('\n');
     size_t s = request.size();
     size_t transferred = boost::asio::async_write(stream_, boost::asio::buffer(request), context);
-    if (s != transferred) {
+    return s == transferred;
+}
+
+std::string BeamWalletClient::CallAPIAsync(std::string request, AsyncContext context) {
+    if (!SendAPIRequestAsync(std::move(request), context)) {
         return "";
     }
     return ReadAPIAsync(context);
@@ -273,6 +500,11 @@ void BeamWalletClient::PrintVersion() {
                   << res->as_object()["beam_version"].as_string().c_str() << " ("
                   << res->as_object()["beam_branch_name"].as_string().c_str() << ")" << std::endl;
     }
+}
+
+std::string BeamWalletClient::GetInvokeShaderArgs(std::string args, bool /*create_tx*/) {
+    args.append(",repo_id=").append(GetRepoID()).append(",cid=").append(GetCID());
+    return args;
 }
 
 std::string BeamWalletClient::LoadActualState() {
@@ -320,6 +552,124 @@ std::string BeamWalletClient::GetObjectDataAsync(const std::string& obj_id,
     std::stringstream ss;
     ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
     return InvokeWalletAsync(ss.str(), false, context);
+}
+
+void BeamWalletClient::GetObjectDataAsync(size_t id, const std::string& obj_id,
+                                          IWalletClient::AsyncContext context) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    SendAPIRequestAsync(GetInvokeShaderRequest(id, ss.str(), false), context);
+}
+
+std::string BeamWalletClient::ReadAPIResponseAsync(boost::asio::yield_context context) {
+    return ReadAPIAsync(context);
+}
+
+void BeamWalletClient::GetObjectsDataAsync(std::set<std::string> /*object_hashes*/,
+                                           ReadCallback /*object_callback*/,
+                                           FilterCallback /*received_callback*/) {
+    // size_t processed = 0;
+    // namespace ba = boost::asio;
+    // ba::io_context& io_context = GetContext();
+    //// boost::asio::steady_timer timer(io_context);
+    // std::set<std::string> received_objects;
+    // ba::spawn(io_context, [&](ba::yield_context yield) {
+    //     size_t done = 0;
+
+    //    std::function<void(std::string)> cb;
+    //    std::map<size_t, std::string> requests;
+
+    //    cb = [&, cb](std::string response) {
+    //        auto root = ParseJsonAndTest(response);
+    //        size_t id = static_cast<size_t>(root.as_object()["id"].as_int64());
+    //        const std::string& object_to_receive = requests[id];
+    //        if (received_callback(object_to_receive)) {
+    //            received_objects.insert(object_to_receive);  // move to received
+    //            object_hashes.erase(object_to_receive);
+    //            ListenAPIResponceAsync(cb);
+    //            return;
+    //        }
+    //        received_objects.insert(object_to_receive);
+
+    //        auto data = root.as_object()["object_data"].as_string();
+
+    //        ByteBuffer buf;
+    //        if (it->IsIPFSObject()) {
+    //            auto hash = FromHex(data);
+    //            LoadObjectFromIPFSAsync(id, std::string(hash.cbegin(), hash.cend()), yield);
+    //            auto r = ParseJsonAndTest(responce);
+    //            if (r.as_object().find("result") == r.as_object().end()) {
+    //                cerr << "message: " <<
+    //                r.as_object()["error"].as_object()["message"].as_string()
+    //                     << "\ndata:    " <<
+    //                     r.as_object()["error"].as_object()["data"].as_string()
+    //                     << endl;
+    //                return CommandResult::Failed;
+    //            }
+    //            auto d = r.as_object()["result"].as_object()["data"].as_array();
+    //            buf.reserve(d.size());
+    //            for (auto&& v : d) {
+    //                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+    //            }
+    //        } else {
+    //            buf = FromHex(data);
+    //        }
+
+    //        git_oid res_oid;
+    //        auto type = it->GetObjectType();
+    //        git_oid r;
+    //        git_odb_hash(&r, buf.data(), buf.size(), type);
+    //        if (r != oid) {
+    //            // invalid hash
+    //            return CommandResult::Failed;
+    //        }
+    //        if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
+    //            return CommandResult::Failed;
+    //        }
+    //        if (!options_.cloning) {
+    //            if (type == GIT_OBJECT_TREE) {
+    //                git::Tree tree;
+    //                git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
+
+    //                auto count = git_tree_entrycount(*tree);
+    //                for (size_t i = 0; i < count; ++i) {
+    //                    auto* entry = git_tree_entry_byindex(*tree, i);
+    //                    auto s = ToString(*git_tree_entry_id(entry));
+    //                    enuque_object(s);
+    //                }
+    //            } else if (type == GIT_OBJECT_COMMIT) {
+    //                git::Commit commit;
+    //                git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+    //                if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+    //                    auto count = git_commit_parentcount(*commit);
+    //                    for (unsigned i = 0; i < count; ++i) {
+    //                        auto* id = git_commit_parent_id(*commit, i);
+    //                        auto s = ToString(*id);
+    //                        enuque_object(s);
+    //                    }
+    //                    ++depth;
+    //                }
+    //                enuque_object(ToString(*git_commit_tree_id(*commit)));
+    //            }
+    //        }
+    //        if (progress) {
+    //            progress->UpdateProgress(++done);
+    //        }
+
+    //        object_hashes.erase(it_to_receive);
+    //    };
+
+    //    ListenAPIResponceAsync(cb);
+    //    size_t i = 0;
+    //    while (!object_hashes.empty()) {
+    //        auto it_to_receive = object_hashes.begin();
+    //        const auto& object_to_receive = *it_to_receive;
+
+    //        GetObjectDataAsync(++i, object_to_receive, yield);
+    //        requests.emplace(i, object_to_receive);
+    //    }
+    //});
+    // io_context.run();
 }
 
 std::string BeamWalletClient::GetReferences() {

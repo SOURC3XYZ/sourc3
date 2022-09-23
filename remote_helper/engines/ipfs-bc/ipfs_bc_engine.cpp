@@ -233,6 +233,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
     }
 
     auto progress = MakeProgress("Receiving objects", to_receive, options_.progress);
+
     size_t done = 0;
     namespace ba = boost::asio;
     ba::io_context& io_context = client_.GetContext();
@@ -255,9 +256,10 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
                 continue;
             }
 
+            client_.LoadObjectFromIPFSAsync2(object_to_receive, yield);
             ba::spawn(yield, [&, it2 = pit.first,
                               obj = object_to_receive](ba::yield_context yield2) {
-                auto res = client_.GetObjectDataAsync(obj, yield2);
+                auto res = client_.ReadAPIResponseAsync(yield2);
                 auto root = ParseJsonAndTest(res);
                 git_oid oid;
                 git_oid_fromstr(&oid, obj.data());
@@ -278,22 +280,27 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
                 if (it->IsIPFSObject()) {
                     auto hash = FromHex(data);
                     try {
-                        auto responce = client_.LoadObjectFromIPFSAsync(
-                            std::string(hash.cbegin(), hash.cend()), yield2);
-                        auto r = ParseJsonAndTest(responce);
-                        if (r.as_object().find("result") == r.as_object().end()) {
-                            cerr << "message: "
-                                 << r.as_object()["error"].as_object()["message"].as_string()
-                                 << "\ndata:    "
-                                 << r.as_object()["error"].as_object()["data"].as_string() << endl;
-                            result = CommandResult::Failed;
-                            return;
-                        }
-                        auto d = r.as_object()["result"].as_object()["data"].as_array();
-                        buf.reserve(d.size());
-                        for (auto&& v : d) {
-                            buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
-                        }
+                        client_.LoadObjectFromIPFSAsync(std::string(hash.cbegin(), hash.cend()),
+                                                        yield2);
+                        ba::spawn(yield, [&](ba::yield_context yield3) {
+                            auto responce = client_.ReadAPIResponseAsync(yield3);
+
+                            auto r = ParseJsonAndTest(responce);
+                            if (r.as_object().find("result") == r.as_object().end()) {
+                                cerr << "message: "
+                                     << r.as_object()["error"].as_object()["message"].as_string()
+                                     << "\ndata:    "
+                                     << r.as_object()["error"].as_object()["data"].as_string()
+                                     << endl;
+                                result = CommandResult::Failed;
+                                return;
+                            }
+                            auto d = r.as_object()["result"].as_object()["data"].as_array();
+                            buf.reserve(d.size());
+                            for (auto&& v : d) {
+                                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+                            }
+                        });
                     } catch (...) {
                         object_hashes.emplace(obj);
                         processing_hashes.erase(it2);
@@ -359,6 +366,10 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
 }
 
 IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& args) {
+    return (options_.is_async ? DoPushAsync(args) : DoPushSync(args));
+}
+
+IEngine::CommandResult IPFSBlockChainEngine::DoPushSync(const vector<string_view>& args) {
     ObjectCollector collector(client_.GetRepoDir());
     std::vector<Refs> refs;
     std::vector<git_oid> local_refs;
@@ -432,6 +443,136 @@ IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& a
                 progress->UpdateProgress(++i);
             }
         }
+    }
+
+    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {
+        return left.GetSize() > right.GetSize();
+    });
+
+    {
+        auto progress =
+            MakeProgress("Uploading metadata to blockchain", objs.size(), options_.progress);
+        collector.Serialize([&](const auto& buf, size_t done) {
+            std::string str_data;
+            if (!buf.empty()) {
+                // log
+                //{
+                //    const auto* p =
+                //        reinterpret_cast<const ObjectsInfo*>(buf.data());
+                //    const auto* cur =
+                //        reinterpret_cast<const GitObject*>(p + 1);
+                //    for (uint32_t i = 0; i < p->objects_number; ++i) {
+                //        size_t s = cur->data_size;
+                //        std::cerr << to_string(cur->hash) << '\t' << s
+                //                  << '\t' << (int)cur->type << '\n';
+                //        ++cur;
+                //        cur = reinterpret_cast<const GitObject*>(
+                //            reinterpret_cast<const uint8_t*>(cur) + s);
+                //    }
+                //    std::cerr << std::endl;
+                //}
+                str_data = ToHex(buf.data(), buf.size());
+            }
+
+            if (progress) {
+                progress->UpdateProgress(done);
+            }
+
+            bool last = (done == objs.size());
+            client_.PushObjects(str_data, collector.m_refs, last);
+            return last == false;  // continue
+        });
+    }
+    {
+        auto progress = MakeProgress("Waiting for the transaction completion",
+                                     client_.GetTransactionCount(), options_.progress);
+
+        auto res = client_.WaitForCompletion([&](size_t d, const auto& error) {
+            if (progress) {
+                if (error.empty()) {
+                    progress->UpdateProgress(d);
+                } else {
+                    progress->Failed(error);
+                }
+            }
+        });
+        cout << (res ? "ok " : "error ") << refs[0].remoteRef << '\n';
+    }
+
+    return CommandResult::Batch;
+}
+
+IEngine::CommandResult IPFSBlockChainEngine::DoPushAsync(const vector<string_view>& args) {
+    ObjectCollector collector(client_.GetRepoDir());
+    std::vector<Refs> refs;
+    std::vector<git_oid> local_refs;
+    for (size_t i = 1; i < args.size(); ++i) {
+        auto& arg = args[i];
+        auto p = arg.find(':');
+        auto& r = refs.emplace_back();
+        r.localRef = arg.substr(0, p);
+        r.remoteRef = arg.substr(p + 1);
+        git::Reference local_ref;
+        if (git_reference_lookup(local_ref.Addr(), *collector.m_repo, r.localRef.c_str()) < 0) {
+            cerr << "Local reference \'" << r.localRef << "\' doesn't exist" << endl;
+            return CommandResult::Failed;
+        }
+        auto& lr = local_refs.emplace_back();
+        git_oid_cpy(&lr, git_reference_target(*local_ref));
+    }
+
+    auto uploaded_objects = GetUploadedObjects();
+    auto remote_refs = RequestRefs();
+    std::vector<git_oid> merge_bases;
+    for (const auto& remote_ref : remote_refs) {
+        for (const auto& local_ref : local_refs) {
+            auto& base = merge_bases.emplace_back();
+            git_merge_base(&base, *collector.m_repo, &remote_ref.target, &local_ref);
+        }
+    }
+
+    collector.Traverse(refs, merge_bases);
+
+    auto& objs = collector.m_objects;
+    std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {
+        return left.oid < right.oid;
+    });
+    {
+        auto it = std::unique(objs.begin(), objs.end(), [](auto&& left, auto& right) {
+            return left.oid == right.oid;
+        });
+        objs.erase(it, objs.end());
+    }
+
+    for (auto& obj : collector.m_objects) {
+        if (uploaded_objects.find(obj.oid) != uploaded_objects.end()) {
+            obj.selected = true;
+        }
+    }
+
+    {
+        auto it = std::remove_if(objs.begin(), objs.end(), [](const auto& o) {
+            return o.selected;
+        });
+        objs.erase(it, objs.end());
+    }
+
+    {
+        auto progress = MakeProgress("Uploading objects to IPFS", collector.m_objects.size(),
+                                     options_.progress);
+
+        client_.SaveObjectsToIPFSAsync(
+            collector.m_objects,
+            [this, &collector, &progress](std::string response, size_t processed) {
+                auto r = ParseJsonAndTest(response);
+                auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
+                size_t j = static_cast<size_t>(r.as_object()["id"].as_int64());
+                auto& obj = collector.m_objects[j];
+                obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
+                if (progress) {
+                    progress->UpdateProgress(++processed);
+                }
+            });
     }
 
     std::sort(objs.begin(), objs.end(), [](auto&& left, auto&& right) {
