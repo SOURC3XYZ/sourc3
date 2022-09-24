@@ -55,7 +55,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                   try {
                     if (result) {
                       dispatch(AC.getAuthGitUser(result));
-                      navigate(`/profile/${result.data.id}`);
+                      navigate(`/profile/${result.data.github_login}`);
                     }
                   } catch (err) {
                     setIsErr(true);

@@ -1,0 +1,141 @@
+.wrapper{
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  margin-bottom: 8px;
+  position: relative;
+  .header{
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .block{
+    display: flex;
+    flex-direction: row;
+    &_left{
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+
+      .wrapper_title{
+        display: flex;
+        width: 100%;
+        align-items: center;
+        margin-bottom: 16px;
+        .name{
+          font-family: 'PublicSans-Bold';
+          font-style: normal;
+          font-weight: 700;
+          font-size: 14px;
+          line-height: 20px;
+          margin-right: .3rem;
+          width: max-content;
+          &>a{
+            color: black;
+            word-wrap: break-word;
+      }
+      &>a:hover{
+        color: #FF791F;
+      }
+    }
+
+  }
+  .forked{
+    margin-bottom: 32px;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    color: #808080;
+    &_from{
+      display: flex;
+      width: 100%;
+      align-items: center;
+      flex-wrap: wrap;
+      &>span{
+        margin-right: .3rem;
+        &>span{
+          color: #FF791F;
+        }
+      }
+    }
+  }
+}
+&_right{
+  width: 50%;
+  .contribution{
+    font-family: 'PublicSans-Bold';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 20px;
+    color:rgba(0,0,0,.5);
+    &>span{
+      font-family: 'PublicSans-Regular';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+    }
+}
+  .commits{
+    margin-top: 15px;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    color: rgba(0,0,0,0.5);
+  }
+  .langStone{
+    padding-top: 18px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .releases {
+    display: flex;
+    flex-wrap: wrap;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    width: 100%;
+    color: rgba(0,0,0, 0.5);
+    span:not(:last-child):after{
+      content: '/';
+    }
+  }
+}
+
+}
+.stargazers{
+display: flex;
+align-items: center;
+color:rgba(0,0,0,.5);
+font-family: 'PublicSans-Bold';
+font-style: normal;
+font-weight: 700;
+font-size: 14px;
+line-height: 20px;
+}
+}
+@media screen and (max-width: 768px) {
+.wrapper{
+.block{
+  flex-direction: column;
+  &_left{
+    padding-left: 0;
+  }
+  &_left, &_right{
+    width: max-content;
+  }
+}
+}
+}
