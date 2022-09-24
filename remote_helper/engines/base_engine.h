@@ -16,31 +16,62 @@
 
 #include <string_view>
 #include <vector>
+#include <memory>
 #include <limits>
 
 #include "utils.h"
+#include "git/object_collector.h"
 
 struct IWalletClient;
 
 struct IEngine {
+protected:
+    struct BaseOptions;
+
+public:
     enum struct CommandResult { Ok, Failed, Batch };
 
-    explicit IEngine(IWalletClient& client) : client_(client) {
+    explicit IEngine(IWalletClient& client, std::unique_ptr<BaseOptions> options)
+        : client_(client), options_(std::move(options)) {
     }
 
     virtual ~IEngine() = default;
 
-    virtual CommandResult DoCommand(std::string_view command,
-                                    std::vector<std::string_view>& args) = 0;
+    virtual CommandResult DoCommand(std::string_view command, std::vector<std::string_view>& args);
 
 protected:
     IWalletClient& client_;
 
+    virtual CommandResult DoList([[maybe_unused]] const std::vector<std::string_view>& args);
+
+    virtual CommandResult DoOption(const std::vector<std::string_view>& args);
+
+    virtual CommandResult DoCapabilities(
+        [[maybe_unused]] const std::vector<std::string_view>& args);
+
+    virtual CommandResult DoFetch(const std::vector<std::string_view>& args) = 0;
+
+    virtual CommandResult DoPush(const std::vector<std::string_view>& args) = 0;
+
+    virtual std::vector<sourc3::Ref> RequestRefs() = 0;
+
+    typedef CommandResult (IEngine::*Action)(const std::vector<std::string_view>& args);
+
+    struct Command {
+        std::string_view command;
+        Action action;
+    };
+
+    Command commands_[5] = {{"capabilities", &IEngine::DoCapabilities},
+                            {"list", &IEngine::DoList},
+                            {"option", &IEngine::DoOption},
+                            {"fetch", &IEngine::DoFetch},
+                            {"push", &IEngine::DoPush}};
+
     struct BaseOptions {
         enum struct SetResult { InvalidValue, Ok, Unsupported };
 
-        static constexpr uint32_t kInfiniteDepth =
-            (uint32_t)std::numeric_limits<int32_t>::max();
+        static constexpr uint32_t kInfiniteDepth = (uint32_t)std::numeric_limits<int32_t>::max();
         sourc3::ReporterType progress;
         int64_t verbosity = 0;
         uint32_t depth = kInfiniteDepth;
@@ -49,9 +80,10 @@ protected:
 
         virtual ~BaseOptions() = default;
 
-        virtual SetResult Set(std::string_view option,
-                              std::string_view value) = 0;
+        virtual SetResult Set(std::string_view option, std::string_view value);
 
         SetResult SetBool(bool& opt, std::string_view value);
     };
+
+    std::unique_ptr<BaseOptions> options_;
 };

@@ -17,49 +17,29 @@
 #include <optional>
 #include <boost/asio/io_context.hpp>
 #include "engines/base_engine.h"
-#include "git/object_collector.h"
 
 class IPFSBlockChainEngine final : public IEngine {
 public:
-    explicit IPFSBlockChainEngine(IWalletClient& client) : IEngine(client) {
+    explicit IPFSBlockChainEngine(IWalletClient& client)
+        : IEngine(client, std::make_unique<Options>()) {
     }
 
-    CommandResult DoCommand(std::string_view command, std::vector<std::string_view>& args) final;
+protected:
+    CommandResult DoFetch(const std::vector<std::string_view>& args) final;
+
+    CommandResult DoPush(const std::vector<std::string_view>& args) final;
+
+    std::vector<sourc3::Ref> RequestRefs() final;
 
 private:
-    CommandResult DoList([[maybe_unused]] const std::vector<std::string_view>& args);
-
-    CommandResult DoOption([[maybe_unused]] const std::vector<std::string_view>& args);
-
-    CommandResult DoFetch(const std::vector<std::string_view>& args);
     CommandResult DoFetchSync(const std::vector<std::string_view>& args);
     CommandResult DoFetchAsync(const std::vector<std::string_view>& args);
 
-    CommandResult DoPush(const std::vector<std::string_view>& args);
-
-    CommandResult DoCapabilities([[maybe_unused]] const std::vector<std::string_view>& args);
-
-    std::vector<sourc3::Ref> RequestRefs();
-
     std::set<git_oid> GetUploadedObjects();
-
-    typedef CommandResult (IPFSBlockChainEngine::*Action)(const std::vector<std::string_view>& args);
-
-    struct Command {
-        std::string_view command;
-        Action action;
-    };
-
-    Command commands_[5] = {{"capabilities", &IPFSBlockChainEngine::DoCapabilities},
-                            {"list", &IPFSBlockChainEngine::DoList},
-                            {"option", &IPFSBlockChainEngine::DoOption},
-                            {"fetch", &IPFSBlockChainEngine::DoFetch},
-                            {"push", &IPFSBlockChainEngine::DoPush}};
 
     struct Options final : BaseOptions {
         SetResult Set(std::string_view option, std::string_view value) final;
     };
 
-    Options options_;
     boost::asio::io_context base_context_;
 };

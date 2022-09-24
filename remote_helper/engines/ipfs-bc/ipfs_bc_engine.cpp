@@ -12,40 +12,8 @@ using namespace sourc3;
 
 constexpr size_t kIpfsAddressSize = 46;
 
-IEngine::CommandResult IPFSBlockChainEngine::DoCommand(string_view command,
-                                                       vector<string_view>& args) {
-    auto it = find_if(begin(commands_), end(commands_), [&](const auto& c) {
-        return command == c.command;
-    });
-    if (it == end(commands_)) {
-        cerr << "Unknown command: " << command << endl;
-        return CommandResult::Failed;
-    }
-    return std::invoke(it->action, this, args);
-}
-
-IEngine::CommandResult IPFSBlockChainEngine::DoList(
-    [[maybe_unused]] const vector<string_view>& args) {
-    auto refs = RequestRefs();
-
-    for (const auto& r : refs) {
-        cout << ToString(r.target) << " " << r.name << '\n';
-    }
-    if (!refs.empty()) {
-        cout << "@" << refs.back().name << " HEAD\n";
-    }
-
-    return CommandResult::Ok;
-}
-
-IEngine::CommandResult IPFSBlockChainEngine::DoOption(
-    [[maybe_unused]] const vector<string_view>& args) {
-    static string_view results[] = {"error invalid value", "ok", "unsupported"};
-
-    auto res = options_.Set(args[1], args[2]);
-
-    cout << results[size_t(res)];
-    return CommandResult::Ok;
+IEngine::CommandResult IPFSBlockChainEngine::DoFetch(const std::vector<std::string_view>& args) {
+    return (options_->is_async ? DoFetchAsync(args) : DoFetchSync(args));
 }
 
 IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_view>& args) {
@@ -64,7 +32,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_vie
     size_t total_objects = 0;
     std::vector<GitObject> objects;
     {
-        auto progress = MakeProgress("Enumerating objects", 0, options_.progress);
+        auto progress = MakeProgress("Enumerating objects", 0, options_->progress);
         // hack Collect objects metainfo
         auto res = client_.GetAllObjectsMetadata();
         auto root = ParseJsonAndTest(res);
@@ -82,7 +50,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_vie
 
             if (git_odb_exists(*accessor.m_odb, &o.hash) != 0) {
                 received_objects.insert(s);
-            } else if (options_.cloning) {
+            } else if (options_->cloning) {
                 enuque_object(s);
                 continue;
             }
@@ -95,7 +63,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_vie
         return CommandResult::Batch;
     }
 
-    auto progress = MakeProgress("Receiving objects", to_receive, options_.progress);
+    auto progress = MakeProgress("Receiving objects", to_receive, options_->progress);
 
     size_t done = 0;
     while (!object_hashes.empty()) {
@@ -151,7 +119,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_vie
         if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
             return CommandResult::Failed;
         }
-        if (!options_.cloning) {
+        if (!options_->cloning) {
             if (type == GIT_OBJECT_TREE) {
                 git::Tree tree;
                 git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
@@ -165,7 +133,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_vie
             } else if (type == GIT_OBJECT_COMMIT) {
                 git::Commit commit;
                 git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-                if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+                if (depth < options_->depth || options_->depth == Options::kInfiniteDepth) {
                     auto count = git_commit_parentcount(*commit);
                     for (unsigned i = 0; i < count; ++i) {
                         auto* id = git_commit_parent_id(*commit, i);
@@ -202,7 +170,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
     size_t total_objects = 0;
     std::vector<GitObject> objects;
     {
-        auto progress = MakeProgress("Enumerating objects", 0, options_.progress);
+        auto progress = MakeProgress("Enumerating objects", 0, options_->progress);
         // hack Collect objects metainfo
         auto res = client_.GetAllObjectsMetadata();
         auto root = ParseJsonAndTest(res);
@@ -220,7 +188,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
 
             if (git_odb_exists(*accessor.m_odb, &o.hash) != 0) {
                 received_objects.insert(s);
-            } else if (options_.cloning) {
+            } else if (options_->cloning) {
                 enuque_object(s);
                 continue;
             }
@@ -232,7 +200,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
         return CommandResult::Batch;
     }
 
-    auto progress = MakeProgress("Receiving objects", to_receive, options_.progress);
+    auto progress = MakeProgress("Receiving objects", to_receive, options_->progress);
     size_t done = 0;
     namespace ba = boost::asio;
     ba::io_context& io_context = client_.GetContext();
@@ -317,7 +285,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
                     result = CommandResult::Failed;
                     return;
                 }
-                if (!options_.cloning) {
+                if (!options_->cloning) {
                     if (type == GIT_OBJECT_TREE) {
                         git::Tree tree;
                         git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
@@ -331,7 +299,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
                     } else if (type == GIT_OBJECT_COMMIT) {
                         git::Commit commit;
                         git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-                        if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+                        if (depth < options_->depth || options_->depth == Options::kInfiniteDepth) {
                             auto count = git_commit_parentcount(*commit);
                             for (unsigned i = 0; i < count; ++i) {
                                 auto* id = git_commit_parent_id(*commit, i);
@@ -415,7 +383,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& a
 
     {
         auto progress = MakeProgress("Uploading objects to IPFS", collector.m_objects.size(),
-                                     options_.progress);
+                                     options_->progress);
         size_t i = 0;
         for (auto& obj : collector.m_objects) {
             if (obj.selected) {
@@ -440,7 +408,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& a
 
     {
         auto progress =
-            MakeProgress("Uploading metadata to blockchain", objs.size(), options_.progress);
+            MakeProgress("Uploading metadata to blockchain", objs.size(), options_->progress);
         collector.Serialize([&](const auto& buf, size_t done) {
             std::string str_data;
             if (!buf.empty()) {
@@ -474,7 +442,7 @@ IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& a
     }
     {
         auto progress = MakeProgress("Waiting for the transaction completion",
-                                     client_.GetTransactionCount(), options_.progress);
+                                     client_.GetTransactionCount(), options_->progress);
 
         auto res = client_.WaitForCompletion([&](size_t d, const auto& error) {
             if (progress) {
@@ -489,15 +457,6 @@ IEngine::CommandResult IPFSBlockChainEngine::DoPush(const vector<string_view>& a
     }
 
     return CommandResult::Batch;
-}
-
-IEngine::CommandResult IPFSBlockChainEngine::DoCapabilities(
-    [[maybe_unused]] const vector<string_view>& args) {
-    for (auto ib = begin(commands_) + 1, ie = end(commands_); ib != ie; ++ib) {
-        cout << ib->command << '\n';
-    }
-
-    return CommandResult::Ok;
 }
 
 std::vector<Ref> IPFSBlockChainEngine::RequestRefs() {
@@ -518,7 +477,7 @@ std::vector<Ref> IPFSBlockChainEngine::RequestRefs() {
 std::set<git_oid> IPFSBlockChainEngine::GetUploadedObjects() {
     std::set<git_oid> uploaded_objects;
 
-    auto progress = MakeProgress("Enumerating uploaded objects", 0, options_.progress);
+    auto progress = MakeProgress("Enumerating uploaded objects", 0, options_->progress);
     // hack Collect objects metainfo
     auto res = client_.GetAllObjectsMetadata();
     auto root = ParseJsonAndTest(res);
@@ -534,43 +493,10 @@ std::set<git_oid> IPFSBlockChainEngine::GetUploadedObjects() {
     return uploaded_objects;
 }
 
-IEngine::CommandResult IPFSBlockChainEngine::DoFetch(const vector<std::string_view>& args) {
-    return (options_.is_async ? DoFetchAsync(args) : DoFetchSync(args));
-}
-
 IEngine::BaseOptions::SetResult IPFSBlockChainEngine::Options::Set(std::string_view option,
                                                                    std::string_view value) {
-    if (option == "progress") {
-        if (value == "true") {
-            progress = sourc3::ReporterType::Progress;
-        } else if (value == "false") {
-            progress = sourc3::ReporterType::NoOp;
-        } else {
-            return SetResult::InvalidValue;
-        }
-        return SetResult::Ok;
-    } else if (option == "cloning") {
+    if (option == "cloning") {
         return SetBool(cloning, value);
-    } else if (option == "is_async") {
-        SetBool(is_async, value);
     }
-    /* else if (option == "verbosity") {
-         char* endPos;
-         auto v = std::strtol(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         verbosity = v;
-         return SetResult::Ok;
-     } else if (option == "depth") {
-         char* endPos;
-         auto v = std::strtoul(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         depth = v;
-         return SetResult::Ok;
-     }*/
-
-    return SetResult::Unsupported;
+    return IEngine::BaseOptions::Set(std::move(option), std::move(value));
 }

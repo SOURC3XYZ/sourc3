@@ -182,7 +182,7 @@ std::string BeamWalletClient::InvokeShaderAsync(const std::string& args, bool cr
 }
 
 const char* BeamWalletClient::GetCID() const {
-    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
+    return "202fd1ef42cd0b121b704fea306c8604f6065471f4c32a9192e7629b41558a60";
 }
 
 const std::string& BeamWalletClient::GetRepoID() {

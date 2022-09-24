@@ -21,41 +21,19 @@
 
 class FullIPFSEngine final : public IEngine {
 public:
-    explicit FullIPFSEngine(IWalletClient& client) : IEngine(client) {
+    explicit FullIPFSEngine(IWalletClient& client) : IEngine(client, std::make_unique<Options>()) {
     }
 
-    CommandResult DoCommand(std::string_view command, std::vector<std::string_view>& args) final;
-
 private:
-    CommandResult DoList([[maybe_unused]] const std::vector<std::string_view>& args);
+    CommandResult DoFetch(const std::vector<std::string_view>& args) final;
 
-    CommandResult DoOption([[maybe_unused]] const std::vector<std::string_view>& args);
+    CommandResult DoPush(const std::vector<std::string_view>& args) final;
 
-    CommandResult DoFetch(const std::vector<std::string_view>& args);
-
-    CommandResult DoPush(const std::vector<std::string_view>& args);
-
-    CommandResult DoCapabilities([[maybe_unused]] const std::vector<std::string_view>& args);
-
-    std::vector<sourc3::Ref> RequestRefs();
-
-    typedef CommandResult (FullIPFSEngine::*Action)(const std::vector<std::string_view>& args);
-
-    struct Command {
-        std::string_view command;
-        Action action;
-    };
-
-    Command commands_[5] = {{"capabilities", &FullIPFSEngine::DoCapabilities},
-                            {"list", &FullIPFSEngine::DoList},
-                            {"option", &FullIPFSEngine::DoOption},
-                            {"fetch", &FullIPFSEngine::DoFetch},
-                            {"push", &FullIPFSEngine::DoPush}};
+    std::vector<sourc3::Ref> RequestRefs() final;
 
     struct Options final : BaseOptions {
         SetResult Set(std::string_view option, std::string_view value) final;
     };
 
-    Options options_;
     boost::asio::io_context base_context_;
 };

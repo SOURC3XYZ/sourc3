@@ -393,40 +393,6 @@ void UploadObjectsAsync(ObjectCollector& collector, uint32_t& new_objects, uint3
 
 }  // namespace
 
-IEngine::CommandResult FullIPFSEngine::DoCommand(std::string_view command,
-                                                 std::vector<std::string_view>& args) {
-    auto it = find_if(begin(commands_), end(commands_), [&](const auto& c) {
-        return command == c.command;
-    });
-    if (it == end(commands_)) {
-        cerr << "Unknown command: " << command << endl;
-        return CommandResult::Failed;
-    }
-    return invoke(it->action, this, args);
-}
-
-IEngine::CommandResult FullIPFSEngine::DoList(const vector<string_view>&) {
-    auto refs = RequestRefs();
-
-    for (const auto& r : refs) {
-        cout << sourc3::ToString(r.target) << " " << r.name << '\n';
-    }
-    if (!refs.empty()) {
-        cout << "@" << refs.back().name << " HEAD\n";
-    }
-
-    return CommandResult::Ok;
-}
-
-IEngine::CommandResult FullIPFSEngine::DoOption(const vector<string_view>& args) {
-    static string_view results[] = {"error invalid value", "ok", "unsupported"};
-
-    auto res = options_.Set(args[1], args[2]);
-
-    cout << results[size_t(res)];
-    return CommandResult::Ok;
-}
-
 IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& args) {
     using namespace sourc3;
     std::set<std::string> object_hashes;
@@ -443,10 +409,10 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
     git::RepoAccessor accessor(client_.GetRepoDir());
     size_t total_objects = 0;
 
-    auto objects = options_.is_async
-                       ? GetUploadedObjectsAsync(RequestRefs(), client_, options_.progress,
+    auto objects = options_->is_async
+                       ? GetUploadedObjectsAsync(RequestRefs(), client_, options_->progress,
                                                  client_.GetContext())
-                       : GetUploadedObjects(RequestRefs(), client_, options_.progress);
+                       : GetUploadedObjects(RequestRefs(), client_, options_->progress);
     for (const auto& obj : objects) {
         if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
             received_objects.insert(ToString(obj.hash));
@@ -454,7 +420,7 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
         }
     }
     auto progress = sourc3::MakeProgress(
-        "Receiving objects", total_objects - received_objects.size(), options_.progress);
+        "Receiving objects", total_objects - received_objects.size(), options_->progress);
     size_t done = 0;
     while (!object_hashes.empty()) {
         auto it_to_receive = object_hashes.begin();
@@ -498,7 +464,7 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
         } else if (type == GIT_OBJECT_COMMIT) {
             git::Commit commit;
             git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-            if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+            if (depth < options_->depth || options_->depth == Options::kInfiniteDepth) {
                 auto count = git_commit_parentcount(*commit);
                 for (unsigned i = 0; i < count; ++i) {
                     auto* id = git_commit_parent_id(*commit, i);
@@ -543,9 +509,10 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
 
     auto remote_refs = RequestRefs();
     auto [uploaded_objects, metas] =
-        (options_.is_async
-             ? GetUploadedObjectsWithMetasAsync(remote_refs, client_, options_.progress, context)
-             : GetUploadedObjectsWithMetas(remote_refs, client_, options_.progress));
+        (options_->is_async
+             ? GetUploadedObjectsWithMetasAsync(remote_refs, client_, options_->progress, context)
+             : GetUploadedObjectsWithMetas(remote_refs, client_, options_->progress));
+    std::cerr << "Objects: " << uploaded_objects.size() << ", metas: " << metas.size() << std::endl;
     auto uploaded_oids = GetOidsFromObjects(uploaded_objects);
     std::vector<git_oid> merge_bases;
     for (const auto& remote_ref : remote_refs) {
@@ -646,14 +613,12 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
 
     uint32_t new_objects = 0;
     uint32_t new_metas = 0;
-    {
-        if (options_.is_async) {
-            UploadObjectsAsync(collector, new_objects, new_metas, metas, oid_to_ipfs, oid_to_meta,
-                               options_.progress, client_, context);
-        } else {
-            UploadObjects(collector, new_objects, new_metas, metas, oid_to_ipfs, oid_to_meta,
-                          options_.progress, client_);
-        }
+    if (options_->is_async) {
+        UploadObjectsAsync(collector, new_objects, new_metas, metas, oid_to_ipfs, oid_to_meta,
+                           options_->progress, client_, context);
+    } else {
+        UploadObjects(collector, new_objects, new_metas, metas, oid_to_ipfs, oid_to_meta,
+                      options_->progress, client_);
     }
     if (!is_forced && !CheckCommitsLinking(metas, collector.m_refs, oid_to_meta)) {
         cerr << "Commits linking wrong, looks like you use force push "
@@ -668,13 +633,13 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         ParseJsonAndTest(client_.SaveObjectToIPFS(new_refs_buffer.data(), new_refs_buffer.size()));
     new_state.hash = new_state_res.as_object()["result"].as_object()["hash"].as_string().c_str();
     {
-        auto progress = MakeProgress("Uploading metadata to blockchain", 1, options_.progress);
+        auto progress = MakeProgress("Uploading metadata to blockchain", 1, options_->progress);
         ParseJsonAndTest(client_.PushObjects(prev_state, new_state, new_objects, new_metas));
         progress->AddProgress(1);
     }
     {
         auto progress = MakeProgress("Waiting for the transaction completion",
-                                     client_.GetTransactionCount(), options_.progress);
+                                     client_.GetTransactionCount(), options_->progress);
 
         auto res = client_.WaitForCompletion([&](size_t d, const auto& error) {
             if (error.empty()) {
@@ -687,15 +652,6 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
     }
 
     return CommandResult::Batch;
-}
-
-IEngine::CommandResult FullIPFSEngine::DoCapabilities(
-    [[maybe_unused]] const vector<std::string_view>& args) {
-    for (auto ib = begin(commands_) + 1, ie = end(commands_); ib != ie; ++ib) {
-        cout << ib->command << '\n';
-    }
-
-    return CommandResult::Ok;
 }
 
 std::vector<sourc3::Ref> FullIPFSEngine::RequestRefs() {
@@ -712,34 +668,5 @@ std::vector<sourc3::Ref> FullIPFSEngine::RequestRefs() {
 
 IEngine::BaseOptions::SetResult FullIPFSEngine::Options::Set(std::string_view option,
                                                              std::string_view value) {
-    if (option == "progress") {
-        if (value == "true") {
-            progress = sourc3::ReporterType::Progress;
-        } else if (value == "false") {
-            progress = sourc3::ReporterType::NoOp;
-        } else {
-            return SetResult::InvalidValue;
-        }
-        return SetResult::Ok;
-    } else if (option == "is_async") {
-        SetBool(is_async, value);
-    } /* else if (option == "verbosity") {
-         char* endPos;
-         auto v = std::strtol(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         verbosity = v;
-         return SetResult::Ok;
-     } else if (option == "depth") {
-         char* endPos;
-         auto v = std::strtoul(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         depth = v;
-         return SetResult::Ok;
-     }*/
-
-    return SetResult::Unsupported;
+    return IEngine::BaseOptions::Set(std::move(option), std::move(value));
 }
