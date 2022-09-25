@@ -7,14 +7,17 @@ import {
   NavItem
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
+import { ArgumentTypes } from '@types';
 import { CSSProperties, useCallback, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
 import {
+  AddUserOrg,
   CreateOrgRepo, CreateProject, ModifyOrganization
 } from './forms';
 import MemberListItem from './member-list-item';
+import { orgData, ORG_PERMISSION } from './permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
 
@@ -41,8 +44,10 @@ function Projects() {
     projects,
     repos,
     members,
+    yourPermissions,
     navigate,
-    goBack
+    goBack,
+    addMemberToOrg
   } = useProject();
 
   const back = useCallback(() => navigate(-1), []);
@@ -102,6 +107,7 @@ function Projects() {
     return (
       <MemberListItem
         item={item}
+        data={orgData}
         path={path}
         searchText={searchText}
       />
@@ -131,7 +137,8 @@ function Projects() {
       ],
       fieldsToSearch: ['project_name', 'project_id'],
       itemComponent: projectListItem,
-      createEntity: () => navigate('create-project')
+      createEntity: yourPermissions?.[ORG_PERMISSION.ADD_PRODECTS]
+        ? () => navigate('create-project') : undefined
     },
     {
       path: 'repos',
@@ -166,7 +173,9 @@ function Projects() {
         placeholder: 'Search by username of pid'
       },
       fieldsToSearch: ['member'],
-      itemComponent: memberListItem
+      itemComponent: memberListItem,
+      createEntity: yourPermissions?.[ORG_PERMISSION.ADD_MEMBER]
+        ? () => navigate('add-user') : undefined
     }
   ];
 
@@ -176,6 +185,7 @@ function Projects() {
     pkey,
     owner: org.organization_creator,
     routes: routes.map((el) => el.path),
+    yourPermissions,
     avatar: {
       name: `${org.organization_id}${org.organization_name}${org.organization_creator}`,
       ipfs: org.organization_logo_ipfs_hash,
@@ -222,6 +232,10 @@ function Projects() {
     )
   ), [projects, members, repos, currentRoute, routes]);
 
+  const addUserMember = useCallback((obj: ArgumentTypes<typeof addMemberToOrg>[0]) => {
+    addMemberToOrg(obj);
+  }, []);
+
   return (
     <>
       {backButton}
@@ -252,6 +266,17 @@ function Projects() {
             <CreateOrgRepo
               goBack={goBack}
               projects={projects}
+            />
+          )}
+        />
+        <Route
+          path="/add-user"
+          element={(
+            <AddUserOrg
+              data={orgData}
+              id={org.organization_id}
+              goBack={goBack}
+              callback={addUserMember as (obj: unknown) => void}
             />
           )}
         />

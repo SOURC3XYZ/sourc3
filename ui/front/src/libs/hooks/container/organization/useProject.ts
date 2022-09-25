@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import { RC } from '@libs/action-creators';
 import { useCallApi } from '@libs/hooks/shared';
+import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { getQueryParam, unorderedRemove } from '@libs/utils';
 import {
@@ -30,6 +31,8 @@ const useProject = () => {
   const type:OwnerListType = useMemo(() => (
     getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
   ), [window.location.href]);
+
+  const { addMemberToOrg } = useEntitiesAction();
 
   const page = useMemo(
     () => {
@@ -91,6 +94,20 @@ const useProject = () => {
     if (recievedMembers) setMembers(recievedMembers.members);
   }, []);
 
+  const yourPermissions = useMemo(
+    () => {
+      const foundPermissions = members.find((el) => el.member === pkey)?.permissions;
+      if (foundPermissions) {
+        return foundPermissions
+          .toString(2)
+          .split('')
+          .map((el) => !!+el)
+          .reverse();
+      } return null;
+    },
+    [members]
+  );
+
   useEffect(() => {
     getOrgMembers();
   }, []);
@@ -105,10 +122,12 @@ const useProject = () => {
     type,
     searchText,
     id,
+    yourPermissions,
     // modalApi,
     repos,
     navigate,
-    goBack
+    goBack,
+    addMemberToOrg
   };
 };
 

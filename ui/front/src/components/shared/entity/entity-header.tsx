@@ -18,6 +18,7 @@ import { AVATAR_COLORS } from '@libs/constants';
 import { AvatarProps } from 'boring-avatars';
 import styles from './entity-wrapper.module.scss';
 import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
+import { ORG_PERMISSION } from '../organization-page/permissions-data';
 
 export type SocialLinks = {
   website: string
@@ -37,6 +38,7 @@ export type AvatarParams = {
 
 type EntityHeaderProps = {
   pkey: string,
+  yourPermissions: boolean[] | null;
   owner:string,
   shortTitle:string,
   routes:string[],
@@ -100,7 +102,7 @@ function SocialLinkHOC({ key, value }: {
 }
 
 function EntityHeader({
-  pkey, owner, shortTitle, routes, tabData, avatar, description, socialLinks, title
+  shortTitle, yourPermissions, routes, tabData, avatar, description, socialLinks, title
 }:EntityHeaderProps) {
   const [showMore, setShowMore] = useState(false);
   const [currentTab, setCurrentTab] = useState(0);
@@ -131,12 +133,12 @@ function EntityHeader({
   }, []);
 
   const settings = useMemo(() => (
-    // pkey === owner && (
-    <Link className={styles.settingLink} to="edit">
-      <SettingsIcon className={styles.icon} />
-    </Link>
-    // )
-  ), []);
+    yourPermissions?.[ORG_PERMISSION.MODIFY_ORG] && (
+      <Link className={styles.settingLink} to="edit">
+        <SettingsIcon className={styles.icon} />
+      </Link>
+    )
+  ), [yourPermissions]);
 
   return (
     <div className={styles.specBlock}>

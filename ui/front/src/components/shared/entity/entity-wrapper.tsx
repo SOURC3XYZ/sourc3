@@ -7,6 +7,7 @@ export type HeaderFields = {
   pkey: string,
   owner: string,
   shortTitle:string,
+  yourPermissions: boolean[] | null
   tabData: Tab[],
   routes: string[],
   avatar: AvatarParams,
@@ -30,6 +31,7 @@ function EntityWrapper({
   const header = useMemo(() => !!headerFields && (
     <EntityHeader
       pkey={pkey}
+      yourPermissions={headerFields.yourPermissions}
       owner={headerFields.owner}
       shortTitle={headerFields.shortTitle}
       routes={headerFields.routes}

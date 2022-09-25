@@ -497,6 +497,106 @@ export const RC = {
         pid
       }
     }
+  } as const),
+  addOrganizationMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid?:number
+  }) => ({
+    callID: 'add_organization_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_organization_member',
+        organization_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  modifyOrganizationMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'modify_organization_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_organization_member',
+        organization_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  addProjectMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'add_project_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_project_member',
+        project_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  modifyProjectMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'modify_project_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_project_member',
+        project_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
   } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

@@ -1,6 +1,7 @@
 /* eslint-disable prefer-destructuring */
 import { CustomAction } from '@libs/redux';
 import {
+  ArgumentTypes,
   CallBeamApi, IProfile,
   OrganizationsResp, PKeyRes,
   ProjectsResp,
@@ -95,14 +96,30 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     );
   };
 
+  const addMemberToOrg = (
+    ...args: ArgumentTypes<typeof RC['addOrganizationMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addOrganizationMember(...args)
+  );
+
+  const addMemberToProject = (
+    ...args: ArgumentTypes<typeof RC['addProjectMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addProjectMember(...args)
+  );
+
   return [{
     getOrganizations, getProjects, getRepos, setModifyUser, getViewUser
   }, {
     createProject,
+    addMemberToOrg,
     createOrganization,
     setModifyOrganization,
     deleteRepo,
     createRepo,
-    setModifyProject
+    setModifyProject,
+    addMemberToProject
   }] as const;
 };

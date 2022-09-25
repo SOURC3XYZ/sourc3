@@ -9,11 +9,13 @@ import {
 } from '@components/shared';
 import { Route, Routes } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
+import { ArgumentTypes } from '@types';
 import ProjectList, { HeaderElements } from './project-list';
 import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
 import { HeaderFields } from '../entity/entity-wrapper';
-import { CreateProjectRepo, ModifyProject } from './forms';
+import { AddUserOrg, CreateProjectRepo, ModifyProject } from './forms';
+import { projectData } from './permissions-data';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -37,8 +39,10 @@ function ProjectRepos() {
     page,
     members,
     project,
+    yourPermissions,
     navigate,
-    goBack
+    goBack,
+    addMemberToProject
   } = useProjectRepos();
 
   const tabData = useMemo(() => [
@@ -66,6 +70,7 @@ function ProjectRepos() {
   const memberListItem = (searchText:string) => function (item: typeof members[number]) {
     return (
       <MemberListItem
+        data={projectData}
         item={item}
         path={path}
         searchText={searchText}
@@ -107,6 +112,7 @@ function ProjectRepos() {
         placeholder: 'Search by username of pid'
       },
       fieldsToSearch: ['member'],
+      createEntity: () => navigate('add-member'),
       itemComponent: memberListItem
     }
   ];
@@ -115,6 +121,7 @@ function ProjectRepos() {
 
   const headerFields:HeaderFields = {
     pkey,
+    yourPermissions,
     owner: project.project_creator,
     routes: routes.map((el) => el.path),
     avatar: {
@@ -174,6 +181,11 @@ function ProjectRepos() {
       />
     )
   ), [members, repos, currentRoute]);
+
+  const addUserMember = useCallback((obj: ArgumentTypes<typeof addMemberToProject>[0]) => {
+    addMemberToProject(obj);
+  }, []);
+
   return (
     <>
       {isElectron ? <BackButton inlineStyles={style} onClick={back} /> : null}
@@ -194,6 +206,17 @@ function ProjectRepos() {
             <CreateProjectRepo
               goBack={goBack}
               idProject={id}
+            />
+          )}
+        />
+        <Route
+          path="/add-member"
+          element={(
+            <AddUserOrg
+              data={projectData}
+              id={id}
+              goBack={goBack}
+              callback={addUserMember as (obj: unknown) => void}
             />
           )}
         />

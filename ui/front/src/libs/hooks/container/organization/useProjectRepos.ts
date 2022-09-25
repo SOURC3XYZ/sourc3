@@ -26,6 +26,8 @@ const useProjectRepos = () => {
     getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
   ), [window.location.href]);
 
+  const { addMemberToProject } = useEntitiesAction();
+
   const page = useMemo(
     () => {
       const curPage = getQueryParam(window.location.href, 'page');
@@ -67,6 +69,20 @@ const useProjectRepos = () => {
 
   const goBack = useCallback(() => navigate('repos'), []);
 
+  const yourPermissions = useMemo(
+    () => {
+      const foundPermissions = members.find((el) => el.member === pkey)?.permissions;
+      if (foundPermissions) {
+        return foundPermissions
+          .toString(2)
+          .split('')
+          .map((el) => !!+el)
+          .reverse();
+      } return null;
+    },
+    [members]
+  );
+
   useEffect(() => {
     getOrgMembers();
   }, []);
@@ -83,8 +99,10 @@ const useProjectRepos = () => {
     searchText,
     id,
     modalApi,
+    yourPermissions,
     navigate,
     deleteRepo,
+    addMemberToProject,
     goBack
   };
 };
