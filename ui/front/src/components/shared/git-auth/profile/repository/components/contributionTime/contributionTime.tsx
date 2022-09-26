@@ -32,13 +32,10 @@ function ContributionTime({
   };
   const endTimePush = () => {
     if (pushed === update && pushed && update) {
-      console.log(pushed === update);
       return setLastPush(pushed);
     } if (pushed > update && pushed && update) {
-      console.log(pushed > update);
       return setLastPush(pushed);
     }
-    console.log({ pushed, update });
     return setLastPush(pushed);
   };
 
@@ -57,7 +54,6 @@ function ContributionTime({
   useEffect(() => {
     minTimeContr();
     endTimePush();
-    console.log(endTimePush());
     maxTimeContr();
   }, []);
 
