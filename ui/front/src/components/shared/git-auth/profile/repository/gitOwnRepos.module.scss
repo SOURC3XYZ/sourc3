@@ -65,6 +65,9 @@
       }
     }
   }
+      .topContr{
+        margin-top: 36px;
+      }
 }
 &_right{
   width: 50%;
@@ -92,12 +95,7 @@
     line-height: 20px;
     color: rgba(0,0,0,0.5);
   }
-  .langStone{
-    padding-top: 18px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+
   .releases {
     display: flex;
     flex-wrap: wrap;

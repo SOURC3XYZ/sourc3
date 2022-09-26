@@ -37,7 +37,14 @@ export interface IProfiles {
   token: string,
   github_profile: IProfilesGit,
   github_orgs: [IGitOrgs],
-  github_owned_repos: [IGitRepos]
+  github_repos : [IGitRepos]
+}
+
+export interface ILanguages {
+  language: string,
+  added_lines_cnt: number,
+  removed_lines_cnt: number,
+  renamed_files_cnt: number
 }
 
 export interface IGitRepos {
@@ -87,4 +94,9 @@ export interface IGitRepos {
   user_last_commit_time: string,
   user_first_pr_time: string,
   user_last_pr_time: string,
+  user_languages: [ILanguages],
+  user_committers_pos:number,
+  total_committers_cnt: number,
+  github_created_at: string,
+  github_updated_at: string
 }

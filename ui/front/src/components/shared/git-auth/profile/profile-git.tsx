@@ -21,7 +21,7 @@ function GitProfile() {
   const navigate = useNavigate();
   const urlId = pathname.split('/profile/')[1];
   const [{
-    github_profile, github_orgs, github_owned_repos, id
+    github_profile, github_orgs, github_repos, id
   }, setGitHubProfile] = useState([]);
   const [allUsers, setAllUsers] = useState(0);
   const [visiblePopup, setVisiblePopup] = useState(false);
@@ -205,7 +205,7 @@ function GitProfile() {
                 </div>
               </div>
               {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
-              { github_owned_repos.length > 0 && <GitOwnRepos data={github_owned_repos} />}
+              { github_repos.length > 0 && <GitOwnRepos data={github_repos} />}
             </div>
           </div>
         </div>
