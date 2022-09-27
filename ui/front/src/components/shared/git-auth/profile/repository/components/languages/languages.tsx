@@ -9,14 +9,11 @@ type languagesType = {
 function Languages({ data }:languagesType) {
   const [maxAddLines, setMaxAddLines] = useState(0);
 
-  const calc = (items:[ILanguages]) => {
-    setMaxAddLines(items.reduce((acc, course) => (course.language ? acc + (course.added_lines_cnt + course.removed_lines_cnt) : acc), maxAddLines));
-  };
   const persent = (lines:number, add: number, remove:number) => +(((add + remove) / lines) * 100).toFixed(2);
 
   useEffect(() => {
-    calc(data);
-  }, []);
+    setMaxAddLines(data.reduce((currentSum, currentNumber) => (!currentNumber.renamed_files_cnt ? (currentSum + (currentNumber.added_lines_cnt + currentNumber.removed_lines_cnt)) : currentSum), 0));
+  }, [data]);
   return (
     <div className={styles.langStone}>
       {data.map((el) => (
