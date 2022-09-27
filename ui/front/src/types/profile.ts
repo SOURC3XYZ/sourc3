@@ -42,6 +42,7 @@ export interface IProfiles {
 
 export interface ILanguages {
   language: string,
+  languages: [string],
   added_lines_cnt: number,
   removed_lines_cnt: number,
   renamed_files_cnt: number
