@@ -61,7 +61,10 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                     setIsErr(true);
                   }
                 })
-                  .catch((err) => (console.log(err)));
+                  .catch(() => {
+                    setVisible(false);
+                    setIsErr(true);
+                  });
                 setIsDisabled(true);
               })
               .catch(() => {
