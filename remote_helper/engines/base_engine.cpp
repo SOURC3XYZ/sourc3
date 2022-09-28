@@ -25,9 +25,7 @@ IEngine::BaseOptions::SetResult IEngine::BaseOptions::Set(std::string_view optio
             return SetResult::InvalidValue;
         }
         return SetResult::Ok;
-    } else if (option == "is_async") {
-        SetBool(is_async, value);
-    } /* else if (option == "verbosity") {
+    }/* else if (option == "verbosity") {
          char* endPos;
          auto v = std::strtol(value.data(), &endPos, 10);
          if (endPos == value.data()) {

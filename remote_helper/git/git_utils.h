@@ -87,6 +87,23 @@ std::string ToString(const git_oid& oid);
 git_oid FromString(const std::string& str);
 
 template <typename Iterator>
+void SortTreesByContainment(Iterator begin, Iterator end, const git::Repository& repo) {
+    std::sort(begin, end, [&repo](const auto& lhs, const auto& rhs) {
+        git::Tree rhs_tree;
+        git_tree_lookup(rhs_tree.Addr(), *repo, &rhs.oid);
+        size_t entries_count = git_tree_entrycount(*rhs_tree);
+        for (size_t i = 0; i < entries_count; ++i) {
+            auto entry = git_tree_entry_byindex(*rhs_tree, i);
+            if (*git_tree_entry_id(entry) == lhs.oid ||
+                git_tree_entry_type(entry) == GIT_OBJECT_TREE) {
+                return true;
+            }
+        }
+        return false;
+    });
+}
+
+template <typename Iterator>
 void SortCommitsByParents(Iterator begin, Iterator end, const git::Repository& repo) {
     std::sort(begin, end, [&repo](const auto& lhs, const auto& rhs) {
         git::Commit rhs_commit;

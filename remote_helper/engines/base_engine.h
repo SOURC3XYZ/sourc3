@@ -75,7 +75,6 @@ protected:
         sourc3::ReporterType progress;
         int64_t verbosity = 0;
         uint32_t depth = kInfiniteDepth;
-        bool is_async = true;
         bool cloning = false;
 
         virtual ~BaseOptions() = default;

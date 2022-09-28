@@ -19,27 +19,30 @@
 
 namespace sourc3 {
 std::string GitIdWithIPFS::ToString() const {
-    return ipfs + "\n" + sourc3::ToString(oid);
+    return std::to_string(type) + "\t" + ipfs + "\n" + sourc3::ToString(oid);
 }
 
 bool GitIdWithIPFS::operator==(const GitIdWithIPFS& other) const {
-    return (oid == other.oid) && (ipfs == other.ipfs);
+    return (type == other.type) && (oid == other.oid) && (ipfs == other.ipfs);
 }
 
 CommitMetaBlock::CommitMetaBlock(const std::string& serialized) {
     std::istringstream ss(serialized);
     std::string hash_oid;
+    ss >> hash.type;
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
     ss >> tree_meta_hash;
+    int8_t type;
     std::string hash_ipfs;
-    while (ss >> hash_ipfs) {
+    while (ss >> type) {
+        ss >> hash_ipfs;
         if (hash_ipfs.empty()) {
             break;
         }
         ss >> hash_oid;
-        parent_hashes.emplace_back(sourc3::FromString(hash_oid),
+        parent_hashes.emplace_back(type, sourc3::FromString(hash_oid),
                                    std::move(hash_ipfs));
     }
 }
@@ -55,16 +58,19 @@ std::string CommitMetaBlock::Serialize() const {
 TreeMetaBlock::TreeMetaBlock(const std::string& serialized) {
     std::istringstream ss(serialized);
     std::string hash_oid;
+    ss >> hash.type;
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
+    int8_t type;
     std::string hash_ipfs;
-    while (ss >> hash_ipfs) {
+    while (ss >> type) {
+        ss >> hash_ipfs;
         if (hash_oid.empty()) {
             break;
         }
         ss >> hash_oid;
-        entries.emplace_back(sourc3::FromString(hash_oid),
+        entries.emplace_back(type, sourc3::FromString(hash_oid),
                              std::move(hash_ipfs));
     }
 }

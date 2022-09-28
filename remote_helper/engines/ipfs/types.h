@@ -26,9 +26,14 @@ struct GitIdWithIPFS {
     GitIdWithIPFS() = default;
 
     GitIdWithIPFS(git_oid oid, std::string ipfs)
-        : oid(std::move(oid)), ipfs(std::move(ipfs)) {
+        : type(-1), oid(std::move(oid)), ipfs(std::move(ipfs)) {
     }
 
+    GitIdWithIPFS(int8_t type, git_oid oid, std::string ipfs)
+        : type(type), oid(std::move(oid)), ipfs(std::move(ipfs)) {
+    }
+
+    int8_t type;
     git_oid oid;
     std::string ipfs;
 

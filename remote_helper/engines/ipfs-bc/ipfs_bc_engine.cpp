@@ -13,7 +13,7 @@ using namespace sourc3;
 constexpr size_t kIpfsAddressSize = 46;
 
 IEngine::CommandResult IPFSBlockChainEngine::DoFetch(const std::vector<std::string_view>& args) {
-    return (options_->is_async ? DoFetchAsync(args) : DoFetchSync(args));
+    return (client_.GetOptions().async ? DoFetchAsync(args) : DoFetchSync(args));
 }
 
 IEngine::CommandResult IPFSBlockChainEngine::DoFetchSync(const vector<string_view>& args) {

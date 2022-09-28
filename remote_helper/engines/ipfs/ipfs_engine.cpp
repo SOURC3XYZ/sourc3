@@ -36,6 +36,8 @@ using namespace std;
 using namespace sourc3;
 
 namespace {
+constexpr size_t kIpfsAddressSize = 46;
+
 struct ObjectWithContent : public sourc3::GitObject {
     std::string ipfs_hash;
     std::string content;
@@ -85,10 +87,23 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
     auto tree_content = GetStringFromIPFS(tree.hash.ipfs, client);
     objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
                          std::move(tree_content));
-    for (auto&& [oid, hash] : tree.entries) {
-        auto file_content = GetStringFromIPFS(hash, client);
-        objects.emplace_back(GIT_OBJECT_BLOB, std::move(oid), std::move(hash),
-                             std::move(file_content));
+    for (auto&& [type, oid, hash] : tree.entries) {
+        auto object_type = type;
+        std::string file_content;
+        if (!std::all_of(hash.begin(), hash.end(), [](char c) {
+                return c == '0';
+            })) {
+            file_content = GetStringFromIPFS(hash, client);
+            if (object_type == GIT_OBJECT_TREE) {
+                TreeMetaBlock subtree(file_content);
+                auto subtree_objects = GetObjectsFromTreeMeta(subtree, progress, client);
+                std::move(subtree_objects.begin(), subtree_objects.end(),
+                          std::back_inserter(objects));
+            } else {
+                object_type = GIT_OBJECT_BLOB;
+            }
+        }
+        objects.emplace_back(object_type, std::move(oid), std::move(hash), std::move(file_content));
         progress.AddProgress(1);
     }
     return objects;
@@ -105,14 +120,35 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMetaAsync(const TreeMetaBlock& 
         auto tree_content = GetStringFromIPFSAsync(tree.hash.ipfs, client, context2);
         objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
                              std::move(tree_content));
-        for (auto&& [oid, hash] : tree.entries) {
-            ba::spawn(context2, [&, hash = std::move(hash),
-                                 oid = std::move(oid)](ba::yield_context context3) {
-                auto file_content = GetStringFromIPFSAsync(hash, client, context3);
-                objects.emplace_back(GIT_OBJECT_BLOB, std::move(oid), std::move(hash),
-                                     std::move(file_content));
+        for (auto&& [type, oid, hash] : tree.entries) {  // TODO: Fix
+            auto object_type = type;
+            if (!std::all_of(hash.begin(), hash.end(), [](char c) {
+                    return c == '0';
+                })) {
+                ba::spawn(context2, [&, hash = std::move(hash),
+                                     oid = std::move(oid)](ba::yield_context context3) {
+                    auto file_content = GetStringFromIPFSAsync(hash, client, context3);
+
+                    if (object_type == GIT_OBJECT_TREE) {
+                        TreeMetaBlock subtree(file_content);
+                        ba::spawn(context3, [&](ba::yield_context context4) {
+                            auto subtree_objects =
+                                GetObjectsFromTreeMetaAsync(subtree, progress, client, context4);
+                            std::move(subtree_objects.begin(), subtree_objects.end(),
+                                      std::back_inserter(objects));
+                        });
+                    } else {
+                        object_type = GIT_OBJECT_BLOB;
+                    }
+
+                    objects.emplace_back(object_type, std::move(oid), std::move(hash),
+                                         std::move(file_content));
+                    progress.AddProgress(1);
+                });
+            } else {
+                objects.emplace_back(GIT_OBJECT_BLOB, std::move(oid), std::move(hash), "");
                 progress.AddProgress(1);
-            });
+            }
         }
     });
     return objects;
@@ -321,31 +357,82 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
                    sourc3::ReporterType reporter_type, IWalletClient& client) {
     auto progress =
         MakeProgress("Uploading objects to IPFS", collector.m_objects.size(), reporter_type);
+//    //std::cerr << "Sync upload!" << std::endl;
     size_t i = 0;
-    for (auto& obj : collector.m_objects) {
+    std::unordered_set<git_oid, OidHasher> used_oids;
+    std::deque<ObjectInfo> upload_objects(collector.m_objects.begin(), collector.m_objects.end());
+    while (!upload_objects.empty()) {
+        ObjectInfo obj = std::move(upload_objects.front());
+        upload_objects.pop_front();
+
+        bool skip = false;
+        if (obj.type == GIT_OBJECT_TREE) {
+            git::Tree tree_git;
+            git_tree_lookup(tree_git.Addr(), *collector.m_repo, &obj.oid);
+            size_t entries_count = git_tree_entrycount(*tree_git);
+
+            for (size_t j = 0; j < entries_count; ++j) {
+                auto entry = git_tree_entry_byindex(*tree_git, j);
+                if (used_oids.count(*git_tree_entry_id(entry)) == 0) {
+                    skip = true;
+                    std::cerr << "Skip tree, because it has tree " << sourc3::ToString(*git_tree_entry_id(entry)) << " as entry!" << std::endl;
+                    break;
+                }
+            }
+        } else if (obj.type == GIT_OBJECT_COMMIT) {
+            git::Commit commit_git;
+            git_commit_lookup(commit_git.Addr(), *collector.m_repo, &obj.oid);
+            if (used_oids.count(*git_commit_tree_id(*commit_git)) == 0) {
+                skip = true;
+                std::cerr << "Skip commit, because it has tree " << sourc3::ToString(*git_commit_tree_id(*commit_git)) << " not uploaded!" << std::endl;
+            }
+            if (!skip) {
+                unsigned int parents_count = git_commit_parentcount(*commit_git);
+                for (unsigned int j = 0; j < parents_count; ++j) {
+                    if (used_oids.count(*git_commit_parent_id(*commit_git, j)) == 0) {
+                        skip = true;
+                        std::cerr << "Skip commit, because it has parent " << sourc3::ToString(*git_commit_parent_id(*commit_git, j)) << " not uploaded!" << std::endl;
+                        break;
+                    }
+                }
+            }
+        }
+        if (skip) {
+            upload_objects.push_back(std::move(obj));
+            continue;
+        }
+        used_oids.insert(obj.oid);
+
         if (obj.type == GIT_OBJECT_BLOB) {
             ++new_objects;
         } else {
             ++new_metas;
         }
-
-        auto res = client.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
-        auto r = ParseJsonAndTest(res);
-        auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
-        obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
-        oid_to_ipfs[obj.oid] = std::string(hash_str.cbegin(), hash_str.cend());
-        auto meta_object = GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
-        if (meta_object != nullptr) {
-            auto meta_buffer = StringToByteBuffer(meta_object->Serialize());
-            auto meta_res =
-                ParseJsonAndTest(client.SaveObjectToIPFS(meta_buffer.data(), meta_buffer.size()));
-            std::string hash =
-                meta_res.as_object()["result"].as_object()["hash"].as_string().c_str();
-            oid_to_meta[obj.oid] = hash;
-            if (obj.type == GIT_OBJECT_COMMIT) {
-                metas[hash] = *static_cast<CommitMetaBlock*>(meta_object.get());
-            } else if (obj.type == GIT_OBJECT_TREE) {
-                metas[hash] = *static_cast<TreeMetaBlock*>(meta_object.get());
+        if (obj.GetSize() == 0) {
+            std::cerr << obj.fullPath << " is empty, skip, oid: " << sourc3::ToString(obj.oid)
+                      << std::endl;
+            oid_to_ipfs[obj.oid] = std::string(kIpfsAddressSize, '0');
+            obj.ipfsHash = ByteBuffer(oid_to_ipfs[obj.oid].cbegin(), oid_to_ipfs[obj.oid].cend());
+        } else {
+            auto res = client.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
+            auto r = ParseJsonAndTest(res);
+            auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
+            obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
+            oid_to_ipfs[obj.oid] = std::string(hash_str.cbegin(), hash_str.cend());
+            //std::cerr << "Saved IPFS for: " << sourc3::ToString(obj.oid) << std::endl;
+            auto meta_object = GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
+            if (meta_object != nullptr) {
+                auto meta_buffer = StringToByteBuffer(meta_object->Serialize());
+                auto meta_res = ParseJsonAndTest(
+                    client.SaveObjectToIPFS(meta_buffer.data(), meta_buffer.size()));
+                std::string hash =
+                    meta_res.as_object()["result"].as_object()["hash"].as_string().c_str();
+                oid_to_meta[obj.oid] = hash;
+                if (obj.type == GIT_OBJECT_COMMIT) {
+                    metas[hash] = *static_cast<CommitMetaBlock*>(meta_object.get());
+                } else if (obj.type == GIT_OBJECT_TREE) {
+                    metas[hash] = *static_cast<TreeMetaBlock*>(meta_object.get());
+                }
             }
         }
         progress->UpdateProgress(++i);
@@ -366,28 +453,35 @@ void UploadObjectsAsync(ObjectCollector& collector, uint32_t& new_objects, uint3
         } else {
             ++new_metas;
         }
-        boost::asio::spawn(base_context, [&](IWalletClient::AsyncContext context) {
-            auto res = client.SaveObjectToIPFSAsync(obj.GetData(), obj.GetSize(), context);
-            auto r = ParseJsonAndTest(res);
-            auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
-            obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
-            oid_to_ipfs[obj.oid] = std::string(hash_str.cbegin(), hash_str.cend());
-            auto meta_object = GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
-            if (meta_object != nullptr) {
-                auto meta_buffer = StringToByteBuffer(meta_object->Serialize());
-                auto meta_res = ParseJsonAndTest(
-                    client.SaveObjectToIPFSAsync(meta_buffer.data(), meta_buffer.size(), context));
-                std::string hash =
-                    meta_res.as_object()["result"].as_object()["hash"].as_string().c_str();
-                oid_to_meta[obj.oid] = hash;
-                if (obj.type == GIT_OBJECT_COMMIT) {
-                    metas[hash] = *static_cast<CommitMetaBlock*>(meta_object.get());
-                } else if (obj.type == GIT_OBJECT_TREE) {
-                    metas[hash] = *static_cast<TreeMetaBlock*>(meta_object.get());
-                }
-            }
+        if (obj.GetSize() == 0) {
+            //std::cerr << obj.fullPath << " is empty, skip, oid: " << sourc3::ToString(obj.oid)
+//                      << std::endl;
+            oid_to_ipfs[obj.oid] = std::string(kIpfsAddressSize, '0');
             progress->UpdateProgress(++i);
-        });
+        } else {
+            boost::asio::spawn(base_context, [&](IWalletClient::AsyncContext context) {
+                auto res = client.SaveObjectToIPFSAsync(obj.GetData(), obj.GetSize(), context);
+                auto r = ParseJsonAndTest(res);
+                auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
+                obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
+                oid_to_ipfs[obj.oid] = std::string(hash_str.cbegin(), hash_str.cend());
+                auto meta_object = GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
+                if (meta_object != nullptr) {
+                    auto meta_buffer = StringToByteBuffer(meta_object->Serialize());
+                    auto meta_res = ParseJsonAndTest(client.SaveObjectToIPFSAsync(
+                        meta_buffer.data(), meta_buffer.size(), context));
+                    std::string hash =
+                        meta_res.as_object()["result"].as_object()["hash"].as_string().c_str();
+                    oid_to_meta[obj.oid] = hash;
+                    if (obj.type == GIT_OBJECT_COMMIT) {
+                        metas[hash] = *static_cast<CommitMetaBlock*>(meta_object.get());
+                    } else if (obj.type == GIT_OBJECT_TREE) {
+                        metas[hash] = *static_cast<TreeMetaBlock*>(meta_object.get());
+                    }
+                }
+                progress->UpdateProgress(++i);
+            });
+        }
     }
 }
 
@@ -409,7 +503,8 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
     git::RepoAccessor accessor(client_.GetRepoDir());
     size_t total_objects = 0;
 
-    auto objects = options_->is_async
+    const auto& wallet_options = client_.GetOptions();
+    auto objects = wallet_options.async
                        ? GetUploadedObjectsAsync(RequestRefs(), client_, options_->progress,
                                                  client_.GetContext())
                        : GetUploadedObjects(RequestRefs(), client_, options_->progress);
@@ -506,13 +601,13 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
     }
 
     boost::asio::io_context& context = client_.GetContext();
-
+    const auto& wallet_options = client_.GetOptions();
     auto remote_refs = RequestRefs();
     auto [uploaded_objects, metas] =
-        (options_->is_async
+        (wallet_options.async
              ? GetUploadedObjectsWithMetasAsync(remote_refs, client_, options_->progress, context)
              : GetUploadedObjectsWithMetas(remote_refs, client_, options_->progress));
-    std::cerr << "Objects: " << uploaded_objects.size() << ", metas: " << metas.size() << std::endl;
+    //std::cerr << "Got uploaded objects" << std::endl;
     auto uploaded_oids = GetOidsFromObjects(uploaded_objects);
     std::vector<git_oid> merge_bases;
     for (const auto& remote_ref : remote_refs) {
@@ -541,6 +636,7 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         auto commits = std::partition(non_blob, objs.end(), [](const ObjectInfo& obj) {
             return obj.type == GIT_OBJECT_TREE;
         });
+//        SortTreesByContainment(non_blob, commits, collector.m_repo);
         SortCommitsByParents(commits, objs.end(), collector.m_repo);
     }
 
@@ -613,7 +709,7 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
 
     uint32_t new_objects = 0;
     uint32_t new_metas = 0;
-    if (options_->is_async) {
+    if (wallet_options.async) {
         UploadObjectsAsync(collector, new_objects, new_metas, metas, oid_to_ipfs, oid_to_meta,
                            options_->progress, client_, context);
     } else {
@@ -655,6 +751,7 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
 }
 
 std::vector<sourc3::Ref> FullIPFSEngine::RequestRefs() {
+    //std::cerr << "Request refs" << std::endl;
     auto actual_state = ParseJsonAndTest(client_.LoadActualState());
     auto actual_state_str = actual_state.as_object()["hash"].as_string();
     if (std::all_of(actual_state_str.begin(), actual_state_str.end(), [](char c) {

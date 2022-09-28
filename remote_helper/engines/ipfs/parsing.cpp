@@ -90,14 +90,37 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(const git::Commit& commit,
 }
 
 std::unique_ptr<TreeMetaBlock> GetTreeMetaBlock(const git::Tree& tree,
+                                                const HashMapping& oid_to_meta,
                                                 const HashMapping& oid_to_ipfs) {
     git_tree* raw_tree = *tree;
     const auto* tree_id = git_tree_id(raw_tree);
     auto block = std::make_unique<TreeMetaBlock>();
-    block->hash = {*tree_id, oid_to_ipfs.at(*tree_id)};
+    if (auto tree_pos = oid_to_ipfs.find(*tree_id); tree_pos != oid_to_ipfs.end()) {
+        block->hash = {GIT_OBJECT_TREE, *tree_id, tree_pos->second};
+    } else {
+        throw std::runtime_error{"Tree content wasn't upload to IPFS for oid: " +
+                                 sourc3::ToString(*tree_id)};
+    }
     for (size_t i = 0, size = git_tree_entrycount(raw_tree); i < size; ++i) {
-        const auto& entry_id = *git_tree_entry_id(git_tree_entry_byindex(raw_tree, i));
-        block->entries.emplace_back(entry_id, oid_to_ipfs.at(entry_id));
+        auto entry = git_tree_entry_byindex(raw_tree, i);
+        const auto& entry_id = *git_tree_entry_id(entry);
+        auto type = git_tree_entry_type(entry);
+        if (type == GIT_OBJECT_TREE) {  // Another tree, need to save meta
+            if (auto meta_pos = oid_to_meta.find(entry_id); meta_pos != oid_to_meta.end()) {
+                block->entries.emplace_back(type, entry_id, oid_to_meta.at(entry_id));
+            } else {
+                throw std::runtime_error{"Subtree wasn't upload to IPFS for oid: " +
+                                         sourc3::ToString(entry_id)};
+            }
+        } else {
+            if (auto entry_pos = oid_to_ipfs.find(entry_id); entry_pos != oid_to_ipfs.end()) {
+                block->entries.emplace_back(type, entry_id, oid_to_ipfs.at(entry_id));
+            } else {
+                throw std::runtime_error{
+                    "Entry wasn't upload to IPFS for oid: " + sourc3::ToString(entry_id) +
+                    " and type: " + std::to_string(type)};
+            }
+        }
     }
     return block;
 }
@@ -112,7 +135,7 @@ std::unique_ptr<MetaBlock> GetMetaBlock(const sourc3::git::RepoAccessor& accesso
     } else if (obj.type == GIT_OBJECT_TREE) {
         git::Tree tree;
         git_tree_lookup(tree.Addr(), *accessor.m_repo, &obj.oid);
-        return GetTreeMetaBlock(tree, oid_to_ipfs);
+        return GetTreeMetaBlock(tree, oid_to_meta, oid_to_ipfs);
     }
 
     return nullptr;

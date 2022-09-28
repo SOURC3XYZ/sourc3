@@ -30,6 +30,7 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(const git::Commit& commit,
                                                     const HashMapping& oid_to_ipfs);
 
 std::unique_ptr<TreeMetaBlock> GetTreeMetaBlock(const git::Tree& tree,
+                                                const HashMapping& oid_to_meta,
                                                 const HashMapping& oid_to_ipfs);
 
 std::unique_ptr<MetaBlock> GetMetaBlock(const sourc3::git::RepoAccessor& accessor,
