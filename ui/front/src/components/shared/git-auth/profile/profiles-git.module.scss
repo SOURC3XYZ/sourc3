@@ -217,8 +217,13 @@
   &_text{
     display: flex;
     flex-direction: column;
-    max-width: 553px;
+    max-width: max-content;
     margin-right: 3.25rem;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
     & b{
       font-family: 'PublicSans-Bold';
       font-style: normal;
@@ -231,7 +236,7 @@
     font-family: 'PublicSans-Bold';
     font-style: normal;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 20px;
     .nick{
       width: 94px;

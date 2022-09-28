@@ -111,7 +111,7 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 {rep.user_commits_cnt ? (
                   <div className={styles.topContr}>
                     <Milestone
-                      title={rep.user_committers_pos === 1 ? ' Top contributor' : `${rep.user_committers_pos}rd contributor of ${rep.total_committers_cnt}`}
+                      title={rep.user_committers_pos === 1 ? ' Top contributor' : `${rep.user_committers_pos}${rep.user_committers_pos === 2 ? 'nd' : rep.user_committers_pos === 3 ? 'rd' : rep.user_committers_pos === 21 ? 'st' : 'th'} contributor out of ${rep.total_committers_cnt}`}
                     />
                   </div>
                 ) : null}

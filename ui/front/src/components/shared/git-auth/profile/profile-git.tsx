@@ -177,25 +177,30 @@ function GitProfile() {
                       !
                     </span>
                     <br />
-                    <span>
-                      You are the
-                      {' '}
-                      <b>{id}</b>
-                      {' '}
-                      th of
-                      {' '}
-                      <b>{allUsers}</b>
-                      {' '}
-                      developers that have
-                      already claimed their repos.
-                      {' '}
-                    </span>
-                    <br />
-                    <span>
-                      As an early adopter, you will receive benefits including
-                      exclusive airdrops, and early access to new features and
-                      products.
-                    </span>
+                    <div>
+                      <span>
+                        You are the
+                        {' '}
+                        <b>{id}</b>
+                        {' '}
+                        th of
+                        {' '}
+                        <b>{allUsers}</b>
+                        {' '}
+                        developers that have
+                        already claimed their repos.
+                        {' '}
+                      </span>
+                      <br />
+                      <span>
+                        As an early adopter, you will receive benefits including
+                        exclusive airdrops, and early
+                        <br />
+                        {' '}
+                        access to new features and
+                        products.
+                      </span>
+                    </div>
                   </div>
                   <img
                     className={styles.description_img}
