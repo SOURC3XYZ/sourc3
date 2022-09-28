@@ -597,6 +597,46 @@ export const RC = {
         pid
       }
     }
+  } as const),
+
+  addRepoMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }:{
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'add_repo_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_repo_member',
+        repo_id: id,
+        user: member,
+        permissions,
+        pid
+      }
+    }
+
+  } as const),
+  listRepoMembers: (repo_id:number) => ({
+    callID: 'list_repo_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_repo_members',
+        repo_id
+      }
+    }
+
   } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

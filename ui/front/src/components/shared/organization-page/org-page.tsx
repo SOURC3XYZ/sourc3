@@ -17,7 +17,7 @@ import {
   CreateOrgRepo, CreateProject, ModifyOrganization
 } from './forms';
 import MemberListItem from './member-list-item';
-import { orgData, ORG_PERMISSION } from './permissions-data';
+import { orgData, repoData, ORG_PERMISSION } from './permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
 
@@ -98,7 +98,7 @@ function Projects() {
         item={item}
         path={path}
         searchText={searchText}
-        deleteRepo={() => {}}
+        deleteRepo={() => { }}
       />
     );
   };

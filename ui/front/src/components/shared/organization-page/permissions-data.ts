@@ -16,6 +16,14 @@ export enum PROJECT_PERMISSION {
   MODIFY_PROJECT
 }
 
+export enum REPO_PERMISSION {
+  MODIFY_REPO,
+  ADD_MEMBER,
+  REMOVE_MEMBER,
+  PUSH,
+  MODIFY_MEMBER
+}
+
 export const orgData = new Set<string>()
   .add('Add Projects')
   .add('Add Member')
@@ -31,3 +39,10 @@ export const projectData = new Set<string>()
   .add('Remove Member')
   .add('Modify Member')
   .add('Modify Project');
+
+export const repoData = new Set<string>()
+  .add('Modify Repo')
+  .add('Add Member')
+  .add('Remove Member')
+  .add('Push')
+  .add('Modify Member');

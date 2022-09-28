@@ -110,6 +110,12 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.addProjectMember(...args)
   );
 
+  const addRepoMember = (
+    ...args: ArgumentTypes<typeof RC['addRepoMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addRepoMember(...args)
+  );
   return [{
     getOrganizations, getProjects, getRepos, setModifyUser, getViewUser
   }, {
@@ -120,6 +126,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     deleteRepo,
     createRepo,
     setModifyProject,
-    addMemberToProject
+    addMemberToProject,
+    addRepoMember
   }] as const;
 };

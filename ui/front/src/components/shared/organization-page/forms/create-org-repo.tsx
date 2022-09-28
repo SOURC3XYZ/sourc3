@@ -33,9 +33,7 @@ function CreateOrgRepo({ projects, goBack }:CreateOrgRepoProps) {
     if (idProject) createRepo(`"${inputName}"`, idProject, +isPrivate as 0 | 1, 0);
   };
 
-  const handleChangeProject = (value:any) => {
-    setIdProject(value);
-  };
+  const handleChangeProject = (value:any) => setIdProject(value);
 
   const projectOptions = useMemo(() => projects?.map(({ project_id, project_name }) => (
     <Select.Option

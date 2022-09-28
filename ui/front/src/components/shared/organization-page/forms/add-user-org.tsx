@@ -18,6 +18,7 @@ type AddUserProps<T> = {
   goBack: () => void;
   callback: (obj: T) => void;
 };
+
 function AddUser<T>(
   {
     id, data, goBack, callback
@@ -50,6 +51,7 @@ function AddUser<T>(
         member: userInfo?.user_id
       } as T;
       callback(toSend);
+      goBack();
     }
   }, [bitMask]);
 

@@ -1,50 +1,55 @@
 import { IconCloseCross } from '@components/svg';
 import { Button } from 'antd';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import BackDrop from './backDrop';
 import styles from './popup.module.scss';
 
 interface PopupProps {
   title?: string;
-  cancelButton?: React.ReactElement;
+  cancelButton?: React.ReactElement | null;
   confirmButton?: React.ReactElement;
   visible?: boolean;
-  onCancel?: React.MouseEventHandler;
-  //   footerClass?: string;
   footer?: boolean;
   agree?: boolean;
-  //   closeButton?: boolean;
+  defaultCancel?:boolean;
+  onCancel?: React.MouseEventHandler;
+
   children?:ReactNode;
 }
 function Popup({
   title,
   visible,
   onCancel,
-  cancelButton = (
+  defaultCancel,
+  cancelButton,
+  confirmButton,
+  children,
+  footer,
+  agree = false
+}:PopupProps) {
+  const cancelBtn = useMemo(() => cancelButton || (
     <Button onClick={onCancel}>
       Cancel
     </Button>
-  ),
-  confirmButton,
-  children,
-  //   footerClass,
-  footer,
-  //   closeButton = false,
-  agree = false
-}:PopupProps) {
+  ), [cancelButton]);
+
+  const defaultCancelBtn = useMemo(() => defaultCancel && (
+    <Button
+      type="link"
+      className={styles.buttonClose}
+      onClick={onCancel}
+    >
+      <IconCloseCross />
+    </Button>
+  ), [defaultCancel]);
+
   return (
     (visible ? (
       <BackDrop
         onCancel={onCancel}
       >
         <div className={styles.container}>
-          <Button
-            type="link"
-            className={styles.buttonClose}
-            onClick={onCancel}
-          >
-            <IconCloseCross />
-          </Button>
+          {defaultCancelBtn}
           <div className={styles.title}>{title}</div>
 
           {children}
@@ -53,7 +58,7 @@ function Popup({
             //  agree={agree}
               className={styles.footer}
             >
-              {cancelButton}
+              {cancelBtn}
               {confirmButton}
             </div>
           )}

@@ -15,7 +15,7 @@ import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
 import { HeaderFields } from '../entity/entity-wrapper';
 import { AddUserOrg, CreateProjectRepo, ModifyProject } from './forms';
-import { projectData } from './permissions-data';
+import { projectData, repoData, PROJECT_PERMISSION } from './permissions-data';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -62,7 +62,7 @@ function ProjectRepos() {
         item={item}
         path={path}
         searchText={searchText}
-        deleteRepo={() => {}}
+        deleteRepo={() => { }}
       />
     );
   };
@@ -100,7 +100,8 @@ function ProjectRepos() {
         }
       ],
       fieldsToSearch: ['repo_id', 'repo_name'],
-      createEntity: () => navigate('create-repo'),
+      createEntity: yourPermissions?.[PROJECT_PERMISSION.ADD_REPO]
+        ? () => navigate('create-repo') : undefined,
       itemComponent: repoListItem
     },
     {
@@ -112,7 +113,8 @@ function ProjectRepos() {
         placeholder: 'Search by username of pid'
       },
       fieldsToSearch: ['member'],
-      createEntity: () => navigate('add-member'),
+      createEntity: yourPermissions?.[PROJECT_PERMISSION.ADD_MEMBER]
+        ? () => navigate('add-member') : undefined,
       itemComponent: memberListItem
     }
   ];
