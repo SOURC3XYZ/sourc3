@@ -357,7 +357,6 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
                    sourc3::ReporterType reporter_type, IWalletClient& client) {
     auto progress =
         MakeProgress("Uploading objects to IPFS", collector.m_objects.size(), reporter_type);
-//    //std::cerr << "Sync upload!" << std::endl;
     size_t i = 0;
     std::unordered_set<git_oid, OidHasher> used_oids;
     std::deque<ObjectInfo> upload_objects(collector.m_objects.begin(), collector.m_objects.end());
@@ -373,9 +372,9 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
 
             for (size_t j = 0; j < entries_count; ++j) {
                 auto entry = git_tree_entry_byindex(*tree_git, j);
-                if (used_oids.count(*git_tree_entry_id(entry)) == 0) {
+                if (used_oids.count(*git_tree_entry_id(entry)) == 0
+                    && git_tree_entry_type(entry) == GIT_OBJECT_TREE) {
                     skip = true;
-                    std::cerr << "Skip tree, because it has tree " << sourc3::ToString(*git_tree_entry_id(entry)) << " as entry!" << std::endl;
                     break;
                 }
             }
@@ -384,14 +383,12 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
             git_commit_lookup(commit_git.Addr(), *collector.m_repo, &obj.oid);
             if (used_oids.count(*git_commit_tree_id(*commit_git)) == 0) {
                 skip = true;
-                std::cerr << "Skip commit, because it has tree " << sourc3::ToString(*git_commit_tree_id(*commit_git)) << " not uploaded!" << std::endl;
             }
             if (!skip) {
                 unsigned int parents_count = git_commit_parentcount(*commit_git);
                 for (unsigned int j = 0; j < parents_count; ++j) {
                     if (used_oids.count(*git_commit_parent_id(*commit_git, j)) == 0) {
                         skip = true;
-                        std::cerr << "Skip commit, because it has parent " << sourc3::ToString(*git_commit_parent_id(*commit_git, j)) << " not uploaded!" << std::endl;
                         break;
                     }
                 }
@@ -419,7 +416,6 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
             auto hash_str = r.as_object()["result"].as_object()["hash"].as_string();
             obj.ipfsHash = ByteBuffer(hash_str.cbegin(), hash_str.cend());
             oid_to_ipfs[obj.oid] = std::string(hash_str.cbegin(), hash_str.cend());
-            //std::cerr << "Saved IPFS for: " << sourc3::ToString(obj.oid) << std::endl;
             auto meta_object = GetMetaBlock(collector, obj, oid_to_meta, oid_to_ipfs);
             if (meta_object != nullptr) {
                 auto meta_buffer = StringToByteBuffer(meta_object->Serialize());
@@ -454,8 +450,8 @@ void UploadObjectsAsync(ObjectCollector& collector, uint32_t& new_objects, uint3
             ++new_metas;
         }
         if (obj.GetSize() == 0) {
-            //std::cerr << obj.fullPath << " is empty, skip, oid: " << sourc3::ToString(obj.oid)
-//                      << std::endl;
+            // std::cerr << obj.fullPath << " is empty, skip, oid: " << sourc3::ToString(obj.oid)
+            //                      << std::endl;
             oid_to_ipfs[obj.oid] = std::string(kIpfsAddressSize, '0');
             progress->UpdateProgress(++i);
         } else {
@@ -607,7 +603,6 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         (wallet_options.async
              ? GetUploadedObjectsWithMetasAsync(remote_refs, client_, options_->progress, context)
              : GetUploadedObjectsWithMetas(remote_refs, client_, options_->progress));
-    //std::cerr << "Got uploaded objects" << std::endl;
     auto uploaded_oids = GetOidsFromObjects(uploaded_objects);
     std::vector<git_oid> merge_bases;
     for (const auto& remote_ref : remote_refs) {
@@ -751,7 +746,6 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
 }
 
 std::vector<sourc3::Ref> FullIPFSEngine::RequestRefs() {
-    //std::cerr << "Request refs" << std::endl;
     auto actual_state = ParseJsonAndTest(client_.LoadActualState());
     auto actual_state_str = actual_state.as_object()["hash"].as_string();
     if (std::all_of(actual_state_str.begin(), actual_state_str.end(), [](char c) {

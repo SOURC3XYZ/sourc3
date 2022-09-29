@@ -112,6 +112,9 @@ std::unique_ptr<TreeMetaBlock> GetTreeMetaBlock(const git::Tree& tree,
                 throw std::runtime_error{"Subtree wasn't upload to IPFS for oid: " +
                                          sourc3::ToString(entry_id)};
             }
+        } else if (type == GIT_OBJECT_COMMIT) { // Submodule
+            block->entries.emplace_back(type, entry_id,
+                                        std::string(oid_to_ipfs.begin()->second.size(), '0'));
         } else {
             if (auto entry_pos = oid_to_ipfs.find(entry_id); entry_pos != oid_to_ipfs.end()) {
                 block->entries.emplace_back(type, entry_id, oid_to_ipfs.at(entry_id));

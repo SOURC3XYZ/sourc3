@@ -94,7 +94,7 @@ void SortTreesByContainment(Iterator begin, Iterator end, const git::Repository&
         size_t entries_count = git_tree_entrycount(*rhs_tree);
         for (size_t i = 0; i < entries_count; ++i) {
             auto entry = git_tree_entry_byindex(*rhs_tree, i);
-            if (*git_tree_entry_id(entry) == lhs.oid ||
+            if (*git_tree_entry_id(entry) == lhs.oid &&
                 git_tree_entry_type(entry) == GIT_OBJECT_TREE) {
                 return true;
             }

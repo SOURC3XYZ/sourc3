@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
             "Use IPFS to store large blobs")(
             "use-full-ipfs", po::value<bool>(&options.useFullIPFS)->default_value(true),
             "Use Full IPFS engine (Warning: shader-specific option, check it!)")(
-            "use-async", po::value<bool>(&options.async)->default_value(true),
+            "use-async", po::value<bool>(&options.async)->default_value(false),
             "Use async clients for more faster work");
         po::variables_map vm;
 #ifdef WIN32
