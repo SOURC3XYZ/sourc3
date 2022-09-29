@@ -2,7 +2,7 @@
   width: 100%;
   max-width: 60rem;
   margin: 0 auto;
-  padding: 2.5rem;
+  padding: .5rem 2.5rem;
   .header{
     width: 100%;
     .title {
@@ -27,8 +27,30 @@
         line-height: 20px;
       }
     }
-    .breadcrumbs{
-
+    .breadcrumbs {
+      margin-bottom: 40px;
+          & a {
+              font-family: 'PublicSans-Medium';
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              line-height: 19px;
+          }
+          & a:hover{
+            color: #FF791F;
+          }
+      }
+            span:first-child {
+              color: #FF791F;
+              font-family: 'PublicSans-Bold';
+              font-style: normal;
+              font-weight: 700;
+              font-size: 16px;
+              line-height: 19px;
+        }
+        span:nth-child(2) {
+        margin: 0px;
+      //  }
     }
 
   }
@@ -96,11 +118,13 @@
         margin: 16px 0;
         width: 100%;
       }
+        input{
+          margin-bottom: 32px;
+          margin-top: 8px;
+
+      }
     }
   }
-}
-input{
-  margin-bottom: 10px;
 }
 .socialBlock{
   margin-top:26px;
@@ -115,13 +139,24 @@ input{
   .blockRight{
     width: 300px;
   }
+  legend{
+    font-family: 'PublicSans-ExtraBold';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  input {
+        margin-bottom: 10px !important;
+        //margin-bottom: 0px !important;
+  }
 }
 
 .blockButton{
   max-width: 294px;
   display: flex;
   justify-content: space-between;
-  margin: 30px auto;
+  margin: 30px auto 0;
 .button{
   font-family: 'PublicSans-ExtraBold';
   font-style: normal;
@@ -141,8 +176,19 @@ input{
     color: rgba(0, 0, 0, 0.3)
   }
 .blockButtonLoad{
-margin: 20px 0;
+    margin: 20px 0;
 
+  &_upload{
+    display: flex;
+    flex-direction: column;
+    &>span{
+    font-family: 'Public Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 14px;
+    color: rgba(0,0,0,0.5)}
+  }
 }
 .buttonUpload{
   font-family: 'PublicSans-ExtraBold';
@@ -154,4 +200,9 @@ margin: 20px 0;
   height: 36px;
   padding: 8px 19px;
   margin-bottom:8px ;
+}
+.copyButton{
+  border: none;
+  background: none;
+  cursor: pointer;
 }

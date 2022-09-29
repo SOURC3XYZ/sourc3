@@ -20,7 +20,6 @@ import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
-import ProfilesEdit from "@components/shared/profiles-page/profiles-edit";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -43,7 +42,7 @@ function Main() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page',
+      path: 'projects/:orgId/:type/:page/*',
       element: <Projects />
     },
     {
@@ -61,10 +60,6 @@ function Main() {
     {
       path: 'profiles/:id/*',
       element: <ProfilesPage />
-    },
-    {
-      path: 'profiles/:id/edit',
-      element: <ProfilesEdit />
     }
   ];
 

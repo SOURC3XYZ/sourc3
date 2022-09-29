@@ -1,5 +1,46 @@
 @import '@styles/vars.scss';
 
+.entityPicture {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 8px;
+    visibility: hidden;
+    display: block;
+
+    &Active {
+        visibility: visible;
+    }
+}
+
+.memberPicture {
+    @extend .entityPicture;
+    border-radius: 50%;
+    &Active {
+        visibility: visible;
+    }
+}
+
+.memberDescription {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
+    color: #000000;
+    opacity: 0.5;
+}
+
+.content {
+    font-family: PublicSans-Thin;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 18px;
+    color: #000000;
+    opacity: 0.5;
+    margin-top: 15px;
+}
+
 
 .list {
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -12,7 +53,6 @@
 }
 
 .pagination {
-
     li,
     div[class~=ant-select-selector] {
         border-radius: 5px !important;

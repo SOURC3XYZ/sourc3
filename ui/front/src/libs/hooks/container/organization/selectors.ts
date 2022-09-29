@@ -35,3 +35,14 @@ export const getReposByProject = (
   if (pkey && type === 'my') return repos.filter((el) => el.repo_owner === pkey);
   return repos;
 };
+
+export const getReposByOrg = ((
+  id: number,
+  items: RepoType[],
+  type: OwnerListType,
+  pkey?:string
+) => {
+  const repos = items.filter((el) => el.project_id === id);
+  if (pkey && type === 'my') return repos.filter((el) => el.repo_owner === pkey);
+  return repos;
+});

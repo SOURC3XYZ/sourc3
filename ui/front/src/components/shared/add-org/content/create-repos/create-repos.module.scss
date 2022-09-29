@@ -1,0 +1,72 @@
+.type{
+  margin-top: 32px;
+  opacity: .3;
+  h4{
+    font-family: 'PublicSans-ExtraBold', serif;
+    font-style: normal;
+    font-weight: 800;
+    font-size: 14px;
+    line-height: 20px;
+    color: #000000;
+    text-align: left;
+    margin-bottom: 18px;
+  }
+  ul{
+    display: flex;
+    li{
+      display: block;
+      position: relative;
+      &:nth-child(1){
+        margin-right: 40px;
+      }
+      input[type=radio]{
+        position: absolute;
+        visibility: hidden;
+      }
+      label{
+        display: block;
+        position: relative;
+        font-family: 'PublicSans-Medium', serif;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        color: #000000;
+        z-index: 9;
+        cursor: pointer;
+        -webkit-transition: all 0.15s linear;
+        padding-left: 25px;
+      }
+      .check{
+        display: block;
+        position: absolute;
+        border: 1px solid #000000;
+        border-radius: 100%;
+        height: 16px;
+        width: 16px;
+        top: 3px;
+        left: 0;
+        z-index: 5;
+        transition: border .25s linear;
+        &::before {
+          display: block;
+          position: absolute;
+          content: '';
+          border-radius: 100%;
+          height: 10px;
+          width: 10px;
+          top: 2px;
+          left: 2px;
+          margin: auto;
+          transition: background 0.25s linear;
+        }
+      }
+  }
+  input[type=radio]:checked ~ .check {
+    border: 1px solid #FF791F;
+  }
+  input[type=radio]:checked ~ .check::before{
+    background: #FF791F;
+  }
+}
+}

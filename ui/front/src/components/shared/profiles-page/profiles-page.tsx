@@ -1,26 +1,30 @@
-import React, { useEffect } from 'react';
+import React, {
+} from 'react';
 import {
-  AllRepos,
   NavButton
 } from '@components/shared';
-import Avatar from 'boring-avatars';
+// import Avatar from 'boring-avatars';
 import {
-  IconWebSite, IconDiscord, IconInstagram, IconLinkedIn, IconTelegram, IconTwitter
+  IconWebSite, IconDiscord, IconInstagram, IconLinkedIn, IconTelegram, IconTwitter, IconCopy
 } from '@components/svg';
 import UserData from '@components/shared/profiles/componets/userData';
-import { useDispatch, useSelector } from '@libs/redux';
-import { AC, RC } from '@libs/action-creators';
-import { ReposResp } from '@types';
+import { useSelector } from '@libs/redux';
+import DefaultAvatar from 'boring-avatars';
 import { useNavigate } from 'react-router-dom';
+import { compact, copyToClipboard } from '@libs/utils/string-handlers';
+import Avatar from './avatar/avatar';
 import styles from './profiles-page.module.scss';
 
 function ProfilesPage() {
   const profile = useSelector((state) => state.profile);
-  const pKey = profile.user_id;
-  console.log(pKey);
+  const pkey = useSelector((state) => state.app.pkey);
   const navigate = useNavigate();
   const handlerEdit = () => {
-    navigate(`edit`, { replace: false });
+    navigate('edit', { replace: false });
+  };
+  const compactId = compact(pkey, 8);
+  const copyId = async () => {
+    await copyToClipboard(profile.user_id);
   };
   return (
     <div className={styles.wrapper}>
@@ -28,13 +32,13 @@ function ProfilesPage() {
         <div className={styles.breadcrumbs} />
         <div className={styles.title}>
           <h3>Profile</h3>
-          <NavButton name="Edit profile" onClick={handlerEdit} />
+          {pkey === profile.user_id && <NavButton name="Edit profile" onClick={handlerEdit} />}
         </div>
       </div>
       <div className={styles.content}>
         <div className={styles.side}>
           <div className={styles.avatar}>
-            <Avatar size={160} />
+            {!profile.user_avatar_ipfs_hash ? (<DefaultAvatar size={160} />) : (<Avatar />)}
           </div>
           <div className={styles.organizations} />
         </div>
@@ -42,18 +46,75 @@ function ProfilesPage() {
           <div className={styles.mainHeader}>
             <div className={styles.name}>{profile.user_name}</div>
             <div className={styles.social}>
-              <a target="_blank" href={profile.user_website} rel="noreferrer"><IconWebSite /></a>
-              <a href={profile.user_discord}><IconDiscord /></a>
-              <a href={profile.user_twitter}><IconTwitter /></a>
-              <a href={profile.user_instagram}><IconInstagram /></a>
-              <a href={profile.user_linkedin}><IconLinkedIn /></a>
-              <a href={profile.user_telegram}><IconTelegram /></a>
+              {profile.user_website && (
+                <a
+                  target="_blank"
+                  href={profile.user_website}
+                  rel="noreferrer"
+                >
+                  <IconWebSite />
+                </a>
+              )}
+              {profile.user_discord && (
+                <a
+                  target="_blank"
+                  href={profile.user_discord}
+                  rel="noreferrer"
+                >
+                  <IconDiscord />
+                </a>
+              )}
+              {profile.user_twitter && (
+                <a
+                  target="_blank"
+                  href={profile.user_twitter}
+                  rel="noreferrer"
+                >
+                  <IconTwitter />
+                </a>
+              )}
+              {profile.user_instagram && (
+                <a
+                  target="_blank"
+                  href={profile.user_instagram}
+                  rel="noreferrer"
+                >
+                  <IconInstagram />
+                </a>
+              )}
+              {profile.user_linkedin && (
+                <a
+                  target="_blank"
+                  href={profile.user_linkedin}
+                  rel="noreferrer"
+                >
+                  <IconLinkedIn />
+                </a>
+              )}
+              {profile.user_telegram && (
+                <a
+                  target="_blank"
+                  href={profile.user_telegram}
+                  rel="noreferrer"
+                >
+                  <IconTelegram />
+                </a>
+              )}
             </div>
           </div>
           <div className={styles.supHeader}>
             <span>{profile.user_nickname}</span>
             <span>{profile.user_email}</span>
-            <span>{`id: ${profile.user_id}`}</span>
+            <span>
+              {`id: ${compactId}`}
+              <button
+                type="button"
+                onClick={copyId}
+                className={styles.copyButton}
+              >
+                <IconCopy />
+              </button>
+            </span>
           </div>
           <div className={styles.description}>
             <span>{profile.user_description}</span>

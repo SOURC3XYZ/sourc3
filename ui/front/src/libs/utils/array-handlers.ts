@@ -12,3 +12,13 @@ export function shuffle<T>(array: T[]) {
   }
   return shuffled;
 }
+
+export function unorderedRemove<T>(arr:T[], i:number):void {
+  if (i <= 0 || i >= arr.length) {
+    return;
+  }
+  if (i < arr.length - 1) {
+    arr[i] = arr[arr.length - 1];
+  }
+  arr.length -= 1;
+}

@@ -334,7 +334,18 @@ export const RC = {
     }
   } as const),
   setModifyUser: ({
-    id, names, nickname, description, email, twitter, instagram, telegram, discord, linkedin, website, avatar_addr
+    id,
+    names,
+    nickname,
+    description,
+    email,
+    twitter,
+    instagram,
+    telegram,
+    discord,
+    linkedin,
+    website,
+    avatar_addr
   }: IProfile) => ({
     callID: 'modify_user',
     method: 'invoke_contract',
@@ -355,6 +366,30 @@ export const RC = {
         discord,
         linkedin,
         website
+      }
+    }
+  } as const),
+  getProjectsByOrg: (organization_id: number) => ({
+    callID: 'list_organization_projects',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_organization_projects',
+        organization_id
+      }
+    }
+  } as const),
+  getOrgMembers: (organization_id: number) => ({
+    callID: 'list_organization_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_organization_members',
+        organization_id
       }
     }
   } as const)

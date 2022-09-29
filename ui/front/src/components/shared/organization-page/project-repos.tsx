@@ -64,7 +64,7 @@ function ProjectRepos() {
     return /SOURC3-DESKTOP/i.test(ua);
   }, []);
 
-  const style = {
+  const style:React.CSSProperties = {
     position: 'relative',
     left: '0',
     top: '-150px'
