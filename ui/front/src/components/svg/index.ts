@@ -12,3 +12,8 @@ export { default as IconLinkedIn } from './iconLinkedIn';
 export { default as IconCopy } from './iconCopy';
 export { default as IconLocation } from './iconLocation';
 export { default as avatarDefault } from './iconDefautlAvatar';
+export { default as IconStar } from './iconStar';
+export { default as IconFollows } from './iconFollows';
+export { default as IconOrg } from './iconOrg';
+export { default as IconViewers } from './iconViewers';
+export { default as IconGitLogo } from './iconGitLogo';

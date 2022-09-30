@@ -1,10 +1,16 @@
+@import '@styles/vars.scss';
+
 .wrapper{
   width: 100%;
-  max-width: 65.1rem;
+  height: auto;
   margin: 0 auto;
   padding: .5rem 2.5rem;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  max-width: max-content;
   .header{
-    width: 100%;
+    width: max-content;
     .title {
       display: flex;
       justify-content: space-between;
@@ -200,6 +206,7 @@
   margin-top: 24px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  margin-bottom: 24px;
 }
 
 .description{
@@ -210,7 +217,13 @@
   &_text{
     display: flex;
     flex-direction: column;
-    max-width: 553px;
+    max-width: max-content;
+    margin-right: 3.25rem;
+    font-family: 'PublicSans-Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
     & b{
       font-family: 'PublicSans-Bold';
       font-style: normal;
@@ -223,7 +236,7 @@
     font-family: 'PublicSans-Bold';
     font-style: normal;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 20px;
     .nick{
       width: 94px;
@@ -241,17 +254,82 @@
   font-size: 14px;
   line-height: 16px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   flex-direction: column;
   align-content: space-around;
-  margin-top: 32px;
+  margin: 32px 0;
   color: rgba(0,0,0, 0.5);
   &_icon{
     margin-right: 8px;
   }
-  &_location{
+  &_block{
     display: flex;
-    text-align: center;
+    margin-bottom: 16px;
+    &_followers{
+      display: flex;
+      flex-direction: column;
+      & span:not(:last-child){
+      margin-bottom: 8px;
+    }
+    }
+  }
+  &_block:last-child{
+    margin: 0;
+  }
+
+}
+.wrapperOrganization{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  .title{
+    font-family: 'PublicSans-Black';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 20px;
+    color: black;
+    margin-bottom: 16px;
+  }
+  &_avatar{
+    &>a{
+      margin-right: 5px;
+    }
   }
 }
+
+@media screen and (max-width: 600px) {
+  .wrapper{
+    .header{
+      .breadcrumbs{
+        margin: 0
+      }
+    }
+    .content{
+      flex-direction: column;
+      margin: 0 auto;
+      .side{
+        display: flex;
+        align-items: center
+      }
+      .sideBlock{
+        display: flex;
+        align-items: center;
+        width: 100%;
+        justify-content: space-evenly;
+        .info{
+          width: min-content;
+        }
+        .wrapperOrganization{
+          width: max-content;
+          align-items: center;
+        }
+      }
+      .main{
+        align-items: center;
+        margin: 10px 0;
+      }
+    }
+  }
+  }

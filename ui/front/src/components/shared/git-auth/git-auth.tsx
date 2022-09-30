@@ -55,13 +55,16 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                   try {
                     if (result) {
                       dispatch(AC.getAuthGitUser(result));
-                      navigate(`/profile/${result.data.id}`);
+                      navigate(`/profile/${result.data.github_login}`);
                     }
                   } catch (err) {
                     setIsErr(true);
                   }
                 })
-                  .catch((err) => (console.log(err)));
+                  .catch(() => {
+                    setVisible(false);
+                    setIsErr(true);
+                  });
                 setIsDisabled(true);
               })
               .catch(() => {
@@ -69,7 +72,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 setIsErr(true);
               });
           }}
-          scope="read:user user:email public_repo"
+          scope="read:user user:email repo"
         >
           <NavButton
             name={name}

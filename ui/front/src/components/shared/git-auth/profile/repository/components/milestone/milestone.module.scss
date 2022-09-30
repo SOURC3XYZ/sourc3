@@ -1,0 +1,17 @@
+.wrapper{
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 2px 8px;
+  margin: 4px 4px 0 0 ;
+  width: max-content;
+  .title{
+    font-family: 'PublicSans-Bold';
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 14px;
+    color: rgba(0,0,0,.5)
+  }
+}
