@@ -22,6 +22,7 @@ import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import DownloadPage from '../../../components/shared/download-page/download-page';
+import OnboardingStep from "@components/shared/git-auth/onboarding/onboardingStep";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -95,6 +96,10 @@ function Main() {
       <Route
         path="/git-auth"
         element={<GitAuth />}
+      />
+      <Route
+          path="/onboarding"
+          element={<OnboardingStep />}
       />
       <Route
         path="/download"
