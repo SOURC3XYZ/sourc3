@@ -15,16 +15,31 @@ function Languages({ data }:languagesType) {
   }, [data]);
 
   const newData = data.map((el) => {
+    if (el.languages) {
+      const a = el.languages.join();
+      const sum = persent(maxAddLines, el.added_lines_cnt, el.removed_lines_cnt);
+      return { ...el, language: a, sum };
+    }
     const sum = persent(maxAddLines, el.added_lines_cnt, el.removed_lines_cnt);
     return { ...el, sum };
   }).sort((a, b) => b.sum - a.sum);
   console.log({ newData });
+
+  // function renderMilestone(item:ILanguages) {
+  //   if (item.renamed_files_cnt) {
+  //     return `Renamed files - ${item.renamed_files_cnt}`;
+  //   } if (item.language) {
+  //     return `${item.language}   (${item.sum} %)`;
+  //   }
+  // }
+
   return (
     <div className={styles.langStone}>
       {newData.map((el) => (
         <Milestone
-          key={`${Date.now()}_${el.language}`}
-          title={el.renamed_files_cnt ? (`Renamed files - ${el.renamed_files_cnt}`) : el.languages ? (`${el.languages[0]}   (${el.sum} %)`) : ((`${el.language}   (${el.sum} %)`))}
+          key={`${window.crypto.randomUUID()}`}
+          title={el.renamed_files_cnt ? (`Renamed files - ${el.renamed_files_cnt}`) : el.languages ? (`${el.languages[0]}...   (${el.sum} %)`) : ((`${el.language}   (${el.sum} %)`))}
+          tooltip={el.languages && el.language}
         />
       ))}
 

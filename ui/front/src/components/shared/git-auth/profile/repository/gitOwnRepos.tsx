@@ -140,7 +140,7 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 <span>{`Releases: ${rep.user_releases_cnt}`}</span>
                 <span>{`${rep.total_releases_cnt}`}</span>
               </div>
-              <Languages data={rep.user_languages} />
+              {rep.user_languages && <Languages data={rep.user_languages} />}
             </div>
           </div>
         </div>
