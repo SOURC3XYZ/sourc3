@@ -918,9 +918,7 @@ void OnActionListRepoMembers(const ContractID& cid) {
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
                     .m_KeyInContract = sourc3::Member<Repo>::Key{PubKey{}, 0}};
-    if (!Env::DocGet("repo_id", start.m_KeyInContract.id)) {
-        return OnError("no 'repo_id'");
-    }
+    start.m_KeyInContract.id = GetIdByName<Repo>(cid, ReadRepoNameId());
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
@@ -2058,7 +2056,9 @@ BEAM_EXPORT void Method_0() {  // NOLINT
             {
                 Env::DocGroup gr_method("list_repo_members");
                 Env::DocAddText("cid", "ContractID");
-                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("repo_name", "Repo name");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
             }
             {
                 Env::DocGroup gr_method("push_objects");
