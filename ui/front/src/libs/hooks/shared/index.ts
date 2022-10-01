@@ -11,3 +11,5 @@ export { default as useReducerThunk } from './useReducerThunk';
 export { default as useTimeoutFetch } from './useTimeoutFetch';
 export { default as useToggle } from './useToggle';
 export * from './useUpload';
+export * from './useGetIpfsImage';
+export * from './useDebounce';

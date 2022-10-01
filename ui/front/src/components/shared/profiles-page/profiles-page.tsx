@@ -116,11 +116,8 @@ function ProfilesPage() {
               </button>
             </span>
           </div>
-          <div className={styles.description}>
-            <span>{profile.user_description}</span>
-          </div>
-          <div className="wrapperRepos">
-            <UserData />
+          <div className={styles.wrapperData}>
+            <UserData description={profile.user_description} />
           </div>
         </div>
       </div>

@@ -1,23 +1,24 @@
-import { useUpload } from '@libs/hooks/shared';
 import { Entries } from '@types';
-import {
-  useCallback, useEffect, useMemo, useState
-} from 'react';
+import { useMemo, useState } from 'react';
 import {
   DiscordIcon,
   InstagrammIcon,
   LinkedinIcon,
   SettingsIcon,
+  SiteIcon,
   Tab,
   Tabs,
   TelegramIcon,
   TwitterIcon
 } from '@components/shared';
-import classNames from 'classnames';
 import Title from 'antd/lib/typography/Title';
 import Text from 'antd/lib/typography/Text';
 import { Link, useNavigate } from 'react-router-dom';
+import { AVATAR_COLORS } from '@libs/constants';
+import { AvatarProps } from 'boring-avatars';
 import styles from './entity-wrapper.module.scss';
+import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
+import { ORG_PERMISSION } from '../organization-page/permissions-data';
 
 export type SocialLinks = {
   website: string
@@ -28,33 +29,70 @@ export type SocialLinks = {
   discord: string
 };
 
-type EntityHeaderProps = {
-  shortTitle?:string,
-  routes:string[],
-  tabData: Tab[]
-  avatar: string,
-  description: string,
-  socialLinks: SocialLinks,
-  title: string
+export type AvatarParams = {
+  name: string;
+  ipfs: string;
+  variant: AvatarProps['variant'];
+  square: boolean;
 };
 
-const socialLinksData = new Map<keyof SocialLinks, React.FC>()
-  .set('discord', () => <DiscordIcon />)
-  .set('telegram', () => <TelegramIcon />)
-  .set('twitter', () => <TwitterIcon />)
-  .set('instagram', () => <InstagrammIcon />)
-  .set('linkedin', () => <LinkedinIcon />);
+type EntityHeaderProps = {
+  pkey: string,
+  yourPermissions: boolean[] | null;
+  owner:string,
+  shortTitle:string,
+  routes:string[],
+  tabData: Tab[]
+  avatar: AvatarParams,
+  description?: string,
+  socialLinks: SocialLinks,
+  title: string;
+};
 
-function SocialLinkHOC({ Component, key, link }: {
+type SocialLinkMapObject = {
   Component: React.FC,
-  key: string,
   link: string
+};
+
+const socialLinksData = new Map<keyof SocialLinks, SocialLinkMapObject>()
+  .set('website', {
+    Component: () => (<SiteIcon className={styles.icon} />),
+    link: ' https://'
+  })
+  .set('discord', {
+    Component: () => (<DiscordIcon className={styles.icon} />),
+    link: ' https://www.discord.com/invite/'
+  })
+  .set('telegram', {
+    Component: () => <TelegramIcon className={styles.icon} />,
+    link: 'https://telegram.me/'
+  })
+  .set('twitter', {
+    Component: () => <TwitterIcon className={styles.icon} />,
+    link: 'https://twitter.com/'
+  })
+  .set('instagram', {
+    Component: () => <InstagrammIcon className={styles.icon} />,
+    link: 'https://www.instagram.com/'
+  })
+  .set('linkedin', {
+    Component: () => <LinkedinIcon className={styles.icon} />,
+    link: 'https://www.linkedin.com/'
+  });
+
+function SocialLinkHOC({ key, value }: {
+  key: keyof SocialLinks,
+  value: string
 }) {
+  const data = socialLinksData.get(key);
+  if (!data || !value) return null;
+
+  const { Component, link } = data;
   return (
     <a
       className={styles.icon}
       key={key}
-      href={`http://${link}`}
+      href={`${link}${value}`}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -64,28 +102,15 @@ function SocialLinkHOC({ Component, key, link }: {
 }
 
 function EntityHeader({
-  shortTitle, routes, tabData, avatar, description, socialLinks, title
+  shortTitle, yourPermissions, routes, tabData, avatar, description, socialLinks, title
 }:EntityHeaderProps) {
-  const { getImgUrlFromIpfs } = useUpload();
-
   const [showMore, setShowMore] = useState(false);
-  const [src, setSrc] = useState<string | undefined>(undefined);
   const [currentTab, setCurrentTab] = useState(0);
 
   const navigate = useNavigate();
 
-  const handleLoadPic = useCallback(async () => {
-    if (avatar) {
-      const link = await getImgUrlFromIpfs(avatar);
-      if (link) setSrc(link);
-    }
-  }, []);
-
-  useEffect(() => {
-    handleLoadPic();
-  }, []);
-
   const showMoreBtn = useMemo(() => {
+    if (!description) return null;
     const text = showMore ? 'Show less' : 'Show more';
     const onChangeHandler = () => setShowMore((prev) => !prev);
     return (
@@ -93,31 +118,35 @@ function EntityHeader({
         {text}
       </button>
     );
-  }, [showMore]);
+  }, [showMore, description]);
 
   const descriptionClass = showMore ? styles.descriptionActive : styles.description;
 
   const socialLinksView = useMemo(() => {
     const entries = Object.entries(socialLinks) as Entries<SocialLinks>;
     const links = entries.map((el) => {
-      const [key, link] = el;
-      const Component = socialLinksData.get(key);
-      if (!Component) return null;
-      return SocialLinkHOC({ key, link, Component });
+      const [key, value] = el;
+      return SocialLinkHOC({ key, value });
     })
       .filter((el) => el);
     return links;
   }, []);
 
+  const settings = useMemo(() => (
+    yourPermissions?.[ORG_PERMISSION.MODIFY_ORG] && (
+      <Link className={styles.settingLink} to="edit">
+        <SettingsIcon className={styles.icon} />
+      </Link>
+    )
+  ), [yourPermissions]);
+
   return (
     <div className={styles.specBlock}>
       <div className={styles.entityHeader}>
-        <img
-          className={classNames(styles.entityPicture, {
-            [styles.entityPictureActive]: !!src
-          })}
-          src={src}
-          alt="avatar"
+        <IpfsAvatar
+          size={80}
+          colors={AVATAR_COLORS}
+          {...avatar}
         />
         <div className={styles.titleBlock}>
           <Title className={styles.title} level={3}>
@@ -156,9 +185,7 @@ function EntityHeader({
               navigate(routes[id]);
             }}
           />
-          <Link className={styles.settingLink} to="/settings">
-            <SettingsIcon />
-          </Link>
+          {settings}
         </div>
       </div>
     </div>

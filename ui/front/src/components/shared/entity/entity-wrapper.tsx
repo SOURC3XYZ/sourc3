@@ -1,47 +1,39 @@
-import {
-  EntityManager, NavItem, Tab
-} from '@components/shared';
-import { OwnerListType } from '@types';
+import { Tab } from '@components/shared';
 import { useMemo } from 'react';
 import styles from './entity-wrapper.module.scss';
-import EntityHeader, { SocialLinks } from './entity-header';
+import EntityHeader, { AvatarParams, SocialLinks } from './entity-header';
 
-type HeaderFields = {
-  shortTitle?:string,
+export type HeaderFields = {
+  pkey: string,
+  owner: string,
+  shortTitle:string,
+  yourPermissions: boolean[] | null
   tabData: Tab[],
   routes: string[],
-  avatar: string,
-  description: string,
-  socialLinks: SocialLinks
+  avatar: AvatarParams,
+  description?: string,
+  socialLinks: SocialLinks,
 };
 
 type EntityWrapperProps = {
-  title: string;
   headerFields?: HeaderFields
-  type: OwnerListType;
+  title: string;
   pkey:string;
-  searchText: string;
-  navItems: NavItem[];
   children:JSX.Element;
-  placeholder: string;
-  setInputText:(str: string) => void
-  showModal?: () => void;
 };
 
 function EntityWrapper({
   title,
   headerFields,
-  type,
   pkey,
-  searchText,
-  navItems,
-  children,
-  placeholder,
-  showModal,
-  setInputText
+  children
 }:EntityWrapperProps) {
   const header = useMemo(() => !!headerFields && (
     <EntityHeader
+      pkey={pkey}
+      yourPermissions={headerFields.yourPermissions}
+      owner={headerFields.owner}
+      shortTitle={headerFields.shortTitle}
       routes={headerFields.routes}
       tabData={headerFields.tabData}
       avatar={headerFields.avatar}
@@ -53,15 +45,6 @@ function EntityWrapper({
   return (
     <div className={styles.content}>
       {header}
-      <EntityManager
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      />
       {children}
     </div>
   );

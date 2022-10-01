@@ -126,7 +126,7 @@ function ProfilesEdit() {
         <div className={styles.main}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <InputCustom
-              onFocus
+              autoFocus
               label={errors.names?.message ? errors.names?.message : 'Name'}
               {...register(
                 'names',

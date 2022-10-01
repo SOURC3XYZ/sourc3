@@ -1,6 +1,7 @@
 /* eslint-disable prefer-destructuring */
 import { CustomAction } from '@libs/redux';
 import {
+  ArgumentTypes,
   CallBeamApi, IProfile,
   OrganizationsResp, PKeyRes,
   ProjectsResp,
@@ -17,10 +18,11 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
   const createRepo = (
     name: string,
     projectId: number,
+    priv: 0 | 1,
     pid = 0
   ):CustomAction => async (dispatch) => contractMutation(
     dispatch,
-    RC.createRepo(name, projectId, pid)
+    RC.createRepo(name, projectId, priv, pid)
   );
 
   const deleteRepo = (
@@ -38,13 +40,9 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.createOrganization(name, pid)
   );
 
-  const createProject = (
-    name: string,
-    organizationId:number,
-    pid = 0
-  ):CustomAction => async (dispatch) => contractMutation(
+  const createProject = (state: any):CustomAction => async (dispatch) => contractMutation(
     dispatch,
-    RC.createProject(name, organizationId, pid)
+    RC.createProject({ ...state })
   );
 
   const getOrganizations = ():CustomAction => async (dispatch) => contractQuery(
@@ -52,6 +50,17 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.getOrganizations(),
     (output:OrganizationsResp) => [AC.setOrganizationsList(output.organizations)]
   );
+
+  const setModifyOrganization = (state:any):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.setModifyOrganization({ ...state })
+  );
+
+  const setModifyProject = (state:any):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.setModifyProject({ ...state })
+  );
+
   const setModifyUser = (state:any):CustomAction => async (dispatch) => contractMutation(
     dispatch,
     RC.setModifyUser(state)
@@ -80,19 +89,44 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
         contractQuery<IProfile>(
           dispatch,
           RC.getUser(output.key),
-          (profile) => [ AC.setViewUser(profile)]
+          (profile) => [AC.setViewUser(profile)]
         );
         return [];
       }
     );
   };
 
+  const addMemberToOrg = (
+    ...args: ArgumentTypes<typeof RC['addOrganizationMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addOrganizationMember(...args)
+  );
+
+  const addMemberToProject = (
+    ...args: ArgumentTypes<typeof RC['addProjectMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addProjectMember(...args)
+  );
+
+  const addRepoMember = (
+    ...args: ArgumentTypes<typeof RC['addRepoMember']>
+  ):CustomAction => async (dispatch) => contractMutation(
+    dispatch,
+    RC.addRepoMember(...args)
+  );
   return [{
     getOrganizations, getProjects, getRepos, setModifyUser, getViewUser
   }, {
     createProject,
+    addMemberToOrg,
     createOrganization,
+    setModifyOrganization,
     deleteRepo,
-    createRepo
+    createRepo,
+    setModifyProject,
+    addMemberToProject,
+    addRepoMember
   }] as const;
 };

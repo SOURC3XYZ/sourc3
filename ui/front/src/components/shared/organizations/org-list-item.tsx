@@ -4,8 +4,9 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './org-list.module.scss';
 
 type ListItemProps = {
@@ -24,7 +25,7 @@ function OrgListItem({
     message.info(key);
   };
 
-  const link = `${path}projects/${organization_id}/${type}/1/projects`;
+  const link = `${path}projects/${organization_id}/projects?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
@@ -47,6 +48,15 @@ function OrgListItem({
       ]}
     >
       <List.Item.Meta
+        avatar={(
+          <IpfsAvatars
+            ipfs={item.organization_logo_ipfs_hash}
+            colors={AVATAR_COLORS}
+            name={`${item.organization_id}${item.organization_name}${item.organization_creator}`}
+            size={56}
+            variant="ring"
+          />
+        )}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: organization_id }}>

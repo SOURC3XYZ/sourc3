@@ -22,3 +22,7 @@ export function unorderedRemove<T>(arr:T[], i:number):void {
   }
   arr.length -= 1;
 }
+
+export function getSetValueByIndex<T>(setObj: Set<T>, index: number) {
+  return [...setObj][index];
+}

@@ -162,3 +162,9 @@ export function compact(value: string, stringLength: number = 8): string {
   }
   return `${value.substring(-stringLength, stringLength)}...`;
 }
+
+export function getQueryParam(url:string, param:string) {
+  let location = url;
+  location = location.replace('#', '/');
+  return new URL(location).searchParams.get(param);
+}

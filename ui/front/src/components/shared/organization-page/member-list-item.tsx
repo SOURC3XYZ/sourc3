@@ -1,51 +1,49 @@
 import { Member, MemberId } from '@types';
 import {
-  Menu, Dropdown, List, message
+  Menu, Dropdown, List, message, Tag
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion } from '@components/shared';
-import { textEllipsis } from '@libs/utils';
-import { useCallback, useEffect, useState } from 'react';
-import classNames from 'classnames';
-import { useCallApi, useUpload } from '@libs/hooks/shared';
+import { getSetValueByIndex, textEllipsis } from '@libs/utils';
+import {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
+import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './project-list.module.scss';
+import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
 
 type ListItemProps = {
   item: MemberId;
   path: string;
+  data: Set<string>;
   searchText: string;
 };
 
 function MemberListItem({
-  item, path, searchText
+  item, path, data, searchText
 }:ListItemProps) {
+  const parsedPermissions = useMemo(
+    () => item.permissions
+      .toString(2)
+      .split('')
+      .map((el) => !!+el),
+    [item.permissions]
+  );
+
   const [callApi] = useCallApi();
   const [itemData, setItemData] = useState <Member | null>(null);
-  const [src, setSrc] = useState<string | undefined>(undefined);
-
-  const { getImgUrlFromIpfs } = useUpload();
 
   const getItemData = useCallback(async () => {
     const recievedItem = await callApi<Member>(RC.getUser(item.member));
     if (recievedItem) setItemData(recievedItem);
   }, []);
 
-  const handleLoadPic = useCallback(async () => {
-    if (itemData?.user_avatar_ipfs_hash) {
-      const link = await getImgUrlFromIpfs(itemData.user_avatar_ipfs_hash);
-      if (link) setSrc(link);
-    }
-  }, [itemData]);
-
   useEffect(() => {
     getItemData();
   }, []);
-
-  useEffect(() => {
-    handleLoadPic();
-  }, [itemData]);
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
@@ -53,9 +51,30 @@ function MemberListItem({
 
   const link = `${path}project/${item.member}/1`;
 
+  const handleGetPkey = () => navigator.clipboard.writeText(item.member);
+
   const menuRender = (
-    <Menu onClick={onClick} />
+    <Menu onClick={onClick}>
+      <Menu.Item onClick={handleGetPkey} key={`${item.member} copied to clipboard!`}>
+        Get Pkey
+      </Menu.Item>
+    </Menu>
   );
+  const status = useMemo(() => parsedPermissions.map((el, i) => {
+    const title = getSetValueByIndex(data, i);
+    if (el) return <Tag color="default" key={`tag-${title}`}>{title}</Tag>;
+    return null;
+  }).filter((el) => el), [parsedPermissions]);
+
+  const image = useMemo(() => itemData && (
+    <IpfsAvatar
+      colors={AVATAR_COLORS}
+      name={item.member}
+      size={56}
+      variant="beam"
+      ipfs={itemData?.user_avatar_ipfs_hash}
+    />
+  ), [itemData]);
 
   return (
     <List.Item
@@ -78,23 +97,22 @@ function MemberListItem({
       ]}
     >
       <List.Item.Meta
-        avatar={(
-          <img
-            className={classNames(styles.memberPicture, {
-              [styles.memberPictureActive]: !!src
-            })}
-            src={src}
-            alt="avatar"
-          />
-        )}
+        avatar={image}
         title={(
           <div className={styles.title}>
             <Link to={link} state={{ id: item.member }}>
-              <Excretion name={itemData ? itemData.user_name : ''} inputText={searchText} />
+              <Excretion
+                name={
+                  itemData?.user_name
+                    ? itemData.user_name
+                    : textEllipsis(item.member, 7, { ellipsis: '' })
+                }
+                inputText={searchText}
+              />
             </Link>
           </div>
         )}
-        description={<span className={styles.memberDescription}>member</span>}
+        description={<div className={styles.memberDescription}>{status}</div>}
       />
     </List.Item>
   );

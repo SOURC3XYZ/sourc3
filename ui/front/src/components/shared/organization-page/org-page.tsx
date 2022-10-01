@@ -1,26 +1,37 @@
+/* eslint-disable react/no-unstable-nested-components */
 import {
   EntityWrapper,
   BackButton,
   RepoItem,
-  usePathPattern
+  usePathPattern,
+  NavItem
 } from '@components/shared';
 import { useProject } from '@libs/hooks/container/organization';
+import { ArgumentTypes } from '@types';
 import { CSSProperties, useCallback, useMemo } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
+import {
+  AddUserOrg,
+  CreateOrgRepo, CreateProject, ModifyOrganization
+} from './forms';
 import MemberListItem from './member-list-item';
+import { orgData, repoData, ORG_PERMISSION } from './permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
 
 type RoutesType<T> = {
-  path: string,
-  items: T[],
-  navTitle:string,
-  itemComponent: (item: T) => JSX.Element;
   headerElements?: HeaderElements;
+  navItems?: NavItem[];
+  path: string;
+  items: T[];
+  navTitle:string;
+  placeholder:string;
+  fieldsToSearch: (keyof T)[];
+  createEntity?: () => void;
+  itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
-
-const placeholder = 'Enter name of your project';
 
 function Projects() {
   const {
@@ -30,22 +41,14 @@ function Projects() {
     path,
     type,
     pkey,
-    searchText,
     projects,
-    modalApi,
     repos,
-    members
+    members,
+    yourPermissions,
+    navigate,
+    goBack,
+    addMemberToOrg
   } = useProject();
-
-  const {
-    isModal,
-    setInputText,
-    showModal,
-    handleOk,
-    closeModal
-  } = modalApi;
-
-  const navigate = useNavigate();
 
   const back = useCallback(() => navigate(-1), []);
 
@@ -78,65 +81,117 @@ function Projects() {
     }
   ], [repos, projects, members]);
 
-  const projectListItem = (item: typeof projects[number]) => (
-    <ProjectListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      type={type}
-    />
-  );
+  const projectListItem = (searchText:string) => function (item: typeof projects[number]) {
+    return (
+      <ProjectListItem
+        item={item}
+        path={path}
+        searchText={searchText}
+        type={type}
+      />
+    );
+  };
 
-  const repoListItem = (item: typeof repos[number]) => (
-    <RepoItem
-      item={item}
-      path={path}
-      searchText={searchText}
-      deleteRepo={() => {}}
-    />
-  );
+  const repoListItem = (searchText:string) => function (item: typeof repos[number]) {
+    return (
+      <RepoItem
+        item={item}
+        path={path}
+        searchText={searchText}
+        deleteRepo={() => { }}
+      />
+    );
+  };
 
-  const memberListItem = (item: typeof members[number]) => (
-    <MemberListItem
-      item={item}
-      path={path}
-      searchText={searchText}
-    />
-  );
+  const memberListItem = (searchText:string) => function (item: typeof members[number]) {
+    return (
+      <MemberListItem
+        item={item}
+        data={orgData}
+        path={path}
+        searchText={searchText}
+      />
+    );
+  };
 
   const routes: RoutesType<any>[] = [
     {
       path: 'projects',
-      itemComponent: projectListItem,
       items: projects,
       navTitle: 'Projects',
+      placeholder: 'enter project name or id',
       headerElements: {
         placeholder: 'Search by project name or ID'
-      }
+      },
+      navItems: [
+        {
+          key: 'all',
+          to: `${path}projects/${id}/projects?type=all&page=1`,
+          text: 'All Projects'
+        },
+        {
+          key: 'my',
+          to: `${path}projects/${id}/projects?type=my&page=1`,
+          text: 'My Projects'
+        }
+      ],
+      fieldsToSearch: ['project_name', 'project_id'],
+      itemComponent: projectListItem,
+      createEntity: yourPermissions?.[ORG_PERMISSION.ADD_PRODECTS]
+        ? () => navigate('create-project') : undefined
     },
     {
       path: 'repos',
-      itemComponent: repoListItem,
       items: repos,
       navTitle: 'Repositories',
+      placeholder: 'enter repo name or id',
       headerElements: {
         placeholder: 'Search by repo name or ID'
-      }
+      },
+      navItems: [
+        {
+          key: 'all',
+          to: `${path}projects/${id}/repos?type=all&page=1`,
+          text: 'All Repositories'
+        },
+        {
+          key: 'my',
+          to: `${path}projects/${id}/repos?type=my&page=1`,
+          text: 'My Repositories'
+        }
+      ],
+      fieldsToSearch: ['repo_id', 'repo_name'],
+      itemComponent: repoListItem,
+      createEntity: () => navigate('create-repo')
     },
     {
       path: 'users',
-      itemComponent: memberListItem,
       items: members,
       navTitle: 'Projects',
+      placeholder: 'enter user name',
       headerElements: {
         placeholder: 'Search by username of pid'
-      }
+      },
+      fieldsToSearch: ['member'],
+      itemComponent: memberListItem,
+      createEntity: yourPermissions?.[ORG_PERMISSION.ADD_MEMBER]
+        ? () => navigate('add-user') : undefined
     }
   ];
 
-  const headerFields = {
+  const currentRoute = usePathPattern(routes.map((el) => el.path));
+
+  const headerFields:HeaderFields = {
+    pkey,
+    owner: org.organization_creator,
     routes: routes.map((el) => el.path),
-    avatar: org.organization_logo_ipfs_hash,
+    yourPermissions,
+    avatar: {
+      name: `${org.organization_id}${org.organization_name}${org.organization_creator}`,
+      ipfs: org.organization_logo_ipfs_hash,
+      variant: 'ring',
+      square: false
+    },
     shortTitle: org.organization_short_title,
     description: org.organization_about,
     socialLinks: {
@@ -150,21 +205,6 @@ function Projects() {
     tabData
   };
 
-  const currentRoute = usePathPattern(routes.map((el) => el.path));
-
-  const navItems = [
-    {
-      key: 'all',
-      to: `${path}projects/${id}/all/1/${currentRoute}`,
-      text: 'All Projects'
-    },
-    {
-      key: 'my',
-      to: `${path}projects/${id}/my/1/${currentRoute}`,
-      text: 'My Projects'
-    }
-  ];
-
   const RoutesView = useMemo(() => routes.map(
     (el) => (
       <Route
@@ -172,44 +212,90 @@ function Projects() {
         path={`/${el.path}`}
         element={(
           <ProjectList
+            isShowNav={pkey === org.organization_creator}
             id={id}
-            route={el.path}
-            isModal={isModal}
-            searchText={searchText}
-            projects={el.items}
-            header={el.headerElements}
+            pkey={pkey}
             path={path}
             page={page}
             type={type}
-            handleOk={handleOk}
-            closeModal={closeModal}
+            placeholder={el.placeholder}
+            route={el.path}
+            projects={el.items}
+            header={el.headerElements}
+            navItems={el.navItems}
+            fieldsToSearch={el.fieldsToSearch}
             listItem={el.itemComponent}
+            createEntity={el.createEntity}
           />
         )}
       />
     )
-  ), [projects, members, repos, currentRoute]);
+  ), [projects, members, repos, currentRoute, routes]);
+
+  const addUserMember = useCallback((obj: ArgumentTypes<typeof addMemberToOrg>[0]) => {
+    addMemberToOrg(obj);
+  }, []);
 
   return (
     <>
       {backButton}
-      <EntityWrapper
-        headerFields={headerFields}
-        title={org.organization_name || 'NO NAME'}
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      >
-        <Routes>
-          {RoutesView}
-        </Routes>
-      </EntityWrapper>
+      <Routes>
+        <Route
+          path="/edit"
+          element={(
+            <ModifyOrganization
+              item={org}
+              pkey={pkey}
+              goBack={goBack}
+            />
+          )}
+        />
+        <Route
+          path="/create-project"
+          element={(
+            <CreateProject
+              pkey={pkey}
+              orgId={org.organization_id}
+              goBack={goBack}
+            />
+          )}
+        />
+        <Route
+          path="/create-repo"
+          element={(
+            <CreateOrgRepo
+              goBack={goBack}
+              projects={projects}
+            />
+          )}
+        />
+        <Route
+          path="/add-user"
+          element={(
+            <AddUserOrg
+              data={orgData}
+              id={org.organization_id}
+              goBack={goBack}
+              callback={addUserMember as (obj: unknown) => void}
+            />
+          )}
+        />
+        <Route
+          path="/*"
+          element={(
+            <EntityWrapper
+              headerFields={headerFields}
+              title={org.organization_name || 'NO NAME'}
+              pkey={pkey}
+            >
+              <Routes>
+                {RoutesView}
+              </Routes>
+            </EntityWrapper>
+          )}
+        />
+      </Routes>
     </>
-
   );
 }
 

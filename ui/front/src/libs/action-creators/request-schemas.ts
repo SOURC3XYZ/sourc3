@@ -292,7 +292,19 @@ export const RC = {
       }
     }
   }),
-  createProject: (name:string, organization_id:number, pid = 0) => ({
+  createProject: ({
+    name,
+    organization_id,
+    logo_addr = '',
+    short_title = '',
+    website = '',
+    twitter = '',
+    linkedin = '',
+    instagram = '',
+    telegram = '',
+    discord = '',
+    pid = 0
+  }:any) => ({
     callID: 'create_project',
     method: 'invoke_contract',
     params: {
@@ -302,12 +314,20 @@ export const RC = {
         action: 'create_project',
         name,
         organization_id,
-        pid
+        pid,
+        logo_addr,
+        description: short_title,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord
       }
     }
   }),
 
-  createRepo: (repo_name:string, project_id: number, pid = 0) => ({
+  createRepo: (repo_name:string, project_id: number, secure: 0 | 1, pid = 0) => ({
     callID: 'create_repo',
     method: 'invoke_contract',
     params: {
@@ -315,6 +335,7 @@ export const RC = {
       args: {
         role: 'user',
         action: 'create_repo',
+        private: secure,
         repo_name,
         project_id,
         pid
@@ -392,6 +413,230 @@ export const RC = {
         organization_id
       }
     }
+  } as const),
+  getProjectMembers: (project_id: number) => ({
+    callID: 'list_project_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_project_members',
+        project_id
+      }
+    }
+  } as const),
+  setModifyOrganization: ({
+    organization_id,
+    name,
+    logo_addr = '',
+    short_title = '',
+    about = '',
+    website = '',
+    twitter = '',
+    linkedin = '',
+    instagram = '',
+    telegram = '',
+    discord = '',
+    pid = 0
+  }: any) => ({
+    callID: 'modify_organization',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_organization',
+        organization_id,
+        name,
+        logo_addr,
+        short_title,
+        about,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord,
+        pid
+      }
+    }
+  } as const),
+  setModifyProject: ({
+    organization_id,
+    project_id,
+    name,
+    logo_addr = '',
+    short_title = '',
+    website = '',
+    twitter = '',
+    linkedin = '',
+    instagram = '',
+    telegram = '',
+    discord = '',
+    pid = 0
+  }: any) => ({
+    callID: 'modify_project',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_project',
+        organization_id,
+        project_id,
+        name,
+        logo_addr,
+        description: short_title,
+        website,
+        twitter,
+        linkedin,
+        instagram,
+        telegram,
+        discord,
+        pid
+      }
+    }
+  } as const),
+  addOrganizationMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid?:number
+  }) => ({
+    callID: 'add_organization_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_organization_member',
+        organization_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  modifyOrganizationMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'modify_organization_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_organization_member',
+        organization_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  addProjectMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'add_project_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_project_member',
+        project_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+  modifyProjectMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }: {
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'modify_project_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'modify_project_member',
+        project_id: id,
+        member,
+        permissions,
+        pid
+      }
+    }
+  } as const),
+
+  addRepoMember: ({
+    id,
+    member,
+    permissions,
+    pid = 0
+  }:{
+    id: number,
+    member: string,
+    permissions: number,
+    pid:number
+  }) => ({
+    callID: 'add_repo_member',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'add_repo_member',
+        repo_id: id,
+        user: member,
+        permissions,
+        pid
+      }
+    }
+
+  } as const),
+  listRepoMembers: (repo_id:number) => ({
+    callID: 'list_repo_members',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_repo_members',
+        repo_id
+      }
+    }
+
   } as const)
 };
 export type RequestSchema = ReturnType<PropertiesType<typeof RC>>;

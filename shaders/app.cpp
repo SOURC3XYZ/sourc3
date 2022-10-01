@@ -911,6 +911,30 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
     }
 }
 
+void OnActionListRepoMembers(const ContractID& cid) {
+    using sourc3::Repo;
+    using sourc3::Member;
+    using MemberKey = Env::Key_T<sourc3::Member<Repo>::Key>;
+
+    MemberKey start{.m_Prefix = {.m_Cid = cid},
+                    .m_KeyInContract = sourc3::Member<Repo>::Key{PubKey{}, 0}};
+    if (!Env::DocGet("repo_id", start.m_KeyInContract.id)) {
+        return OnError("no 'repo_id'");
+    }
+    _POD_(start.m_KeyInContract.user).SetZero();
+    MemberKey end = start;
+    _POD_(end.m_KeyInContract.user).SetObject(0xFF);
+
+    MemberKey key = start;
+    Env::DocArray members("members");
+    Member<Repo> member;
+    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, member);) {
+        Env::DocGroup member_object("");
+        Env::DocAddBlob_T("member", key.m_KeyInContract.user);
+        Env::DocAddNum32("permissions", member.permissions);
+    }
+}
+
 void OnActionModifyOrganization(const ContractID& cid) {
     using sourc3::Organization;
     using sourc3::OrganizationData;
@@ -2032,6 +2056,11 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("pid", "uint32_t");
             }
             {
+                Env::DocGroup gr_method("list_repo_members");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+            }
+            {
                 Env::DocGroup gr_method("push_objects");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
@@ -2242,6 +2271,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"add_repo_member", OnActionAddRepoMember},
         {"modify_repo_member", OnActionModifyRepoMember},
         {"remove_repo_member", OnActionRemoveRepoMember},
+        {"list_repo_members", OnActionListRepoMembers},
         {"push_objects", OnActionPushObjects},
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},

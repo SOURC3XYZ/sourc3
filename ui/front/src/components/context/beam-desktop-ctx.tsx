@@ -4,7 +4,7 @@ import {
 import { entitiesThunk, userThunk } from '@libs/action-creators/async';
 import { CONFIG, EVENTS } from '@libs/constants';
 import { BeamApiDesktop } from '@libs/core';
-import { AppThunkDispatch, useSelector } from '@libs/redux';
+import { AppThunkDispatch } from '@libs/redux';
 import wasm from '@assets/app.wasm';
 import { ContractsResp, IProfile, PKeyRes } from '@types';
 import { useCallback, useMemo, useRef } from 'react';

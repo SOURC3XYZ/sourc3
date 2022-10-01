@@ -178,6 +178,6 @@ export const userThunk = ({
     checkTxStatus,
     createAddress,
     getTxStatus,
-    startTx,
+    startTx
   };
 };

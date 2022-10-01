@@ -7,7 +7,6 @@ import {
   Organizations,
   Projects,
   ProjectRepos,
-  Uploader,
   ProfilesPage
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
@@ -42,20 +41,16 @@ function Main() {
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page/*',
+      path: 'projects/:orgId/*',
       element: <Projects />
     },
     {
-      path: 'project/:projId/:type/:page',
+      path: 'project/:projId/*',
       element: <ProjectRepos />
     },
     {
       path: 'download',
       element: <DownloadPage />
-    },
-    {
-      path: 'upload',
-      element: <Uploader />
     },
     {
       path: 'profiles/:id/*',
@@ -86,7 +81,7 @@ function Main() {
   return (
     <PreloadComponent
       Fallback={HeadlessPreloadFallback}
-      callback={connectBeamApi}
+      callback={(connectBeamApi)}
       isLoaded={isApiConnected}
     >
       <>

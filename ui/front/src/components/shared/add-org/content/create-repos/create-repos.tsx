@@ -127,18 +127,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
                   <div className="inside"></div>
                 </div>
             </li>
-
           </ul>
-          {/*<div>*/}
-          {/*<div className={styles.radio}>*/}
-          {/*  <input type="radio" id="public" name="public"/>*/}
-          {/*  <label htmlFor="public">Public</label>*/}
-          {/*</div>*/}
-          {/*<div className={styles.radio}>*/}
-          {/*  <input type="radio" id="private" name="private"/>*/}
-          {/*  <label htmlFor="private">Private</label>*/}
-          {/*</div>*/}
-          {/*</div>*/}
         </div>
       </div>
     </Popup>

@@ -9,6 +9,10 @@
     }
 }
 
+.icon{
+    fill: #fff;
+}
+
 .TabsRoot {
     display: flex;
     flex-direction: row;
@@ -78,17 +82,17 @@
             font-family: "PublicSans-Medium";
             gap: 0 24px;
 
-            .entityPicture {
-                width: 80px;
-                height: 80px;
-                object-fit: contain;
-                border-radius: 8px;
-                visibility: hidden;
+            // .entityPicture {
+            //     width: 80px;
+            //     height: 80px;
+            //     object-fit: contain;
+            //     border-radius: 8px;
+            //     visibility: hidden;
 
-                &Active {
-                    visibility: visible;
-                }
-            }
+            //     &Active {
+            //         visibility: visible;
+            //     }
+            // }
 
             .titleBlock {
                 display: flex;
