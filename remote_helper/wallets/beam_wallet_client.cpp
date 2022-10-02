@@ -286,7 +286,7 @@ uint64_t BeamWalletClient::GetUploadedObjectCount() {
         return 0;
     }
     auto res_obj = res.as_object();
-    return res_obj["cur_objects"].as_uint64() + res_obj["cur_metas"].as_uint64();
+    return res_obj["cur_objects"].as_int64() + res_obj["cur_metas"].as_int64();
 }
 
 std::string BeamWalletClient::PushObjects(const std::string& data,

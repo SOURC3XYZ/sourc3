@@ -1490,6 +1490,7 @@ void OnActionRepoGetStatistic(const ContractID& cid) {
     RepoKey key;
     _POD_(key.m_Prefix.m_Cid) = cid;
     Env::DocGet("repo_id", key.m_KeyInContract.repo_id);
+    key.m_KeyInContract.repo_id = Utils::FromBE(key.m_KeyInContract.repo_id);
     uint32_t value_len = 0, key_len = sizeof(RepoKey);
     for (Env::VarReader reader(key, key);
          reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
