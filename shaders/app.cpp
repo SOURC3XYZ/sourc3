@@ -513,6 +513,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     request->name_len = name_len;
     Env::Memcpy(/*pDst=*/request->name, /*pSrc=*/repo_name,
                 /*n=*/name_len);
+
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -577,7 +578,8 @@ void OnActionModifyRepo(const ContractID& cid) {
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
-    CompensateFee(cid, 0);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/ModifyRepo::kMethod,
                         /*pArgs=*/request,
@@ -587,7 +589,7 @@ void OnActionModifyRepo(const ContractID& cid) {
                         /*pSig=*/&sig,
                         /*nSig=*/1,
                         /*szComment=*/"modify repo",
-                        /*nCharge=*/0);
+                        /*nCharge=*/charge);
 }
 
 void OnActionCreateProject(const ContractID& cid) {
@@ -917,9 +919,8 @@ void OnActionListRepoMembers(const ContractID& cid) {
     using MemberKey = Env::Key_T<sourc3::Member<Repo>::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
-                    .m_KeyInContract = sourc3::Member<Repo>::Key{PubKey{}, 0}};
+                    .m_KeyInContract = sourc3::Member<Repo>::Key{}};
     start.m_KeyInContract.id = GetIdByName<Repo>(cid, ReadRepoNameId());
-    _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
@@ -1260,8 +1261,6 @@ void OnActionAllRepos(const ContractID& cid) {
 
     RepoKey key;
     PubKey my_key;
-    UserKey user_key(cid);
-    user_key.Get(my_key);
     Env::DocArray repos("repos");
     uint32_t value_len = 0, key_len = sizeof(RepoKey);
     for (Env::VarReader reader(start, end);
@@ -1315,7 +1314,7 @@ void OnActionAddRepoMember(const ContractID& cid) {
     using sourc3::method::AddRepoMember;
     AddRepoMember request;
     request.repo_name_id = ReadRepoNameId();
-    Env::DocGet("user", request.member);
+    Env::DocGet("member", request.member);
 
     uint32_t read_permissions;
     if (!Env::DocGet("permissions", read_permissions)) {
@@ -1350,7 +1349,7 @@ void OnActionModifyRepoMember(const ContractID& cid) {
     using sourc3::method::ModifyRepoMember;
     ModifyRepoMember request;
     request.repo_name_id = ReadRepoNameId();
-    Env::DocGet("user", request.member);
+    Env::DocGet("member", request.member);
 
     uint32_t read_permissions;
     if (!Env::DocGet("permissions", read_permissions)) {
@@ -1384,7 +1383,7 @@ void OnActionRemoveRepoMember(const ContractID& cid) {
     using sourc3::method::RemoveRepoMember;
     RemoveRepoMember request;
     request.repo_name_id = ReadRepoNameId();
-    Env::DocGet("user", request.member);
+    Env::DocGet("member", request.member);
 
     UserKey user_key(cid);
     user_key.Get(request.caller);
@@ -2011,6 +2010,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocGroup gr_method("modify_repo");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("repo_old_name", "Current name of repo");
                 Env::DocAddText("project_name", "Project name");
                 Env::DocAddText("organization_name", "Organization name");
                 Env::DocAddText("private", "Is repo private");
@@ -2030,7 +2030,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("project_name", "Project name");
                 Env::DocAddText("organization_name", "Organization name");
-                Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("member", "User PubKey");
                 Env::DocAddText("permissions", "permissions");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -2040,7 +2040,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("project_name", "Project name");
                 Env::DocAddText("organization_name", "Organization name");
-                Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("member", "User PubKey");
                 Env::DocAddText("permissions", "permissions");
                 Env::DocAddText("pid", "uint32_t");
             }
@@ -2050,7 +2050,7 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("project_name", "Project name");
                 Env::DocAddText("organization_name", "Organization name");
-                Env::DocAddText("user", "User PubKey");
+                Env::DocAddText("member", "User PubKey");
                 Env::DocAddText("pid", "uint32_t");
             }
             {
