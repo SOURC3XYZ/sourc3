@@ -11,7 +11,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      top: -32px;
+      top: -69px;
       left: -80px;
       span{
         width: 10px;
@@ -42,13 +42,20 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 46px;
-        height: 46px;
-        background: #3FD05A;
+        width: 16px;
+        height: 16px;
+        border: 1px solid #3FD05A;
+        background-color: #3FD05A;
         color: #FFFFFF;
       }
       .blue{
-        border: 1px solid #4DA2E6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 46px;
+        height: 46px;
+        background: #4DA2E6;
+        color: #FFFFFF;
       }
     }
   }
@@ -60,7 +67,7 @@
       line-height: 52px;
       margin: 0 0 40px 0;
       .color{
-        color: #3FD05A;
+        color: #4DA2E6;
       }
       .drop{
         display: block;
@@ -83,33 +90,17 @@
         }
       }
     }
-    .link{
+    .button{
       display: flex;
       align-items: center;
       margin: 80px -12px 189px;
-      a{
+      .next{
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #3FD05A;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        border-radius: 8px;
-        font-family: 'PublicSans-ExtraBold', serif;
-        font-style: normal;
-        font-weight: 800;
-        font-size: 20px;
-        line-height: 20px;
-        color: #FFFFFF;
-        margin: 0 12px;
-        padding: 15px 40px;
-        img{
-          margin-right: 10px;
-        }
-      }
-      button{
         width: 127px;
         height: 52px;
-        background: #3FD05A;
+        background: #4DA2E6;
         border: 1px solid rgba(0, 0, 0, 0.05);
         border-radius: 8px;
         cursor: pointer;
@@ -120,6 +111,25 @@
         line-height: 20px;
         color: #FFFFFF !important;
       }
+      .buttonItem{
+        width: auto;
+        background: #4DA2E6;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        font-family: 'PublicSans-ExtraBold', serif;
+        font-style: normal;
+        font-weight: 800;
+        font-size: 20px;
+        line-height: 20px;
+        color: #FFFFFF;
+        margin: 0 12px;
+        padding: 16px 40px;
+        &:nth-child(2){
+          color: #4DA2E6;
+          background: #FFFFFF;
+          border: 1px solid #4DA2E6;
+        }
+      }
     }
     a{
       font-family: 'PublicSans-Bold', serif;
@@ -127,7 +137,7 @@
       font-weight: 700;
       font-size: 16px;
       line-height: 28px;
-      color: #3FD05A;
+      color: #4DA2E6;
     }
   }
 }
