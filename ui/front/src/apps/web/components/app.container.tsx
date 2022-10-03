@@ -15,6 +15,7 @@ import { HOST } from '@components/shared/git-auth/profile/constants';
 import { AC } from '@libs/action-creators';
 import { useDispatch } from '@libs/redux';
 import { GitProfile } from '@components/shared/git-auth';
+import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -76,6 +77,10 @@ function Main() {
       <Route
         path="/git-auth"
         element={<GitAuth />}
+      />
+      <Route
+        path="/onboarding"
+        element={<OnboardingStep />}
       />
       <Route
         path="/download"

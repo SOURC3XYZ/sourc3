@@ -1,0 +1,112 @@
+.section {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto 170px auto;
+    .title{
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: revert;
+      .img{
+        position: absolute;
+        top: 0;
+        left: 0;
+        img{
+          position: absolute;
+        }
+        .arrow{
+          left: -85px;
+          top: 32px;
+          width: 132px;
+          height: 33px;
+          animation: fadein 5s linear;
+          z-index: 1;
+        }
+        .ellipse{
+          left: -23px;
+          top: -7px;
+          animation: fadein 2s linear;
+        }
+      }
+      h1{
+        font-family: 'PublicSans-ExtraBold', serif;
+        font-style: normal;
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 52px;
+        color: #000000;
+        margin-bottom: 0;
+        z-index: 1;
+        a{
+          color: #FF791F;
+        }
+        .green{
+          color: #3FD05A;
+          font-style: italic;
+          text-decoration: underline;
+        }
+        .drop{
+          display: block;
+        }
+        .indent{
+          padding-left: 63px;
+        }
+      }
+    }
+  .count{
+    display: flex;
+    align-items: center;
+    margin: 19px 0 81px 0;
+    h4{
+      font-family: 'PublicSans-SemiBold', serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 19px;
+      letter-spacing: 0.37em;
+      text-transform: uppercase;
+      color: #8F8F8F;
+    }
+    .countNum{
+      h4{
+        color: #FFFFFF;
+        background: #FF791F;
+        border-radius: 4px;
+        padding-left: 5px;
+      }
+    }
+  }
+  .text{
+    max-width: 566px;
+    width: 100%;
+    p{
+      font-family: 'PublicSans-Regular', serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #000000;
+      span{
+        font-family: "PublicSans-ExtraBold", serif;
+        font-weight: 800;
+      }
+      &:nth-child(1){
+        margin-bottom: 28px;
+      }
+    }
+  }
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media only screen and (max-width: 400px) {
+
+}
