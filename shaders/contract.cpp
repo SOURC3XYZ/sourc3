@@ -308,7 +308,7 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
             {params.project_name_id, GetNameHash(repo->name, repo->name_len)}},
         repo_id));
     Env::Halt_if(SaveVLObject(RepoKey{repo_id}, repo,
-                              sizeof(repo) + repo->name_len) != 0u);
+                              sizeof(Repo) + repo->name_len) != 0u);
     Env::Halt_if(Env::SaveVar_T(RepoMemberKey{repo->owner, repo_id},
                                 RepoMember{Repo::Permissions::kAll}));
 
