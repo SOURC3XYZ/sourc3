@@ -303,6 +303,7 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
 
     std::unique_ptr<Repo> repo(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
+    repo->project_id = proj_id;
     repo->owner = params.caller;
     repo->name_len = params.name_len;
     repo->cur_objs_number = 0;
@@ -328,7 +329,7 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
 
 BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     using RepoKey = Repo::Key;
-    using RepoIdByNameKey = IdByName<Organization>::Key;
+    using RepoIdByNameKey = IdByName<Repo>::Key;
 
     Repo::Id repo_id{GetIdByName<Repo>(params.repo_name_id)};
     std::unique_ptr<Repo> repo = LoadVLObject<Repo>(repo_id);
@@ -341,6 +342,7 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     std::unique_ptr<Repo> new_repo(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
 
+    new_repo->project_id = repo->project_id;
     new_repo->owner = repo->owner;
     new_repo->name_len = params.name_len;
     new_repo->cur_objs_number = repo->cur_objs_number;
