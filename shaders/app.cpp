@@ -210,7 +210,8 @@ size_t GetUserData(sourc3::UserData& buf) {
     return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
-void PrintProject(std::unique_ptr<sourc3::Project>& value) {
+void PrintProject(std::unique_ptr<sourc3::Project>& value,
+                  const char* org_name) {
     auto cur_ptr = value->data.data;
     Env::DocAddText("project_name", value->data.name_len != 0u ? cur_ptr : "");
     cur_ptr += value->data.name_len;
@@ -238,6 +239,7 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value) {
     Env::DocAddBlob_T("project_creator", value->creator);
     // TODO: print org name
     Env::DocAddNum64("organization_id", value->organization_id);
+    Env::DocAddText("organization_name", org_name);
 }
 
 size_t GetOrganizationData(sourc3::OrganizationData& buf) {
@@ -636,11 +638,20 @@ void OnActionCreateProject(const ContractID& cid) {
 void OnActionListProjects(const ContractID& cid) {
     using sourc3::Project;
     using sourc3::ProjectData;
+    using sourc3::Organization;
+    using sourc3::OrganizationData;
     using ProjectKey = Env::Key_T<Project::Key>;
+    using OrganizationKey = Env::Key_T<Organization::Key>;
 
-    constexpr auto kMaxArgsSize = sizeof(Project) + ProjectData::GetMaxSize();
-    auto buf = std::unique_ptr<Project>(
-        static_cast<Project*>(::operator new(kMaxArgsSize)));
+    constexpr auto kMaxProjectArgsSize =
+        sizeof(Project) + ProjectData::GetMaxSize();
+    auto project_buf = std::unique_ptr<Project>(
+        static_cast<Project*>(::operator new(kMaxProjectArgsSize)));
+
+    constexpr auto kMaxOrgArgsSize =
+        sizeof(Organization) + OrganizationData::GetMaxSize();
+    auto organization_buf = std::unique_ptr<Organization>(
+        static_cast<Organization*>(::operator new(kMaxOrgArgsSize)));
 
     ProjectKey start{.m_Prefix = {.m_Cid = cid}, .m_KeyInContract{}};
     ProjectKey end = start;
@@ -648,12 +659,23 @@ void OnActionListProjects(const ContractID& cid) {
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
-    uint32_t value_len = kMaxArgsSize, key_len = sizeof(ProjectKey);
+    uint32_t value_len = kMaxProjectArgsSize, key_len = sizeof(ProjectKey);
     for (Env::VarReader reader(start, end);
-         reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
+         reader.MoveNext(&key, key_len, project_buf.get(), value_len, 0);) {
         Env::DocGroup project_object("");
-        PrintProject(buf);
-        value_len = kMaxArgsSize;
+        OrganizationKey org_key{
+            .m_Prefix = {.m_Cid = cid},
+            .m_KeyInContract = Organization::Key{project_buf->organization_id}};
+        uint32_t org_value_len = kMaxOrgArgsSize,
+                 org_key_len = sizeof(OrganizationKey);
+        if (Env::VarReader org_reader(org_key, org_key);
+            org_reader.MoveNext(&org_key, org_key_len, organization_buf.get(),
+                                org_value_len, 0)) {
+            PrintProject(project_buf, organization_buf->data.name_len != 0u
+                                          ? organization_buf->data.data
+                                          : "");
+        }
+        value_len = kMaxProjectArgsSize;
     }
 }
 
@@ -861,10 +883,10 @@ void OnActionListOrganizations(const ContractID& cid) {
 
 void OnActionListOrganizationProjects(const ContractID& cid) {
     using sourc3::Organization;
+    using sourc3::OrganizationData;
     using sourc3::Project;
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
-
     constexpr auto kMaxArgsSize = sizeof(Project) + ProjectData::GetMaxSize();
     auto buf = std::unique_ptr<Project>(
         static_cast<Project*>(::operator new(kMaxArgsSize)));
@@ -873,9 +895,14 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
                      .m_KeyInContract = Project::Key{}};
     ProjectKey end = start;
     _POD_(end.m_KeyInContract.id).SetObject(0xff);
-
-    Organization::Id org_id{
-        GetIdByName<Organization>(cid, ReadOrganizationNameId())};
+    char org_name[OrganizationData::kMaxNameLen];
+    size_t org_name_len{};
+    if ((org_name_len = Env::DocGetText("organization_name", org_name,
+                                        OrganizationData::kMaxNameLen)) == 0u) {
+        return OnError("no 'organization_name'");
+    }
+    Organization::Id org_id{GetIdByName<Organization>(
+        cid, {sourc3::GetNameHash(org_name, org_name_len)})};
 
     ProjectKey key = start;
     Env::DocArray projects("projects");
@@ -884,7 +911,7 @@ void OnActionListOrganizationProjects(const ContractID& cid) {
          reader.MoveNext(&key, key_len, buf.get(), value_len, 0);) {
         if (buf->organization_id == org_id) {
             Env::DocGroup project_object("");
-            PrintProject(buf);
+            PrintProject(buf, org_name);
         }
         value_len = kMaxArgsSize;
     }
@@ -914,8 +941,8 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
 }
 
 void OnActionListRepoMembers(const ContractID& cid) {
-    using sourc3::Repo;
     using sourc3::Member;
+    using sourc3::Repo;
     using MemberKey = Env::Key_T<sourc3::Member<Repo>::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
