@@ -34,10 +34,6 @@ export const routesData = [
     element: CreateProjectWeb
   },
   {
-    path: 'profile/:id',
-    element: GitProfile
-  },
-  {
     path: '/*',
     element: FailPage
   }
