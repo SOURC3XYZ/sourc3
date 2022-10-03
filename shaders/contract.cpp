@@ -19,6 +19,7 @@
 #include "Shaders/upgradable3/contract_impl.h"
 
 #include <algorithm>
+#include <cstring>
 #include <memory>
 
 using namespace sourc3;
@@ -66,6 +67,13 @@ void CheckPermissions(const PubKey& user, typename T::Id id,
     Member<T> member_info;
     Env::Halt_if(!Env::LoadVar_T(key, member_info));
     Env::Halt_if((member_info.permissions & p) != p);
+}
+
+void CheckName(const char* const name, size_t name_len) {
+    // assert: name is null-terminated string
+    Env::Halt_if(name[name_len - 1] != '\0');
+    // spaces are not allowed in org, proj and repo names
+    Env::Halt_if(std::strchr(name, ' ') != nullptr);
 }
 
 // Loads variable length object
@@ -220,6 +228,7 @@ BEAM_EXPORT void Method_5(const method::CreateOrganization& params) {  // NOLINT
     using OrgIdByNameKey = IdByName<Organization>::Key;
 
     CheckOrganizationData(params.data);
+    CheckName(params.data.data, params.data.name_len);
     size_t data_len = params.data.GetTotalLen();
     std::unique_ptr<Organization> org(static_cast<Organization*>(
         ::operator new(sizeof(Organization) + data_len)));
@@ -255,6 +264,7 @@ BEAM_EXPORT void Method_6(const method::ModifyOrganization& params) {  // NOLINT
         LoadVLObject<Organization>(org_id);
     CheckPermissions<Organization>(
         params.caller, org_id, Organization::Permissions::kModifyOrganization);
+    CheckName(params.data.data, params.data.name_len);
     Env::AddSig(params.caller);
 
     size_t total_len = params.data.GetTotalLen();
@@ -289,6 +299,7 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     Project::Id proj_id{GetIdByName<Project>(params.project_name_id)};
     CheckPermissions<Project>(params.caller, proj_id,
                               Project::Permissions::kAddRepo);
+    CheckName(params.name, params.name_len);
 
     std::unique_ptr<Repo> repo(
         static_cast<Repo*>(::operator new(sizeof(Repo) + params.name_len)));
@@ -323,6 +334,8 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     std::unique_ptr<Repo> repo = LoadVLObject<Repo>(repo_id);
     CheckPermissions<Repo>(params.caller, repo_id,
                            Repo::Permissions::kModifyRepo);
+    CheckName(params.name, params.name_len);
+
     Env::AddSig(params.caller);
 
     std::unique_ptr<Repo> new_repo(
@@ -371,6 +384,8 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
     CheckPermissions<Organization>(params.caller, org_id,
                                    Organization::Permissions::kAddProject);
 
+    CheckName(params.data.data, params.data.name_len);
+
     size_t data_len = params.data.GetTotalLen();
     std::unique_ptr<Project> project(
         static_cast<Project*>(::operator new(sizeof(Project) + data_len)));
@@ -406,6 +421,7 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     std::unique_ptr<Project> project = LoadVLObject<Project>(proj_id);
     CheckPermissions<Project>(params.caller, proj_id,
                               Project::Permissions::kModifyProject);
+    CheckName(params.data.data, params.data.name_len);
     Env::AddSig(params.caller);
 
     size_t total_len = params.data.GetTotalLen();
