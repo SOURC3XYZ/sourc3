@@ -19,7 +19,7 @@
 
 namespace sourc3 {
 std::string GitIdWithIPFS::ToString() const {
-    return std::to_string(type) + "\t" + ipfs + "\n" + sourc3::ToString(oid);
+    return std::to_string(type) + "\t" + ipfs + "\t" + sourc3::ToString(oid);
 }
 
 bool GitIdWithIPFS::operator==(const GitIdWithIPFS& other) const {

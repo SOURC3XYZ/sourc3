@@ -676,7 +676,7 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         auto refs_file = GetStringFromIPFS(prev_state.hash, client_);
         oid_to_meta = ParseRefHashed(refs_file);
         for (const auto& [oid, hash] : oid_to_meta) {
-            prev_commits_parents.emplace_back(oid, hash);
+            prev_commits_parents.emplace_back(GIT_OBJECT_COMMIT, oid, hash);
         }
 
         auto oid_copy = oid_to_meta;

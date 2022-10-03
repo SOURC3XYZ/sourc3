@@ -67,6 +67,7 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(const git::Commit& commit,
     auto block = std::make_unique<CommitMetaBlock>();
     git_commit* raw_commit = *commit;
     const auto* commit_id = git_commit_id(raw_commit);
+    block->hash.type = GIT_OBJECT_COMMIT;
     block->hash.oid = *commit_id;
     block->hash.ipfs = oid_to_ipfs.at(*commit_id);
     if (oid_to_meta.count(*git_commit_tree_id(raw_commit)) == 0) {
@@ -78,7 +79,8 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(const git::Commit& commit,
     for (unsigned int i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
         if (oid_to_meta.count(*parent_id) > 0) {
-            block->parent_hashes.emplace_back(*parent_id, oid_to_meta.at(*parent_id));
+            block->parent_hashes.emplace_back(GIT_OBJECT_COMMIT,
+                                              *parent_id, oid_to_meta.at(*parent_id));
         } else {
             throw std::runtime_error{
                 "Something wrong with push, "
