@@ -1,6 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.17)
 
 add_test_snippet(helper_tests helper_lib git2)
+add_test_snippet(serialization_tests helper_lib git2)
 
 add_custom_target(helper_tests_prepare ALL
     COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:helper_tests>/temp/testrepo

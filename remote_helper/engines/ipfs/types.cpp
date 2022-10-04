@@ -16,25 +16,31 @@
 #include "git/git_utils.h"
 
 #include <sstream>
+#include <iostream>
 
 namespace sourc3 {
 std::string GitIdWithIPFS::ToString() const {
-    return std::to_string(type) + "\t" + ipfs + "\t" + sourc3::ToString(oid);
+    return std::to_string((int) type) + "\t" + ipfs + "\t" + sourc3::ToString(oid);
 }
 
 bool GitIdWithIPFS::operator==(const GitIdWithIPFS& other) const {
     return (type == other.type) && (oid == other.oid) && (ipfs == other.ipfs);
 }
 
+bool GitIdWithIPFS::operator!=(const GitIdWithIPFS& other) const {
+    return !(*this == other);
+}
+
 CommitMetaBlock::CommitMetaBlock(const std::string& serialized) {
     std::istringstream ss(serialized);
     std::string hash_oid;
-    ss >> hash.type;
+    int type;
+    ss >> type;
+    hash.type = type;
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
     ss >> tree_meta_hash;
-    int8_t type;
     std::string hash_ipfs;
     while (ss >> type) {
         ss >> hash_ipfs;
@@ -55,14 +61,36 @@ std::string CommitMetaBlock::Serialize() const {
     return data;
 }
 
+bool CommitMetaBlock::operator==(const CommitMetaBlock& other) const {
+    if (hash != other.hash) {
+        return false;
+    }
+
+    if (tree_meta_hash != other.tree_meta_hash) {
+        return false;
+    }
+
+    if (parent_hashes.size() != other.parent_hashes.size()) {
+        return false;
+    }
+
+    for (size_t i = 0; i < parent_hashes.size(); ++i) {
+        if (parent_hashes[i] != other.parent_hashes[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 TreeMetaBlock::TreeMetaBlock(const std::string& serialized) {
     std::istringstream ss(serialized);
     std::string hash_oid;
-    ss >> hash.type;
+    int type;
+    ss >> type;
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
-    int8_t type;
+    hash.type = type;
     std::string hash_ipfs;
     while (ss >> type) {
         ss >> hash_ipfs;
@@ -81,5 +109,23 @@ std::string TreeMetaBlock::Serialize() const {
         data += entry.ToString() + "\n";
     }
     return data;
+}
+
+bool TreeMetaBlock::operator==(const TreeMetaBlock& other) const {
+    if (hash != other.hash) {
+        return false;
+    }
+
+    if (entries.size() != other.entries.size()) {
+        return false;
+    }
+
+    for (size_t i = 0; i < entries.size(); ++i) {
+        if (entries[i] != other.entries[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 }  // namespace sourc3

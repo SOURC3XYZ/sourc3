@@ -36,6 +36,7 @@ struct GitIdWithIPFS {
     std::string ToString() const;
 
     bool operator==(const GitIdWithIPFS& other) const;
+    bool operator!=(const GitIdWithIPFS& other) const;
 };
 
 struct MetaBlock {
@@ -55,6 +56,8 @@ struct CommitMetaBlock final : MetaBlock {
     explicit CommitMetaBlock(const std::string& serialized);
 
     std::string Serialize() const final;
+
+    bool operator==(const CommitMetaBlock& other) const;
 };
 
 struct TreeMetaBlock final : MetaBlock {
@@ -65,5 +68,7 @@ struct TreeMetaBlock final : MetaBlock {
     explicit TreeMetaBlock(const std::string& serialized);
 
     std::string Serialize() const final;
+
+    bool operator==(const TreeMetaBlock& other) const;
 };
 }  // namespace sourc3

@@ -99,12 +99,9 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
                 auto subtree_objects = GetObjectsFromTreeMeta(subtree, progress, client);
                 std::move(subtree_objects.begin(), subtree_objects.end(),
                           std::back_inserter(objects));
-            } else {
-                object_type = GIT_OBJECT_BLOB;
             }
         }
         objects.emplace_back(object_type, std::move(oid), std::move(hash), std::move(file_content));
-        progress.AddProgress(1);
     }
     return objects;
 }
@@ -154,23 +151,43 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMetaAsync(const TreeMetaBlock& 
     return objects;
 }
 
-std::vector<ObjectWithContent> GetAllObjects(const std::string& root_ipfs_hash,
+std::vector<ObjectWithContent> GetAllUniqueObjects(const std::string& root_ipfs_hash,
                                              sourc3::IProgressReporter& progress,
-                                             IWalletClient& client) {
+                                             IWalletClient& client,
+                                             std::unordered_set<git_oid, OidHasher>& used) {
     std::vector<ObjectWithContent> objects;
     CommitMetaBlock commit(GetStringFromIPFS(root_ipfs_hash, client));
     auto commit_content = GetStringFromIPFS(commit.hash.ipfs, client);
+    used.insert(commit.hash.oid);
     objects.emplace_back(GIT_OBJECT_COMMIT, std::move(commit.hash.oid), std::move(commit.hash.ipfs),
                          std::move(commit_content));
     progress.AddProgress(1);
     TreeMetaBlock tree(GetStringFromIPFS(commit.tree_meta_hash, client));
-    auto tree_objects = GetObjectsFromTreeMeta(tree, progress, client);
-    std::move(tree_objects.begin(), tree_objects.end(), std::back_inserter(objects));
+    if (used.count(tree.hash.oid) == 0) {
+        used.insert(tree.hash.oid);
+        auto tree_objects = GetObjectsFromTreeMeta(tree, progress, client);
+        for (auto&& tree_obj : tree_objects) {
+            if (used.count(tree_obj.hash) == 0) {
+                used.insert(tree_obj.hash);
+                objects.push_back(std::move(tree_obj));
+                progress.AddProgress(1);
+            }
+        }
+    }
     for (auto&& parent_hash : commit.parent_hashes) {
-        auto parent_objects = GetAllObjects(parent_hash.ipfs, progress, client);
-        std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
+        if (used.count(parent_hash.oid) == 0) {
+            auto parent_objects = GetAllUniqueObjects(parent_hash.ipfs, progress, client, used);
+            std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
+        }
     }
     return objects;
+}
+
+std::vector<ObjectWithContent> GetAllObjects(const std::string& root_ipfs_hash,
+                                             sourc3::IProgressReporter& progress,
+                                             IWalletClient& client) {
+    std::unordered_set<git_oid, OidHasher> used;
+    return GetAllUniqueObjects(root_ipfs_hash, progress, client, used);
 }
 
 template <typename Context>
@@ -505,9 +522,11 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
                                                  client_.GetContext())
                        : GetUploadedObjects(RequestRefs(), client_, options_->progress);
     for (const auto& obj : objects) {
+        ++total_objects;
         if (git_odb_exists(*accessor.m_odb, &obj.hash) != 0) {
             received_objects.insert(ToString(obj.hash));
-            ++total_objects;
+        } else if (options_->cloning) {
+            enuque_object(ToString(obj.hash));
         }
     }
     auto progress = sourc3::MakeProgress(
@@ -523,8 +542,7 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
         auto it = std::find_if(objects.begin(), objects.end(), [&](auto&& o) {
             return o.hash == oid;
         });
-        if (it == objects.end()) {
-            received_objects.insert(object_to_receive);  // move to received
+        if (received_objects.count(ToString(oid)) > 0) {
             object_hashes.erase(it_to_receive);
             continue;
         }
