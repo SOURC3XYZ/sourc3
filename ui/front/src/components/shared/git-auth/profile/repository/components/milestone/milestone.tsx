@@ -3,7 +3,7 @@ import styles from './milestone.module.scss';
 
 type mileStoneProps = {
   title: string,
-  tooltip: string
+  tooltip?: string
 };
 
 function Milestone({ title, tooltip }:mileStoneProps) {

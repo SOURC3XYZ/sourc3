@@ -100,5 +100,9 @@ export interface IGitRepos {
   user_committers_pos:number,
   total_committers_cnt: number,
   github_created_at: string,
-  github_updated_at: string
+  github_updated_at: string,
+  rate: number,
+  owner_login: string,
+  rating: number,
+  topics: [],
 }

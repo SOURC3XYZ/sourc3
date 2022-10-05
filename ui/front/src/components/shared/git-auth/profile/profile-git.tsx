@@ -13,6 +13,7 @@ import { Popup } from '@components/shared/popup';
 import MyLoader from '@components/shared/git-auth/profile/skeletonProfile';
 import { Spin } from 'antd';
 import { useSelector } from '@libs/redux';
+import GitSummary from '@components/shared/git-auth/profile/gitSummary/gitSummary';
 import styles from './profiles-git.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -214,6 +215,7 @@ function GitProfile() {
                     />
                   </div>
                 </div>
+                <GitSummary profile={github_profile} gitRep={github_repos} gitOrg={github_orgs} />
                 {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
                 { github_repos.length > 0 && <GitOwnRepos data={github_repos} />}
               </div>
