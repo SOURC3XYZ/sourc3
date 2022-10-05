@@ -36,7 +36,7 @@ CommitMetaBlock::CommitMetaBlock(const std::string& serialized) {
     std::string hash_oid;
     int type;
     ss >> type;
-    hash.type = type;
+    hash.type = static_cast<int8_t>(type);
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
@@ -48,7 +48,7 @@ CommitMetaBlock::CommitMetaBlock(const std::string& serialized) {
             break;
         }
         ss >> hash_oid;
-        parent_hashes.emplace_back(type, sourc3::FromString(hash_oid),
+        parent_hashes.emplace_back(static_cast<int8_t>(type), sourc3::FromString(hash_oid),
                                    std::move(hash_ipfs));
     }
 }
@@ -90,7 +90,7 @@ TreeMetaBlock::TreeMetaBlock(const std::string& serialized) {
     ss >> hash.ipfs;
     ss >> hash_oid;
     hash.oid = sourc3::FromString(hash_oid);
-    hash.type = type;
+    hash.type = static_cast<int8_t>(type);
     std::string hash_ipfs;
     while (ss >> type) {
         ss >> hash_ipfs;
@@ -98,7 +98,7 @@ TreeMetaBlock::TreeMetaBlock(const std::string& serialized) {
             break;
         }
         ss >> hash_oid;
-        entries.emplace_back(type, sourc3::FromString(hash_oid),
+        entries.emplace_back(static_cast<int8_t>(type), sourc3::FromString(hash_oid),
                              std::move(hash_ipfs));
     }
 }
