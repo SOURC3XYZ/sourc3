@@ -30,7 +30,7 @@
           font-family: 'PublicSans-Bold';
           font-style: normal;
           font-weight: 700;
-          font-size: 14px;
+          font-size: 16px;
           line-height: 20px;
           margin-right: .3rem;
           width: max-content;
@@ -49,7 +49,7 @@
     font-family: 'PublicSans-Regular';
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 20px;
     color: #808080;
     &_from{
@@ -65,6 +65,9 @@
       }
     }
   }
+      .topContr{
+        margin-top: 36px;
+      }
 }
 &_right{
   width: 50%;
@@ -72,14 +75,14 @@
     font-family: 'PublicSans-Bold';
     font-style: normal;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 20px;
     color:rgba(0,0,0,.5);
     &>span{
       font-family: 'PublicSans-Regular';
       font-style: normal;
       font-weight: 400;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 20px;
     }
 }
@@ -88,23 +91,18 @@
     font-family: 'PublicSans-Regular';
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 20px;
     color: rgba(0,0,0,0.5);
   }
-  .langStone{
-    padding-top: 18px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+
   .releases {
     display: flex;
     flex-wrap: wrap;
     font-family: 'PublicSans-Regular';
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 20px;
     width: 100%;
     color: rgba(0,0,0, 0.5);
@@ -122,7 +120,7 @@ color:rgba(0,0,0,.5);
 font-family: 'PublicSans-Bold';
 font-style: normal;
 font-weight: 700;
-font-size: 14px;
+font-size: 16px;
 line-height: 20px;
 }
 }

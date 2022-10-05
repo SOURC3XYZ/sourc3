@@ -1,94 +1,76 @@
 import { Route, Routes } from 'react-router-dom';
 import {
   Notifications,
-  AllRepos,
   Preload,
-  Repo,
-  FailPage,
-  Organizations,
-  Projects,
-  ProjectRepos
+  DownloadPage
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { LoadingMessages } from '@libs/constants';
 import { useWebMain } from '@libs/hooks/container/web-app';
 import { ErrorBoundary } from '@components/context';
-import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
-import { GitProfile } from '@components/shared/git-auth';
 import GitAuth from '@components/shared/git-auth/gitAuth';
+import axios from 'axios';
+import { HOST } from '@components/shared/git-auth/profile/constants';
+import { AC } from '@libs/action-creators';
+import { useDispatch } from '@libs/redux';
+import { GitProfile } from '@components/shared/git-auth';
+import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
-import DownloadPage from '../../../components/shared/download-page/download-page';
+import { routesData } from './routes';
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
-
-  const routesData = [
-    {
-      path: '/',
-      element: <Lendos />
-    },
-    {
-      path: 'repos/:type/:page',
-      element: <AllRepos />
-    },
-    {
-      path: 'repo/:repoParams/*',
-      element: <Repo />
-    },
-    {
-      path: 'organizations/:type/:page',
-      element: <Organizations />
-    },
-    {
-      path: 'projects/:orgId/:type/:page',
-      element: <Projects />
-    },
-    {
-      path: 'project/:projId/:type/:page',
-      element: <ProjectRepos />
-    },
-    {
-      path: 'download',
-      element: <DownloadPage />
-    },
-
-    {
-      path: 'add-web',
-      element: <CreateProjectWeb />
-    },
-    {
-      path: 'profile/:id',
-      element: <GitProfile />
-    },
-    {
-      path: '/*',
-      element: <FailPage />
-    }
-  ];
-
+  const dispatch = useDispatch();
   const HeadlessPreloadFallback = useCallback(() => (
     <Preload
       isOnLendos={isOnLending}
       message={LoadingMessages.HEADLESS}
     />
-  ), []);
+  ), [isOnLending]);
+
+  useEffect(() => {
+    axios({
+      method: 'get',
+      url: `${HOST}/user`,
+      withCredentials: false,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${window.localStorage.getItem('token')}`
+      }
+    })
+      .then((res) => {
+        dispatch(AC.getAuthGitUser(res));
+      })
+      .catch((err) => (console.log(err)));
+  }, []);
 
   const routes = useMemo(() => (
-    <ErrorBoundary>
+    <PreloadComponent
+      Fallback={HeadlessPreloadFallback}
+      callback={connectBeamApi}
+      isLoaded={isApiConnected}
+    >
       <Routes>
         {
           routesData
             .map((
-              { path, element }
-            ) => <Route key={`route-${path}`} path={path} element={element} />)
+              { path, element: Element }
+            ) => (
+              <Route
+                key={`route-${path}`}
+                path={path}
+                element={<Element />}
+              />
+            ))
         }
       </Routes>
-    </ErrorBoundary>
-  ), [isApiConnected]);
+
+    </PreloadComponent>
+  ), [isApiConnected, isOnLending]);
 
   return (
     <Routes>
@@ -97,28 +79,36 @@ function Main() {
         element={<GitAuth />}
       />
       <Route
+        path="/onboarding"
+        element={<OnboardingStep />}
+      />
+      <Route
         path="/download"
         element={<DownloadPage />}
       />
       <Route
+        path="/profile/:id"
+        element={<GitProfile />}
+      />
+      <Route
         path="/*"
         element={(
-          <PreloadComponent
-            Fallback={HeadlessPreloadFallback}
-            callback={connectBeamApi}
-            isLoaded={isApiConnected}
-          >
-            <>
-              <div className={styles.appWrapper}>
-                <Header isOnLending={isOnLending} />
-                <div className={styles.main}>
-                  {routes}
-                  <Notifications />
-                </div>
+
+          <>
+            <div className={styles.appWrapper}>
+              <Header isOnLending={isOnLending} />
+              <div className={styles.main}>
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/" element={<Lendos />} />
+                    <Route path="/*" element={routes} />
+                  </Routes>
+                </ErrorBoundary>
+                <Notifications />
               </div>
-              <Footer isOnLending={isOnLending} />
-            </>
-          </PreloadComponent>
+            </div>
+            <Footer isOnLending={isOnLending} />
+          </>
         )}
       />
 

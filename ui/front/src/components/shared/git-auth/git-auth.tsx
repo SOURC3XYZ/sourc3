@@ -61,7 +61,10 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                     setIsErr(true);
                   }
                 })
-                  .catch((err) => (console.log(err)));
+                  .catch(() => {
+                    setVisible(false);
+                    setIsErr(true);
+                  });
                 setIsDisabled(true);
               })
               .catch(() => {
@@ -69,7 +72,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 setIsErr(true);
               });
           }}
-          scope="read:user user:email public_repo"
+          scope="read:user user:email repo"
         >
           <NavButton
             name={name}

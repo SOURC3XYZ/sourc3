@@ -3,7 +3,7 @@ import { IconGitLogo, IconStar } from '@components/svg';
 import { IGitRepos } from '@types';
 import { List } from 'antd';
 import moment from 'antd/node_modules/moment';
-import { PullRequest, Milestone } from '@components/shared/git-auth/profile/repository/components';
+import { PullRequest, Milestone, Languages } from '@components/shared/git-auth/profile/repository/components';
 import styles from './gitOwnRepos.module.scss';
 
 type GitOwnReposType = {
@@ -11,7 +11,7 @@ type GitOwnReposType = {
 };
 
 function GitOwnRepos({ data }:GitOwnReposType) {
-  function formatDateTime(dateTime: string, formatString = 'DD.MM.YYYY') {
+  function formatDateTime(dateTime: string, formatString = 'LL') {
     return moment(new Date(dateTime)).format(formatString);
   }
   const getPercent = (total:number, own:number) => +((own / total) * 100).toFixed(1);
@@ -31,22 +31,23 @@ function GitOwnRepos({ data }:GitOwnReposType) {
     }
     return created;
   };
-  const maxTimeContr = (lC:string, lPr:string, push:string, upd:string) => {
+  const maxTimeContr = (lC:string, lPr:string, cr:string) => {
     const lastCommit = lC ? formatDateTime(lC) : null;
     const lastPr = lPr ? formatDateTime(lPr) : null;
-    const pushed = push ? formatDateTime(push) : null;
-    const update = upd ? formatDateTime(upd) : null;
-    const end = pushed === update ? pushed : pushed > update ? pushed : update;
+    const created = cr ? formatDateTime(cr) : null;
+    // const pushed = push ? formatDateTime(push) : null;
+    // const update = upd ? formatDateTime(upd) : null;
+    // const end = pushed === update ? pushed : pushed > update ? pushed : update;
     if (lastCommit && lastPr && lastCommit !== lastPr) {
       return lastCommit > lastPr ? lastCommit : lastPr;
     } if (!lastCommit && !lastPr) {
-      return end;
-    } if (!lastPr && lastCommit !== end && lastCommit && end) {
-      return lastCommit > end ? lastCommit : end;
-    } if (!lastCommit && lastPr !== end && lastPr && end) {
-      return lastPr > end ? lastPr : end;
+      return created;
+    } if (!lastPr && lastCommit !== created && lastCommit && created) {
+      return lastCommit > created ? lastCommit : created;
+    } if (!lastCommit && lastPr !== created && lastPr && created) {
+      return lastPr > created ? lastPr : created;
     }
-    return end;
+    return lastCommit;
   };
   return (
     <List
@@ -105,8 +106,15 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 <div className={styles.forked_date}>
                   {rep.fork ? 'Forked on' : 'Created on'}
                   {' '}
-                  <span>{formatDateTime(rep.created_at)}</span>
+                  <span>{formatDateTime(rep.github_created_at)}</span>
                 </div>
+                {rep.user_commits_cnt ? (
+                  <div className={styles.topContr}>
+                    <Milestone
+                      title={rep.user_committers_pos === 1 ? ' Top contributor' : `${rep.user_committers_pos}${rep.user_committers_pos === 2 ? 'nd' : rep.user_committers_pos === 3 ? 'rd' : rep.user_committers_pos === 21 ? 'st' : 'th'} contributor out of ${rep.total_committers_cnt}`}
+                    />
+                  </div>
+                ) : null}
               </div>
 
             </div>
@@ -114,8 +122,8 @@ function GitOwnRepos({ data }:GitOwnReposType) {
               <div className={styles.contribution}>
                 Contribution period:
                 {' '}
-                <span>{minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.created_at) === maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.pushed_at, rep.updated_at) ? null : `${minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.created_at)} - `}</span>
-                <span>{maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.pushed_at, rep.updated_at)}</span>
+                <span>{minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.github_created_at) === maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.github_updated_at) ? null : `${minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.github_created_at)} - `}</span>
+                <span>{maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.github_updated_at)}</span>
               </div>
               <div
                 className={styles.commits}
@@ -132,11 +140,7 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 <span>{`Releases: ${rep.user_releases_cnt}`}</span>
                 <span>{`${rep.total_releases_cnt}`}</span>
               </div>
-              {rep.language && (
-                <div className={styles.langStone}>
-                  <Milestone title={rep.language} />
-                </div>
-              )}
+              {rep.user_languages && <Languages data={rep.user_languages} />}
             </div>
           </div>
         </div>
