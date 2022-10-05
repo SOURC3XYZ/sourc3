@@ -44,7 +44,7 @@ struct GitObject {
             return static_cast<git_object_t>(type & 0x7f);
         }
 
-        throw std::runtime_error("Invalid object type");
+        throw std::runtime_error("Invalid object type: " + std::to_string(static_cast<int>(type)));
     }
 
     bool IsIPFSObject() const {
@@ -96,8 +96,7 @@ struct Ref {
 class ObjectCollector : public git::RepoAccessor {
 public:
     using git::RepoAccessor::RepoAccessor;
-    void Traverse(const std::vector<Refs>& refs,
-                  const std::vector<git_oid>& hidden);
+    void Traverse(const std::vector<Refs>& refs, const std::vector<git_oid>& hidden);
     template <typename Func>
     void Serialize(Func func) {
         // TODO: replace code below with calling serializer
@@ -134,8 +133,7 @@ public:
             }
 
             // serializing
-            buf.resize(serialized_size +
-                       sizeof(ObjectsInfo));  // objects count size
+            buf.resize(serialized_size + sizeof(ObjectsInfo));  // objects count size
             auto* p = reinterpret_cast<ObjectsInfo*>(buf.data());
             p->objects_number = count;
             auto* ser_obj = reinterpret_cast<GitObject*>(p + 1);
@@ -158,8 +156,7 @@ public:
 
 private:
     void TraverseTree(const git_tree* tree);
-    std::string Join(const std::vector<std::string>& path,
-                     const std::string& name);
+    std::string Join(const std::vector<std::string>& path, const std::string& name);
     ObjectInfo& CollectObject(const git_oid& oid);
 
 public:

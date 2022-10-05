@@ -13,7 +13,6 @@ namespace sourc3 {
 using Metas = std::unordered_map<std::string, std::variant<TreeMetaBlock, CommitMetaBlock>>;
 
 struct OidHasher {
-    std::hash<std::string> hasher;
     size_t operator()(const git_oid& oid) const;
 };
 

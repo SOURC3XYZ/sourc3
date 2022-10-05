@@ -4,8 +4,18 @@
 #include <unordered_set>
 
 namespace sourc3 {
+template <class T>
+inline void HashCombine(size_t& seed, const T& v) {
+    static auto hasher = std::hash<T>();
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
 size_t sourc3::OidHasher::operator()(const git_oid& oid) const {
-    return hasher(ToString(oid));
+    size_t seed = 0;
+    for (size_t i = 0; i < GIT_OID_RAWSZ; i++) {
+        HashCombine(seed, oid.id[i]);
+    }
+    return seed;
 }
 
 std::string CreateRefsFile(const std::vector<Ref>& refs, const HashMapping& mapping) {
@@ -79,8 +89,8 @@ std::unique_ptr<CommitMetaBlock> GetCommitMetaBlock(const git::Commit& commit,
     for (unsigned int i = 0; i < parents_count; ++i) {
         auto* parent_id = git_commit_parent_id(raw_commit, i);
         if (oid_to_meta.count(*parent_id) > 0) {
-            block->parent_hashes.emplace_back(GIT_OBJECT_COMMIT,
-                                              *parent_id, oid_to_meta.at(*parent_id));
+            block->parent_hashes.emplace_back(GIT_OBJECT_COMMIT, *parent_id,
+                                              oid_to_meta.at(*parent_id));
         } else {
             throw std::runtime_error{
                 "Something wrong with push, "
@@ -114,7 +124,7 @@ std::unique_ptr<TreeMetaBlock> GetTreeMetaBlock(const git::Tree& tree,
                 throw std::runtime_error{"Subtree wasn't upload to IPFS for oid: " +
                                          sourc3::ToString(entry_id)};
             }
-        } else if (type == GIT_OBJECT_COMMIT) { // Submodule
+        } else if (type == GIT_OBJECT_COMMIT) {  // Submodule
             block->entries.emplace_back(type, entry_id,
                                         std::string(oid_to_ipfs.begin()->second.size(), '0'));
         } else {

@@ -106,6 +106,36 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
     return objects;
 }
 
+std::vector<ObjectWithContent> GetUniqueObjectsFromTreeMeta(
+    const TreeMetaBlock& tree, sourc3::IProgressReporter& progress, IWalletClient& client,
+    std::unordered_set<git_oid, OidHasher>& used) {
+    std::vector<ObjectWithContent> objects;
+    auto tree_content = GetStringFromIPFS(tree.hash.ipfs, client);
+    objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
+                         std::move(tree_content));
+    for (auto&& [type, oid, hash] : tree.entries) {
+        if (used.count(oid) > 0) {
+            continue;
+        }
+        auto object_type = type;
+        std::string file_content;
+        if (!std::all_of(hash.begin(), hash.end(), [](char c) {
+                return c == '0';
+            })) {
+            file_content = GetStringFromIPFS(hash, client);
+            if (object_type == GIT_OBJECT_TREE) {
+                TreeMetaBlock subtree(file_content);
+                auto subtree_objects =
+                    GetUniqueObjectsFromTreeMeta(subtree, progress, client, used);
+                std::move(subtree_objects.begin(), subtree_objects.end(),
+                          std::back_inserter(objects));
+            }
+        }
+        objects.emplace_back(object_type, std::move(oid), std::move(hash), std::move(file_content));
+    }
+    return objects;
+}
+
 template <typename Context>
 std::vector<ObjectWithContent> GetObjectsFromTreeMetaAsync(const TreeMetaBlock& tree,
                                                            sourc3::IProgressReporter& progress,
@@ -152,9 +182,9 @@ std::vector<ObjectWithContent> GetObjectsFromTreeMetaAsync(const TreeMetaBlock& 
 }
 
 std::vector<ObjectWithContent> GetAllUniqueObjects(const std::string& root_ipfs_hash,
-                                             sourc3::IProgressReporter& progress,
-                                             IWalletClient& client,
-                                             std::unordered_set<git_oid, OidHasher>& used) {
+                                                   sourc3::IProgressReporter& progress,
+                                                   IWalletClient& client,
+                                                   std::unordered_set<git_oid, OidHasher>& used) {
     std::vector<ObjectWithContent> objects;
     CommitMetaBlock commit(GetStringFromIPFS(root_ipfs_hash, client));
     auto commit_content = GetStringFromIPFS(commit.hash.ipfs, client);
@@ -163,15 +193,12 @@ std::vector<ObjectWithContent> GetAllUniqueObjects(const std::string& root_ipfs_
                          std::move(commit_content));
     progress.AddProgress(1);
     TreeMetaBlock tree(GetStringFromIPFS(commit.tree_meta_hash, client));
-    if (used.count(tree.hash.oid) == 0) {
-        used.insert(tree.hash.oid);
-        auto tree_objects = GetObjectsFromTreeMeta(tree, progress, client);
-        for (auto&& tree_obj : tree_objects) {
-            if (used.count(tree_obj.hash) == 0) {
-                used.insert(tree_obj.hash);
-                objects.push_back(std::move(tree_obj));
-                progress.AddProgress(1);
-            }
+    auto tree_objects = GetUniqueObjectsFromTreeMeta(tree, progress, client, used);
+    for (auto&& tree_obj : tree_objects) {
+        if (used.count(tree_obj.hash) == 0) {
+            used.insert(tree_obj.hash);
+            objects.push_back(std::move(tree_obj));
+            progress.AddProgress(1);
         }
     }
     for (auto&& parent_hash : commit.parent_hashes) {
@@ -389,8 +416,8 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
 
             for (size_t j = 0; j < entries_count; ++j) {
                 auto entry = git_tree_entry_byindex(*tree_git, j);
-                if (used_oids.count(*git_tree_entry_id(entry)) == 0
-                    && git_tree_entry_type(entry) == GIT_OBJECT_TREE) {
+                if (used_oids.count(*git_tree_entry_id(entry)) == 0 &&
+                    git_tree_entry_type(entry) == GIT_OBJECT_TREE) {
                     skip = true;
                     break;
                 }
@@ -649,7 +676,6 @@ IEngine::CommandResult FullIPFSEngine::DoPush(const vector<std::string_view>& ar
         auto commits = std::partition(non_blob, objs.end(), [](const ObjectInfo& obj) {
             return obj.type == GIT_OBJECT_TREE;
         });
-//        SortTreesByContainment(non_blob, commits, collector.m_repo);
         SortCommitsByParents(commits, objs.end(), collector.m_repo);
     }
 
