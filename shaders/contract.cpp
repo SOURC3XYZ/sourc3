@@ -534,3 +534,105 @@ BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
     SaveVLObject(User::Key{params.id}, user, sizeof(User) + data_len);
     Env::AddSig(params.id);
 }
+
+BEAM_EXPORT void Method_26(const method::MigrateContractState& params) { // NOLINT
+    struct OldContractState {
+        uint64_t last_repo_id;
+        uint64_t last_organizatino_id;
+        uint64_t last_project_id;
+        Amount faucet_balance;
+    } cs_old;
+    Env::LoadVar_T(0, cs_old);
+    ContractState cs;
+    cs.faucet_balance = cs_old.faucet_balance;
+    cs.organizations_num = cs_old.last_organizatino_id - 1;
+    cs.projects_num = cs_old.last_project_id - 1;
+    cs.repos_num = cs_old.last_repo_id - 1;
+    Env::SaveVar_T(0, cs);
+}
+
+BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLINT
+    struct OldOrganization {
+        PubKey creator;
+        size_t name_len;
+        char name[256];
+    } old_org;
+
+    std::unique_ptr<Organization> org(
+        static_cast<Organization*>(::operator new(sizeof(Organization) + old_org.name_len + 1)));
+
+    for (Organization::Id org_id = params.from; org_id < params.to; ++org_id) {
+        Env::LoadVar_T(Organization::Key{org_id}, old_org);
+        org->creator = old_org.creator;
+        org->data.name_len = old_org.name_len + 1;
+        Env::Memcpy(org->data.data, old_org.name, old_org.name_len);
+        for (int i = 0; i < old_org.name_len; ++i) {
+            if (org->data.data[i] == ' ') {
+                org->data.data[i] = '_';
+            }
+        }
+        org->data.data[old_org.name_len] = '\0';
+        Env::SaveVar_T(Member<Organization>::Key{org->creator, org_id}, Member<Organization>{Organization::Permissions::kAll});
+        SaveVLObject(Organization::Key{org_id}, org, sizeof(Organization) + org->data.name_len);
+    }
+}
+
+BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
+    struct OldProject {
+        Organization::Id organization_id;
+        PubKey creator;
+        size_t name_len;
+        char name[256];
+    } old_proj;
+
+    std::unique_ptr<Project> proj(
+        static_cast<Project*>(::operator new(sizeof(Project) + old_proj.name_len + 1)));
+
+    for (Project::Id proj_id = params.from; proj_id < params.to; ++proj_id) {
+        Env::LoadVar_T(Project::Key{proj_id}, old_proj);
+        proj->organization_id = old_proj.organization_id;
+        proj->creator = old_proj.creator;
+        proj->data.name_len = old_proj.name_len + 1;
+        Env::Memcpy(proj->data.data, old_proj.name, old_proj.name_len);
+        for (int i = 0; i < old_proj.name_len; ++i) {
+            if (proj->data.data[i] == ' ') {
+                proj->data.data[i] = '_';
+            }
+        }
+        proj->data.data[old_proj.name_len] = '\0';
+        Env::SaveVar_T(Member<Project>::Key{proj->creator, proj_id}, Member<Project>{Project::Permissions::kAll});
+        SaveVLObject(Project::Key{proj_id}, proj, sizeof(Project) + proj->data.name_len);
+    }
+}
+
+BEAM_EXPORT void Method_29(const method::MigrateRepos& params) { // NOLINT
+    struct OldRepo {
+        Project::Id project_id;
+        Hash256 name_hash;
+        Repo::Id repo_id;
+        size_t cur_objs_number;
+        PubKey owner;
+        size_t name_len;
+        char name[256];
+    } old_repo;
+
+    std::unique_ptr<Repo> repo(
+        static_cast<Repo*>(::operator new(sizeof(Repo) + old_repo.name_len)));
+
+    for (Repo::Id repo_id = params.from; repo_id < params.to; ++repo_id) {
+        Env::LoadVar_T(Repo::Key{repo_id}, old_repo);
+        repo->project_id = old_repo.project_id;
+        repo->cur_objs_number = old_repo.cur_objs_number;
+        repo->owner = old_repo.owner;
+        repo->is_private = 0;
+        repo->name_len = old_repo.name_len;
+        Env::Memcpy(repo->name, old_repo.name, old_repo.name_len);
+        for (int i = 0; i < old_repo.name_len; ++i) {
+            if (repo->name[i] == ' ') {
+                repo->name[i] = '_';
+            }
+        }
+        Env::SaveVar_T(Member<Repo>::Key{repo->owner, repo_id}, Member<Repo>{Repo::Permissions::kAll});
+        SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
+    }
+}
