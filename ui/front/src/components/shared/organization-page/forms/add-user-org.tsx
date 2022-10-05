@@ -13,7 +13,7 @@ import React, {
 } from 'react';
 
 type AddUserProps<T> = {
-  id: number;
+  oldName: string;
   data: Set<string>
   goBack: () => void;
   callback: (obj: T) => void;
@@ -21,7 +21,7 @@ type AddUserProps<T> = {
 
 function AddUser<T>(
   {
-    id, data, goBack, callback
+    oldName: old_name, data, goBack, callback
   }:AddUserProps<T>
 ) {
   const [bitMask, setBitMask] = useState<(0 | 1)[]>(Array.from(data).map(() => 0));
@@ -46,7 +46,7 @@ function AddUser<T>(
       const binary = bitMaskCopy.reverse().join('');
       const permissions = parseInt(binary, 2);
       const toSend = {
-        id,
+        old_name,
         permissions,
         member: userInfo?.user_id
       } as T;

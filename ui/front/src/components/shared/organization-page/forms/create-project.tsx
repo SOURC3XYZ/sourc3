@@ -4,15 +4,15 @@ import React, { useCallback } from 'react';
 
 type CreateProjectProps = {
   pkey: string;
-  orgId: number;
+  orgName: string;
   goBack: () => void;
 };
 
-function CreateProject({ pkey, orgId, goBack }:CreateProjectProps) {
+function CreateProject({ pkey, orgName, goBack }:CreateProjectProps) {
   const { createProject } = useEntitiesAction();
 
   const orgFields = {
-    organization_id: orgId,
+    organization_name: orgName,
     name: '',
     short_title: '',
     telegram: '',

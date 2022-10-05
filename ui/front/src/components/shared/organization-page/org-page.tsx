@@ -17,7 +17,7 @@ import {
   CreateOrgRepo, CreateProject, ModifyOrganization
 } from './forms';
 import MemberListItem from './member-list-item';
-import { orgData, repoData, ORG_PERMISSION } from './permissions-data';
+import { orgData, ORG_PERMISSION } from './permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
 import ProjectListItem from './project-list-item';
 
@@ -35,7 +35,7 @@ type RoutesType<T> = {
 
 function Projects() {
   const {
-    id,
+    orgName,
     org,
     page,
     path,
@@ -126,12 +126,12 @@ function Projects() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${id}/projects?type=all&page=1`,
+          to: `${path}projects/${orgName}/projects?type=all&page=1`,
           text: 'All Projects'
         },
         {
           key: 'my',
-          to: `${path}projects/${id}/projects?type=my&page=1`,
+          to: `${path}projects/${orgName}/projects?type=my&page=1`,
           text: 'My Projects'
         }
       ],
@@ -151,12 +151,12 @@ function Projects() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${id}/repos?type=all&page=1`,
+          to: `${path}projects/${orgName}/repos?type=all&page=1`,
           text: 'All Repositories'
         },
         {
           key: 'my',
-          to: `${path}projects/${id}/repos?type=my&page=1`,
+          to: `${path}projects/${orgName}/repos?type=my&page=1`,
           text: 'My Repositories'
         }
       ],
@@ -187,7 +187,7 @@ function Projects() {
     routes: routes.map((el) => el.path),
     yourPermissions,
     avatar: {
-      name: `${org.organization_id}${org.organization_name}${org.organization_creator}`,
+      name: `${org.organization_name}${org.organization_creator}`,
       ipfs: org.organization_logo_ipfs_hash,
       variant: 'ring',
       square: false
@@ -213,7 +213,7 @@ function Projects() {
         element={(
           <ProjectList
             isShowNav={pkey === org.organization_creator}
-            id={id}
+            id={orgName}
             pkey={pkey}
             path={path}
             page={page}
@@ -255,7 +255,7 @@ function Projects() {
           element={(
             <CreateProject
               pkey={pkey}
-              orgId={org.organization_id}
+              orgName={org.organization_name}
               goBack={goBack}
             />
           )}
@@ -274,7 +274,7 @@ function Projects() {
           element={(
             <AddUserOrg
               data={orgData}
-              id={org.organization_id}
+              oldName={org.organization_name}
               goBack={goBack}
               callback={addUserMember as (obj: unknown) => void}
             />

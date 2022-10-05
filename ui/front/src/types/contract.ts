@@ -139,7 +139,7 @@ export interface MemberList extends ContractResp {
 
 export type Organization = {
   organization_tag: number,
-  organization_id: number,
+  // organization_id: number,
   organization_name: string,
   organization_creator: string,
   organization_short_title: string,

@@ -402,7 +402,7 @@ export const RC = {
       }
     }
   } as const),
-  getOrgMembers: (organization_id: number) => ({
+  getOrgMembers: (organization_name: string) => ({
     callID: 'list_organization_members',
     method: 'invoke_contract',
     params: {
@@ -410,7 +410,7 @@ export const RC = {
       args: {
         role: 'user',
         action: 'list_organization_members',
-        organization_id
+        organization_name
       }
     }
   } as const),

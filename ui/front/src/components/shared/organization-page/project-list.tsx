@@ -17,7 +17,7 @@ export type HeaderElements = {
 };
 
 type ProjectListProps<T> = {
-  id: number;
+  orgName: string;
   projects: T[];
   path:string;
   page: number;
@@ -38,7 +38,7 @@ type ProjectListProps<T> = {
 };
 
 function ProjectList<T>({
-  id,
+  orgName,
   navItems,
   placeholder,
   path,
@@ -90,7 +90,7 @@ function ProjectList<T>({
       />
       <EntityList
         searchText={searchText}
-        route={`${route}/${id}`}
+        route={`${route}/${orgName}`}
         path={path}
         page={page}
         items={foundedItems}

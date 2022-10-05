@@ -6,11 +6,11 @@ import { regExes } from './regex';
 type InputChange<T> = React.ChangeEventHandler<T>;
 
 export type FormFields = {
-  organization_id:number;
-  project_id?: number;
+  old_name?:string;
+  organization_name?:string
+  about?:string;
   name:string;
   short_title:string;
-  about?:string;
   telegram:string;
   discord:string;
   website:string;

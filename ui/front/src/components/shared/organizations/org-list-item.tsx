@@ -19,13 +19,13 @@ type ListItemProps = {
 function OrgListItem({
   item, path, searchText, type
 }:ListItemProps) {
-  const { organization_name, organization_id, organization_creator } = item;
+  const { organization_name, organization_creator, organization_logo_ipfs_hash } = item;
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
   };
 
-  const link = `${path}projects/${organization_id}/projects?type=${type}&page=1`;
+  const link = `${path}projects/${organization_name}/projects?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
@@ -34,7 +34,7 @@ function OrgListItem({
   return (
     <List.Item
       className={styles.listItem}
-      key={organization_id}
+      key={organization_name}
       actions={[(
         <span key="org-times" className={styles.time}>
           {`owner: ${textEllipsis(organization_creator, 10)}`}
@@ -50,16 +50,16 @@ function OrgListItem({
       <List.Item.Meta
         avatar={(
           <IpfsAvatars
-            ipfs={item.organization_logo_ipfs_hash}
+            ipfs={organization_logo_ipfs_hash}
             colors={AVATAR_COLORS}
-            name={`${item.organization_id}${item.organization_name}${item.organization_creator}`}
+            name={`${organization_name}${organization_creator}`}
             size={56}
             variant="ring"
           />
         )}
         title={(
           <div className={styles.title}>
-            <Link to={link} state={{ id: organization_id }}>
+            <Link to={link} state={{ id: organization_name }}>
               <Excretion name={organization_name} inputText={searchText} />
             </Link>
           </div>
@@ -69,7 +69,7 @@ function OrgListItem({
             <div className={styles.idField}>
               <span>ID: </span>
               <Excretion
-                name={String(organization_id)}
+                name={String(organization_name)}
                 inputText={searchText}
               />
             </div>
