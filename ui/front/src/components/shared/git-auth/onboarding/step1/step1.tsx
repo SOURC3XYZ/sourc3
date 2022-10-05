@@ -2,33 +2,29 @@ import React from "react";
 import styles from './step.module.scss';
 import InputCustom from "../../../input/input";
 import {NavButton} from "@components/shared";
-import StepHead from "@components/shared/git-auth/onboarding/stepHead/stepHead";
 
-function Step1() {
+
+function Step1(props: any) {
+
   return (
     <div className={styles.section}>
-        <StepHead />
         <div className={styles.step}>
-            <div className={styles.dots}>
-                <span className={styles.orange}>1</span>
-                <span className={styles.green}></span>
-                <span className={styles.blue}></span>
-            </div>
             <div className={styles.content}>
                 <h4>NEXT STEPS</h4>
-                <h2><span className={styles.color}>Future proof</span> your reputation and <span className={styles.drop}>contributions</span> </h2>
+                <h2><span className={styles.color}>Future proof</span> your reputation and <span className={styles.drop}>bring it on-chain</span> </h2>
                 <div className={styles.text}>
-                    <p>We want to ensure your reputation and contributions are attributed to you. <span className={styles.drop}>(PLUS we want to be able to airdrop SOURC3 rewards and benefits directly</span> to you.)</p>
+                    <p>Ensure your reputation and contributions are attributed to you by <span className={styles.drop}>bringing them on-chain and associated to your wallet.</span></p>
+                    <p>Connecting your wallet address also means we can airdrop SOURC3 rewards <span className={styles.drop}>and benefits directly.</span> </p>
                     <p>Pop your Ethereum wallet address (hex or ENS) below:</p>
                 </div>
                 <div className={styles.input}>
                     <InputCustom />
                     <NavButton
                         name="Next"
-                        isDisabled
+                        onClick={() => props.onClickHandler(3)}
                     />
                 </div>
-                <a href="@components/shared/git-auth/onboarding/step1/step1#">Skip for now</a>
+                <button onClick={() => props.onClickHandler(3)}className={styles.skip}>Skip for now</button>
             </div>
         </div>
     </div>
