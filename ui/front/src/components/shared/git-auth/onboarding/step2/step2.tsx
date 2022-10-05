@@ -6,15 +6,10 @@ import twitterIcon from '@assets/icons/twitterIcon.svg';
 import doneIcon from '@assets/icons/done.svg';
 import {NavButton} from "@components/shared";
 
-function Step2() {
+function Step2(props: any) {
   return (
       <div className={styles.section}>
           <div className={styles.step}>
-              <div className={styles.dots}>
-                  <span className={styles.orange}><img src={doneIcon} alt="doneIcon" /></span>
-                  <span className={styles.green}>2</span>
-                  <span className={styles.blue}></span>
-              </div>
               <div className={styles.content}>
                   <h1>Join the SOURC3 <span className={styles.color}>Discord</span> and <span className={styles.color}>Twitter</span></h1>
                   <div className={styles.text}>
@@ -32,9 +27,10 @@ function Step2() {
                       </a>
                       <NavButton
                           name="Next"
+                          onClick={() => props.onClickHandler(4)}
                       />
                   </div>
-                  <a href="@components/shared/git-auth/onboarding/step2/step2#">Skip for now</a>
+                  <button onClick={() => props.onClickHandler(4)} className={styles.skip}>Skip for now</button>
               </div>
           </div>
       </div>
