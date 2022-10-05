@@ -154,3 +154,5 @@ export const getDateFromMs = (ms: number) => {
 
   return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 };
+
+export const classNameList = (...classes: string[]) => [...classes].join(' ');

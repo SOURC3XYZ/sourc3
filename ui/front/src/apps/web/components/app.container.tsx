@@ -16,6 +16,7 @@ import { AC } from '@libs/action-creators';
 import { useDispatch } from '@libs/redux';
 import { GitProfile } from '@components/shared/git-auth';
 import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
+import { AchievementList } from '@components/shared/achievments';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
@@ -89,6 +90,10 @@ function Main() {
       <Route
         path="/profile/:id"
         element={<GitProfile />}
+      />
+      <Route
+        path="/achivka"
+        element={<AchievementList />}
       />
       <Route
         path="/*"

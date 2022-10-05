@@ -2,7 +2,6 @@ import {
   AllRepos, DownloadPage, FailPage, Organizations, ProjectRepos, Projects, Repo
 } from '@components/shared';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
-import { GitProfile } from '@components/shared/git-auth';
 
 export const routesData = [
   {
