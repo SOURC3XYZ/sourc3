@@ -14,9 +14,7 @@
 
 #include "wallets/base_client.h"
 
-std::string IWalletClient::PushObjects(const std::string&,
-                                const std::vector<sourc3::Ref>&,
-                                bool) {
+std::string IWalletClient::PushObjects(const std::string&, const std::vector<sourc3::Ref>&, bool) {
     return "";
 }
 

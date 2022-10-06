@@ -66,8 +66,7 @@ struct IWalletClient {
 
     virtual std::string GetAllObjectsMetadata();
     virtual std::string GetObjectData(const std::string& obj_id);
-    virtual std::string GetObjectDataAsync(const std::string& obj_id,
-                                           AsyncContext context);
+    virtual std::string GetObjectDataAsync(const std::string& obj_id, AsyncContext context);
     virtual std::string GetReferences();
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;

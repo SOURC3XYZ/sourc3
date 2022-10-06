@@ -39,23 +39,23 @@ IEngine::BaseOptions::SetResult IEngine::BaseOptions::Set(std::string_view optio
             return SetResult::InvalidValue;
         }
         return SetResult::Ok;
-    }/* else if (option == "verbosity") {
-         char* endPos;
-         auto v = std::strtol(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         verbosity = v;
-         return SetResult::Ok;
-     } else if (option == "depth") {
-         char* endPos;
-         auto v = std::strtoul(value.data(), &endPos, 10);
-         if (endPos == value.data()) {
-             return SetResult::InvalidValue;
-         }
-         depth = v;
-         return SetResult::Ok;
-     }*/
+    } /* else if (option == "verbosity") {
+          char* endPos;
+          auto v = std::strtol(value.data(), &endPos, 10);
+          if (endPos == value.data()) {
+              return SetResult::InvalidValue;
+          }
+          verbosity = v;
+          return SetResult::Ok;
+      } else if (option == "depth") {
+          char* endPos;
+          auto v = std::strtoul(value.data(), &endPos, 10);
+          if (endPos == value.data()) {
+              return SetResult::InvalidValue;
+          }
+          depth = v;
+          return SetResult::Ok;
+      }*/
 
     return SetResult::Unsupported;
 }

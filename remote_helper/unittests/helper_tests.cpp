@@ -30,10 +30,8 @@ void GenerateTestRepo(std::string_view root) {
     Config config;
     BOOST_TEST_CHECK(git_repository_config(config.Addr(), *repo) >= 0);
 
-    BOOST_TEST_CHECK(git_config_set_string(*config, "user.name", "test user") >=
-                     0);
-    BOOST_TEST_CHECK(
-        git_config_set_string(*config, "user.email", "test@sourc3.io") >= 0);
+    BOOST_TEST_CHECK(git_config_set_string(*config, "user.name", "test user") >= 0);
+    BOOST_TEST_CHECK(git_config_set_string(*config, "user.email", "test@sourc3.io") >= 0);
 
     Signature sig;
     BOOST_TEST_CHECK(git_signature_default(sig.Addr(), *repo) >= 0);
@@ -44,8 +42,7 @@ void GenerateTestRepo(std::string_view root) {
         char* p = (char*)wildcard;
         git_strarray paths = {&p, 1};
 
-        BOOST_TEST_CHECK(
-            git_index_add_all(*index, &paths, 0, nullptr, nullptr) >= 0);
+        BOOST_TEST_CHECK(git_index_add_all(*index, &paths, 0, nullptr, nullptr) >= 0);
         BOOST_TEST_CHECK(git_index_write(*index) >= 0);
         git_oid tree_id;
         Tree tree;
@@ -53,11 +50,9 @@ void GenerateTestRepo(std::string_view root) {
         BOOST_TEST_CHECK(git_tree_lookup(tree.Addr(), *repo, &tree_id) >= 0);
 
         git_oid commit_id;
-        BOOST_TEST_CHECK(git_commit_create_v(&commit_id, *repo, "HEAD", *sig,
-                                             *sig, nullptr, comment, *tree,
-                                             commit ? 1 : 0, *commit) >= 0);
-        BOOST_TEST_CHECK(git_commit_lookup(commit.Addr(), *repo, &commit_id) >=
-                         0);
+        BOOST_TEST_CHECK(git_commit_create_v(&commit_id, *repo, "HEAD", *sig, *sig, nullptr,
+                                             comment, *tree, commit ? 1 : 0, *commit) >= 0);
+        BOOST_TEST_CHECK(git_commit_lookup(commit.Addr(), *repo, &commit_id) >= 0);
     };
     f("*.cpp", "Initial");
     f("*.h", "Second");
@@ -76,17 +71,15 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector) {
     BOOST_TEST_CHECK(collector.m_objects.size() == 27);
 
     collector.Serialize([&](const auto& buf, size_t done) {
-
         size_t size = sizeof(sourc3::ObjectsInfo);
-        const auto* p =
-            reinterpret_cast<const sourc3::ObjectsInfo*>(buf.data());
+        const auto* p = reinterpret_cast<const sourc3::ObjectsInfo*>(buf.data());
         BOOST_TEST_CHECK(p->objects_number == uint32_t(27));
         BOOST_TEST_CHECK(done == p->objects_number);
         const auto* o = reinterpret_cast<const sourc3::GitObject*>(p + 1);
         for (uint32_t i = 0; i < p->objects_number; ++i) {
             size += sizeof(sourc3::GitObject) + o->data_size;
-            o = reinterpret_cast<const sourc3::GitObject*>(
-                reinterpret_cast<const uint8_t*>(o + 1) + o->data_size);
+            o = reinterpret_cast<const sourc3::GitObject*>(reinterpret_cast<const uint8_t*>(o + 1) +
+                                                           o->data_size);
         }
         BOOST_TEST_CHECK(size == buf.size());
         return false;

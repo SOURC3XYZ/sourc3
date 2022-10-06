@@ -52,15 +52,14 @@ vector<string_view> ParseArgs(std::string_view args_sv) {
     while (!args_sv.empty()) {
         auto p = args_sv.find(' ');
         auto ss = args_sv.substr(0, p);
-        args_sv.remove_prefix(p == string_view::npos ? ss.size()
-                                                     : ss.size() + 1);
+        args_sv.remove_prefix(p == string_view::npos ? ss.size() : ss.size() + 1);
         if (!ss.empty()) {
             args.emplace_back(ss);
         }
     }
     return args;
 }
-}
+}  // namespace
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -72,18 +71,14 @@ int main(int argc, char* argv[]) {
         po::options_description desc("SOURC3 config options");
 
         desc.add_options()("api-host",
-                           po::value<std::string>(&options.apiHost)
-                               ->default_value("localhost"),
+                           po::value<std::string>(&options.apiHost)->default_value("localhost"),
                            "Wallet API host")(
-            "api-port",
-            po::value<std::string>(&options.apiPort)->default_value("47321"),
-            "Wallet API port")("api-target",
-                               po::value<std::string>(&options.apiTarget)
-                                   ->default_value("/api/wallet"),
-                               "Wallet API target")(
-            "app-shader-file",
-            po::value<string>(&options.appPath)->default_value("app.wasm"),
-            "Path to the app shader file")(
+            "api-port", po::value<std::string>(&options.apiPort)->default_value("47321"),
+            "Wallet API port")(
+            "api-target", po::value<std::string>(&options.apiTarget)->default_value("/api/wallet"),
+            "Wallet API target")("app-shader-file",
+                                 po::value<string>(&options.appPath)->default_value("app.wasm"),
+                                 "Path to the app shader file")(
             "use-ipfs", po::value<bool>(&options.useIPFS)->default_value(true),
             "Use IPFS to store large blobs")(
             "use-full-ipfs", po::value<bool>(&options.useFullIPFS)->default_value(true),
@@ -98,12 +93,10 @@ int main(int argc, char* argv[]) {
 #endif
         std::string config_path = PROTO_NAME "-remote.cfg";
         if (home_dir != nullptr) {
-            config_path =
-                std::string(home_dir) + "/." PROTO_NAME "/" + config_path;
+            config_path = std::string(home_dir) + "/." PROTO_NAME "/" + config_path;
         }
         cerr << "Reading config from: " << config_path << "..." << endl;
-        const auto full_path =
-            boost::filesystem::system_complete(config_path).string();
+        const auto full_path = boost::filesystem::system_complete(config_path).string();
         std::ifstream cfg(full_path);
         if (cfg) {
             po::store(po::parse_config_file(cfg, desc), vm);

@@ -21,11 +21,9 @@
 using namespace sourc3;
 
 BOOST_AUTO_TEST_CASE(Serialization) {
-
 }
 
 BOOST_AUTO_TEST_CASE(Deserialization) {
-
 }
 
 BOOST_AUTO_TEST_CASE(SerializationDeserializationSync) {

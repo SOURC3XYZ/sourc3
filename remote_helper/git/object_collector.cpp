@@ -112,8 +112,7 @@ bool ObjectInfo::IsIPFSObject() const {
 
 /////////////////////////////////////////////////////
 
-void ObjectCollector::Traverse(const std::vector<Refs>& refs,
-                               const std::vector<git_oid>& hidden) {
+void ObjectCollector::Traverse(const std::vector<Refs>& refs, const std::vector<git_oid>& hidden) {
     using namespace git;
     RevWalk walk;
     git_revwalk_new(walk.Addr(), *m_repo);
@@ -184,8 +183,7 @@ void ObjectCollector::TraverseTree(const git_tree* tree) {
     }
 }
 
-std::string ObjectCollector::Join(const std::vector<std::string>& path,
-                                  const std::string& name) {
+std::string ObjectCollector::Join(const std::vector<std::string>& path, const std::string& name) {
     std::string res;
     for (const auto& p : path) {
         res.append(p);
@@ -202,8 +200,7 @@ ObjectInfo& ObjectCollector::CollectObject(const git_oid& oid) {
     auto obj_size = git_odb_object_size(dbobj);
     auto& obj = m_objects.emplace_back(oid, git_odb_object_type(dbobj), dbobj);
     git_oid r;
-    git_odb_hash(&r, git_odb_object_data(dbobj), obj_size,
-                 git_odb_object_type(dbobj));
+    git_odb_hash(&r, git_odb_object_data(dbobj), obj_size, git_odb_object_type(dbobj));
 
     return obj;
 }
