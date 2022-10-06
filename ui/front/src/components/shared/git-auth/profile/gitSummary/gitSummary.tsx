@@ -13,24 +13,26 @@ function GitSummary({ profile }:gitSummaryType) {
   const [forkedHis, setForkedHis] = useState(0);
   const [allOrgs, setAllOrgs] = useState(0);
   const [relisedCount, setRelisedCount] = useState(0);
-  const [mostPopularOrgRep, setMostPopularOrgRep] = useState([{}]);
+  const [mostPopularOrgRep, setMostPopularOrgRep] = useState(null);
   const [mostLanguages, setMostLanguages] = useState([{}]);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
   const topics = mostPopularOwnRep && mostPopularOwnRep[0].topics.slice(0, 3);
   const calcRepInORg = () => {
-    const repOrg = [];
-    for (let i = 0; i < profile.github_orgs.length; i++) {
-      profile.github_repos.map((el) => {
-        if (el.owner_login === profile.github_orgs[i].login) {
-          repOrg.push(el);
-        }
-      });
+    if (profile.github_orgs) {
+      const repOrg = [];
+      for (let i = 0; i < profile.github_orgs.length; i++) {
+        profile.github_repos.map((el) => {
+          if (el.owner_login === profile.github_orgs[i].login) {
+            repOrg.push(el);
+          }
+        });
+      }
+      const mostPopularRep = repOrg && repOrg.sort((a, b) => b.rating - a.rating);
+      setMostPopularOrgRep(mostPopularRep);
+      setRelisedOrgs(repOrg.filter((el) => el.user_releases_cnt).length);
+      setRelisedCount(repOrg && repOrg.reduce((acc, rep) => acc + rep.user_releases_cnt, relisedCount));
+      setAllOrgs(repOrg.length);
     }
-    const mostPopularRep = repOrg && repOrg.sort((a, b) => b.rating - a.rating);
-    setMostPopularOrgRep(mostPopularRep);
-    setRelisedOrgs(repOrg.filter((el) => el.user_releases_cnt).length);
-    setRelisedCount(repOrg && repOrg.reduce((acc, rep) => acc + rep.user_releases_cnt, relisedCount));
-    setAllOrgs(repOrg.length);
   };
 
   function languagePopularitySlice(languageList, sliceSize) {
@@ -113,7 +115,7 @@ function GitSummary({ profile }:gitSummaryType) {
                 </span>
               </span>
             </div>
-            {mostPopularOwnRep && (
+            {mostPopularOwnRep[0].full_name && (
               <div className={styles.resumeLeft_wrapper}>
                 <span className={styles.text}>
                   Most popular repository:
