@@ -2,6 +2,8 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable @typescript-eslint/no-shadow */
+import { notification } from 'antd';
+import { NotificationPlacement } from 'antd/lib/notification';
 import React, {
   memo, useCallback, useEffect, useState
 } from 'react';
@@ -39,7 +41,6 @@ export function LoginSocialGithub({
   redirect_uri,
   allow_signup = false,
   children,
-  onReject,
   onResolve
 }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -65,18 +66,18 @@ export function LoginSocialGithub({
          && getAccessToken(code);
 
   const onChangeLocalStorage = () => {
-    window.removeEventListener('storage', onChangeLocalStorage, false);
     const code = localStorage.getItem('github');
     if (code) {
       setIsProcessing(true);
       handlePostMessage({ provider: 'github', type: 'code', code });
       localStorage.removeItem('instagram');
+      window.removeEventListener('storage', onChangeLocalStorage);
     }
   };
 
   const onLogin = () => {
     if (!isProcessing) {
-      window.addEventListener('storage', onChangeLocalStorage, false);
+      window.addEventListener('storage', onChangeLocalStorage);
       const oauthUrl = `
                 ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=${encodeURIComponent(scope)}&state=_github&allow_signup=${allow_signup}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 

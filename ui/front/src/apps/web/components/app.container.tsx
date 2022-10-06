@@ -20,12 +20,12 @@ import { useDispatch } from '@libs/redux';
 import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
 import { Popup } from '@components/shared/popup';
 import { AchievementList } from '@components/shared/achievments';
+import ReferralProgramm from '@components/shared/referral-programm/referralProgramm';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import { routesData } from './routes';
-import ReferralProgramm from "@components/shared/referral-programm/referralProgramm";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -113,8 +113,8 @@ function Main() {
           element={<OnboardingStep />}
         />
         <Route
-            path="/referral-programm"
-            element={<ReferralProgramm />}
+          path="/referral-programm"
+          element={<ReferralProgramm />}
         />
         <Route
           path="/download"
