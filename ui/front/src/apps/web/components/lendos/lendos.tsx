@@ -20,10 +20,13 @@ function Lendos() {
             the Web3 way
           </h1>
           <p>
-            Building to benefit the developer community, SOURC3 is a Web3-native, decentralized platform for software development.
+            SOURC3 is a Web3-native, decentralized platform for on-chain reputation management.
+            <br />
+            <br />
+            Connect your GitHub to bring your contributions on-chain.
           </p>
-          <button className={styles.button} onClick={onClick} type="button">Explore</button>
-          <GitConnectAuth why name="Connect Github" />
+          {/* <button className={styles.button} onClick={onClick} type="button">Explore</button> */}
+          <GitConnectAuth why name="Connect Github"/>
         </div>
       </div>
     </div>

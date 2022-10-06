@@ -161,7 +161,7 @@ export function compact(value: string, stringLength: number = 6): string {
   if (value.length <= 11) {
     return value;
   }
-  return `${value.substring(0, stringLength)}…${value.substring(-stringLength, stringLength)}`;
+  return `${value.substring(0, stringLength)}…`;
 }
 
 export const classNameList = (...classes: string[]) => [...classes].join(' ');

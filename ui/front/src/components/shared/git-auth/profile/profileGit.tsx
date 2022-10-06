@@ -18,6 +18,7 @@ import { IProfiles } from '@types';
 import { Preload } from '@components/shared';
 import EarlyDescription from '@components/shared/git-auth/profile/earlyAdop/EarlyDescription';
 import Achievements from '@components/shared/git-auth/profile/achievements/achievements';
+import { compact, copyToClipboard } from '@libs/utils';
 import styles from './profileGit.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -30,9 +31,12 @@ function ProfileGit() {
   const [gitProfiles, setGitHubProfile] = useState<IProfiles | undefined>(undefined);
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
-  // const shortAddress = gitProfiles?.eth_address && compact(gitProfiles?.eth_address, 6);
-  // console.log(gitProfiles?.id);
+  const shortAddress = gitProfiles?.eth_address && compact(gitProfiles?.eth_address, 6);
+  console.log(shortAddress);
   const own = useSelector((state) => state.profile.data.github_login);
+  const copy = (cop) => {
+    copyToClipboard(cop);
+  };
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
@@ -88,21 +92,19 @@ function ProfileGit() {
                     <div className={styles.supHeader}>
                       {gitProfiles?.github_profile.login && <span>{gitProfiles?.github_profile.login}</span>}
                       {gitProfiles?.github_profile.email && <span>{gitProfiles?.github_profile.email}</span>}
-                      {/*{shortAddress && (*/}
-                      {/*  <span>*/}
-                      {/*    id:*/}
-                      {/*    {' '}*/}
-                      {/*    {shortAddress}*/}
-                      {/*    {' '}*/}
-                      {/*    <button*/}
-                      {/*      type="button"*/}
-                      {/*      // onClick={copyId}*/}
-                      {/*      className={styles.copyButton}*/}
-                      {/*    >*/}
-                      {/*      <IconCopy />*/}
-                      {/*    </button>*/}
-                      {/*  </span>*/}
-                      {/*)}*/}
+                      {shortAddress && (
+                        <span>
+                          {shortAddress}
+                          {' '}
+                          <button
+                            type="button"
+                            onClick={() => copy(gitProfiles?.eth_address)}
+                            className={styles.copyButton}
+                          >
+                            <IconCopy />
+                          </button>
+                        </span>
+                      )}
                     </div>
                   </div>
 
