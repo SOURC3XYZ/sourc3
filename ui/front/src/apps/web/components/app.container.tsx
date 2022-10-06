@@ -15,18 +15,16 @@ import GitAuth from '@components/shared/git-auth/gitAuth';
 import axios from 'axios';
 import { HOST } from '@components/shared/git-auth/profile/constants';
 import { AC } from '@libs/action-creators';
+import ProfileGit from '@components/shared/git-auth/profile/profileGit';
 import { useDispatch } from '@libs/redux';
-import { GitProfile } from '@components/shared/git-auth';
 import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
 import { Popup } from '@components/shared/popup';
-import { constants } from 'os';
+import { AchievementList } from '@components/shared/achievments';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import { routesData } from './routes';
-import errno = module;
-import ProfileGit from '@components/shared/git-auth/profile/profileGit';
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -119,9 +117,12 @@ function Main() {
           element={<ProfileGit />}
         />
         <Route
+          path="/achivka"
+          element={<AchievementList />}
+        />
+        <Route
           path="/*"
           element={(
-
             <>
               <div className={styles.appWrapper}>
                 <Header isOnLending={isOnLending} />

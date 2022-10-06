@@ -30,12 +30,15 @@ function ProfileGit() {
   const [gitProfiles, setGitHubProfile] = useState<IProfiles | undefined>(undefined);
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
+  // const shortAddress = gitProfiles?.eth_address && compact(gitProfiles?.eth_address, 6);
+  // console.log(gitProfiles?.id);
   const own = useSelector((state) => state.profile.data.github_login);
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
         case 'done': axios.get(`${HOST}/users/${urlId}`).then((res) => {
           setGitHubProfile(res.data);
+          console.log(res.data.status);
           setTaskStatus(true);
         });
           break;
@@ -85,21 +88,21 @@ function ProfileGit() {
                     <div className={styles.supHeader}>
                       {gitProfiles?.github_profile.login && <span>{gitProfiles?.github_profile.login}</span>}
                       {gitProfiles?.github_profile.email && <span>{gitProfiles?.github_profile.email}</span>}
-                      {urlId === own && (
-                        <span>
-                          id:
-                          {' '}
-                          {gitProfiles?.id}
-                          {' '}
-                          <button
-                            type="button"
-                            // onClick={copyId}
-                            className={styles.copyButton}
-                          >
-                            <IconCopy />
-                          </button>
-                        </span>
-                      )}
+                      {/*{shortAddress && (*/}
+                      {/*  <span>*/}
+                      {/*    id:*/}
+                      {/*    {' '}*/}
+                      {/*    {shortAddress}*/}
+                      {/*    {' '}*/}
+                      {/*    <button*/}
+                      {/*      type="button"*/}
+                      {/*      // onClick={copyId}*/}
+                      {/*      className={styles.copyButton}*/}
+                      {/*    >*/}
+                      {/*      <IconCopy />*/}
+                      {/*    </button>*/}
+                      {/*  </span>*/}
+                      {/*)}*/}
                     </div>
                   </div>
 
@@ -122,16 +125,16 @@ function ProfileGit() {
                     )}
                 </div>
                 <div className={styles.org}>
-                  {gitProfiles.github_orgs && <Organizations githubOrgs={gitProfiles.github_orgs} />}
+                  {gitProfiles.github_orgs && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}
                 </div>
                 <div className={styles.org}>
-                  {gitProfiles.achievements && <Achievements achievements={gitProfiles.achievements} />}
+                  {gitProfiles.achievements && taskStatus && <Achievements achievements={gitProfiles.achievements} />}
                 </div>
               </div>
             </div>
           )}
       </div>
-      <Footer isOnLending={false} />
+      <Footer isOnLending={false} profile />
     </>
   );
 }

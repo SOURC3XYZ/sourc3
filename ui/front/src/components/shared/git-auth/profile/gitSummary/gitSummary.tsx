@@ -132,7 +132,13 @@ function GitSummary({ profile }:gitSummaryType) {
         </div>
         <div className={styles.blockRight}>
           <div className={styles.resumeLeft_wrapper}>
-            <span className={styles.title}>{`${allOrgs} repositories in ${profile.github_orgs.length} organizations`}</span>
+            {allOrgs && profile.github_orgs.length && (
+              <span
+                className={styles.title}
+              >
+                {`${allOrgs} repositories in ${profile.github_orgs.length} organizations`}
+              </span>
+            )}
           </div>
           { relisedCount && relisedOrgs && (
             <div className={styles.resumeLeft_wrapper}>

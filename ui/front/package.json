@@ -116,6 +116,7 @@
     "redux": "^4.1.1",
     "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^2.3.0",
-    "styled-components": "^5.3.6"
+    "styled-components": "^5.3.6",
+    "web3": "^1.8.0"
   }
 }

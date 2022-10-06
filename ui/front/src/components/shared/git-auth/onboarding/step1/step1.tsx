@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavButton } from '@components/shared';
 import axios from 'axios';
 import { HOST } from '@components/shared/git-auth/profile/constants';
+import web3 from 'web3';
 import InputCustom from '../../../input/input';
 import styles from './step.module.scss';
 
 function Step1(props: any) {
-  const putAdress = (address:string) => {
+  const [address, setAddress] = useState('');
+  const next = () => {
+    props.onClickHandler(3);
+  };
+  const putAddress = (add:string) => {
     axios({
       method: 'put',
       url: `${HOST}/user/ethaddr`,
@@ -15,9 +20,11 @@ function Step1(props: any) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${window.localStorage.getItem('token')}`
       },
-      data: address
+      data: add
     }).then((res) => {
-      console.log(res);
+      if (res.data) {
+        next();
+      }
     });
   };
 
@@ -46,10 +53,17 @@ function Step1(props: any) {
             <p>Pop your Ethereum wallet address (hex or ENS) below:</p>
           </div>
           <div className={styles.input}>
-            <InputCustom />
+            <InputCustom
+              type="text"
+              placeholder="Pop your Ethereum wallet address (hex or ENS) below"
+              onChange={(e) => (setAddress(e.target.value))}
+              valid={web3.utils.isAddress(address)}
+              err={!web3.utils.isAddress(address) && address ? 'Address incorrect' : ''}
+            />
             <NavButton
               name="Next"
-              onClick={putAdress('123')}
+              onClick={() => putAddress(address)}
+              isDisabled={!web3.utils.isAddress(address)}
             />
           </div>
           <button onClick={() => props.onClickHandler(3)} className={styles.skip}>Skip for now</button>

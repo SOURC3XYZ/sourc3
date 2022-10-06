@@ -46,7 +46,8 @@ export interface IProfiles {
   github_profile: IProfilesGit,
   github_orgs: [IGitOrgs],
   github_repos : [IGitRepos],
-  achievements: [IAchievements]
+  achievements: [IAchievements],
+  eth_address: string
 }
 
 export interface ILanguages {

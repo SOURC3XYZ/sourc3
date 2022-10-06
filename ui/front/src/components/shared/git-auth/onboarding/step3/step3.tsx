@@ -6,6 +6,8 @@ import { useSelector } from '@libs/redux';
 import styles from './step.module.scss';
 
 function Step3(props: any) {
+  const navigate = useNavigate();
+  const { github_login } = useSelector((state) => state.profile.data);
   return (
     <div className={styles.section}>
       <div className={styles.step}>
@@ -42,10 +44,10 @@ function Step3(props: any) {
             <NavButton
               name="Next"
               classes={styles.next}
-              onClick={() => props.onClickHandler(1)}
+              onClick={() => navigate(`/profile/${github_login}`)}
             />
           </div>
-          <button onClick={() => props.onClickHandler(1)} className={styles.skip}>Skip for now</button>
+          <button onClick={() => navigate(`/profile/${github_login}`)} className={styles.skip}>Skip for now</button>
         </div>
       </div>
     </div>

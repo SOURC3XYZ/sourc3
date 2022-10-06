@@ -215,7 +215,7 @@ function GitProfile() {
                     />
                   </div>
                 </div>
-                <GitSummary profile={github_profile} gitRep={github_repos} gitOrg={github_orgs} />
+                {/*<GitSummary profile={github_profile} gitRep={github_repos} gitOrg={github_orgs} />*/}
                 {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
                 { github_repos.length > 0 && <GitOwnRepos data={github_repos} />}
               </div>

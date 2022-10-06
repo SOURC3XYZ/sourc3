@@ -37,37 +37,37 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       <Link to="/">
         <img className={styles.logo} alt="source" src={img} />
       </Link>
-      <ul className={[styles.navList, styles.textColor].join(' ')}>
-        <li>
-          <Link className={styles.textColor} to="/repos/all/1">
-            Repositories
-          </Link>
-        </li>
-        <li>
-          <Link className={styles.textColor} to="/organizations/all/1">
-            Organizations
-          </Link>
-        </li>
-      </ul>
+      {/*<ul className={[styles.navList, styles.textColor].join(' ')}>*/}
+      {/*  <li>*/}
+      {/*    <Link className={styles.textColor} to="/repos/all/1">*/}
+      {/*      Repositories*/}
+      {/*    </Link>*/}
+      {/*  </li>*/}
+      {/*  <li>*/}
+      {/*    <Link className={styles.textColor} to="/organizations/all/1">*/}
+      {/*      Organizations*/}
+      {/*    </Link>*/}
+      {/*  </li>*/}
+      {/*</ul>*/}
     </div>
   );
 
   const searchElement = useMemo(() => (
     <div className={styles.connect}>
-      {isOnLending && (
-        <AutocompeteSearch
-          className={autoCompleteClassName}
-          placeholder="Search"
-        />
-      )}
+      {/* {isOnLending && ( */}
+      {/*  // <AutocompeteSearch */}
+      {/*  //   className={autoCompleteClassName} */}
+      {/*  //   placeholder="Search" */}
+      {/*  // /> */}
+      {/* )} */}
       { !desktop ? (
         <>
-          {pkey && (<ProfileBlock pKey={pkey} />)}
-          <ConnectBtn
-            pkey={pkey}
-            users={users}
-            onConnect={onConnect}
-          />
+          {/* {pkey && (<ProfileBlock pKey={pkey} />)} */}
+          {/* <ConnectBtn */}
+          {/*  pkey={pkey} */}
+          {/*  users={users} */}
+          {/*  onConnect={onConnect} */}
+          {/* /> */}
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           {isAuth ? <ProfileBlock git /> : null}
         </>
