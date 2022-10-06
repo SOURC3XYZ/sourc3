@@ -25,6 +25,7 @@ import styles from './app.module.scss';
 import { Lendos } from './lendos';
 import { Header } from './header';
 import { routesData } from './routes';
+import ReferralProgramm from "@components/shared/referral-programm/referralProgramm";
 
 function Main() {
   const { isApiConnected, isOnLending, connectBeamApi } = useWebMain();
@@ -110,6 +111,10 @@ function Main() {
         <Route
           path="/onboarding"
           element={<OnboardingStep />}
+        />
+        <Route
+            path="/referral-programm"
+            element={<ReferralProgramm />}
         />
         <Route
           path="/download"
