@@ -17,6 +17,7 @@ import GitSummary from '@components/shared/git-auth/profile/gitSummary/gitSummar
 import { IProfiles } from '@types';
 import { Preload } from '@components/shared';
 import EarlyDescription from '@components/shared/git-auth/profile/earlyAdop/EarlyDescription';
+import Achievements from '@components/shared/git-auth/profile/achievements/achievements';
 import styles from './profileGit.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -122,6 +123,9 @@ function ProfileGit() {
                 </div>
                 <div className={styles.org}>
                   {gitProfiles.github_orgs && <Organizations githubOrgs={gitProfiles.github_orgs} />}
+                </div>
+                <div className={styles.org}>
+                  {gitProfiles.achievements && <Achievements achievements={gitProfiles.achievements} />}
                 </div>
               </div>
             </div>
