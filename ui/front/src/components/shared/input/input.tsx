@@ -7,11 +7,12 @@ interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   valid?: boolean;
   password?: boolean;
   length?: number;
-  type?: string
+  type?: string,
+  err?:string | null;
 }
 
 function InputCustom({
-  label, valid = true, password, length, type, ...rest
+  label, valid = true, password, length, type, err, ...rest
 }: IputProps) {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
@@ -50,6 +51,7 @@ function InputCustom({
     ) : (
       <div className={styles.wrapperInput}>
         <label htmlFor="input" className={styles.labelUp}>{label}</label>
+        <label htmlFor="input" className={styles.labelDown}>{err}</label>
         <input
           autoFocus
           id="input"

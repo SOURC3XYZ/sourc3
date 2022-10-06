@@ -6,11 +6,12 @@ import { useExcludeRoute } from '@libs/hooks/shared';
 import styles from '../app.module.scss';
 
 type FooterProps = {
-  isOnLending: boolean
+  isOnLending: boolean,
+  profile?: boolean
 };
 
-function Footer({ isOnLending }: FooterProps) {
-  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
+function Footer({ isOnLending, profile }: FooterProps) {
+  const footerClassname = isOnLending ? styles.footer : profile ? styles.footerBottom : styles.footerWhiteBg;
 
   const isVisible = useExcludeRoute('/download');
 

@@ -19,7 +19,10 @@ function Organization({ githubOrgs }: OrganizationProps) {
             target="_blank"
             rel="noreferrer"
           >
-            <Avatar small url={el.avatar_url} />
+            <div className={styles.wrapp}>
+              <Avatar medium url={el.avatar_url} />
+              <div className={styles.label}>{el.login}</div>
+            </div>
           </a>
         ))}
       </div>

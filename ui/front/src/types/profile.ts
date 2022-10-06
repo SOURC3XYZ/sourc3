@@ -28,6 +28,14 @@ export interface IGitOrgs {
   description: string
   users: []
 }
+export interface IAchievements {
+  id: number,
+  type: string,
+  data: {},
+  created_at: string,
+  updated_at: string,
+  user: number
+}
 export interface IProfiles {
   id: string,
   github_login: string,
@@ -37,7 +45,9 @@ export interface IProfiles {
   token: string,
   github_profile: IProfilesGit,
   github_orgs: [IGitOrgs],
-  github_repos : [IGitRepos]
+  github_repos : [IGitRepos],
+  achievements: [IAchievements],
+  eth_address: string
 }
 
 export interface ILanguages {
@@ -100,5 +110,9 @@ export interface IGitRepos {
   user_committers_pos:number,
   total_committers_cnt: number,
   github_created_at: string,
-  github_updated_at: string
+  github_updated_at: string,
+  rate: number,
+  owner_login: string,
+  rating: number,
+  topics: [],
 }

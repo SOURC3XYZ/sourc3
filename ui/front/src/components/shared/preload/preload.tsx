@@ -5,15 +5,17 @@ type PreloadProps = {
   message: string;
   isOnLendos?: boolean;
   className?:string;
+  messageBlack?:boolean
 };
 
 function Preload({
   message,
   isOnLendos,
-  className = ''
+  className = '',
+  messageBlack
 }:PreloadProps) {
   const wrapperClassname = [className, styles.loaderWrapper].join(' ');
-  const messageClassName = isOnLendos ? styles.message : styles.messageWhiteBg;
+  const messageClassName = isOnLendos ? styles.message : messageBlack ? styles.messageBlack : styles.messageWhiteBg;
   return (
     <div className={wrapperClassname}>
       <div className={styles.content}>

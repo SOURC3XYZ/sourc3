@@ -287,9 +287,9 @@ appWrapper {
 .wrapperOrganization{
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: max-content;
   .title{
-    font-family: 'PublicSans-Black';
+    font-family: 'PublicSans-ExtraBold';
     font-style: normal;
     font-weight: 800;
     font-size: 18px;
@@ -298,11 +298,27 @@ appWrapper {
     margin-bottom: 16px;
   }
   &_avatar{
+    display: flex;
     &>a{
       margin-right: 5px;
     }
+    .wrapp{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 24px;
+    }
+      .label{
+        margin-top: 8px;
+        font-family: 'PublicSans-Regular';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 130%;
+        color: black;
+      }
+    }
   }
-}
 
 @media screen and (max-width: 600px) {
   .wrapper{

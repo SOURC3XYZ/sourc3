@@ -1,5 +1,5 @@
 .wrapper {
-
+position: relative;
   & .buttonEye {
       display: none;
   }
@@ -16,7 +16,7 @@
       cursor: pointer;
     }
   }
-  
+
   .input{
     width: 410px;
     height: 44px;
@@ -35,7 +35,7 @@
     &[type="password"]
     {
       letter-spacing: 4px  !important;
-      
+
     }
 
   &::placeholder {
@@ -43,8 +43,8 @@
     color: rgba(0,0,0, 0.3);
     font-size: 14px;
     transform: translateX(1px);
-    letter-spacing: 0; 
-    
+    letter-spacing: 0;
+
   }
 
   &[disabled] {
@@ -61,7 +61,7 @@
   color: rgba(234, 0, 0, 1);
   border: solid 1px rgba(234, 0, 0, 1);
   &::placeholder {
-      border: solid 1px rgba(234, 0, 0, 1);
+      //border: solid 1px rgba(234, 0, 0, 1)
   }
 }
 .label{
@@ -89,6 +89,16 @@
   width: 100%;
   text-align: left;
 }
+
+.labelDown{
+  position: absolute;
+  bottom: -23px;
+  left: 11px;
+  color: red;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
 .inputText{
 composes:input;
 height: 36px;
@@ -98,11 +108,11 @@ border: solid 1px rgba(0,0,0, 0.1);
 
 }
 .invalid{
-  composes: inputText;
+  composes: input;
   background: rgba(234, 0, 0, 0.03);
   color: rgba(234, 0, 0, 1);
   border: solid 1px rgba(234, 0, 0, 1);
   &::placeholder {
-      border: solid 1px rgba(234, 0, 0, 1);
+      //border: solid 1px rgba(234, 0, 0, 1);
   }
 }

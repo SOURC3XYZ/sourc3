@@ -154,3 +154,14 @@ export const getDateFromMs = (ms: number) => {
 
   return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 };
+
+export const copyToClipboard = (value: string) => navigator.clipboard.writeText(value);
+
+export function compact(value: string, stringLength: number = 6): string {
+  if (value.length <= 11) {
+    return value;
+  }
+  return `${value.substring(0, stringLength)}…`;
+}
+
+export const classNameList = (...classes: string[]) => [...classes].join(' ');

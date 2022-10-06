@@ -12,7 +12,7 @@ function MyLoader(props:any) {
       foregroundColor="#ecebeb"
       {...props}
     >
-      <rect x="15" y="342" rx="8" ry="8" width="151" height="33" />
+      <rect x="15" y="342" rx="8" ry="8" width="151" height="33"/>
       <circle cx="88" cy="117" r="79" />
       <circle cx="929" cy="54" r="10" />
       <circle cx="961" cy="54" r="10" />

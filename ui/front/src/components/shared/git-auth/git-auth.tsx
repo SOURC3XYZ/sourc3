@@ -55,7 +55,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                   try {
                     if (result) {
                       dispatch(AC.getAuthGitUser(result));
-                      navigate(`/profile/${result.data.github_login}`);
+                      navigate('/onboarding');
                     }
                   } catch (err) {
                     setIsErr(true);
@@ -78,6 +78,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             name={name}
             inlineStyles={!isDisabled ? { display: 'block' } : { display: 'none' }}
             classes={className}
+            active
           />
         </LoginSocialGithub>
         {why && !isDisabled && <a className={styles.whyLink} target="_blank" href="https://www.sourc3.xyz/why-connect-to-github" rel="noreferrer">Why connect? Learn more</a>}
