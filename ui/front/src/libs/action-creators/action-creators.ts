@@ -185,6 +185,10 @@ export const AC = {
   getAuthGitUser: (payload: any) => ({
     type: ACTIONS.GET_GIT_USER,
     payload
+  } as const),
+
+  gitUserLogout: () => ({
+    type: ACTIONS.GIT_USER_LOGOUT
   } as const)
 };
 
