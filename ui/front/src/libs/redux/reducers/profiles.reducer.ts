@@ -61,6 +61,10 @@ const reducer = (
       newState.data = action.payload.data as IProfiles;
       return newState;
     }
+    case ACTIONS.GIT_USER_LOGOUT: {
+      newState.data = defaultValue;
+      return newState;
+    }
     default:
       return state;
   }

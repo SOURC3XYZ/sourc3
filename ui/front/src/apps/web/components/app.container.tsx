@@ -42,36 +42,39 @@ function Main() {
   ), [isOnLending]);
 
   useEffect(() => {
-    window.localStorage.getItem('token') && axios.get(`${HOST}/login?access_token=${token}`).then((res) => {
-      try {
-        if (res.status >= 200 && res.status < 300) {
-          axios({
-            method: 'get',
-            url: `${HOST}/user`,
-            withCredentials: false,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${window.localStorage.getItem('token')}`
+    if (window.localStorage.getItem('token')) {
+      axios.get(`${HOST}/login?access_token=${token}`)
+        .then((res) => {
+          try {
+            if (res.status >= 200 && res.status < 300) {
+              axios({
+                method: 'get',
+                url: `${HOST}/user`,
+                withCredentials: false,
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${window.localStorage.getItem('token')}`
+                }
+              })
+                .then((result) => {
+                  dispatch(AC.getAuthGitUser(result));
+                })
+                .catch((err) => (console.log(err)));
             }
-          })
-            .then((result) => {
-              dispatch(AC.getAuthGitUser(result));
-            })
-            .catch((err) => (console.log(err)));
-        }
-      } catch (e) {
-        if (e) {
-          setVisible(true);
-          setIsErr(true);
-        }
-      }
-    })
-      .catch((e) => {
-        if (e) {
-          setVisible(true);
-          setIsErr(true);
-        }
-      });
+          } catch (e) {
+            if (e) {
+              setVisible(true);
+              setIsErr(true);
+            }
+          }
+        })
+        .catch((e) => {
+          if (e) {
+            setVisible(true);
+            setIsErr(true);
+          }
+        });
+    }
   }, []);
 
   const routes = useMemo(() => (

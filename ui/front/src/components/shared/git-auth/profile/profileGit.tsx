@@ -37,6 +37,10 @@ function ProfileGit() {
   const copy = (cop) => {
     copyToClipboard(cop);
   };
+  console.log(gitProfiles?.github_orgs.length > 0);
+  console.log(Boolean(gitProfiles?.github_orgs));
+  console.log(gitProfiles?.github_repos.length > 0);
+  console.log(Boolean(gitProfiles?.github_repos));
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
@@ -120,11 +124,12 @@ function ProfileGit() {
                       <Preload messageBlack message="This may take a while..." />
                     </div>
                   )
-                    : (
+                    : gitProfiles?.github_orgs.length > 0 && gitProfiles?.github_repos.length > 0 ? (
                       <GitSummary
                         profile={gitProfiles}
                       />
-                    )}
+                    )
+                      : (<EarlyDescription gitProfiles={gitProfiles} />)}
                 </div>
                 <div className={styles.org}>
                   {gitProfiles.github_orgs && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}

@@ -42,6 +42,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           onResolve={({ data }) => {
             axios.get(`${HOST}/login?code=${data.code}`)
               .then((res) => {
+                console.log(res.data.token);
                 window.localStorage.setItem('token', res.data.token);
                 axios({
                   method: 'get',
