@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from '@libs/redux';
 import { AC } from '@libs/action-creators';
 import { HOST } from '@components/shared/git-auth/profile/constants';
 import { useNavigate } from 'react-router-dom';
-import { log } from 'util';
+import { getQueryParam } from '@libs/utils';
 import { NavButton } from '../nav-button';
 import styles from './git-auth.module.scss';
 import { Popup } from '../popup';
@@ -26,6 +26,8 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
   const [isErr, setIsErr] = useState(false);
   const dispatch = useDispatch();
 
+  const refId = getQueryParam(window.location.href, 'ref_by') || '';
+
   useEffect(() => {
     if (isAuth) {
       setIsDisabled(true);
@@ -42,7 +44,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           redirect_uri={`${window.location.origin}/git-auth`}
           onResolve={({ data }) => {
             console.log({ data });
-            axios.get(`${HOST}/login?code=${data.code}`)
+            axios.get(`${HOST}/login?code=${data.code}${refId ? `&ref_by=${refId}` : ''}`)
               .then((res) => {
                 console.log(res.data.token);
                 window.localStorage.setItem('token', res.data.token);
