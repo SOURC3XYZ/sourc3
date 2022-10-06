@@ -30,87 +30,79 @@ const GITHUB_URL: string = 'https://github.com';
 // const GITHUB_API_URL: string = 'https://api.github.com/'
 // const PREVENT_CORS_URL: string = 'https://cors-anywhere.herokuapp.com'
 
-export const LoginSocialGithub = memo(
-  ({
-    state = 'DCEeFWf45A53sdfKef424',
-    scope = '',
-    client_id,
-    // client_secret,
-    className = '',
-    redirect_uri,
-    allow_signup = false,
-    children,
-    // onReject,
-    onResolve
-  }: Props) => {
-    const [isProcessing, setIsProcessing] = useState(false);
+export function LoginSocialGithub({
+  state = '',
+  scope = '',
+  client_id,
+  // client_secret,
+  className = '',
+  redirect_uri,
+  allow_signup = false,
+  children,
+  onReject,
+  onResolve
+}: Props) {
+  const [isProcessing, setIsProcessing] = useState(false);
 
-    useEffect(() => {
-      const popupWindowURL = new URL(window.location.href);
-      const code = popupWindowURL.searchParams.get('code');
-      const state = popupWindowURL.searchParams.get('state');
-      if (state?.includes('_github') && code) {
-        localStorage.setItem('github', code);
-        window.close();
-      }
-    }, []);
+  useEffect(() => {
+    const popupWindowURL = new URL(window.location.href);
+    const code = popupWindowURL.searchParams.get('code');
+    const state = popupWindowURL.searchParams.get('state');
+    if (state?.includes('_github') && code) {
+      localStorage.setItem('github', code);
+      window.close();
+    }
+  }, []);
 
-    const getAccessToken = useCallback(
-      (code: string) => {
-        setIsProcessing(false);
-        onResolve({ provider: 'github', data: { code } });
-      },
-      [onResolve]
-    );
+  const getAccessToken = (code: string) => {
+    setIsProcessing(false);
+    onResolve({ provider: 'github', data: { code } });
+  };
 
-    const handlePostMessage = useCallback(
-      async ({ type, code, provider }) => type === 'code'
+  const handlePostMessage = async ({ type, code, provider }) => type === 'code'
          && provider === 'github'
          && code
-         && getAccessToken(code),
-      [getAccessToken]
-    );
+         && getAccessToken(code);
 
-    const onChangeLocalStorage = useCallback(() => {
-      window.removeEventListener('storage', onChangeLocalStorage, false);
-      const code = localStorage.getItem('github');
-      if (code) {
-        setIsProcessing(true);
-        handlePostMessage({ provider: 'github', type: 'code', code });
-        localStorage.removeItem('instagram');
-      }
-    }, []);
+  const onChangeLocalStorage = () => {
+    window.removeEventListener('storage', onChangeLocalStorage, false);
+    const code = localStorage.getItem('github');
+    if (code) {
+      setIsProcessing(true);
+      handlePostMessage({ provider: 'github', type: 'code', code });
+      localStorage.removeItem('instagram');
+    }
+  };
 
-    const onLogin = useCallback(() => {
-      if (!isProcessing) {
-        window.addEventListener('storage', onChangeLocalStorage, false);
-        const oauthUrl = `
+  const onLogin = () => {
+    if (!isProcessing) {
+      window.addEventListener('storage', onChangeLocalStorage, false);
+      const oauthUrl = `
                 ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=${encodeURIComponent(scope)}&state=_github&allow_signup=${allow_signup}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
-        const width = 450;
-        const height = 730;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        console.log('URL', oauthUrl);
-        window.open(
-          oauthUrl,
-          'Github',
-          `menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=${width}, height=${
-            height
-          }, top=${
-            top
-          }, left=${
-            left}`
-        );
-      }
-    }, [isProcessing, client_id, scope, state, redirect_uri, allow_signup]);
+      const width = 450;
+      const height = 730;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      console.log('URL', oauthUrl);
+      window.open(
+        oauthUrl,
+        'Github',
+        `menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=${width}, height=${
+          height
+        }, top=${
+          top
+        }, left=${
+          left}`
+      );
+    }
+  };
 
-    return (
-      <div className={className} onClick={onLogin}>
-        {children}
-      </div>
-    );
-  }
-);
+  return (
+    <div className={className} onClick={onLogin}>
+      {children}
+    </div>
+  );
+}
 
 export default LoginSocialGithub;

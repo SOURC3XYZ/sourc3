@@ -26,7 +26,7 @@ function Lendos() {
             Connect your GitHub to bring your contributions on-chain.
           </p>
           {/* <button className={styles.button} onClick={onClick} type="button">Explore</button> */}
-          <GitConnectAuth why name="Connect Github"/>
+          <GitConnectAuth why name="Connect Github" />
         </div>
       </div>
     </div>
