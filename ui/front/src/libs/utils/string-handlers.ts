@@ -165,3 +165,9 @@ export function compact(value: string, stringLength: number = 6): string {
 }
 
 export const classNameList = (...classes: string[]) => [...classes].join(' ');
+
+export function getQueryParam(url:string, param:string) {
+  let location = url;
+  location = location.replace('#', '/');
+  return new URL(location).searchParams.get(param);
+}
