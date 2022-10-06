@@ -18,11 +18,11 @@ function stepStart(props: any) {
         </div>
         <h1>
           <span className={styles.indent}>
-            {`${github_profile.name || github_login} , thank you ` }
+            {`${github_profile.name || github_login}, thank you ` }
           </span>
           <span className={styles.drop}>
-            for joining
-            <a href="@components/shared/git-auth/onboarding/stepHead/stepHead#">SOURC3</a>
+            for joining&nbsp;
+             <a href="@components/shared/git-auth/onboarding/stepHead/stepHead#">SOURC3</a>
             {' '}
             and
           </span>
@@ -47,11 +47,11 @@ function stepStart(props: any) {
         <p>
           To enjoy the best SOURC3 experience, complete the following 3 steps:
           <span className={styles.drop}>
-            <span className={styles.color}>future proof your reputation, join the community</span>
+            <span className={styles.color} onClick={() => props.onClickHandler(2)}>future proof your reputation, join the community</span>
             {' '}
             and
             {' '}
-            <span className={styles.color}>spread the word.</span>
+            <span className={styles.color} onClick={() => props.onClickHandler(3)}>spread the word.</span>
           </span>
         </p>
       </div>

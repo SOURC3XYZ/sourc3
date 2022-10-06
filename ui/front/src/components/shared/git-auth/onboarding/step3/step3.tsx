@@ -16,7 +16,7 @@ function Step3(props: any) {
             Help others to bring their
             {' '}
             <span className={styles.drop}>
-              reputation
+              reputation&nbsp;
               <span className={styles.color}>on-chain</span>
             </span>
           </h1>
