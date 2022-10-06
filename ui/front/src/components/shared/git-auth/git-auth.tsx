@@ -45,6 +45,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           client_id={clientId}
           redirect_uri={`${window.location.origin}/git-auth`}
           onResolve={({ data }) => {
+            console.log(data);
             axios.get(`${HOST}/login?code=${data.code}${refId ? `&ref_by=${refId}` : ''}`)
               .then((res) => {
                 console.log(res.data.token);
