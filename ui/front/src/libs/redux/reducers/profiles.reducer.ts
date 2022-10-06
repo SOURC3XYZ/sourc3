@@ -63,6 +63,7 @@ const reducer = (
     }
     case ACTIONS.GIT_USER_LOGOUT: {
       newState.data = defaultValue;
+      localStorage.clear();
       return newState;
     }
     default:

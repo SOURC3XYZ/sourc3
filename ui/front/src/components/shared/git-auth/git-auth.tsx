@@ -5,6 +5,8 @@ import { AC } from '@libs/action-creators';
 import { HOST } from '@components/shared/git-auth/profile/constants';
 import { useNavigate } from 'react-router-dom';
 import { getQueryParam } from '@libs/utils';
+import { notification } from 'antd';
+import { NotificationPlacement } from 'antd/lib/notification';
 import { NavButton } from '../nav-button';
 import styles from './git-auth.module.scss';
 import { Popup } from '../popup';
@@ -69,15 +71,22 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                   .catch(() => {
                     setVisible(false);
                     setIsErr(true);
+                    notification.error({
+                      message: 'connection failed',
+                      placement: 'bottomRight' as NotificationPlacement
+                    });
                   });
                 setIsDisabled(true);
               })
               .catch(() => {
                 setVisible(false);
                 setIsErr(true);
+                notification.error({
+                  message: 'connection failed',
+                  placement: 'bottomRight' as NotificationPlacement
+                });
               });
           }}
-          onReject={({ data }) => console.log(data)}
           scope="read:user user:email repo"
         >
           <NavButton
