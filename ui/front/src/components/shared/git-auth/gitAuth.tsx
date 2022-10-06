@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Preload } from '@components/shared';
 
 function GitAuth() {
   useEffect(() => {
@@ -11,7 +12,7 @@ function GitAuth() {
     }
   }, []);
   return (
-    <div />
+    <Preload messageBlack message="Waite a few sec..." />
   );
 }
 
