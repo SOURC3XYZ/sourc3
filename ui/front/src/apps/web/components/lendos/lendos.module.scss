@@ -107,6 +107,20 @@
         line-height: 20px;
         font-weight: 600;
       }
+      .afterConnect{
+        margin: 0 -12px;
+        button{
+          width: 281px;
+          height: 52px;
+          border: 1px solid #FF791F;
+          border-radius: 8px;
+          margin: 0 12px;
+          &:nth-child(2){
+            color: #FF791F !important;
+            background: transparent;
+          }
+        }
+      }
     }
   }
 
