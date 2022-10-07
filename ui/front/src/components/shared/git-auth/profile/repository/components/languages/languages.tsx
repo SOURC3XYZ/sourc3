@@ -22,8 +22,7 @@ function Languages({ data }:languagesType) {
     }
     const sum = persent(maxAddLines, el.added_lines_cnt, el.removed_lines_cnt);
     return { ...el, sum };
-  }).sort((a, b) => b.sum - a.sum);
-  console.log({ newData });
+  }).sort((a, b) => b.sum - a.sum).filter((items) => items.sum >= 0.5);
 
   // function renderMilestone(item:ILanguages) {
   //   if (item.renamed_files_cnt) {
@@ -38,8 +37,9 @@ function Languages({ data }:languagesType) {
       {newData.map((el) => (
         <Milestone
           key={`${window.crypto.randomUUID()}`}
-          title={el.renamed_files_cnt ? (`Renamed files - ${el.renamed_files_cnt}`) : el.languages ? (`${el.languages[0]}...   (${el.sum} %)`) : ((`${el.language}   (${el.sum} %)`))}
+          title={el.renamed_files_cnt ? (`Renamed files - ${el.renamed_files_cnt}`) : el.languages ? (`${el.languages[0]}... `) : ((`${el.language} `))}
           tooltip={el.languages && el.language}
+          procent={el.sum}
         />
       ))}
 

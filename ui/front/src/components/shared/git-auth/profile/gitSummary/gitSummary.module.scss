@@ -6,21 +6,20 @@
   padding: 24px 24px 16px;
   .summary{
     width: 100%;
-
     display: flex;
     justify-content: space-between;
     .title{
       font-family: 'PublicSans-Bold';
       font-style: normal;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 16px;
       line-height: 16px;
       color: rgba(0,0,0,.5);
     }
     .text{
       font-family: 'PublicSans-Regular';
       font-weight: 400;
-      font-size: 12px;
+      font-size: 14px;
       line-height: 14px;
       color: rgba(0,0,0,.5);
     }
@@ -45,8 +44,9 @@
   }
   .languages{
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     margin-top: 24px;
+    flex-wrap: wrap;
     .title{
       font-family: 'PublicSans-Bold';
       font-style: normal;

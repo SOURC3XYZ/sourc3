@@ -1,0 +1,29 @@
+.wrapperMenu{
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 30px;
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  list-style: none;
+  font-family: 'PublicSans-ExtraBold';
+  font-style: normal;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 20px;
+  & > li:not(:first-child) {
+    margin-left: 32px;
+  }
+
+}
+.item{
+  padding-bottom: 8px;
+  color: rgba(0,0,0, .5);
+  cursor: pointer;
+}
+.active{
+  composes: item;
+  border-bottom: solid 4px black;
+  color: rgba(0,0,0, 1)
+
+}

@@ -7,11 +7,10 @@ import styles from '../app.module.scss';
 
 type FooterProps = {
   isOnLending: boolean,
-  profile?: boolean
 };
 
-function Footer({ isOnLending, profile }: FooterProps) {
-  const footerClassname = isOnLending ? styles.footer : profile ? styles.footerBottom : styles.footerWhiteBg;
+function Footer({ isOnLending }: FooterProps) {
+  const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
 
   const isVisible = useExcludeRoute('/download');
 

@@ -4,12 +4,25 @@ import styles from './milestone.module.scss';
 type mileStoneProps = {
   title: string,
   tooltip?: string
+  summary?: boolean,
+  tags?: boolean
+  procent?: number
 };
 
-function Milestone({ title, tooltip }:mileStoneProps) {
+function Milestone({
+  title, tooltip, summary, tags, procent
+}:mileStoneProps) {
+  const classNames = summary ? styles.summary : tags ? styles.tags : styles.wrapper;
   return (
-    <div className={styles.wrapper}>
-      <span className={styles.title} title={tooltip}>{title}</span>
+    <div className={classNames}>
+      <span className={styles.title} title={tooltip}>
+        {title}
+        {procent && (
+          <span className={styles.procent}>
+            {`(${procent}%)`}
+          </span>
+        )}
+      </span>
     </div>
   );
 }

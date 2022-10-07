@@ -13,6 +13,8 @@ function GitSummary({ profile }:gitSummaryType) {
   const [forkedHis, setForkedHis] = useState(0);
   const [allOrgs, setAllOrgs] = useState(0);
   const [relisedCount, setRelisedCount] = useState(0);
+  const [reliasedRep, setReliasedRep] = useState(0);
+  const [allOwnRepos, setAllOwnRepos] = useState(0);
   const [mostPopularOrgRep, setMostPopularOrgRep] = useState(null);
   const [mostLanguages, setMostLanguages] = useState([{}]);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
@@ -73,7 +75,7 @@ function GitSummary({ profile }:gitSummaryType) {
         return el;
       });
     });
-    return setMostLanguages(languagePopularitySlice(langArray, 5));
+    return setMostLanguages(languagePopularitySlice(langArray, 10));
   };
 
   useEffect(() => {
@@ -81,7 +83,9 @@ function GitSummary({ profile }:gitSummaryType) {
     setForkedRepos(profile.github_repos && profile.github_repos.reduce((acc, rep) => acc + (rep.fork ? 1 : 0), forkedRepos));
     setAllCommits(profile.github_repos && profile.github_repos.reduce((acc, rep) => acc + rep.user_commits_cnt, allCommits));
     setAllCommits(profile.github_repos && profile.github_repos.reduce((acc, rep) => acc + rep.user_commits_cnt, allCommits));
-    setForkedHis(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.login).reduce((acc, rep) => acc + rep.forks_count, forkedHis));
+    setForkedHis(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + rep.forks_count, forkedHis));
+    setReliasedRep(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + rep.user_releases_cnt, reliasedRep));
+    setAllOwnRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).length);
   }, [profile.github_repos]);
 
   useMemo(() => {
@@ -115,17 +119,34 @@ function GitSummary({ profile }:gitSummaryType) {
                 </span>
               </span>
             </div>
-            {mostPopularOwnRep[0].full_name && (
-              <div className={styles.resumeLeft_wrapper}>
+
+            <div className={styles.resumeLeft_wrapper}>
+              <span
+                className={styles.title}
+              >
+                {reliasedRep}
+                {' '}
                 <span className={styles.text}>
-                  Most popular repository:
+                  releases in
                   {' '}
-                  <span className={styles.url}>
-                    <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
+                  <span className={styles.title}>{allOwnRepos}</span>
+                  <span className={styles.text}>
+                    {' '}
+                    repositories
                   </span>
                 </span>
-              </div>
-            )}
+              </span>
+            </div>
+
+            <div className={styles.resumeLeft_wrapper}>
+              <span className={styles.text}>
+                Most popular repository:
+                {' '}
+                <span className={styles.url}>
+                  <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
+                </span>
+              </span>
+            </div>
 
           </div>
 
@@ -138,7 +159,9 @@ function GitSummary({ profile }:gitSummaryType) {
               <span
                 className={styles.title}
               >
-                {`${allOrgs} repositories in ${profile.github_orgs.length} organizations`}
+
+                {allOrgs > 1 ? `${allOrgs} repositories in` : `${allOrgs} repository in`}
+                {profile.github_orgs.length > 1 ? `${profile.github_orgs.length} organizations` : `${profile.github_orgs.length} organization`}
               </span>
             )}
           </div>
@@ -152,10 +175,13 @@ function GitSummary({ profile }:gitSummaryType) {
                 <span className={styles.text}>
                   releases in
                   {' '}
-                  <span className={styles.title}>{relisedOrgs}</span>
-                  <span className={styles.text}>
+                  <span className={styles.title}>
+                    {relisedOrgs}
                     {' '}
-                    repositories
+                  </span>
+                  <span className={styles.text}>
+                    {relisedOrgs > 1
+                      ? ' repository' : 'repositories'}
                   </span>
                 </span>
               </span>
@@ -177,12 +203,12 @@ function GitSummary({ profile }:gitSummaryType) {
       <div className={styles.languages}>
         <span className={styles.title}>Languages:</span>
         {mostLanguages && mostLanguages.map((el) => (
-          <Milestone title={el.language} key={`${window.crypto.randomUUID()}`} />
+          <Milestone summary title={el.language} key={`${window.crypto.randomUUID()}`} />
         ))}
       </div>
       <div className={styles.topics}>
         {topics && topics.map((el) => (
-          <Milestone title={el} key={`${window.crypto.randomUUID()}`} />
+          <Milestone tags title={el} key={`${window.crypto.randomUUID()}`} />
         ))}
       </div>
     </div>

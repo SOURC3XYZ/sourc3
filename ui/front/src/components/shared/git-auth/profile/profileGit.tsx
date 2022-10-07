@@ -19,6 +19,7 @@ import { Preload } from '@components/shared';
 import EarlyDescription from '@components/shared/git-auth/profile/earlyAdop/EarlyDescription';
 import Achievements from '@components/shared/git-auth/profile/achievements/achievements';
 import { compact, copyToClipboard } from '@libs/utils';
+import Mane from '@components/shared/git-auth/profile/mane/mane';
 import styles from './profileGit.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -89,6 +90,7 @@ function ProfileGit() {
         {!gitProfiles ? <MyLoader />
           : (
             <div className={styles.wrapper}>
+
               <div className={styles.content}>
                 <div className={styles.header}>
                   <div className={styles.mainHeader}>
@@ -113,30 +115,40 @@ function ProfileGit() {
                   </div>
 
                 </div>
-                <div className={styles.topContent}>
-                  <div className={styles.avatar}>
-                    {gitProfiles?.github_profile.avatar_url
-                      ? <Avatar url={gitProfiles?.github_profile.avatar_url} /> : <IconDefaultAvatar />}
-                  </div>
-                  {!taskStatus ? (
-                    <div className={styles.preloader}>
-                      <EarlyDescription gitProfiles={gitProfiles} />
-                      <Preload messageBlack message="This may take a while..." />
+                <div className={styles.wrapperContent}>
+                  <div className={styles.leftSide}>
+                    {' '}
+                    <div className={styles.avatar}>
+                      {gitProfiles?.github_profile.avatar_url
+                        ? <Avatar url={gitProfiles?.github_profile.avatar_url} /> : <IconDefaultAvatar />}
                     </div>
-                  )
-                    : gitProfiles?.github_orgs.length > 0 && gitProfiles?.github_repos.length > 0 ? (
-                      <GitSummary
-                        profile={gitProfiles}
-                      />
+                    {gitProfiles.github_orgs.length > 0 && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}
+                  </div>
+                  <div className={styles.topContent}>
+
+                    {!taskStatus ? (
+                      <div className={styles.preloader}>
+                        <EarlyDescription gitProfiles={gitProfiles} />
+                        <Preload messageBlack message="This may take a while..." />
+                      </div>
                     )
-                      : (<EarlyDescription gitProfiles={gitProfiles} />)}
+                      : gitProfiles?.github_orgs.length > 0 && gitProfiles?.github_repos.length > 0 ? (
+                        <GitSummary
+                          profile={gitProfiles}
+                        />
+                      )
+                        : (<EarlyDescription gitProfiles={gitProfiles} />)}
+                    {/* <div className={styles.org}> */}
+                    {/*  {gitProfiles.github_orgs && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />} */}
+                    {/* </div> */}
+                    {/* <div className={styles.org}> */}
+                    {/*  {gitProfiles.achievements && taskStatus && <Achievements achievements={gitProfiles.achievements} />} */}
+                    {/* </div> */}
+                    <Mane first={<Achievements achievements={gitProfiles.achievements} />} second={<GitOwnRepos data={gitProfiles.github_repos} />} />
+                  </div>
+
                 </div>
-                <div className={styles.org}>
-                  {gitProfiles.github_orgs && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}
-                </div>
-                <div className={styles.org}>
-                  {gitProfiles.achievements && taskStatus && <Achievements achievements={gitProfiles.achievements} />}
-                </div>
+
               </div>
             </div>
           )}

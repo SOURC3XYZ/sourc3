@@ -288,6 +288,7 @@ appWrapper {
   display: flex;
   flex-direction: column;
   width: max-content;
+  margin-top: 24px;
   .title{
     font-family: 'PublicSans-ExtraBold';
     font-style: normal;
@@ -306,7 +307,6 @@ appWrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-right: 24px;
     }
       .label{
         margin-top: 8px;

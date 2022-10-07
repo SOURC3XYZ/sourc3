@@ -20,8 +20,8 @@ function Organization({ githubOrgs }: OrganizationProps) {
             rel="noreferrer"
           >
             <div className={styles.wrapp}>
-              <Avatar medium url={el.avatar_url} />
-              <div className={styles.label}>{el.login}</div>
+              <Avatar small url={el.avatar_url} />
+              {/*<div className={styles.label}>{el.login}</div>*/}
             </div>
           </a>
         ))}
