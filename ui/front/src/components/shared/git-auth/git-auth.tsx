@@ -46,7 +46,8 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           redirect_uri={`${window.location.origin}/git-auth`}
           onResolve={({ data }) => {
             console.log({ data });
-            axios.get(`${HOST}/login?code=${data.code}${refId ? `&ref_by=${refId}` : ''}`)
+            const ref = refId ? `&ref_by=${refId}` : '';
+            axios.get(`${HOST}/login?code=${data.code}${ref}`)
               .then((res) => {
                 console.log(res.data.token);
                 window.localStorage.setItem('token', res.data.token);
@@ -96,7 +97,18 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             active
           />
         </LoginSocialGithub>
-        {why && !isDisabled && <a className={styles.whyLink} target="_blank" href="https://www.sourc3.xyz/why-connect-to-github" rel="noreferrer">Why connect? Learn more</a>}
+        {why
+        && !isDisabled
+        && (
+          <a
+            className={styles.whyLink}
+            target="_blank"
+            href="https://www.sourc3.xyz/why-connect-to-github"
+            rel="noreferrer"
+          >
+            Why connect? Learn more
+          </a>
+        )}
       </div>
       <Popup
         visible={isVisible}

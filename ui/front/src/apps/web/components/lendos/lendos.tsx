@@ -1,12 +1,12 @@
 /* eslint-disable max-len */
 import img from '@assets/img/source-logo.svg';
 import { GitConnectAuth } from '@components/shared/git-auth';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import styles from './lendos.module.scss';
 
 function Lendos() {
-  const navigate = useNavigate();
-  const onClick = () => navigate('/repos/all/1', { replace: false });
+  // const navigate = useNavigate();
+  // const onClick = () => navigate('/repos/all/1', { replace: false });
   return (
     <div className={styles.bg}>
       <div className={styles.wrapper}>
