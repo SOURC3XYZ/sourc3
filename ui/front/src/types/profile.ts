@@ -44,9 +44,9 @@ export interface IProfiles {
   updated_at: string,
   token: string,
   github_profile: IProfilesGit,
-  github_orgs: [IGitOrgs],
-  github_repos : [IGitRepos],
-  achievements: [IAchievements],
+  github_orgs: IGitOrgs[],
+  github_repos : IGitRepos[],
+  achievements: IAchievements[],
   eth_address: string
 }
 

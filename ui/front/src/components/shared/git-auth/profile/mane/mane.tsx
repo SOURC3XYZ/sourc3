@@ -2,12 +2,12 @@ import { ReactComponentElement, useState } from 'react';
 import styles from './mane.module.scss';
 
 type ManeProps = {
-  first?: any
-  second: ReactComponentElement<any>;
+  first: any
+  second: any;
 };
 
 function Mane({ first, second }: ManeProps) {
-  const [selectedId, setSelectedId] = useState(2);
+  const [selectedId, setSelectedId] = useState(1);
   const toggleTabs = (idx) => {
     setSelectedId(idx);
   };
@@ -16,13 +16,13 @@ function Mane({ first, second }: ManeProps) {
     switch (i) {
       case 1:
         return (
-          <div>
+          <div className={styles.wrapperCount}>
             { first }
           </div>
         );
       case 2:
         return (
-          <div>
+          <div className={styles.wrapperCount}>
             {second}
           </div>
         );

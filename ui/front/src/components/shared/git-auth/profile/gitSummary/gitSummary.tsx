@@ -15,10 +15,17 @@ function GitSummary({ profile }:gitSummaryType) {
   const [relisedCount, setRelisedCount] = useState(0);
   const [reliasedRep, setReliasedRep] = useState(0);
   const [allOwnRepos, setAllOwnRepos] = useState(0);
-  const [mostPopularOrgRep, setMostPopularOrgRep] = useState(null);
-  const [mostLanguages, setMostLanguages] = useState([{}]);
+  const [topics, setTopics] = useState<[] | undefined>(undefined);
+  const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
+  const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
-  const topics = mostPopularOwnRep && mostPopularOwnRep[0].topics.slice(0, 3);
+
+  const getTopics = () => {
+    if (profile.github_repos) {
+      setTopics(mostPopularOwnRep[0].topics);
+    }
+  };
+
   const calcRepInORg = () => {
     if (profile.github_orgs) {
       const repOrg = [];
@@ -89,128 +96,149 @@ function GitSummary({ profile }:gitSummaryType) {
   }, [profile.github_repos]);
 
   useMemo(() => {
-    setCreatedRepos(profile.github_repos.length - forkedRepos);
-    setReputation((allCommits * 10) + stars);
+    if (profile.github_repos) {
+      setCreatedRepos(profile.github_repos.length - forkedRepos);
+      setReputation((allCommits * 10) + stars);
+      languages();
+      getTopics();
+    }
 
-    calcRepInORg();
-    languages();
+    if (profile.github_orgs) {
+      calcRepInORg();
+    }
   }, [forkedRepos, profile.github_repos, stars]);
   return (
     <div className={styles.wrapper}>
       <div className={styles.summary}>
-        <div className={styles.blockLeft}>
-          <div className={styles.resumeLeft}>
-            <div className={styles.resumeLeft_wrapper}>
-              <span className={styles.title}>
-                {`${profile.github_repos.length} repositories`}
-                <span className={styles.text}>
-                  {
-                    ` (${createdRepos} created, ${forkedRepos} forked)`
-                  }
-                </span>
-              </span>
-            </div>
-            <div className={styles.resumeLeft_wrapper}>
-              <span className={styles.title}>
-                {`${forkedHis}`}
-                <span className={styles.text}>
-                  {' '}
-                  forks from his repository
-                </span>
-              </span>
-            </div>
-
-            <div className={styles.resumeLeft_wrapper}>
-              <span
-                className={styles.title}
-              >
-                {reliasedRep}
-                {' '}
-                <span className={styles.text}>
-                  releases in
-                  {' '}
-                  <span className={styles.title}>{allOwnRepos}</span>
+        {profile.github_repos.length > 0 && (
+          <div className={styles.blockLeft}>
+            <div className={styles.resumeLeft}>
+              <div className={styles.resumeLeft_wrapper}>
+                <span className={styles.title}>
+                  {`${profile.github_repos.length} repositories`}
                   <span className={styles.text}>
-                    {' '}
-                    repositories
+                    {
+                      ` (${createdRepos} created, ${forkedRepos} forked)`
+                    }
                   </span>
                 </span>
-              </span>
-            </div>
+              </div>
 
-            <div className={styles.resumeLeft_wrapper}>
-              <span className={styles.text}>
-                Most popular repository:
-                {' '}
-                <span className={styles.url}>
-                  <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
+              <div className={styles.resumeLeft_wrapper}>
+                <span className={styles.title}>
+                  {`${forkedHis}`}
+                  <span className={styles.text}>
+                    {' '}
+                    forks from his repository
+                  </span>
                 </span>
-              </span>
+              </div>
+
+              {profile.github_repos && allOwnRepos && (
+                <div className={styles.resumeLeft_wrapper}>
+                  <span
+                    className={styles.title}
+                  >
+                    {reliasedRep}
+                    {' '}
+                    <span className={styles.text}>
+                      releases in
+                      {' '}
+                      <span className={styles.title}>{allOwnRepos}</span>
+                      <span className={styles.text}>
+                        {' '}
+                        repositories
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              )}
+
+              {mostPopularOwnRep.length && (
+                <div className={styles.resumeLeft_wrapper}>
+                  {mostPopularOwnRep.length > 0 && (
+                    <span className={styles.text}>
+                      Most popular repository:
+                      {' '}
+                      <span className={styles.url}>
+                        <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
+                      </span>
+                    </span>
+                  )}
+                </div>
+              )}
+
             </div>
 
+            <div />
+            <div />
           </div>
-
-          <div />
-          <div />
-        </div>
-        <div className={styles.blockRight}>
-          <div className={styles.resumeLeft_wrapper}>
-            {allOrgs && profile.github_orgs.length && (
-              <span
-                className={styles.title}
-              >
-
-                {allOrgs > 1 ? `${allOrgs} repositories in` : `${allOrgs} repository in`}
-                {profile.github_orgs.length > 1 ? `${profile.github_orgs.length} organizations` : `${profile.github_orgs.length} organization`}
-              </span>
+        )}
+        {profile.github_orgs.length > 0 && profile.github_repos.length > 0 && (
+          <div className={styles.blockRight}>
+            { allOrgs && profile.github_orgs.length > 0 && (
+              <div className={styles.resumeLeft_wrapper}>
+                {allOrgs && profile.github_orgs.length && (
+                  <span
+                    className={styles.title}
+                  >
+                    {allOrgs > 1 ? `${allOrgs} repositories in` : `${allOrgs} repository in`}
+                    {profile.github_orgs.length > 1 ? `${profile.github_orgs.length} organizations` : `${profile.github_orgs.length} organization`}
+                  </span>
+                )}
+              </div>
+            )}
+            {profile.github_orgs.length > 0 && relisedCount && relisedOrgs && (
+              <div className={styles.resumeLeft_wrapper}>
+                <span
+                  className={styles.title}
+                >
+                  {relisedCount}
+                  {' '}
+                  <span className={styles.text}>
+                    releases in
+                    {' '}
+                    <span className={styles.title}>
+                      {relisedOrgs}
+                      {' '}
+                    </span>
+                    <span className={styles.text}>
+                      {relisedOrgs > 1
+                        ? ' repository' : 'repositories'}
+                    </span>
+                  </span>
+                </span>
+              </div>
+            )}
+            {mostPopularOrgRep?.length > 0 && (
+              <div className={styles.resumeLeft_wrapper}>
+                <span
+                  className={styles.text}
+                >
+                  Most popular repository:
+                  {' '}
+                  <a href={`https://github.com/${mostPopularOrgRep[0].full_name}`}>{mostPopularOrgRep[0].full_name}</a>
+                </span>
+              </div>
             )}
           </div>
-          { relisedCount && relisedOrgs && (
-            <div className={styles.resumeLeft_wrapper}>
-              <span
-                className={styles.title}
-              >
-                {relisedCount}
-                {' '}
-                <span className={styles.text}>
-                  releases in
-                  {' '}
-                  <span className={styles.title}>
-                    {relisedOrgs}
-                    {' '}
-                  </span>
-                  <span className={styles.text}>
-                    {relisedOrgs > 1
-                      ? ' repository' : 'repositories'}
-                  </span>
-                </span>
-              </span>
-            </div>
-          )}
-          { mostPopularOrgRep && (
-            <div className={styles.resumeLeft_wrapper}>
-              <span
-                className={styles.text}
-              >
-                Most popular repository:
-                {' '}
-                <a href={`https://github.com/${mostPopularOrgRep[0].full_name}`}>{mostPopularOrgRep[0].full_name}</a>
-              </span>
-            </div>
-          )}
+        )}
+      </div>
+      {mostLanguages?.length > 0 && (
+        <div className={styles.languages}>
+          <span className={styles.title}>Languages:</span>
+          {mostLanguages && mostLanguages.map((el) => (
+            <Milestone summary title={el.language} key={`${window.crypto.randomUUID()}`} />
+          ))}
         </div>
-      </div>
-      <div className={styles.languages}>
-        <span className={styles.title}>Languages:</span>
-        {mostLanguages && mostLanguages.map((el) => (
-          <Milestone summary title={el.language} key={`${window.crypto.randomUUID()}`} />
-        ))}
-      </div>
-      <div className={styles.topics}>
-        {topics && topics.map((el) => (
-          <Milestone tags title={el} key={`${window.crypto.randomUUID()}`} />
-        ))}
-      </div>
+      )}
+      {topics && (
+        <div className={styles.topics}>
+          {topics && topics.map((el) => (
+            <Milestone tags title={el} key={`${window.crypto.randomUUID()}`} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

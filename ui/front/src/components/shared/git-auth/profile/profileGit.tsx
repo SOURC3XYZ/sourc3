@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import {
-  IconTwitter, IconCopy, IconLocation, IconOrg, IconFollows
-} from '@components/svg';
-import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
+import { IconCopy } from '@components/svg';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import IconDefaultAvatar from '@components/svg/iconDefautlAvatar';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { HOST } from '@components/shared/git-auth/profile/constants';
-import { GitConnectAuth, GitOwnRepos } from '@components/shared/git-auth';
-import { Popup } from '@components/shared/popup';
+import { GitOwnRepos } from '@components/shared/git-auth';
 import MyLoader from '@components/shared/git-auth/profile/skeletonProfile';
-import { Spin } from 'antd';
-import { useSelector } from '@libs/redux';
 import GitSummary from '@components/shared/git-auth/profile/gitSummary/gitSummary';
 import { IProfiles } from '@types';
 import { Preload } from '@components/shared';
@@ -33,15 +27,9 @@ function ProfileGit() {
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
   const shortAddress = gitProfiles?.eth_address && compact(gitProfiles?.eth_address, 6);
-  console.log(shortAddress);
-  const own = useSelector((state) => state.profile.data.github_login);
   const copy = (cop) => {
     copyToClipboard(cop);
   };
-  console.log(gitProfiles?.github_orgs.length > 0);
-  console.log(Boolean(gitProfiles?.github_orgs));
-  console.log(gitProfiles?.github_repos.length > 0);
-  console.log(Boolean(gitProfiles?.github_repos));
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
@@ -132,18 +120,13 @@ function ProfileGit() {
                         <Preload messageBlack message="This may take a while..." />
                       </div>
                     )
-                      : gitProfiles?.github_orgs.length > 0 && gitProfiles?.github_repos.length > 0 ? (
-                        <GitSummary
-                          profile={gitProfiles}
-                        />
-                      )
+                      : gitProfiles?.github_repos.length > 0
+                        ? (
+                          <GitSummary
+                            profile={gitProfiles}
+                          />
+                        )
                         : (<EarlyDescription gitProfiles={gitProfiles} />)}
-                    {/* <div className={styles.org}> */}
-                    {/*  {gitProfiles.github_orgs && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />} */}
-                    {/* </div> */}
-                    {/* <div className={styles.org}> */}
-                    {/*  {gitProfiles.achievements && taskStatus && <Achievements achievements={gitProfiles.achievements} />} */}
-                    {/* </div> */}
                     <Mane first={<Achievements achievements={gitProfiles.achievements} />} second={<GitOwnRepos data={gitProfiles.github_repos} />} />
                   </div>
 
