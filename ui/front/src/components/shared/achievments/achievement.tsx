@@ -1,17 +1,20 @@
 import { useOutsideClick } from '@libs/hooks/shared';
 import { useRef, useState } from 'react';
-import AchievementPopup, { AchievementParams } from './achievement-popup';
+import AchievementPopup from './achievement-popup';
 import styles from './achievements.module.scss';
 
 export type AnchorEvent = React.MouseEvent<HTMLAnchorElement, MouseEvent>;
 
 type AchievementProps = {
-  params: AchievementParams;
+  item: any;
   color: string;
   img: string;
+  children:JSX.Element;
 };
 
-function Achievment({ params, img, color }:AchievementProps) {
+function Achievement({
+  item, img, color, children
+}:AchievementProps) {
   const [popupVisible, setPopupVisible] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -38,12 +41,14 @@ function Achievment({ params, img, color }:AchievementProps) {
       </a>
       <AchievementPopup
         color={color}
-        params={params}
+        name={item.title}
         isVisible={popupVisible}
         setInvisible={setInvisible}
-      />
+      >
+        {children}
+      </AchievementPopup>
     </div>
   );
 }
 
-export default Achievment;
+export default Achievement;

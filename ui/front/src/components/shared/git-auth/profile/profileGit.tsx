@@ -15,9 +15,8 @@ import { Spin } from 'antd';
 import { useSelector } from '@libs/redux';
 import GitSummary from '@components/shared/git-auth/profile/gitSummary/gitSummary';
 import { IProfiles } from '@types';
-import { Preload } from '@components/shared';
+import { AchievementList, Preload } from '@components/shared';
 import EarlyDescription from '@components/shared/git-auth/profile/earlyAdop/EarlyDescription';
-import Achievements from '@components/shared/git-auth/profile/achievements/achievements';
 import { compact, copyToClipboard } from '@libs/utils';
 import Mane from '@components/shared/git-auth/profile/mane/mane';
 import styles from './profileGit.module.scss';
@@ -144,9 +143,20 @@ function ProfileGit() {
                     {/* <div className={styles.org}> */}
                     {/*  {gitProfiles.achievements && taskStatus && <Achievements achievements={gitProfiles.achievements} />} */}
                     {/* </div> */}
-                    <Mane first={<Achievements achievements={gitProfiles.achievements} />} second={<GitOwnRepos data={gitProfiles.github_repos} />} />
-                  </div>
+                    <Mane
+                      first={(
+                        <AchievementList
+                          globalInfo={{
+                            commits: gitProfiles.github_profile.user_commits_cnt,
+                            lines: gitProfiles.github_profile.added_lines_cnt
+                          }}
+                          items={gitProfiles.achievements}
+                        />
+                      )}
+                      second={<GitOwnRepos data={gitProfiles.github_repos} />}
+                    />
 
+                  </div>
                 </div>
 
               </div>

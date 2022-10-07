@@ -17,7 +17,9 @@ export interface IProfilesGit {
   mutual_followers: number,
   created_at: string,
   updated_at: string,
-  user: number
+  user: number,
+  added_lines_cnt: number,
+  user_commits_cnt: number
 }
 export interface IGitOrgs {
   id: number,
@@ -28,10 +30,18 @@ export interface IGitOrgs {
   description: string
   users: []
 }
+export type LangGitData = {
+  added_lines_cnt:number;
+  commits_cnt:number;
+  first_commit_time: string;
+  last_commit_time: string;
+  removed_lines_cnt: number;
+};
+
 export interface IAchievements {
   id: number,
   type: string,
-  data: {},
+  data: LangGitData | {},
   created_at: string,
   updated_at: string,
   user: number
