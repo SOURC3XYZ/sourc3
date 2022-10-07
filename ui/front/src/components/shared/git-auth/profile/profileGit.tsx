@@ -79,7 +79,7 @@ function ProfileGit() {
     <>
       <div className={styles.appWrapper}>
         <Header isOnLending={false} />
-        {!gitProfiles ? <MyLoader />
+        {!gitProfiles ? <Preload messageBlack="Loading..." />
           : (
             <div className={styles.wrapper}>
 
