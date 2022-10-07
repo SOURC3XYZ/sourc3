@@ -39,7 +39,7 @@ function Mane({ first, second }: ManeProps) {
           Achievements
         </li>
         <li className={selectedId === 2 ? styles.active : styles.item} onClick={() => toggleTabs(2)}>
-          Repository
+          Repositories
         </li>
       </ul>
       {renderContent(selectedId)}

@@ -21,7 +21,7 @@
   max-width: 970px;
   height: auto;
   margin: 0 auto;
-  padding: 2.5rem 0;
+  padding: 2.5rem 1.5rem;
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -29,13 +29,13 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
 
     .header {
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      width: 100%;
+      width: max-content;
 
       .mainHeader {
         display: flex;
@@ -86,12 +86,13 @@
     }
 
     .topContent {
-      width: 100%;
+      max-width: 47.5rem;
       margin-top: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: flex-start;
+      padding: 0.5rem;
 
       .wrapperData {
         margin-top: 24px;
@@ -112,5 +113,76 @@
       width: 100%;
       margin: 10px;
     }
+  }
+}
+
+.wrapperOrganization{
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  margin-top: 24px;
+  .title{
+    font-family: 'PublicSans-ExtraBold';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 20px;
+    color: black;
+    margin-bottom: 16px;
+  }
+  &_avatar{
+    display: flex;
+    &>a{
+      margin-right: 5px;
+    }
+    .wrapp{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .label{
+      margin-top: 8px;
+      font-family: 'PublicSans-Regular';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 130%;
+      color: black;
+    }
+  }
+}
+@media screen and (max-width: 745px) {
+  .mainHeader{
+    padding: .5rem;
+  }
+ .wrapperContent{
+   flex-direction: column;
+   .leftSide{
+     display: flex;
+     margin-right: 40px;
+     margin-top: 24px;
+     flex-direction: row;
+     padding: .5rem;
+   }
+ }
+  .wrapperOrganization{
+    margin-left: 3rem;
+  }
+}
+@media screen and (max-width: 570px) {
+  .wrapper{
+    padding: 2.5rem 0;
+  }
+  .wrapperContent{
+    flex-direction: column;
+    .leftSide{
+      display: flex;
+      margin-right: 40px;
+      margin-top: 24px;
+      flex-direction: row
+    }
+  }
+  .wrapperOrganization{
+    margin-left: 3rem;
   }
 }

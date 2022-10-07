@@ -58,7 +58,7 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
         <div
           dangerouslySetInnerHTML={{
             __html: `
-              <span>${langData.added_lines_cnt}</span> of lines written are ${data?.title}
+              <span>${(langData.added_lines_cnt).toLocaleString('en')}</span> of lines written are in ${data?.title}
               `
           }}
         />
@@ -66,7 +66,7 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
         <div
           dangerouslySetInnerHTML={{
             __html: `
-              <span>${hoursDiff} hours</span> spent coding ${data?.title}
+              <span>${(hoursDiff).toLocaleString('en')} hours</span> spent coding in ${data?.title}
               `
           }}
         />
@@ -77,7 +77,7 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
           dangerouslySetInnerHTML={
             {
               __html: `
-                  <span>${linesPercent}%</span> of lines written are ${data?.title}`
+                  <span>${linesPercent}%</span> of lines written are in ${data?.title}`
             }
           }
         />
