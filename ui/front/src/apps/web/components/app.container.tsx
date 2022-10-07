@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import {
   Notifications,
   Preload,
-  DownloadPage, NavButton
+  DownloadPage, NavButton, FailPage
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
 import {
@@ -113,10 +113,6 @@ function Main() {
           element={<OnboardingStep />}
         />
         <Route
-          path="/referral-programm"
-          element={<ReferralProgramm />}
-        />
-        <Route
           path="/download"
           element={<DownloadPage />}
         />
@@ -138,7 +134,13 @@ function Main() {
                   <ErrorBoundary>
                     <Routes>
                       <Route path="/" element={<Lendos />} />
-                      <Route path="/*" element={routes} />
+                      <Route
+                        path="/referral-programm"
+                        element={<ReferralProgramm />}
+                      />
+                      {/* <Route path="/*" element={routes} /> */}
+                      <Route path="/*" element={<FailPage />} />
+
                     </Routes>
                   </ErrorBoundary>
                   <Notifications />
