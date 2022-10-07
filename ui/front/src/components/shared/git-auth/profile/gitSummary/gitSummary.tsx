@@ -115,7 +115,8 @@ function GitSummary({ profile }:gitSummaryType) {
             <div className={styles.resumeLeft}>
               <div className={styles.resumeLeft_wrapper}>
                 <span className={styles.title}>
-                  {`${profile.github_repos.length} repositories`}
+                  {`${profile.github_repos.length} ${
+                    profile.github_repos.length === 1 ? 'repository' : 'repositories'}`}
                   <span className={styles.text}>
                     {
                       ` (${createdRepos} created, ${forkedRepos} forked)`
@@ -129,7 +130,9 @@ function GitSummary({ profile }:gitSummaryType) {
                   {`${forkedHis}`}
                   <span className={styles.text}>
                     {' '}
-                    forks from his repository
+                    {`${forkedHis === 1 ? 'fork' : 'forks'}`}
+                    {' '}
+                    from their repositories
                   </span>
                 </span>
               </div>
@@ -142,12 +145,14 @@ function GitSummary({ profile }:gitSummaryType) {
                     {reliasedRep}
                     {' '}
                     <span className={styles.text}>
-                      releases in
+                      {reliasedRep === 1 ? 'release' : 'releases'}
+                      {' '}
+                      in
                       {' '}
                       <span className={styles.title}>{allOwnRepos}</span>
                       <span className={styles.text}>
                         {' '}
-                        repositories
+                        {allOwnRepos === 1 ? 'repository' : 'repositories'}
                       </span>
                     </span>
                   </span>
@@ -182,8 +187,10 @@ function GitSummary({ profile }:gitSummaryType) {
                   <span
                     className={styles.title}
                   >
-                    {allOrgs > 1 ? `${allOrgs} repositories in` : `${allOrgs} repository in`}
-                    {profile.github_orgs.length > 1 ? `${profile.github_orgs.length} organizations` : `${profile.github_orgs.length} organization`}
+                    {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
+                    {profile.github_orgs.length === 1
+                      ? `${profile.github_orgs.length} organization`
+                      : `${profile.github_orgs.length} organizations`}
                   </span>
                 )}
               </div>
@@ -196,14 +203,16 @@ function GitSummary({ profile }:gitSummaryType) {
                   {relisedCount}
                   {' '}
                   <span className={styles.text}>
-                    releases in
+                    {relisedCount === 1 ? 'release' : 'releases'}
+                    {' '}
+                    in
                     {' '}
                     <span className={styles.title}>
                       {relisedOrgs}
                       {' '}
                     </span>
                     <span className={styles.text}>
-                      {relisedOrgs > 1
+                      {relisedOrgs === 1
                         ? ' repository' : 'repositories'}
                     </span>
                   </span>
