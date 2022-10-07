@@ -1,7 +1,7 @@
 import React from 'react';
 import Avatar from '@components/shared/git-auth/profile/avatar/avatar';
 import { IGitOrgs } from '@types';
-import styles from './profiles-git.module.scss';
+import styles from './profileGit.module.scss';
 
 type OrganizationProps = {
   githubOrgs: [IGitOrgs];
