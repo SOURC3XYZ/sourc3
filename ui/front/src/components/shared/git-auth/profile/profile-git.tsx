@@ -14,6 +14,7 @@ import MyLoader from '@components/shared/git-auth/profile/skeletonProfile';
 import { Spin } from 'antd';
 import { useSelector } from '@libs/redux';
 import GitSummary from '@components/shared/git-auth/profile/gitSummary/gitSummary';
+import Mane from '@components/shared/git-auth/profile/mane/mane';
 import styles from './profiles-git.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -30,8 +31,6 @@ function GitProfile() {
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
   const own = useSelector((state) => state.profile.data.github_login);
-  console.log({ own });
-  console.log({ urlId });
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {
@@ -215,7 +214,7 @@ function GitProfile() {
                     />
                   </div>
                 </div>
-                {/*<GitSummary profile={github_profile} gitRep={github_repos} gitOrg={github_orgs} />*/}
+                {/* <GitSummary profile={github_profile} gitRep={github_repos} gitOrg={github_orgs} /> */}
                 {!taskStatus ? <Spin style={{ display: 'inherit', marginBottom: '20px', transition: '2s ease-in-out' }} /> : null}
                 { github_repos.length > 0 && <GitOwnRepos data={github_repos} />}
               </div>

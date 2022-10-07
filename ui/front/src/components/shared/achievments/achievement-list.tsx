@@ -1,53 +1,31 @@
-import Achievment from './achievement';
+/* eslint-disable react/no-danger */
+import { IAchievements, LangGitData } from '@types';
+import { useMemo } from 'react';
+import { AchievementListItem } from './achievement-list-item';
 import styles from './achievements.module.scss';
-import { programmLangIcons } from './prog-lang-list';
 
-const data = [
-  {
-    type: 'js',
-    params: {
-      name: 'JavaScript',
-      lines: 2222,
-      commits: 2222,
-      hours: 222,
-      releases: 23423,
-      pullRequests: 234
-    }
-  },
-  {
-    type: 'cpp',
-    params: {
-      name: 'C++',
-      lines: 1000,
-      commits: 29,
-      hours: 10000,
-      releases: 23,
-      pullRequests: 80
-    }
-  },
-  {
-    type: 'python',
-    params: {
-      name: 'Python',
-      lines: 100,
-      commits: 2,
-      hours: 100,
-      releases: 0,
-      pullRequests: 0
-    }
+type AchievementListProps = {
+  items: IAchievements[];
+  globalInfo: {
+    commits: number;
+    lines: number;
   }
-];
+};
 
-function AchievementList() {
+function AchievementList({ items, globalInfo }:AchievementListProps) {
+  const allReposCount = items.filter((el) => (el.data as LangGitData)?.repos)
+    .reduce((acc: number, cur) => acc + ((cur.data as LangGitData).repos.length) || 0, 0);
+  const achievements = useMemo(() => items.map((el) => (
+    <AchievementListItem
+      key={el.type}
+      item={el}
+      globalInfo={{ ...globalInfo, repos: allReposCount }}
+    />
+  )), [items]);
+
   return (
     <div className={styles.wrapper}>
-      {data.map((el) => {
-        const item = programmLangIcons.get(el.type);
-        if (item) {
-          return <Achievment key={el.type} img={item.img} color={item.color} params={el.params} />;
-        }
-        return null;
-      })}
+      {achievements}
     </div>
   );
 }

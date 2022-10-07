@@ -19,7 +19,6 @@ import ProfileGit from '@components/shared/git-auth/profile/profileGit';
 import { useDispatch } from '@libs/redux';
 import OnboardingStep from '@components/shared/git-auth/onboarding/onboardingStep';
 import { Popup } from '@components/shared/popup';
-import { AchievementList } from '@components/shared/achievments';
 import ReferralProgramm from '@components/shared/referral-programm/referralProgramm';
 import { Footer } from './footer';
 import styles from './app.module.scss';
@@ -119,10 +118,6 @@ function Main() {
         <Route
           path="/profile/:id"
           element={<ProfileGit />}
-        />
-        <Route
-          path="/achivka"
-          element={<AchievementList />}
         />
         <Route
           path="/*"

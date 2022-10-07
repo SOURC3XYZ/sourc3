@@ -47,11 +47,11 @@ function stepStart(props: any) {
         <p>
           To enjoy the best SOURC3 experience, complete the following 3 steps:
           <span className={styles.drop}>
-            <span className={styles.color} onClick={() => props.onClickHandler(2)}>future proof your reputation, join the community</span>
+            <span className={styles.color} onClick={() => props.onClickHandler(2)}>future proof your reputation,</span> <span className={styles.color} onClick={() => props.onClickHandler(3)}>join the community</span>
             {' '}
             and
             {' '}
-            <span className={styles.color} onClick={() => props.onClickHandler(3)}>spread the word.</span>
+            <span className={styles.color} onClick={() => props.onClickHandler(4)}>spread the word.</span>
           </span>
         </p>
       </div>

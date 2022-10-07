@@ -1,12 +1,35 @@
 /* eslint-disable max-len */
 import img from '@assets/img/source-logo.svg';
 import { GitConnectAuth } from '@components/shared/git-auth';
+import { useSelector } from '@libs/redux';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 // import { useNavigate } from 'react-router-dom';
 import styles from './lendos.module.scss';
 
 function Lendos() {
-  // const navigate = useNavigate();
+  // const [toggle, setToggle] = useState(false);
+  const navigate = useNavigate();
   // const onClick = () => navigate('/repos/all/1', { replace: false });
+
+  const authData = useSelector((state) => state.profile.data);
+
+  const isAuth = !!authData.token;
+
+  const buttons = useMemo(() => {
+    if (!isAuth) return <GitConnectAuth why name="Connect Github" />;
+    const goToOnboarding = () => navigate('/onboarding');
+    const goToProfile = () => navigate(`/profile/${authData.github_login}`);
+
+    return (
+      <div className={styles.afterConnect}>
+        <button className={styles.button} type="button" onClick={goToOnboarding}>Continue onboarding</button>
+        <button className={styles.button} type="button" onClick={goToProfile}>Back to my profile</button>
+      </div>
+    );
+  }, [authData, isAuth]);
+
   return (
     <div className={styles.bg}>
       <div className={styles.wrapper}>
@@ -26,7 +49,8 @@ function Lendos() {
             Connect your GitHub to bring your contributions on-chain.
           </p>
           {/* <button className={styles.button} onClick={onClick} type="button">Explore</button> */}
-          <GitConnectAuth why name="Connect Github" />
+          {buttons}
+
         </div>
       </div>
     </div>

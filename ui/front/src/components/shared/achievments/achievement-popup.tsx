@@ -1,30 +1,18 @@
 import { IconCloseCross } from '@components/svg';
 import styles from './achievements.module.scss';
 
-export type AchievementParams = {
-  name:string;
-  commits:number;
-  lines:number;
-  hours:number;
-  releases:number;
-  pullRequests:number;
-};
-
 type AchievementProps = {
-  params: AchievementParams;
+  name: string
   isVisible:boolean;
   color: string;
+  children: JSX.Element;
   setInvisible: (e?:React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
 };
 
 function AchievementPopup({
-  isVisible, params, color, setInvisible
+  isVisible, name, color, children, setInvisible
 }: AchievementProps) {
   const className = isVisible ? styles.popupBlockActive : styles.popupBlock;
-
-  const {
-    name, commits, lines, hours, releases, pullRequests
-  } = params;
 
   return (
     <div
@@ -40,44 +28,8 @@ function AchievementPopup({
       </a>
       <div className={styles.upperPart}>
         <h2>{name}</h2>
-
-        <div>
-          <span>
-            {commits}
-            %
-            {' '}
-          </span>
-          of commits
-        </div>
-        <div>
-          <span>
-            {lines}
-            {' '}
-          </span>
-          of lines written
-        </div>
       </div>
-      <div>
-        <span>
-          {hours}
-          {' '}
-          hours
-          {' '}
-        </span>
-        spent coding
-      </div>
-      <div>
-        <span>
-          {releases}
-          {' '}
-        </span>
-        releases
-      </div>
-      <div>
-        <span>{pullRequests}</span>
-        {' '}
-        pull requests
-      </div>
+      {children}
     </div>
   );
 }

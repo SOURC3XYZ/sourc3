@@ -7,10 +7,11 @@ import { PullRequest, Milestone, Languages } from '@components/shared/git-auth/p
 import styles from './gitOwnRepos.module.scss';
 
 type GitOwnReposType = {
-  data: [IGitRepos]
+  data: IGitRepos[]
 };
 
 function GitOwnRepos({ data }:GitOwnReposType) {
+  const sortData = data && data.sort((a, b) => b.rating - a.rating);
   function formatDateTime(dateTime: string, formatString = 'LL') {
     return moment(new Date(dateTime)).format(formatString);
   }
@@ -49,13 +50,14 @@ function GitOwnRepos({ data }:GitOwnReposType) {
     }
     return lastCommit;
   };
+  console.log(data);
   return (
     <List
-      dataSource={data}
+      dataSource={sortData}
       pagination={{
         pageSize: 5
       }}
-      loading={!data}
+      loading={!sortData}
       renderItem={(rep) => (
         <div className={styles.wrapper} key={rep.id}>
           <div className={styles.header}>
