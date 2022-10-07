@@ -23,7 +23,7 @@ function ProfileBlock({
   const { setGitUserLogout } = useGitProfile();
 
   const data = [
-    { title: 'Profile' },
+    { title: 'Profile', onClick: () => navigate(`/profile/${login}`) },
     { title: 'My repositories', isDisabled: true },
     { title: 'My organization', isDisabled: true, delimeter: true },
     {
@@ -79,11 +79,11 @@ function ProfileBlock({
         <Dropdown
           overlay={menu}
           placement="bottomCenter"
-          trigger={['hover']}
+          trigger={['click']}
           overlayClassName={styles.dropdown}
           overlayStyle={{ position: 'fixed' }}
         >
-          <Link to={`/profile/${login}`}>
+          <Link to="">
             <Avatar small />
           </Link>
         </Dropdown>
