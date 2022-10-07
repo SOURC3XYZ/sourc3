@@ -55,7 +55,6 @@ function Step1(props: any) {
           <div className={styles.input}>
             <InputCustom
               type="text"
-              placeholder="Pop your Ethereum wallet address (hex or ENS) below"
               onChange={(e) => (setAddress(e.target.value))}
               valid={web3.utils.isAddress(address)}
               err={!web3.utils.isAddress(address) && address ? 'Address incorrect' : ''}

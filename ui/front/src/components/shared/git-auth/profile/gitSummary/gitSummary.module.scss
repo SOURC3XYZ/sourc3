@@ -2,12 +2,14 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 24px;
-  width: 760px;
+  max-width: 47.5rem;
+  width: 100%;
   padding: 24px 24px 16px;
   .summary{
     width: 100%;
     display: flex;
     justify-content: space-between;
+
     .title{
       font-family: 'PublicSans-Bold';
       font-style: normal;
@@ -35,6 +37,7 @@
 
     .blockLeft{
       width: 100%;
+      margin-bottom: 1.5rem;
 
     }
     .blockRight{
@@ -45,7 +48,7 @@
   .languages{
     display: flex;
     align-items: center;
-    margin-top: 24px;
+    //margin-top: 24px;
     flex-wrap: wrap;
     .title{
       font-family: 'PublicSans-Bold';
@@ -60,6 +63,12 @@
     display: flex;
     text-align: center;
     margin-top: 24px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .summary {
+    flex-direction: column;
   }
 }
 
