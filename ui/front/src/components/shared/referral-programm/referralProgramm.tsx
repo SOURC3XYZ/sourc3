@@ -39,7 +39,7 @@ function ReferralProgramm() {
     headers: {
       Authorization: `Bearer ${token}`
     }
-  });
+  }, true);
 
   const handleCopyRefLink = useCallback(() => {
     if (id) {

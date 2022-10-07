@@ -31,8 +31,6 @@ function GitProfile() {
   const [visiblePopup, setVisiblePopup] = useState(false);
   const [taskStatus, setTaskStatus] = useState(false);
   const own = useSelector((state) => state.profile.data.github_login);
-  console.log({ own });
-  console.log({ urlId });
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
       switch (task.data.status) {

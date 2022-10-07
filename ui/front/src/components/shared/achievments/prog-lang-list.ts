@@ -14,7 +14,7 @@ type LangItem = {
 export const achievementsData = new Map<string, LangItem>()
   .set('lang_jscript', { title: 'JavaScript', img: lang_jscript, color: '#FDD83C' })
   .set('lang_cpp', { title: 'C++', img: lang_cpp, color: '#5E98CF' })
-  .set('lang_python', { title: 'Python', img: lang_python, color: 'green' })
-  .set('lang_rust', { title: 'Rust', img: lang_rust, color: 'green' })
-  .set('lang_solidity', { title: 'Solidity', img: lang_solidity, color: 'green' })
+  .set('lang_python', { title: 'Python', img: lang_python, color: '#C6E5FF' })
+  .set('lang_rust', { title: 'Rust', img: lang_rust, color: '#C1C1C1' })
+  .set('lang_solidity', { title: 'Solidity', img: lang_solidity, color: '#E4E4E4' })
   .set('early_joiner', { title: 'Early Joiner', img: early_joiner, color: '#FFAB73' });

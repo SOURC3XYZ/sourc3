@@ -7,7 +7,7 @@ import { PullRequest, Milestone, Languages } from '@components/shared/git-auth/p
 import styles from './gitOwnRepos.module.scss';
 
 type GitOwnReposType = {
-  data: [IGitRepos]
+  data: IGitRepos[]
 };
 
 function GitOwnRepos({ data }:GitOwnReposType) {

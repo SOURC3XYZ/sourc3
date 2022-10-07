@@ -19,7 +19,8 @@ export interface IProfilesGit {
   updated_at: string,
   user: number,
   added_lines_cnt: number,
-  user_commits_cnt: number
+  user_commits_cnt: number,
+  removed_lines_cnt: number
 }
 export interface IGitOrgs {
   id: number,
@@ -30,12 +31,23 @@ export interface IGitOrgs {
   description: string
   users: []
 }
+
+export type ReposGitHubData = {
+  full_name: string,
+  commits_cnt: number,
+  added_lines_cnt: number,
+  last_commit_time: string,
+  first_commit_time: string,
+  removed_lines_cnt: number
+};
+
 export type LangGitData = {
   added_lines_cnt:number;
   commits_cnt:number;
   first_commit_time: string;
   last_commit_time: string;
   removed_lines_cnt: number;
+  repos: ReposGitHubData[]
 };
 
 export interface IAchievements {
@@ -54,9 +66,9 @@ export interface IProfiles {
   updated_at: string,
   token: string,
   github_profile: IProfilesGit,
-  github_orgs: [IGitOrgs],
-  github_repos : [IGitRepos],
-  achievements: [IAchievements],
+  github_orgs: IGitOrgs[],
+  github_repos : IGitRepos[],
+  achievements: IAchievements[],
   eth_address: string
 }
 

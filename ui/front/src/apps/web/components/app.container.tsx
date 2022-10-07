@@ -121,10 +121,6 @@ function Main() {
           element={<ProfileGit />}
         />
         <Route
-          path="/achivka"
-          element={<AchievementList />}
-        />
-        <Route
           path="/*"
           element={(
             <>

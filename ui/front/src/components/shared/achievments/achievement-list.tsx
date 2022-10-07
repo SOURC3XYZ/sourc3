@@ -1,5 +1,5 @@
 /* eslint-disable react/no-danger */
-import { IAchievements } from '@types';
+import { IAchievements, LangGitData } from '@types';
 import { useMemo } from 'react';
 import { AchievementListItem } from './achievement-list-item';
 import styles from './achievements.module.scss';
@@ -13,11 +13,13 @@ type AchievementListProps = {
 };
 
 function AchievementList({ items, globalInfo }:AchievementListProps) {
+  const allReposCount = items.filter((el) => (el.data as LangGitData)?.repos)
+    .reduce((acc: number, cur) => acc + ((cur.data as LangGitData).repos.length) || 0, 0);
   const achievements = useMemo(() => items.map((el) => (
     <AchievementListItem
       key={el.type}
       item={el}
-      globalInfo={globalInfo}
+      globalInfo={{ ...globalInfo, repos: allReposCount }}
     />
   )), [items]);
 

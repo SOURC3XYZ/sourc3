@@ -9,12 +9,18 @@ type AchievementListItemProps = {
   globalInfo: {
     commits: number;
     lines: number;
+    repos: number;
   }
 };
 
+function getHoursDiff(startDate: number, endDate: number) {
+  const msInHour = 1000 * 60 * 60;
+
+  return Math.round(Math.abs(endDate - startDate) / msInHour);
+}
+
 export function AchievementListItem({ item, globalInfo }: AchievementListItemProps) {
   const data = achievementsData.get(item.type);
-  console.log('ITEM', item);
   const children = useMemo(() => {
     if (item.type === 'early_joiner') {
       return (
@@ -26,32 +32,21 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
         />
       );
     }
+
     const langData = item.data as LangGitData;
     const commitsPercent = ~~(100 / (globalInfo.commits / langData.commits_cnt));
-    const linesPercent = ~~(100 / (globalInfo.lines / langData.added_lines_cnt));
+    const linesPercent = ~~(100 / (
+      globalInfo.lines / (langData.added_lines_cnt + langData.removed_lines_cnt)
+    ));
+    const reposPercent = ~~(100 / (
+      globalInfo.repos / langData.repos.length
+    ));
+    const hoursDiff = getHoursDiff(
+      new Date(langData.first_commit_time).getTime(),
+      new Date(langData.last_commit_time).getTime()
+    );
     return (
       <>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-              <span>${langData.added_lines_cnt}</span> of lines written
-              `
-          }}
-        />
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-                <span>${langData.removed_lines_cnt}</span> of removed lines`
-          }}
-        />
-        <div
-          dangerouslySetInnerHTML={
-            {
-              __html: `
-                  <span>${langData.commits_cnt}</span> commits`
-            }
-          }
-        />
         <div
           dangerouslySetInnerHTML={
             {
@@ -61,10 +56,36 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
           }
         />
         <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <span>${langData.added_lines_cnt}</span> of lines written are ${data?.title}
+              `
+          }}
+        />
+
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <span>${hoursDiff} hours</span> spent coding ${data?.title}
+              `
+          }}
+        />
+
+        <div style={{ background: 'rgba(0, 0, 0, 0.1)', height: '1px' }} />
+
+        <div
           dangerouslySetInnerHTML={
             {
               __html: `
                   <span>${linesPercent}%</span> of lines written are ${data?.title}`
+            }
+          }
+        />
+        <div
+          dangerouslySetInnerHTML={
+            {
+              __html: `
+                  <span>${reposPercent}%</span> of projects`
             }
           }
         />
