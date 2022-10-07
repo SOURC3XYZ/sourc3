@@ -1,5 +1,6 @@
 .wrapper{
-  width: 760px;
+  max-width: 47.5rem;
+  width: 100%;
   background: #FFFFFF;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -136,4 +137,13 @@ line-height: 20px;
   }
 }
 }
+}
+@media screen and (max-width: 570px) {
+  .wrapper{
+    padding:.5rem;
+  }
+  .contribution{
+    display: flex;
+    flex-direction: column;
+  }
 }

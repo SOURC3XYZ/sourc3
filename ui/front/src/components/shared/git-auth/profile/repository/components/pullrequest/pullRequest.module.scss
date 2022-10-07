@@ -13,3 +13,8 @@
       margin: 0 5px;
   }
 }
+@media screen and (max-width: 570px) {
+  .wrapper {
+    flex-direction: column;
+  }
+}
