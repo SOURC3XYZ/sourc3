@@ -15,17 +15,17 @@ function GitSummary({ profile }:gitSummaryType) {
   const [relisedCount, setRelisedCount] = useState(0);
   const [reliasedRep, setReliasedRep] = useState(0);
   const [allOwnRepos, setAllOwnRepos] = useState(0);
-  const [topics, setTopics] = useState<[] | undefined>(undefined);
+  const [topics, setTopics] = useState<[] | number>(0);
   const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
   const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
-  const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
+  const mostPopularOwnRep = profile && profile.github_repos.sort((a, b) => b.rating - a.rating).slice(0, 1);
 
   const getTopics = () => {
     if (profile.github_repos) {
       setTopics(mostPopularOwnRep[0].topics);
+      console.log({ mostPopularOwnRep });
     }
   };
-
   const calcRepInORg = () => {
     if (profile.github_orgs) {
       const repOrg = [];
@@ -95,7 +95,7 @@ function GitSummary({ profile }:gitSummaryType) {
     setAllOwnRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).length);
   }, [profile.github_repos]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (profile.github_repos) {
       setCreatedRepos(profile.github_repos.length - forkedRepos);
       setReputation((allCommits * 10) + stars);
@@ -137,39 +137,35 @@ function GitSummary({ profile }:gitSummaryType) {
                 </span>
               </div>
 
-              {profile.github_repos && allOwnRepos && (
-                <div className={styles.resumeLeft_wrapper}>
-                  <span
-                    className={styles.title}
-                  >
-                    {reliasedRep}
+              <div className={styles.resumeLeft_wrapper}>
+                <span
+                  className={styles.title}
+                >
+                  {reliasedRep}
+                  {' '}
+                  <span className={styles.text}>
+                    {reliasedRep === 1 ? 'release' : 'releases'}
                     {' '}
+                    in
+                    {' '}
+                    <span className={styles.title}>{allOwnRepos}</span>
                     <span className={styles.text}>
-                      {reliasedRep === 1 ? 'release' : 'releases'}
                       {' '}
-                      in
-                      {' '}
-                      <span className={styles.title}>{allOwnRepos}</span>
-                      <span className={styles.text}>
-                        {' '}
-                        {allOwnRepos === 1 ? 'repository' : 'repositories'}
-                      </span>
+                      {allOwnRepos === 1 ? 'repository' : 'repositories'}
                     </span>
                   </span>
-                </div>
-              )}
+                </span>
+              </div>
 
               {mostPopularOwnRep.length && (
                 <div className={styles.resumeLeft_wrapper}>
-                  {mostPopularOwnRep.length > 0 && (
-                    <span className={styles.text}>
-                      Most popular repository:
-                      {' '}
-                      <span className={styles.url}>
-                        <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
-                      </span>
+                  <span className={styles.text}>
+                    Most popular repository:
+                    {' '}
+                    <span className={styles.url}>
+                      <a href={`https://github.com/${mostPopularOwnRep[0].full_name}`}>{mostPopularOwnRep[0].full_name}</a>
                     </span>
-                  )}
+                  </span>
                 </div>
               )}
 
@@ -179,46 +175,41 @@ function GitSummary({ profile }:gitSummaryType) {
             <div />
           </div>
         )}
-        {profile.github_orgs.length > 0 && profile.github_repos.length > 0 && (
+        {profile.github_orgs && (
           <div className={styles.blockRight}>
-            { allOrgs && profile.github_orgs.length > 0 && (
-              <div className={styles.resumeLeft_wrapper}>
-                {allOrgs && profile.github_orgs.length && (
-                  <span
-                    className={styles.title}
-                  >
-                    {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
-                    {profile.github_orgs.length === 1
-                      ? `${profile.github_orgs.length} organization`
-                      : `${profile.github_orgs.length} organizations`}
-                  </span>
-                )}
-              </div>
-            )}
-            {profile.github_orgs.length > 0 && relisedCount && relisedOrgs && (
-              <div className={styles.resumeLeft_wrapper}>
-                <span
-                  className={styles.title}
-                >
-                  {relisedCount}
+            <div className={styles.resumeLeft_wrapper}>
+              <span
+                className={styles.title}
+              >
+                {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
+                {profile.github_orgs.length === 1
+                  ? `${profile.github_orgs.length} organization`
+                  : `${profile.github_orgs.length} organizations`}
+              </span>
+            </div>
+
+            <div className={styles.resumeLeft_wrapper}>
+              <span
+                className={styles.title}
+              >
+                {relisedCount}
+                {' '}
+                <span className={styles.text}>
+                  {relisedCount === 1 ? 'release' : 'releases'}
                   {' '}
+                  in
+                  {' '}
+                  <span className={styles.title}>
+                    {relisedOrgs}
+                    {' '}
+                  </span>
                   <span className={styles.text}>
-                    {relisedCount === 1 ? 'release' : 'releases'}
-                    {' '}
-                    in
-                    {' '}
-                    <span className={styles.title}>
-                      {relisedOrgs}
-                      {' '}
-                    </span>
-                    <span className={styles.text}>
-                      {relisedOrgs === 1
-                        ? ' repository' : 'repositories'}
-                    </span>
+                    {relisedOrgs === 1
+                      ? ' repository' : 'repositories'}
                   </span>
                 </span>
-              </div>
-            )}
+              </span>
+            </div>
             {mostPopularOrgRep?.length > 0 && (
               <div className={styles.resumeLeft_wrapper}>
                 <span
@@ -241,13 +232,13 @@ function GitSummary({ profile }:gitSummaryType) {
           ))}
         </div>
       )}
-      {topics && (
+       {topics && (
         <div className={styles.topics}>
           {topics && topics.map((el) => (
             <Milestone tags title={el} key={`${window.crypto.randomUUID()}`} />
           ))}
         </div>
-      )}
+       )}
     </div>
   );
 }
