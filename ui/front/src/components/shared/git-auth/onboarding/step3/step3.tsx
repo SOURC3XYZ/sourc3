@@ -1,11 +1,13 @@
 import { NavButton } from '@components/shared';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
+import { copyRefLink } from '@components/shared/referral-programm/referralProgramm';
 import styles from './step.module.scss';
 
 function Step3() {
   const navigate = useNavigate();
-  const { github_login } = useSelector((state) => state.profile.data);
+  const { github_login, id } = useSelector((state) => state.profile.data);
+  const handleCopyLink = () => copyRefLink(id);
   return (
     <div className={styles.section}>
       <div className={styles.step}>
@@ -35,10 +37,13 @@ function Step3() {
           <div className={styles.button}>
             <NavButton
               name="Copy referral link"
+              isDisabled={!id}
+              onClick={handleCopyLink}
               classes={styles.buttonItem}
             />
             <NavButton
               name="Your referral statistic"
+              onClick={() => navigate('/referral-programm')}
               classes={styles.buttonItem}
             />
             <NavButton

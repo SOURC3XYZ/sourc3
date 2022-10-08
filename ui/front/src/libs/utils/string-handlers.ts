@@ -176,3 +176,15 @@ export function getHoursDiff(startDate: number, endDate: number) {
   const msInHour = 1000 * 60 * 60;
   return Math.round(Math.abs(endDate - startDate) / msInHour);
 }
+
+export const isEthAddress = function (address:string) {
+  // check if it has the basic requirements of an address
+  if (/^(0x)?[0-9a-f]{40}$/i.test(address)) {
+    return true;
+    // If it's ALL lowercase or ALL upppercase
+  } if (/^(0x|0X)?[0-9a-f]{40}$/.test(address) || /^(0x|0X)?[0-9A-F]{40}$/.test(address)) {
+    return true;
+    // Otherwise check each case
+  }
+  return false;
+};

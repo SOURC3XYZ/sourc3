@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavButton } from '@components/shared';
 import axios from 'axios';
 import { HOST } from '@components/shared/git-auth/profile/constants';
-import web3 from 'web3';
+import { isEthAddress } from '@libs/utils';
 import InputCustom from '../../../input/input';
 import styles from './step.module.scss';
 
@@ -60,13 +60,13 @@ function Step1({ callback }:Spep1Props) {
             <InputCustom
               type="text"
               onChange={(e) => (setAddress(e.target.value))}
-              valid={web3.utils.isAddress(address)}
-              err={!web3.utils.isAddress(address) && address ? 'Address incorrect' : ''}
+              valid={isEthAddress(address)}
+              err={!isEthAddress(address) && address ? 'Address incorrect' : ''}
             />
             <NavButton
               name="Next"
               onClick={() => putAddress(address)}
-              isDisabled={!web3.utils.isAddress(address)}
+              isDisabled={!isEthAddress(address)}
             />
           </div>
           <button

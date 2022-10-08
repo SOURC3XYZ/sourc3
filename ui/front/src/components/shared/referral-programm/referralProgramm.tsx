@@ -18,6 +18,12 @@ type RefferalsResponce = {
   referrals: Referral[]
 };
 
+export const copyRefLink = (id: string) => {
+  const repoLink = `${window.location.origin}/?ref_by=${id}`;
+  navigator.clipboard.writeText(repoLink);
+  return message.info(`${repoLink} copied to clipboard!`);
+};
+
 const formatDate = (dateString:string) => {
   const options:Intl.DateTimeFormatOptions = {
     year: 'numeric', month: 'long', day: 'numeric'
@@ -41,13 +47,7 @@ function ReferralProgramm() {
     }
   }, true);
 
-  const handleCopyRefLink = useCallback(() => {
-    if (id) {
-      const repoLink = `${window.location.origin}/?ref_by=${id}`;
-      navigator.clipboard.writeText(repoLink);
-      return message.info(`${repoLink} copied to clipboard!`);
-    } return message.error('Cannot create ref link');
-  }, [id]);
+  const handleCopyRefLink = useCallback(() => copyRefLink(id), [id]);
 
   useEffect(() => {
     if (error) {
@@ -96,6 +96,7 @@ function ReferralProgramm() {
           {title}
           <p>Your referral score will entitle you to future benefits and airdrops. Use your SOURC3 referral link to spread the Web3 word.</p>
           <NavButton
+            isDisabled={!id}
             onClick={handleCopyRefLink}
             name="Copy referral link"
           />

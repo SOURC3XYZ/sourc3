@@ -8,30 +8,30 @@
 //  scroll-snap-align: start;
 //}
 
-.fromUp{
-  animation: fromUp .3s;
+.container {
+  height: calc(100vh - 120px);
 }
 
-.goDown{
-  animation: toDown .3s;
+.stepWrapper{
+  display: flex;
 }
 
 
-.section {
-  max-width: 960px;
-  width: 100%;
-  margin: 40px auto 0 auto;
+// .section {
+//   max-width: 960px;
+//   width: 100%;
+//   margin: 40px auto 0 auto;
   .step{
     position: relative;
     display: flex;
     align-items: flex-start;
     top: 12.5%;
     .dots{
-      position: absolute;
+      // position: absolute;
       display: flex;
       flex-direction: column;
       align-items: center;
-      left: -80px;
+      // left: -80px;
       span{
         width: 10px;
         height: 10px;
@@ -221,7 +221,7 @@
   .active{
     display: flex;
   }
-}
+// }
 
 
 @keyframes fromUp {

@@ -1,2 +1,1 @@
-export { default as OnboardingStep } from './onboardingStep';
-
+export { default as OnboardingStep } from './slider';
