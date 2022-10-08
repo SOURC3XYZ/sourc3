@@ -6,10 +6,14 @@ import web3 from 'web3';
 import InputCustom from '../../../input/input';
 import styles from './step.module.scss';
 
-function Step1(props: any) {
+type Spep1Props = {
+  callback: () => void;
+};
+
+function Step1({ callback }:Spep1Props) {
   const [address, setAddress] = useState('');
   const next = () => {
-    props.onClickHandler(3);
+    callback();
   };
   const putAddress = (add:string) => {
     axios({
@@ -22,9 +26,7 @@ function Step1(props: any) {
       },
       data: add
     }).then((res) => {
-      if (res.data) {
-        next();
-      }
+      if (res.data) next();
     });
   };
 
@@ -44,7 +46,9 @@ function Step1(props: any) {
           <div className={styles.text}>
             <p>
               Ensure your reputation and contributions are attributed to you by
-              <span className={styles.drop}>bringing them on-chain and associated to your wallet.</span>
+              <span className={styles.drop}>
+                bringing them on-chain and associated to your wallet.
+              </span>
             </p>
             <p>
               Connecting your wallet address also means we can airdrop SOURC3 rewards
@@ -67,7 +71,7 @@ function Step1(props: any) {
           </div>
           <button
             type="button"
-            onClick={() => props.onClickHandler(3)}
+            onClick={callback}
             className={styles.skip}
           >
             Skip for now

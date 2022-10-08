@@ -14,9 +14,7 @@ function OnboardingStep() {
   const [goDown, setGoDown] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const setView = () => {
-    setGoDown(true);
-  };
+  const setView = () => setGoDown(true);
 
   const handleActive = () => {
     setActive((prev) => prev + 1);
@@ -32,9 +30,11 @@ function OnboardingStep() {
   }, [goDown]);
 
   useEffect(() => {
-    document.body.style.overflowY = 'hidden';
-    return () => { document.body.style.overflowY = ''; };
-  }, []);
+    if (active > 1) {
+      document.body.style.overflowY = 'hidden';
+      return () => { document.body.style.overflowY = ''; };
+    } return undefined;
+  }, [active]);
 
   const currentStep = useMemo(() => {
     const animationClass = goDown ? styles.goDown : styles.fromUp;
@@ -42,7 +42,7 @@ function OnboardingStep() {
       case 1:
         return (
           <div ref={ref} key={0} className={goDown ? styles.goDown : ''}>
-            <StepStart onClickHandler={setView} />
+            <StepStart callback={setView} />
           </div>
         );
       case 2:
@@ -55,7 +55,7 @@ function OnboardingStep() {
                 <span className={styles.blue} />
               </div>
             </div>
-            <Step1 onClickHandler={setView} />
+            <Step1 callback={setView} />
           </div>
         );
       case 3:
@@ -68,7 +68,7 @@ function OnboardingStep() {
                 <span className={styles.blue2} />
               </div>
             </div>
-            <Step2 onClickHandler={setView} />
+            <Step2 callback={setView} />
           </div>
         );
       default:
