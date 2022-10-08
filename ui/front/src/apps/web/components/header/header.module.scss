@@ -203,10 +203,12 @@
   .navWrapper {
     align-items: flex-start;
   }
-
+  .connect>div {
+    margin-left: 0 !important;
+  }
   .headerActive {
     .nav {
-      // flex-direction: column;
+      flex-direction: column;
       align-items: center;
       padding: 10px;
     }
