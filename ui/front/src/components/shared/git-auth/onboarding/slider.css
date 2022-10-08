@@ -1,9 +1,9 @@
-/* .slick-slide {
-    height: auto;
-  }
-  .slick-track {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: stretch;
-  } */
+/* .slick-track
+{
+    display: flex !important;
+}
+
+.slick-slide
+{
+    height: inherit !important;
+} */

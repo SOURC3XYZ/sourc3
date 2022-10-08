@@ -154,7 +154,7 @@
     .nav {
       // flex-direction: column;
       align-items: flex-end;
-      padding: 10px;
+      padding: 0 10px;
     }
   }
 
@@ -162,7 +162,7 @@
     .nav {
       flex-direction: row;
       align-items: center;
-      padding: 10px;
+      padding: 0 10px;
     }
   }
 
@@ -208,9 +208,9 @@
   }
   .headerActive {
     .nav {
-      flex-direction: column;
+      // flex-direction: column;
       align-items: center;
-      padding: 10px;
+      padding: 0 10px;
     }
   }
 

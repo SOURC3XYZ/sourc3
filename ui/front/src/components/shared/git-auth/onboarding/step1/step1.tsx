@@ -27,6 +27,8 @@ function Step1({ callback }:Spep1Props) {
       data: add
     }).then((res) => {
       if (res.data) next();
+    }).catch(() => {
+
     });
   };
 

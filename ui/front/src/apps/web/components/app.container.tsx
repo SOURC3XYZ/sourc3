@@ -111,10 +111,6 @@ function Main() {
           element={<DownloadPage />}
         />
         <Route
-          path="/profile/:id"
-          element={<ProfileGit />}
-        />
-        <Route
           path="/*"
           element={(
             <>
@@ -132,6 +128,10 @@ function Main() {
                       <Route
                         path="/onboarding"
                         element={<OnboardingStep />}
+                      />
+                      <Route
+                        path="/profile/:id"
+                        element={<ProfileGit />}
                       />
                       {/* <Route path="/*" element={routes} /> */}
                       <Route path="/*" element={<FailPage />} />

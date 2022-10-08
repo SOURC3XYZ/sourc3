@@ -9,7 +9,11 @@
 //}
 
 .container {
-  height: calc(100vh - 120px);
+  height: calc(100vh - 123.38px);
+}
+
+.carousel {
+  height: 100%;
 }
 
 .stepWrapper{
@@ -245,6 +249,9 @@
   }
 }
 @media only screen and (max-width: 768px) {
+  .container {
+    height: calc(100vh - 115.38px);
+  }
   .section{
     .step{
       top: 6.5%;
