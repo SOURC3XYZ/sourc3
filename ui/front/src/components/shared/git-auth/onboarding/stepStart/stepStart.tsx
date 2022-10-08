@@ -41,7 +41,7 @@ function stepStart({ callback }:StepStartProps) {
         <img src={early} alt="early adopter" />
       </div>
       <div className={styles.count}>
-        <h4>You are creator</h4>
+        <h4>You ARE builder</h4>
         <div className={styles.countNum}><h4>{`#${id}`}</h4></div>
         <h4>to join sourc3</h4>
       </div>
@@ -58,9 +58,10 @@ function stepStart({ callback }:StepStartProps) {
               className={styles.color}
               onClick={callback}
             >
-              future proof your reputation,
+              future proof your reputation
 
             </span>
+            ,
             {' '}
             <span
               className={styles.color}
@@ -76,9 +77,10 @@ function stepStart({ callback }:StepStartProps) {
               className={styles.color}
               onClick={callback}
             >
-              spread the word.
+              spread the word
 
             </span>
+            .
           </span>
         </p>
       </div>

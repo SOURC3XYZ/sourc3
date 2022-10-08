@@ -22,28 +22,31 @@ function ProfileBlock({
 
   const { setGitUserLogout } = useGitProfile();
 
+  const handleUserLogout = () => {
+    navigate('/');
+    setGitUserLogout();
+  };
+
   const data = [
     { title: 'Profile', onClick: () => navigate(`/profile/${login}`) },
     { title: 'My repositories', isDisabled: true },
     { title: 'My organization', isDisabled: true, delimeter: true },
     {
       title: 'Onboarding',
-      onClick: (e:any) => {
-        e.preventDefault();
+      onClick: () => {
         navigate('/onboarding');
       }
     },
     {
       title: 'Referral program',
       delimeter: true,
-      onClick: (e:any) => {
-        e.preventDefault();
+      onClick: () => {
         navigate('/referral-programm');
       }
     },
     { title: 'Twitter', link: 'https://twitter.com/SOURC3xyz' },
     { title: 'Discord', link: 'https://discord.gg/nqTTMXrhMc', delimeter: true },
-    { title: 'Logout', onClick: setGitUserLogout }
+    { title: 'Logout', onClick: handleUserLogout }
   ];
   const menu = (
     <Menu>

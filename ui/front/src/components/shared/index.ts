@@ -30,3 +30,4 @@ export * from './seed-list';
 export * from './select';
 export * from './selectPopup';
 export * from './achievments';
+export * from './git-auth';

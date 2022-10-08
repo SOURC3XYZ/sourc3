@@ -1,25 +1,15 @@
 .section {
   max-width: 960px;
   width: 100%;
-  margin: 37px auto 0 auto;
-  h4{
-    font-family: 'PublicSans-SemiBold', serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 19px;
-    letter-spacing: 0.37em;
-    text-transform: uppercase;
-    color: #8F8F8F;
-  }
+  margin: 0 auto;
   .content{
-    h2{
+    h1{
       font-family: 'PublicSans-ExtraBold', serif;
       font-style: italic;
       font-weight: 900;
       font-size: 40px;
       line-height: 52px;
-      margin: 24px 0 40px 0;
+      margin: 0 0 40px 0;
       .color{
         color: #FF791F;
       }
@@ -64,6 +54,7 @@
       margin-bottom: 0;
     }
     input{
+      background: #FFFFFF;
       width: 637px;
       height: 52px;
       border-color: #FF791F;
@@ -90,7 +81,7 @@
   .section{
     padding: 0 40px;
     .content{
-      h2{
+      h1{
         font-size: 30px;
         margin-left: 45px;
       }
@@ -126,7 +117,7 @@
   .section{
     padding: 0 10px;
     .content {
-      h2 {
+      h1 {
         .drop{
           display: inline;
         }
