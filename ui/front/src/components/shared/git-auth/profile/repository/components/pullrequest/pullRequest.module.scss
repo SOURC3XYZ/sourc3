@@ -16,5 +16,9 @@
 @media screen and (max-width: 570px) {
   .wrapper {
     flex-direction: column;
+    span:not(:last-child):after{
+      content: '';
+      margin: 0 5px;
+    }
   }
 }

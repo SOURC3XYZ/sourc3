@@ -9,6 +9,9 @@
   display: flex;
   justify-content: space-evenly;
   align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-template-rows: 1fr;
 }
 
 .leftSide{
@@ -156,7 +159,9 @@
     padding: .5rem;
   }
  .wrapperContent{
-   flex-direction: column;
+   //flex-direction: column;
+   grid-template-columns: 1fr;
+   grid-template-rows: auto;
    .leftSide{
      display: flex;
      margin-right: 40px;
