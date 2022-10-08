@@ -106,3 +106,12 @@ footer {
       }
     }
 }
+@media screen and (max-width: 374px) {
+  .footer{
+    .content{
+      .icons {
+        padding-left: 10px;
+      }
+    }
+  }
+}

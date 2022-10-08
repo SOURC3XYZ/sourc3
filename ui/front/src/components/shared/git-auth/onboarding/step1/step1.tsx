@@ -34,15 +34,14 @@ function Step1({ callback }:Spep1Props) {
     <div className={styles.section}>
       <div className={styles.step}>
         <div className={styles.content}>
-          <h4>NEXT STEPS</h4>
-          <h2>
+          <h1>
             <span className={styles.color}>Future proof</span>
             {' '}
             your reputation and
             {' '}
             <span className={styles.drop}>bring it on-chain</span>
             {' '}
-          </h2>
+          </h1>
           <div className={styles.text}>
             <p>
               Ensure your reputation and contributions are attributed to you by
