@@ -9,7 +9,11 @@ import React from 'react';
 import { useSelector } from '@libs/redux';
 import styles from './stepStart.module.scss';
 
-function stepStart(props: any) {
+type StepStartProps = {
+  callback: () => void;
+};
+
+function stepStart({ callback }:StepStartProps) {
   const { github_profile, github_login, id } = useSelector((state) => state.profile.data);
 
   return (
@@ -52,7 +56,7 @@ function stepStart(props: any) {
           <span className={styles.drop}>
             <span
               className={styles.color}
-              onClick={() => props.onClickHandler(2)}
+              onClick={callback}
             >
               future proof your reputation,
 
@@ -60,7 +64,7 @@ function stepStart(props: any) {
             {' '}
             <span
               className={styles.color}
-              onClick={() => props.onClickHandler(3)}
+              onClick={callback}
             >
               join the community
 
@@ -70,7 +74,7 @@ function stepStart(props: any) {
             {' '}
             <span
               className={styles.color}
-              onClick={() => props.onClickHandler(4)}
+              onClick={callback}
             >
               spread the word.
 
@@ -80,7 +84,7 @@ function stepStart(props: any) {
       </div>
       <NavButton
         name="Get started"
-        onClick={() => props.onClickHandler(2)}
+        onClick={callback}
       />
     </div>
   );
