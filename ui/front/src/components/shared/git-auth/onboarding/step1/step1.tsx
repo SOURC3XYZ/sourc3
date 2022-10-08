@@ -65,7 +65,14 @@ function Step1(props: any) {
               isDisabled={!web3.utils.isAddress(address)}
             />
           </div>
-          <button onClick={() => props.onClickHandler(3)} className={styles.skip}>Skip for now</button>
+          <button
+            type="button"
+            onClick={() => props.onClickHandler(3)}
+            className={styles.skip}
+          >
+            Skip for now
+
+          </button>
         </div>
       </div>
     </div>

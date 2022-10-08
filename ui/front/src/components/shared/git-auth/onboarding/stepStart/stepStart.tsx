@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable max-len */
 import early from '@assets/icons/early-adopter.svg';
 import arrow from '@assets/icons/arrow2.svg';
 import ellipse from '@assets/icons/ellipse.svg';
@@ -22,7 +25,7 @@ function stepStart(props: any) {
           </span>
           <span className={styles.drop}>
             for joining&nbsp;
-             <a href="@components/shared/git-auth/onboarding/stepHead/stepHead#">SOURC3</a>
+            <a href="/">SOURC3</a>
             {' '}
             and
           </span>
@@ -47,11 +50,31 @@ function stepStart(props: any) {
         <p>
           To enjoy the best SOURC3 experience, complete the following 3 steps:
           <span className={styles.drop}>
-            <span className={styles.color} onClick={() => props.onClickHandler(2)}>future proof your reputation,</span> <span className={styles.color} onClick={() => props.onClickHandler(3)}>join the community</span>
+            <span
+              className={styles.color}
+              onClick={() => props.onClickHandler(2)}
+            >
+              future proof your reputation,
+
+            </span>
+            {' '}
+            <span
+              className={styles.color}
+              onClick={() => props.onClickHandler(3)}
+            >
+              join the community
+
+            </span>
             {' '}
             and
             {' '}
-            <span className={styles.color} onClick={() => props.onClickHandler(4)}>spread the word.</span>
+            <span
+              className={styles.color}
+              onClick={() => props.onClickHandler(4)}
+            >
+              spread the word.
+
+            </span>
           </span>
         </p>
       </div>

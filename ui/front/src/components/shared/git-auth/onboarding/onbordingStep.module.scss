@@ -7,6 +7,16 @@
 //.scroller section {
 //  scroll-snap-align: start;
 //}
+
+.fromUp{
+  animation: fromUp .3s;
+}
+
+.goDown{
+  animation: toDown .3s;
+}
+
+
 .section {
   max-width: 960px;
   width: 100%;
@@ -103,6 +113,7 @@
           color: #FFFFFF;
         }
     }
+
     //.dots{
     //  position: absolute;
     //  display: flex;
@@ -201,11 +212,57 @@
     //  }
     //}
   }
+  .step2{
+    top: 7%;
+  }
+  .step3{
+    top: 2%;
+  }
   .active{
     display: flex;
   }
 }
 
-@media only screen and (max-width: 400px) {
 
+@keyframes fromUp {
+  0%    { transform: translate(0,-100vh); }
+  100%  { transform: translate(0, 0); }
+}
+
+@keyframes toDown {
+  0%    { transform: translate(0,0); }
+  100%  { transform: translate(0, 100vh); }
+}
+
+
+@media only screen and (max-width: 1135px) {
+  .section{
+    .step{
+      .dots{
+        left: 2%;
+      }
+    }
+  }
+}
+@media only screen and (max-width: 768px) {
+  .section{
+    .step{
+      top: 6.5%;
+      .dots{
+      }
+    }
+  }
+}
+@media only screen and (max-width: 500px) {
+  .section{
+    .step{
+      top: 5.5%;
+    }
+    .step3{
+      top: 1%;
+    }
+    button{
+      width: 100%;
+    }
+  }
 }

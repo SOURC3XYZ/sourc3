@@ -108,10 +108,6 @@ function Main() {
           element={<GitAuth />}
         />
         <Route
-          path="/onboarding"
-          element={<OnboardingStep />}
-        />
-        <Route
           path="/download"
           element={<DownloadPage />}
         />
@@ -132,6 +128,10 @@ function Main() {
                       <Route
                         path="/referral-programm"
                         element={<ReferralProgramm />}
+                      />
+                      <Route
+                        path="/onboarding"
+                        element={<OnboardingStep />}
                       />
                       {/* <Route path="/*" element={routes} /> */}
                       <Route path="/*" element={<FailPage />} />
