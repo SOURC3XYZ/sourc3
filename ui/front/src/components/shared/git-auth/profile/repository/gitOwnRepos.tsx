@@ -17,38 +17,38 @@ function GitOwnRepos({ data }:GitOwnReposType) {
   }
   const getPercent = (total:number, own:number) => +((own / total) * 100).toFixed(1);
   const minTimeContr = (fC:string, fPr: string, cr:string) => {
-    const firstCommit = fC ? formatDateTime(fC) : null;
-    const firstPr = fPr ? formatDateTime(fPr) : null;
-    const created = cr ? formatDateTime(cr) : null;
+    const firstCommit = fC || null;
+    const firstPr = fPr || null;
+    const created = cr;
 
     if (firstCommit && firstPr && firstCommit !== firstPr) {
-      return formatDateTime(firstCommit) > formatDateTime(firstPr) ? firstPr : firstCommit;
+      return firstCommit < firstPr ? formatDateTime(firstCommit) : formatDateTime(firstPr);
     } if (!firstCommit && !firstPr) {
-      return created;
-    } if (!firstPr && firstCommit !== created && created && firstCommit) {
-      return firstCommit > created ? created : firstCommit;
-    } if (!firstCommit && firstPr !== created && created && firstPr) {
-      return firstPr > created ? created : firstPr;
+      return formatDateTime(created);
+    } if (!firstPr && firstCommit) {
+      return formatDateTime(firstCommit);
+    } if (!firstCommit && firstPr) {
+      return formatDateTime(firstPr);
     }
-    return created;
+    return formatDateTime(firstCommit);
   };
   const maxTimeContr = (lC:string, lPr:string, cr:string) => {
-    const lastCommit = lC ? formatDateTime(lC) : null;
-    const lastPr = lPr ? formatDateTime(lPr) : null;
-    const created = cr ? formatDateTime(cr) : null;
+    const lastCommit = lC || null;
+    const lastPr = lPr || null;
+    const created = cr;
     // const pushed = push ? formatDateTime(push) : null;
     // const update = upd ? formatDateTime(upd) : null;
     // const end = pushed === update ? pushed : pushed > update ? pushed : update;
     if (lastCommit && lastPr && lastCommit !== lastPr) {
-      return lastCommit > lastPr ? lastCommit : lastPr;
+      return lastCommit > lastPr ? formatDateTime(lastCommit) : formatDateTime(lastPr);
     } if (!lastCommit && !lastPr) {
-      return created;
-    } if (!lastPr && lastCommit !== created && lastCommit && created) {
-      return lastCommit > created ? lastCommit : created;
-    } if (!lastCommit && lastPr !== created && lastPr && created) {
-      return lastPr > created ? lastPr : created;
+      return formatDateTime(created);
+    } if (!lastPr && lastCommit) {
+      return formatDateTime(lastCommit);
+    } if (!lastCommit && lastPr) {
+      return formatDateTime(lastPr);
     }
-    return lastCommit;
+    return formatDateTime(lastCommit);
   };
   console.log(data);
   return (

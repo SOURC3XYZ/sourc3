@@ -27,6 +27,7 @@
         width: 100%;
         align-items: center;
         margin-bottom: 16px;
+        flex-wrap: wrap;
         .name{
           font-family: 'PublicSans-Bold';
           font-style: normal;
@@ -140,7 +141,7 @@ line-height: 20px;
 }
 @media screen and (max-width: 570px) {
   .wrapper{
-    padding:.5rem;
+    padding: 2rem;
   }
   .contribution{
     display: flex;
