@@ -49,7 +49,6 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             const ref = refId ? `&ref_by=${refId}` : '';
             axios.get(`${HOST}/login?code=${data.code}${ref}`)
               .then((res) => {
-                console.log(res.data.token);
                 window.localStorage.setItem('token', res.data.token);
                 axios({
                   method: 'get',

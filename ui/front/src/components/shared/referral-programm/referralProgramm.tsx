@@ -68,6 +68,7 @@ function ReferralProgramm() {
               <div key={`user_id-${el.user_id}`} className={styles.info}>
                 <p>{formatDate(el.created_at)}</p>
                 <p>10</p>
+                <p>{el.github_login}</p>
               </div>
             ))
           }
@@ -105,6 +106,7 @@ function ReferralProgramm() {
           <div className={styles.title}>
             <h4>Activation date</h4>
             <h4>Referral points</h4>
+            <h4>User</h4>
           </div>
           <div className={styles.date}>
             {referrals}

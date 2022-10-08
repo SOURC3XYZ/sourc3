@@ -39,11 +39,11 @@ function Step2({ callback }: Step2Props) {
             </p>
           </div>
           <div className={styles.link}>
-            <a href="https://discord.com/invite/Fw3Wvqt42b" target="_blank">
+            <a href="https://discord.com/invite/Fw3Wvqt42b" target="_blank" rel="noreferrer">
               <img src={discordIcon} alt="discordIcon" />
               Join our Discord
             </a>
-            <a href="https://twitter.com/SOURC3xyz" target="_blank">
+            <a href="https://twitter.com/SOURC3xyz" target="_blank" rel="noreferrer">
               <img src={twitterIcon} alt="twitter" />
               Follow us on Twitter
             </a>
