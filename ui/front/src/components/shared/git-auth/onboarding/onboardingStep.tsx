@@ -61,7 +61,7 @@ function OnboardingStep() {
       case 3:
         return (
           <div ref={ref} key={2} className={animationClass}>
-            <div className={styles.step} style={{ top: '7%' }}>
+            <div className={`${styles.step} ${styles.step2}`}>
               <div className={styles.dots}>
                 <span className={styles.orange2}><img src={doneIcon} alt="doneIcon" /></span>
                 <span className={styles.green2}>2</span>
@@ -74,7 +74,7 @@ function OnboardingStep() {
       default:
         return (
           <div ref={ref} key={3} className={animationClass}>
-            <div className={styles.step} style={{ top: '1.5%' }}>
+            <div className={`${styles.step} ${styles.step3}`}>
               <div className={styles.dots}>
                 <span className={styles.orange3}><img src={doneIcon} alt="doneIcon" /></span>
                 <span className={styles.green3}><img src={doneIcon} alt="doneIcon" /></span>

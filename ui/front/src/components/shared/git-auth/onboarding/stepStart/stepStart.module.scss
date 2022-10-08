@@ -7,7 +7,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: revert;
+      flex-wrap: wrap;
       .img{
         position: absolute;
         top: 0;
@@ -57,6 +57,7 @@
   .count{
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     margin: 19px -16px 81px -16px;
     h4{
       font-family: 'PublicSans-SemiBold', serif;
@@ -121,7 +122,40 @@
     opacity: 1;
   }
 }
+@media only screen and (max-width: 1200px) {
+  .section{
+    padding: 0 40px;
+  }
+}
+@media only screen and (max-width: 768px) {
+  .section{
+    margin-top: 0;
+    margin-bottom: 40px;
+    padding: 0 10px;
+    .title{
+      .img{
+        top: -30px;
+      }
+      h1{
+        font-size: 30px;
+        .drop{
+          display: inline;
+        }
+      }
+      img{
+        margin: 10px auto;
+      }
+    }
+    .count{
+      margin-bottom: 40px;
+    }
+  }
+}
 
-@media only screen and (max-width: 400px) {
-
+@media only screen and (max-width: 500px) {
+  .section{
+    button{
+      width: 100%;
+    }
+  }
 }
