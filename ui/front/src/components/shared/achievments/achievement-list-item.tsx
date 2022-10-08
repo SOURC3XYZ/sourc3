@@ -13,12 +13,6 @@ type AchievementListItemProps = {
   }
 };
 
-function getHoursDiff(startDate: number, endDate: number) {
-  const msInHour = 1000 * 60 * 60;
-
-  return Math.round(Math.abs(endDate - startDate) / msInHour);
-}
-
 export function AchievementListItem({ item, globalInfo }: AchievementListItemProps) {
   const data = achievementsData.get(item.type);
   const children = useMemo(() => {
@@ -41,10 +35,6 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
     const reposPercent = ~~(100 / (
       globalInfo.repos / langData.repos.length
     ));
-    const hoursDiff = getHoursDiff(
-      new Date(langData.first_commit_time).getTime(),
-      new Date(langData.last_commit_time).getTime()
-    );
     return (
       <>
         <div
@@ -55,24 +45,6 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
             }
           }
         />
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-              <span>${(langData.added_lines_cnt).toLocaleString('en')}</span> of lines written are in ${data?.title}
-              `
-          }}
-        />
-
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-              <span>${(hoursDiff).toLocaleString('en')} hours</span> spent coding in ${data?.title}
-              `
-          }}
-        />
-
-        <div style={{ background: 'rgba(0, 0, 0, 0.1)', height: '1px' }} />
-
         <div
           dangerouslySetInnerHTML={
             {
@@ -88,6 +60,36 @@ export function AchievementListItem({ item, globalInfo }: AchievementListItemPro
                   <span>${reposPercent}%</span> of projects`
             }
           }
+        />
+
+        <div style={{ background: 'rgba(0, 0, 0, 0.1)', height: '1px' }} />
+
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <span>${(langData.commits_cnt).toLocaleString('en')}</span> ${
+        langData.commits_cnt === 1 ? 'commit' : 'commits'
+      } in ${data?.title}
+              `
+          }}
+        />
+
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <span>${
+      (langData.added_lines_cnt).toLocaleString('en')}</span> of lines written are in ${data?.title}
+              `
+          }}
+        />
+
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <span>${(langData.repos.length).toLocaleString('en')}</span> ${
+        langData.repos.length === 1 ? 'project' : 'projects'
+      }`
+          }}
         />
       </>
     );

@@ -171,3 +171,8 @@ export function getQueryParam(url:string, param:string) {
   location = location.replace('#', '/');
   return new URL(location).searchParams.get(param);
 }
+
+export function getHoursDiff(startDate: number, endDate: number) {
+  const msInHour = 1000 * 60 * 60;
+  return Math.round(Math.abs(endDate - startDate) / msInHour);
+}

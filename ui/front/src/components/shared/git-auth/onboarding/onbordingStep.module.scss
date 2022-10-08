@@ -7,6 +7,16 @@
 //.scroller section {
 //  scroll-snap-align: start;
 //}
+
+.fromUp{
+  animation: fromUp .3s;
+}
+
+.goDown{
+  animation: toDown .3s;
+}
+
+
 .section {
   max-width: 960px;
   width: 100%;
@@ -103,6 +113,7 @@
           color: #FFFFFF;
         }
     }
+
     //.dots{
     //  position: absolute;
     //  display: flex;
@@ -208,4 +219,14 @@
 
 @media only screen and (max-width: 400px) {
 
+}
+
+@keyframes fromUp {
+  0%    { transform: translate(0,-100vh); }
+  100%  { transform: translate(0, 0); }
+}
+
+@keyframes toDown {
+  0%    { transform: translate(0,0); }
+  100%  { transform: translate(0, 100vh); }
 }
