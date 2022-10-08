@@ -36,9 +36,6 @@ function GitOwnRepos({ data }:GitOwnReposType) {
     const lastCommit = lC || null;
     const lastPr = lPr || null;
     const created = cr;
-    // const pushed = push ? formatDateTime(push) : null;
-    // const update = upd ? formatDateTime(upd) : null;
-    // const end = pushed === update ? pushed : pushed > update ? pushed : update;
     if (lastCommit && lastPr && lastCommit !== lastPr) {
       return lastCommit > lastPr ? formatDateTime(lastCommit) : formatDateTime(lastPr);
     } if (!lastCommit && !lastPr) {
@@ -127,11 +124,19 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                 <span>{minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.github_created_at) === maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.github_updated_at) ? null : `${minTimeContr(rep.user_first_commit_time, rep.user_first_pr_time, rep.github_created_at)} - `}</span>
                 <span>{maxTimeContr(rep.user_last_commit_time, rep.user_last_pr_time, rep.github_updated_at)}</span>
               </div>
-              <div
-                className={styles.commits}
-              >
-                {`${rep.user_commits_cnt} commit${rep.user_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getPercent(rep.total_commits_cnt, rep.user_commits_cnt)}%)`}
-              </div>
+              {rep.total_commits_cnt ? (
+                <div
+                  className={styles.commits}
+                >
+                  {`${rep.user_commits_cnt} commit${rep.user_commits_cnt > 1 ? 's' : ''} (out of ${rep.total_commits_cnt}, ${getPercent(rep.total_commits_cnt, rep.user_commits_cnt)}%)`}
+                </div>
+              ) : (
+                <div
+                  className={styles.commits}
+                >
+                  No commits in the repository
+                </div>
+              )}
               <PullRequest
                 total={rep.user_total_prs_cnt}
                 accepted={rep.user_accepted_prs_cnt}
