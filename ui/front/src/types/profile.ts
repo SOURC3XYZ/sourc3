@@ -137,4 +137,5 @@ export interface IGitRepos {
   owner_login: string,
   rating: number,
   topics: [],
+  org_repo: Boolean
 }
