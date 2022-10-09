@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import styles from './input.module.scss';
 
 interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  autoFocus?: boolean,
   label?: string | null;
   valid?: boolean;
   password?: boolean;
@@ -12,7 +13,7 @@ interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 function InputCustom({
-  label, valid = true, password, length, type, err, ...rest
+  label, autoFocus = true, valid = true, password, length, type, err, ...rest
 }: IputProps) {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
@@ -53,7 +54,7 @@ function InputCustom({
         <label htmlFor="input" className={styles.labelUp}>{label}</label>
         <label htmlFor="input" className={styles.labelDown}>{err}</label>
         <input
-          autoFocus
+          autoFocus={autoFocus}
           id="input"
           className={valid ? styles.inputText : styles.invalid}
           // ref={ref}
