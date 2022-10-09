@@ -1,13 +1,17 @@
 import { copyRefLink, NavButton } from '@components/shared';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
-import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import styles from './step.module.scss';
+import { skipHandler } from '../onboardingStep';
 
 function Step3() {
   const navigate = useNavigate();
   const { github_login, id } = useSelector((state) => state.profile.data);
   const handleCopyLink = () => copyRefLink(id);
+
+  const skip = () => {
+    skipHandler(2, () => navigate(`/profile/${github_login}`));
+  };
   return (
     <div className={styles.section}>
       <div className={styles.step}>
@@ -51,16 +55,12 @@ function Step3() {
               classes={styles.next}
               onClick={() => {
                 navigate(`/profile/${github_login}`);
-                localStorage.removeItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
               }}
             />
           </div>
           <button
             type="button"
-            onClick={() => {
-              navigate(`/profile/${github_login}`);
-              localStorage.removeItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
-            }}
+            onClick={skip}
             className={styles.skip}
           >
             Skip for now

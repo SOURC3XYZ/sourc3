@@ -1,6 +1,7 @@
 import discordIcon from '@assets/icons/discordIcon.svg';
 import twitterIcon from '@assets/icons/twitterIcon.svg';
 import { NavButton } from '@components/shared';
+import { skipHandler } from '../onboardingStep';
 import styles from './step.module.scss';
 
 type Step2Props = {
@@ -8,6 +9,8 @@ type Step2Props = {
 };
 
 function Step2({ callback }: Step2Props) {
+  const skip = () => skipHandler(1, callback);
+
   return (
     <div className={styles.section}>
       <div className={styles.step}>
@@ -54,7 +57,7 @@ function Step2({ callback }: Step2Props) {
           </div>
           <button
             type="button"
-            onClick={callback}
+            onClick={skip}
             className={styles.skip}
           >
             Skip for now

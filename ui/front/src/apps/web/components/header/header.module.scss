@@ -158,9 +158,8 @@
     }
   }
 
-  .headerActive {
+  .header {
     .nav {
-      flex-direction: row;
       align-items: center;
       padding: 0 10px;
     }
@@ -203,10 +202,7 @@
   .navWrapper {
     align-items: flex-start;
   }
-  .connect>div {
-    margin-left: 0 !important;
-  }
-  .headerActive {
+  .header {
     .nav {
       // flex-direction: column;
       align-items: center;

@@ -17,3 +17,5 @@ export const formatDate = (dateString:string) => {
   const time = date.toLocaleString('en', { timeStyle: 'short' });
   return `${dayAndYear} ${time}`;
 };
+
+export const createMsg = <T>(count: T) => `You have ${count} referral points`;

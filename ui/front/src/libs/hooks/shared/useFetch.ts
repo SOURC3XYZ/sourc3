@@ -11,7 +11,7 @@ interface State<T> {
 }
 
 type Action<T> =
-  | { type: 'loading' }
+  | { type: 'loading'; payload: boolean }
   | { type: 'fetched'; payload: T }
   | { type: 'error'; payload: Error };
 
@@ -19,6 +19,7 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boo
   const cancelRequest = useRef<boolean>(false);
 
   const initialState: State<T> = {
+    loading: false,
     error: undefined,
     data: undefined
   };
@@ -26,11 +27,11 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boo
   const fetchReducer = (state: State<T>, action: Action<T>): State<T> => {
     switch (action.type) {
       case 'loading':
-        return { ...initialState };
+        return { ...state, loading: action.payload };
       case 'fetched':
-        return { ...initialState, data: action.payload };
+        return { ...state, data: action.payload };
       case 'error':
-        return { ...initialState, error: action.payload };
+        return { ...state, error: action.payload };
       default:
         return state;
     }
@@ -43,7 +44,7 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boo
 
     cancelRequest.current = false;
 
-    if (loading) dispatch({ type: 'loading' });
+    if (loading) dispatch({ type: 'loading', payload: true });
 
     try {
       const response = await fetch(url, options);
@@ -59,7 +60,7 @@ function useFetch<T = unknown>(url?: string, options?: RequestInit, loading?:boo
       if (cancelRequest.current) return;
 
       dispatch({ type: 'error', payload: error as Error });
-    }
+    } dispatch({ type: 'loading', payload: false });
   };
 
   useEffect(() => {

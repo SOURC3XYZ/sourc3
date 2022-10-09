@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
 import { Button, Dropdown, Menu } from 'antd';
 import { useGitProfile } from '@libs/hooks/thunk';
-import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import styles from './profile-block.module.scss';
 
 type HeaderPropsType = {
@@ -35,7 +34,6 @@ function ProfileBlock({
     {
       title: 'Onboarding',
       onClick: () => {
-        localStorage.removeItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
         navigate('/onboarding');
       }
     },

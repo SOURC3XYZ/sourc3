@@ -1,4 +1,4 @@
-import { NavButton, Preload } from '@components/shared';
+import { NavButton } from '@components/shared';
 import { useFetch } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 import { classNameList } from '@libs/utils';
@@ -7,7 +7,7 @@ import { notification } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 import { HOST } from '../git-auth/profile/constants';
 import styles from './referralProgramm.module.scss';
-import { copyRefLink, formatDate } from './utils';
+import { copyRefLink, createMsg, formatDate } from './utils';
 
 type Referral = {
   user_id: number,
@@ -20,10 +20,13 @@ type RefferalsResponce = {
   referrals: Referral[]
 };
 
-function ReferralProgramm() {
+type RefferalPageProps = {
+  token: string;
+};
+
+function ReferralProgramm({ token }:RefferalPageProps) {
   const id = useSelector((state) => state.profile.data.id);
 
-  const token = localStorage.getItem('token');
   const { data, loading, error } = useFetch<RefferalsResponce>(`${HOST}/user/referrals`, {
     method: 'GET',
     headers: {
@@ -43,7 +46,20 @@ function ReferralProgramm() {
   }, [error]);
 
   const referrals = useMemo(() => {
-    if (loading) return <Preload message="loading data..." />;
+    if (loading) {
+      return (
+        <div className={styles.empty}>
+          <p>Loading data...</p>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className={styles.empty}>
+          <p>Error when trying to get data</p>
+        </div>
+      );
+    }
     if (data) {
       return (
         <>
@@ -67,14 +83,14 @@ function ReferralProgramm() {
         <p>No one have used your referral link so far</p>
       </div>
     );
-  }, [data, loading]);
+  }, [data, loading, error]);
 
   const title = useMemo(() => {
-    const count = !data?.referrals ? '...'
-      : data?.referrals.length as number * 10 || 0;
-    const msg = `You have ${count} referral points`;
+    let msg = createMsg('...');
+    if (error) msg = createMsg(0);
+    if (data) msg = createMsg(data.referrals.length * 10);
     return <h4>{msg}</h4>;
-  }, [data, loading]);
+  }, [data, loading, error]);
 
   return (
     <div className={styles.section}>
