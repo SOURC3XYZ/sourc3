@@ -11,6 +11,8 @@ import Step2 from './step2/step2';
 import Step3 from './step3/step3';
 import './slider.scss';
 
+// const isMobile = navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
+
 function App() {
   const sliderRef = useRef<CarouselRef>(null);
   const settings:CarouselProps = {
@@ -20,6 +22,9 @@ function App() {
     infinite: false,
     vertical: true,
     verticalSwiping: true,
+    beforeChange: () => {
+      window.scrollTo({ top: 0 });
+    },
     responsive: [
       {
         breakpoint: 1024,
@@ -48,6 +53,10 @@ function App() {
       sliderRef.current.next();
     }
   }, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [isOnboarding]);
 
   useEffect(() => {
     document.addEventListener('mousewheel', mouseWheelEventListener);
