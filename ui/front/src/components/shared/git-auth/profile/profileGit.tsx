@@ -75,84 +75,77 @@ function ProfileGit() {
     : 0
   ), [gitProfiles]);
 
+  if (!gitProfiles) return <Preload messageBlack="Loading..." />;
+
   return (
-    <>
-      <div className={styles.appWrapper}>
-        <Header isOnLending={false} />
-        {!gitProfiles ? <Preload messageBlack="Loading..." />
-          : (
-            <div className={styles.wrapper}>
+    <div className={styles.wrapper}>
 
-              <div className={styles.content}>
-                <div className={styles.header}>
-                  <div className={styles.mainHeader}>
-                    <div className={styles.name}>{gitProfiles?.github_profile.name || gitProfiles?.github_profile.login}</div>
-                    <div className={styles.supHeader}>
-                      {gitProfiles?.github_profile.login && <span>{gitProfiles?.github_profile.login}</span>}
-                      {gitProfiles?.github_profile.email && <span>{gitProfiles?.github_profile.email}</span>}
-                      {shortAddress && (
-                        <span>
-                          {shortAddress}
-                          {' '}
-                          <button
-                            type="button"
-                            onClick={() => copy(gitProfiles?.eth_address)}
-                            className={styles.copyButton}
-                          >
-                            <IconCopy />
-                          </button>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                </div>
-                <div className={styles.wrapperContent}>
-                  <div className={styles.leftSide}>
-                    {' '}
-                    <div className={styles.avatar}>
-                      {gitProfiles?.github_profile.avatar_url
-                        ? <Avatar url={gitProfiles?.github_profile.avatar_url} /> : <IconDefaultAvatar />}
-                    </div>
-                    {gitProfiles.github_orgs.length > 0 && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}
-                  </div>
-                  <div className={styles.topContent}>
-
-                    {!taskStatus ? (
-                      <div className={styles.preloader}>
-                        <EarlyDescription gitProfiles={gitProfiles} />
-                        <Preload messageBlack message="This may take a while..." />
-                      </div>
-                    )
-                      : gitProfiles?.github_repos.length > 0
-                        ? (
-                          <GitSummary
-                            profile={gitProfiles}
-                          />
-                        )
-                        : (<EarlyDescription gitProfiles={gitProfiles} />)}
-                    <Mane
-                      first={(
-                        <AchievementList
-                          globalInfo={{
-                            commits: gitProfiles.github_profile.user_commits_cnt,
-                            lines: linesSumm
-                          }}
-                          items={gitProfiles.achievements}
-                        />
-                      )}
-                      second={<GitOwnRepos data={gitProfiles.github_repos} />}
-                    />
-
-                  </div>
-                </div>
-
-              </div>
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <div className={styles.mainHeader}>
+            <div className={styles.name}>{gitProfiles?.github_profile.name || gitProfiles?.github_profile.login}</div>
+            <div className={styles.supHeader}>
+              {gitProfiles?.github_profile.login && <span>{gitProfiles?.github_profile.login}</span>}
+              {gitProfiles?.github_profile.email && <span>{gitProfiles?.github_profile.email}</span>}
+              {shortAddress && (
+                <span>
+                  {shortAddress}
+                  {' '}
+                  <button
+                    type="button"
+                    onClick={() => copy(gitProfiles?.eth_address)}
+                    className={styles.copyButton}
+                  >
+                    <IconCopy />
+                  </button>
+                </span>
+              )}
             </div>
-          )}
+          </div>
+
+        </div>
+        <div className={styles.wrapperContent}>
+          <div className={styles.leftSide}>
+            {' '}
+            <div className={styles.avatar}>
+              {gitProfiles?.github_profile.avatar_url
+                ? <Avatar url={gitProfiles?.github_profile.avatar_url} /> : <IconDefaultAvatar />}
+            </div>
+            {gitProfiles.github_orgs.length > 0 && taskStatus && <Organizations githubOrgs={gitProfiles.github_orgs} />}
+          </div>
+          <div className={styles.topContent}>
+
+            {!taskStatus ? (
+              <div className={styles.preloader}>
+                <EarlyDescription gitProfiles={gitProfiles} />
+                <Preload messageBlack message="This may take a while..." />
+              </div>
+            )
+              : gitProfiles?.github_repos.length > 0
+                ? (
+                  <GitSummary
+                    profile={gitProfiles}
+                  />
+                )
+                : (<EarlyDescription gitProfiles={gitProfiles} />)}
+            <Mane
+              first={(
+                <AchievementList
+                  globalInfo={{
+                    commits: gitProfiles.github_profile.user_commits_cnt,
+                    lines: linesSumm
+                  }}
+                  items={gitProfiles.achievements}
+                />
+              )}
+              second={<GitOwnRepos data={gitProfiles.github_repos} />}
+            />
+
+          </div>
+        </div>
+
       </div>
-      <Footer isOnLending={false} profile />
-    </>
+    </div>
   );
 }
 

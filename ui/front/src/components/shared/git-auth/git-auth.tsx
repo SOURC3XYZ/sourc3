@@ -49,7 +49,6 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
             const ref = refId ? `&ref_by=${refId}` : '';
             axios.get(`${HOST}/login?code=${data.code}${ref}`)
               .then((res) => {
-                console.log(res.data.token);
                 window.localStorage.setItem('token', res.data.token);
                 axios({
                   method: 'get',
@@ -103,7 +102,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           <a
             className={styles.whyLink}
             target="_blank"
-            href="https://www.sourc3.xyz/why-connect-to-github"
+            href="https://www.sourc3.xyz/"
             rel="noreferrer"
           >
             Why connect? Learn more

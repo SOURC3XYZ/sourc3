@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IProfiles } from '@types';
 import { Milestone } from '@components/shared/git-auth/profile/repository/components';
 import styles from './gitSummary.module.scss';

@@ -116,7 +116,7 @@
             line-height: 16px;
             color: #000000;
             margin: 0;
-            &:nth-child(2){
+            &:nth-child(2), &:nth-child(3){
               padding-left: 16px;
             }
           }
@@ -144,7 +144,7 @@
       p{
         max-width: 300px;
         width: 100% !important;
-        &:nth-child(2){
+        &:nth-child(2), &:nth-child(3){
           padding-left: 22px !important;
         }
       }

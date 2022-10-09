@@ -5,8 +5,8 @@ import early from '@assets/icons/early-adopter.svg';
 import arrow from '@assets/icons/arrow2.svg';
 import ellipse from '@assets/icons/ellipse.svg';
 import { NavButton } from '@components/shared';
-import React from 'react';
 import { useSelector } from '@libs/redux';
+import { useNavigate } from 'react-router-dom';
 import styles from './stepStart.module.scss';
 
 type StepStartProps = {
@@ -15,6 +15,8 @@ type StepStartProps = {
 
 function stepStart({ callback }:StepStartProps) {
   const { github_profile, github_login, id } = useSelector((state) => state.profile.data);
+
+  const navigate = useNavigate();
 
   return (
     <div className={styles.section}>
@@ -56,7 +58,7 @@ function stepStart({ callback }:StepStartProps) {
           <span className={styles.drop}>
             <span
               className={styles.color}
-              onClick={callback}
+              onClick={() => navigate('/onboarding?initial_slide=0')}
             >
               future proof your reputation
 
@@ -65,7 +67,7 @@ function stepStart({ callback }:StepStartProps) {
             {' '}
             <span
               className={styles.color}
-              onClick={callback}
+              onClick={() => navigate('/onboarding?initial_slide=1')}
             >
               join the community
 
@@ -75,7 +77,7 @@ function stepStart({ callback }:StepStartProps) {
             {' '}
             <span
               className={styles.color}
-              onClick={callback}
+              onClick={() => navigate('/onboarding?initial_slide=2')}
             >
               spread the word
 
