@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import early_adopter_badge from '@assets/img/early_adopter_badge.svg';
+import early_adopter_badge from '@assets/achievements/early_joiner.svg';
 import { IProfiles } from '@types';
 import axios from 'axios';
 import { HOST } from '@components/shared/git-auth/profile/constants';
@@ -35,27 +35,19 @@ function EarlyDescription({ gitProfiles }:EayrlyType) {
           </span>
           <br />
           <div>
-            <span>
-              You are the
-              {' '}
-              <b>{gitProfiles?.id}</b>
-              {' '}
-              th of
-              {' '}
-              <b>{allUsers}</b>
-              {' '}
-              developers that have
-              already claimed their repos.
-              {' '}
-            </span>
-            <br />
-            <span>
-              As an early adopter, you will receive benefits including
-              exclusive airdrops, and early
+            <span className={styles.description_text_adopter}>
+              <p>
+                You are the
+                {' '}
+                <b>{gitProfiles?.id}</b>
+                {' '}
+                th of
+                {' '}
+                <b>{allUsers}</b>
+              </p>
+              As an early adopter, you will receive benefits including exclusive airdrops, and early
               <br />
-              {' '}
-              access to new features and
-              products.
+              access to new features and products.
             </span>
           </div>
         </div>
