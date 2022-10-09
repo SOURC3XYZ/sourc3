@@ -102,7 +102,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
           <a
             className={styles.whyLink}
             target="_blank"
-            href="https://www.sourc3.xyz/why-connect-to-github"
+            href="https://www.sourc3.xyz/"
             rel="noreferrer"
           >
             Why connect? Learn more
