@@ -13,6 +13,7 @@ import { AchievementList, Preload } from '@components/shared';
 import EarlyDescription from '@components/shared/git-auth/profile/earlyAdop/EarlyDescription';
 import { compact, copyToClipboard } from '@libs/utils';
 import Mane from '@components/shared/git-auth/profile/mane/mane';
+import message from 'antd/lib/message';
 import styles from './profileGit.module.scss';
 import Organizations from './organization';
 import { Header } from '../../../../apps/web/components/header';
@@ -28,6 +29,7 @@ function ProfileGit() {
   const shortAddress = gitProfiles?.eth_address && compact(gitProfiles?.eth_address, 6);
   const copy = (cop) => {
     copyToClipboard(cop);
+    return message.info('Address copied to clipboard!');
   };
   const checkStatus = (result:any) => {
     axios.get(`${HOST}/tasks/${result}`).then((task) => {
