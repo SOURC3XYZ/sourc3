@@ -2,6 +2,7 @@ import { NavButton } from '@components/shared';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
 import { copyRefLink } from '@components/shared/referral-programm/referralProgramm';
+import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import styles from './step.module.scss';
 
 function Step3() {
@@ -49,7 +50,10 @@ function Step3() {
             <NavButton
               name="Next"
               classes={styles.next}
-              onClick={() => navigate(`/profile/${github_login}`)}
+              onClick={() => {
+                navigate(`/profile/${github_login}`);
+                localStorage.removeItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
+              }}
             />
           </div>
           <button

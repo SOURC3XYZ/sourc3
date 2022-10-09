@@ -18,12 +18,13 @@ function GitSummary({ profile }:gitSummaryType) {
   const [topics, setTopics] = useState<[] | number>(0);
   const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
   const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
-  const mostPopularOwnRep = profile && profile.github_repos.sort((a, b) => b.rating - a.rating).slice(0, 1);
+  const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
+
+  const getPercent = (total:number, own:number) => +((own / total) * 100).toFixed(1);
 
   const getTopics = () => {
     if (profile.github_repos) {
-      setTopics(mostPopularOwnRep[0].topics);
-      console.log({ mostPopularOwnRep });
+      setTopics(profile && profile.github_repos.sort((a, b) => b.rating - a.rating).slice(0, 1)[0].topics);
     }
   };
   const calcRepInORg = () => {
@@ -61,8 +62,9 @@ function GitSummary({ profile }:gitSummaryType) {
 
     return Object.keys(sortedPopularityMap)
       .reverse()
-      .slice(0, sliceSize)
-      .map((rate) => ({ language: sortedPopularityMap[rate], rate }));
+      .map((rate) => ({ language: sortedPopularityMap[rate], rate }))
+      .filter((el) => el.rate > 0.5 && el.language !== 'Renamed files' && el.language !== 'Other')
+      .sort((a, b) => b.rate - a.rate);
   }
 
   const languages = () => {
@@ -70,19 +72,19 @@ function GitSummary({ profile }:gitSummaryType) {
     profile.github_repos.map((item) => {
       item.user_languages.map((el) => {
         if (el.language) {
-          langArray.push({ language: el.language, rate: (el.removed_lines_cnt + el.added_lines_cnt) });
+          langArray.push({ language: el.language, rate: getPercent((profile.github_profile.added_lines_cnt + profile.github_profile.removed_lines_cnt), (el.removed_lines_cnt + el.added_lines_cnt)) });
         } if (el.renamed_files_cnt) {
           langArray.push({ language: 'Renamed files', rate: el.renamed_files_cnt });
         } if (el.languages) {
           langArray.push({
-            language: el.languages.join(','),
-            rate: (el.added_lines_cnt + el.removed_lines_cnt)
+            language: el.languages.slice(0, 1).join(','),
+            rate: getPercent((profile.github_profile.added_lines_cnt + profile.github_profile.removed_lines_cnt), (el.removed_lines_cnt + el.added_lines_cnt))
           });
         }
         return el;
       });
     });
-    return setMostLanguages(languagePopularitySlice(langArray, 10));
+    return setMostLanguages(languagePopularitySlice(langArray));
   };
 
   useEffect(() => {
@@ -157,7 +159,7 @@ function GitSummary({ profile }:gitSummaryType) {
                 </span>
               </div>
 
-              {mostPopularOwnRep.length && (
+              {mostPopularOwnRep.length ? (
                 <div className={styles.resumeLeft_wrapper}>
                   <span className={styles.text}>
                     Most popular repository:
@@ -167,7 +169,7 @@ function GitSummary({ profile }:gitSummaryType) {
                     </span>
                   </span>
                 </div>
-              )}
+              ) : null}
 
             </div>
 
@@ -232,13 +234,13 @@ function GitSummary({ profile }:gitSummaryType) {
           ))}
         </div>
       )}
-       {topics && (
+      {topics ? (
         <div className={styles.topics}>
           {topics && topics.map((el) => (
             <Milestone tags title={el} key={`${window.crypto.randomUUID()}`} />
           ))}
         </div>
-       )}
+      ) : null}
     </div>
   );
 }

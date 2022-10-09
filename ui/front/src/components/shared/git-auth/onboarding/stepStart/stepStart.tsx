@@ -7,6 +7,7 @@ import ellipse from '@assets/icons/ellipse.svg';
 import { NavButton } from '@components/shared';
 import { useSelector } from '@libs/redux';
 import { useNavigate } from 'react-router-dom';
+import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import styles from './stepStart.module.scss';
 
 type StepStartProps = {
@@ -17,6 +18,11 @@ function stepStart({ callback }:StepStartProps) {
   const { github_profile, github_login, id } = useSelector((state) => state.profile.data);
 
   const navigate = useNavigate();
+
+  const handleGoToStep = (step: number) => {
+    window.scrollTo({ top: 0 });
+    navigate(`/onboarding?${LOCAL_STORAGE_ITEMS.ONBOARDING_STEP}=${step}`);
+  };
 
   return (
     <div className={styles.section}>
@@ -33,7 +39,7 @@ function stepStart({ callback }:StepStartProps) {
             for joining&nbsp;
             <a href="/">SOURC3</a>
             {' '}
-            and
+            &nbsp;and&nbsp;
           </span>
           the community shaping
           {' '}
@@ -58,7 +64,7 @@ function stepStart({ callback }:StepStartProps) {
           <span className={styles.drop}>
             <span
               className={styles.color}
-              onClick={() => navigate('/onboarding?initial_slide=0')}
+              onClick={() => handleGoToStep(0)}
             >
               future proof your reputation
 
@@ -67,7 +73,7 @@ function stepStart({ callback }:StepStartProps) {
             {' '}
             <span
               className={styles.color}
-              onClick={() => navigate('/onboarding?initial_slide=1')}
+              onClick={() => handleGoToStep(1)}
             >
               join the community
 
@@ -77,7 +83,7 @@ function stepStart({ callback }:StepStartProps) {
             {' '}
             <span
               className={styles.color}
-              onClick={() => navigate('/onboarding?initial_slide=2')}
+              onClick={() => handleGoToStep(2)}
             >
               spread the word
 
