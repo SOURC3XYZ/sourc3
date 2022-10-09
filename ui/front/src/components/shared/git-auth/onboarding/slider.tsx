@@ -9,12 +9,12 @@ import styles from './onbordingStep.module.scss';
 import Step1 from './step1/step1';
 import Step2 from './step2/step2';
 import Step3 from './step3/step3';
-import './slider.css';
+import './slider.scss';
 
 function App() {
   const sliderRef = useRef<CarouselRef>(null);
   const settings:CarouselProps = {
-    adaptiveHeight: false,
+    adaptiveHeight: true,
     dots: false,
     infinite: false,
     vertical: true,
@@ -31,7 +31,7 @@ function App() {
 
   const slides = useMemo(() => [
     <div className={styles.container} key={1}>
-      <div className={styles.stepWrapper}>
+      <div className={`${styles.stepWrapper} ${styles.stepWrapper1}`}>
         <div className={styles.step}>
           <div className={styles.dots}>
             <span className={styles.orange}>1</span>
@@ -43,7 +43,7 @@ function App() {
       </div>
     </div>,
     <div className={styles.container} key={2}>
-      <div className={styles.stepWrapper}>
+      <div className={`${styles.stepWrapper} ${styles.stepWrapper2}`}>
         <div className={`${styles.step} ${styles.step2}`}>
           <div className={styles.dots}>
             <span className={styles.orange2}><img src={doneIcon} alt="doneIcon" /></span>
@@ -56,7 +56,7 @@ function App() {
 
     </div>,
     <div className={styles.container} key={3}>
-      <div className={styles.stepWrapper}>
+      <div className={`${styles.stepWrapper} ${styles.stepWrapper3}`}>
         <div className={`${styles.step} ${styles.step3}`}>
           <div className={styles.dots}>
             <span className={styles.orange3}><img src={doneIcon} alt="doneIcon" /></span>

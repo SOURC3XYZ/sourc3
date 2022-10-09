@@ -1,7 +1,5 @@
 .section {
-  max-width: 960px;
-  width: 100%;
-  margin: 80px auto 0 auto;
+  margin-top: 70px;
   .step{
     position: relative;
     display: flex;
@@ -44,7 +42,7 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      margin: 80px -12px 189px;
+      margin: 80px -12px 167px;
       .next{
         display: flex;
         align-items: center;
@@ -97,25 +95,23 @@
 
 @media only screen and (max-width: 1135px) {
   .section{
-    padding: 0 40px;
     .content{
       h1{
         font-size: 30px;
-        margin-left: 55px;
       }
     }
   }
 }
 @media only screen and (max-width: 867px) {
   .section {
-    margin-bottom: 40px;
+    margin-bottom: 110px;
   }
 }
 @media only screen and (max-width: 796px) {
   .section{
     .content{
       .button{
-        margin: 40px -12px 80px;
+        margin: 40px -12px;
         .buttonItem{
           width: 100%;
           margin: 12px;
@@ -131,5 +127,10 @@
 @media only screen and (max-width: 500px) {
   .section{
     padding: 0 10px;
+    .content{
+      h1{
+        margin-left: 35px;
+      }
+    }
   }
 }
