@@ -60,6 +60,7 @@ function Step1({ callback }:Spep1Props) {
           <div className={styles.input}>
             <InputCustom
               type="text"
+              autoFocus={false}
               onChange={(e) => (setAddress(e.target.value))}
               valid={isEthAddress(address)}
               err={!isEthAddress(address) && address ? 'Address incorrect' : ''}

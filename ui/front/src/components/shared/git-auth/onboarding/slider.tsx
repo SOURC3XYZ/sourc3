@@ -14,11 +14,21 @@ import './slider.scss';
 function App() {
   const sliderRef = useRef<CarouselRef>(null);
   const settings:CarouselProps = {
+    dotPosition: 'left',
     adaptiveHeight: true,
     dots: false,
     infinite: false,
     vertical: true,
-    verticalSwiping: true
+    verticalSwiping: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          vertical: false,
+          verticalSwiping: false
+        }
+      }
+    ]
   };
 
   const [isOnboarding, setIsOnboarding] = useState(false);
@@ -28,6 +38,21 @@ function App() {
       return sliderRef.current.next();
     } return null;
   }, [sliderRef.current?.next]);
+
+  const mouseWheelEventListener = useCallback((event:any) => {
+    if (window.innerWidth <= 1024) return;
+    if (!sliderRef.current) return;
+    if (event.wheelDelta >= 0) {
+      sliderRef.current.prev();
+    } else {
+      sliderRef.current.next();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousewheel', mouseWheelEventListener);
+    return () => { document.removeEventListener('mousewheel', mouseWheelEventListener); };
+  }, []);
 
   const slides = useMemo(() => [
     <div className={styles.container} key={1}>
@@ -69,23 +94,9 @@ function App() {
     </div>
   ], [next]);
 
-  const mouseWheelEventListener = useCallback((event:any) => {
-    if (!sliderRef.current) return;
-    if (event.wheelDelta >= 0) {
-      sliderRef.current.prev();
-    } else {
-      sliderRef.current.next();
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('mousewheel', mouseWheelEventListener);
-    return () => { document.removeEventListener('mousewheel', mouseWheelEventListener); };
-  }, []);
-
   if (isOnboarding) {
     return (
-      <Carousel ref={sliderRef} {...settings} dotPosition="left">
+      <Carousel ref={sliderRef} {...settings}>
         {slides}
       </Carousel>
     );
