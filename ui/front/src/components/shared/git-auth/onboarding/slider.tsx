@@ -4,8 +4,6 @@ import {
 } from 'react';
 import { CarouselRef } from 'antd/lib/carousel';
 import doneIcon from '@assets/icons/done.svg';
-import { getQueryParam } from '@libs/utils';
-import { useParams } from 'react-router-dom';
 import StepStart from './stepStart/stepStart';
 import styles from './onbordingStep.module.scss';
 import Step1 from './step1/step1';
@@ -13,36 +11,23 @@ import Step2 from './step2/step2';
 import Step3 from './step3/step3';
 import './slider.scss';
 
-function OnbordingSlider() {
-  useParams();
-
-  const initialSlide = getQueryParam(window.location.href, 'initial_slide');
-
+function App() {
   const sliderRef = useRef<CarouselRef>(null);
   const settings:CarouselProps = {
-<<<<<<< HEAD
-=======
-    dotPosition: 'left',
->>>>>>> 9ad4e0fc09129e74204c42674c02ac87d324351a
     adaptiveHeight: true,
     dots: false,
     infinite: false,
     vertical: true,
-    verticalSwiping: true,
-    swipeToSlide: true,
-    initialSlide: initialSlide === null ? 0 : +initialSlide,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    afterChange: (current) => localStorage.setItem('onbording_step', String(current))
+    verticalSwiping: true
   };
-  const [isOnboarding, setIsOnboarding] = useState(!!initialSlide);
+
+  const [isOnboarding, setIsOnboarding] = useState(false);
 
   const next = useCallback(() => {
     if (sliderRef.current) {
       return sliderRef.current.next();
     } return null;
-  }, [sliderRef.current]);
+  }, [sliderRef.current?.next]);
 
   const slides = useMemo(() => [
     <div className={styles.container} key={1}>
@@ -68,6 +53,7 @@ function OnbordingSlider() {
         </div>
         <Step2 callback={next} />
       </div>
+
     </div>,
     <div className={styles.container} key={3}>
       <div className={`${styles.stepWrapper} ${styles.stepWrapper3}`}>
@@ -97,9 +83,9 @@ function OnbordingSlider() {
     return () => { document.removeEventListener('mousewheel', mouseWheelEventListener); };
   }, []);
 
-  if (isOnboarding || initialSlide !== null) {
+  if (isOnboarding) {
     return (
-      <Carousel className={styles.carousel} ref={sliderRef} {...settings}>
+      <Carousel ref={sliderRef} {...settings} dotPosition="left">
         {slides}
       </Carousel>
     );
@@ -112,4 +98,4 @@ function OnbordingSlider() {
   );
 }
 
-export default OnbordingSlider;
+export default App;
