@@ -46,13 +46,13 @@ function Step1({ callback }:Spep1Props) {
           </h1>
           <div className={styles.text}>
             <p>
-              Ensure your reputation and contributions are attributed to you by
+              Ensure your reputation and contributions are attributed to you by&nbsp;
               <span className={styles.drop}>
                 bringing them on-chain and associated to your wallet.
               </span>
             </p>
             <p>
-              Connecting your wallet address also means we can airdrop SOURC3 rewards
+              Connecting your wallet address also means we can airdrop SOURC3 rewards&nbsp;
               <span className={styles.drop}>and benefits directly.</span>
             </p>
             <p>Pop your Ethereum wallet address (hex or ENS) below:</p>
