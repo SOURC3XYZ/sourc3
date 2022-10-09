@@ -1,7 +1,5 @@
 .section {
-  max-width: 960px;
-  width: 100%;
-  margin: 35px auto 0 auto;
+  margin-top: 35px;
   .content{
     h1{
       font-family: 'PublicSans-ExtraBold', serif;
@@ -38,7 +36,7 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      margin: 80px -12px 189px;
+      margin: 80px -12px 193px;
       a{
         display: flex;
         align-items: center;
@@ -88,11 +86,9 @@
 
 @media only screen and (max-width: 1135px) {
   .section{
-    padding: 0 40px;
     .content{
       h1{
         font-size: 30px;
-        margin-left: 55px;
       }
     }
   }
@@ -106,7 +102,7 @@
   .section{
     .content{
       .link{
-        margin: 40px -12px 80px;
+        margin: 40px -12px;
         a{
           width: 100%;
           font-size: 19px;
@@ -123,6 +119,11 @@
 @media only screen and (max-width: 500px) {
   .section{
     padding: 0 10px;
+    .content{
+      h1{
+        margin-left: 35px;
+      }
+    }
     button{
       width: 100%;
     }

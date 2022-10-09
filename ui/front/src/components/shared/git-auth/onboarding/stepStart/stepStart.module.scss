@@ -1,7 +1,7 @@
 .section {
   max-width: 960px;
   width: 100%;
-  margin: 60px auto 170px auto;
+  margin: 72px auto 170px auto;
     .title{
       position: relative;
       display: flex;
@@ -129,8 +129,7 @@
 }
 @media only screen and (max-width: 768px) {
   .section{
-    margin-top: 0;
-    margin-bottom: 40px;
+    margin: 40px 0;
     padding: 0 10px;
     .title{
       .img{

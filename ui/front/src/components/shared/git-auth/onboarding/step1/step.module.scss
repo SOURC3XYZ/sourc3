@@ -1,7 +1,4 @@
 .section {
-  max-width: 960px;
-  width: 100%;
-  margin: 0 auto;
   .content{
     h1{
       font-family: 'PublicSans-ExtraBold', serif;
@@ -79,11 +76,9 @@
 
 @media only screen and (max-width: 1135px) {
   .section{
-    padding: 0 40px;
     .content{
       h1{
         font-size: 30px;
-        margin-left: 45px;
       }
       .text{
         p{
@@ -118,6 +113,7 @@
     padding: 0 10px;
     .content {
       h1 {
+        margin-left: 35px;
         .drop{
           display: inline;
         }

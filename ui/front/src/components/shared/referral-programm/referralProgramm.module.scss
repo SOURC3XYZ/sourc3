@@ -78,6 +78,9 @@
         }
       }
       .date{
+        display: flex;
+        justify-content: center;
+        align-items: center;
         min-height: 143px;
         height: 100%;
         padding: 16px;
