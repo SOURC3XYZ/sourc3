@@ -16,6 +16,7 @@ import './slider.scss';
 function App() {
   const sliderRef = useRef<CarouselRef>(null);
   const settings:CarouselProps = {
+    dotPosition: 'left',
     adaptiveHeight: true,
     dots: false,
     infinite: false,
