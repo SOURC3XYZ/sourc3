@@ -1,11 +1,13 @@
 import { NavButton, Preload } from '@components/shared';
 import { useFetch } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
+import { classNameList } from '@libs/utils';
 import { NotificationPlacement } from '@types';
-import { message, notification } from 'antd';
+import { notification } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 import { HOST } from '../git-auth/profile/constants';
 import styles from './referralProgramm.module.scss';
+import { copyRefLink, formatDate } from './utils';
 
 type Referral = {
   user_id: number,
@@ -16,24 +18,6 @@ type Referral = {
 type RefferalsResponce = {
   referred_by: number | null,
   referrals: Referral[]
-};
-
-export const copyRefLink = (id: string) => {
-  const repoLink = `${window.location.origin}/?ref_by=${id}`;
-  navigator.clipboard.writeText(repoLink);
-  return message.info(`${repoLink} copied to clipboard!`);
-};
-
-const formatDate = (dateString:string) => {
-  const options:Intl.DateTimeFormatOptions = {
-    year: 'numeric', month: 'long', day: 'numeric'
-  };
-
-  const date = new Date(dateString);
-
-  const dayAndYear = date.toLocaleString('en', options);
-  const time = date.toLocaleString('en', { timeStyle: 'short' });
-  return `${dayAndYear} ${time}`;
 };
 
 function ReferralProgramm() {
@@ -65,7 +49,10 @@ function ReferralProgramm() {
         <>
           {
             data.referrals.map((el) => (
-              <div key={`user_id-${el.user_id}`} className={styles.info}>
+              <div
+                key={`user_id-${el.user_id}`}
+                className={classNameList(styles.gridRow, styles.info)}
+              >
                 <p>{formatDate(el.created_at)}</p>
                 <p>10</p>
                 <p>{el.github_login}</p>
@@ -103,14 +90,12 @@ function ReferralProgramm() {
           />
         </div>
         <div className={styles.table}>
-          <div className={styles.title}>
+          <div className={classNameList(styles.title, styles.gridRow)}>
             <h4>Activation date</h4>
             <h4>Referral points</h4>
             <h4>User</h4>
           </div>
-          <div className={styles.date}>
-            {referrals}
-          </div>
+          {referrals}
         </div>
       </div>
     </div>
