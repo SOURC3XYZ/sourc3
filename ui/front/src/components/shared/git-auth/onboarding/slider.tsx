@@ -22,17 +22,13 @@ function App() {
   const settings:CarouselProps = {
     dotPosition: 'left',
     adaptiveHeight: true,
+    infinite: true,
     dots: false,
-    infinite: false,
     vertical: true,
     verticalSwiping: true,
     initialSlide: initialSlide === null ? 0 : +initialSlide,
-    onInit: () => {
-      localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, initialSlide || String(0));
-    },
-    beforeChange: (_, nextSlide) => {
+    beforeChange: () => {
       window.scrollTo({ top: 0 });
-      localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, String(nextSlide));
     },
     responsive: [
       {

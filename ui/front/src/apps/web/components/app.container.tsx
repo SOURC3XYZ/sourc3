@@ -16,7 +16,7 @@ import axios from 'axios';
 import { HOST } from '@components/shared/git-auth/profile/constants';
 import { AC } from '@libs/action-creators';
 import ProfileGit from '@components/shared/git-auth/profile/profileGit';
-import { useDispatch } from '@libs/redux';
+import { useDispatch, useSelector } from '@libs/redux';
 import { Popup } from '@components/shared/popup';
 import { Footer } from './footer';
 import styles from './app.module.scss';
@@ -31,6 +31,9 @@ function Main() {
   const [isVisible, setVisible] = useState(false);
   // const [isDisabled, setIsDisabled] = useState(false);
   const [isErr, setIsErr] = useState(false);
+
+  const tokenFromState = useSelector((state) => state.profile.data.token);
+
   const HeadlessPreloadFallback = useCallback(() => (
     <Preload
       isOnLendos={isOnLending}
@@ -122,7 +125,14 @@ function Main() {
 
                       <Route
                         path="/referral-programm"
-                        element={<ReferralProgramm />}
+                        element={(
+                          <PreloadComponent
+                            Fallback={HeadlessPreloadFallback}
+                            isLoaded={!!tokenFromState}
+                          >
+                            <ReferralProgramm token={tokenFromState} />
+                          </PreloadComponent>
+                        )}
                       />
                       <Route
                         path="/onboarding"

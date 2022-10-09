@@ -7,7 +7,17 @@ import {
   useEffect, useMemo, useRef, useState
 } from 'react';
 import doneIcon from '@assets/icons/done.svg';
+import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import styles from './onbordingStep.module.scss';
+
+export const skipHandler = (step: number, callback: () => void) => {
+  const storaged = localStorage.getItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
+  if (!storaged) {
+    localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, String(step));
+  } else if (storaged && +storaged > step) {
+    localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, String(step));
+  } callback();
+};
 
 function OnboardingStep() {
   const [active, setActive] = useState(1);

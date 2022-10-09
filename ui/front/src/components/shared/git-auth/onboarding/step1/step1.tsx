@@ -5,6 +5,7 @@ import { HOST } from '@components/shared/git-auth/profile/constants';
 import { isEthAddress } from '@libs/utils';
 import InputCustom from '../../../input/input';
 import styles from './step.module.scss';
+import { skipHandler } from '../onboardingStep';
 
 type Spep1Props = {
   callback: () => void;
@@ -31,6 +32,8 @@ function Step1({ callback }:Spep1Props) {
 
     });
   };
+
+  const skip = () => skipHandler(0, callback);
 
   return (
     <div className={styles.section}>
@@ -73,7 +76,7 @@ function Step1({ callback }:Spep1Props) {
           </div>
           <button
             type="button"
-            onClick={callback}
+            onClick={skip}
             className={styles.skip}
           >
             Skip for now
