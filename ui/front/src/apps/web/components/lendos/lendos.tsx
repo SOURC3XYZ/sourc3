@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import img from '@assets/img/source-logo.svg';
 import { GitConnectAuth } from '@components/shared/git-auth';
+import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import { useSelector } from '@libs/redux';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +22,7 @@ function Lendos() {
     if (!isAuth) return <GitConnectAuth why name="Connect Github" />;
     const goToOnboarding = () => {
       const step = localStorage.getItem('onbording_step');
-      navigate(`/onboarding${step ? `?initial_slide=${step}` : ''}`);
+      navigate(`/onboarding${step ? `?${LOCAL_STORAGE_ITEMS.ONBOARDING_STEP}=${step}` : ''}`);
     };
     const goToProfile = () => navigate(`/profile/${authData.github_login}`);
 

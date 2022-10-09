@@ -4,6 +4,9 @@ import {
 } from 'react';
 import { CarouselRef } from 'antd/lib/carousel';
 import doneIcon from '@assets/icons/done.svg';
+import { useParams } from 'react-router-dom';
+import { getQueryParam } from '@libs/utils';
+import { LOCAL_STORAGE_ITEMS } from '@libs/constants';
 import StepStart from './stepStart/stepStart';
 import styles from './onbordingStep.module.scss';
 import Step1 from './step1/step1';
@@ -11,10 +14,11 @@ import Step2 from './step2/step2';
 import Step3 from './step3/step3';
 import './slider.scss';
 
-// const isMobile = navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
-
 function App() {
+  useParams();
   const sliderRef = useRef<CarouselRef>(null);
+  const initialSlide = getQueryParam(window.location.href, LOCAL_STORAGE_ITEMS.ONBOARDING_STEP);
+
   const settings:CarouselProps = {
     dotPosition: 'left',
     adaptiveHeight: true,
@@ -22,8 +26,13 @@ function App() {
     infinite: false,
     vertical: true,
     verticalSwiping: true,
-    beforeChange: () => {
+    initialSlide: initialSlide === null ? 0 : +initialSlide,
+    onInit: () => {
+      localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, initialSlide || String(0));
+    },
+    beforeChange: (_, nextSlide) => {
       window.scrollTo({ top: 0 });
+      localStorage.setItem(LOCAL_STORAGE_ITEMS.ONBOARDING_STEP, String(nextSlide));
     },
     responsive: [
       {
@@ -36,7 +45,7 @@ function App() {
     ]
   };
 
-  const [isOnboarding, setIsOnboarding] = useState(false);
+  const [isOnboarding, setIsOnboarding] = useState(!!initialSlide);
 
   const next = useCallback(() => {
     if (sliderRef.current) {
@@ -45,23 +54,17 @@ function App() {
   }, [sliderRef.current?.next]);
 
   const mouseWheelEventListener = useCallback((event:any) => {
-    if (window.innerWidth <= 1024) return;
-    if (!sliderRef.current) return;
-    if (event.wheelDelta >= 0) {
-      sliderRef.current.prev();
-    } else {
-      sliderRef.current.next();
-    }
+    if (window.innerWidth <= 1024) return null;
+    if (!sliderRef.current) return null;
+    if (event.wheelDelta >= 0) return sliderRef.current.prev();
+    return sliderRef.current.next();
   }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-  }, [isOnboarding]);
-
-  useEffect(() => {
     document.addEventListener('mousewheel', mouseWheelEventListener);
     return () => { document.removeEventListener('mousewheel', mouseWheelEventListener); };
-  }, []);
+  }, [isOnboarding]);
 
   const slides = useMemo(() => [
     <div className={styles.container} key={1}>
@@ -103,7 +106,7 @@ function App() {
     </div>
   ], [next]);
 
-  if (isOnboarding) {
+  if (isOnboarding || initialSlide !== null) {
     return (
       <Carousel ref={sliderRef} {...settings}>
         {slides}

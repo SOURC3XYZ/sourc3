@@ -37,6 +37,10 @@ export enum ACTIONS {
   GIT_USER_LOGOUT = 'GIT_USER_LOGOUT'
 }
 
+export enum LOCAL_STORAGE_ITEMS {
+  ONBOARDING_STEP = 'onbording_step'
+}
+
 export enum EVENTS {
   SUBUNSUB = 'subunsub'
 }
