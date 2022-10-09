@@ -70,11 +70,11 @@
         font-weight: 800;
         font-size: 20px;
         line-height: 20px;
-        color: #FFFFFF;
+        color: #FFFFFF !important;
         margin: 0 12px;
         padding: 16px 40px;
         &:nth-child(2){
-          color: #4DA2E6;
+          color: #4DA2E6 !important;
           background: #FFFFFF;
           border: 1px solid #4DA2E6;
         }
@@ -104,7 +104,10 @@
 }
 @media only screen and (max-width: 867px) {
   .section {
-    margin-bottom: 110px;
+    margin-bottom: 40px;
+    .skip{
+      width: 100%;
+    }
   }
 }
 @media only screen and (max-width: 796px) {

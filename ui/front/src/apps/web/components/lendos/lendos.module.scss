@@ -159,6 +159,10 @@
 @media screen and (max-width: 1280px) {
   .wrapper {
     right: 0 !important;
+      &::before {
+        left: unset !important;
+        right: 5px;
+      }
   }
 
   .logo::after {

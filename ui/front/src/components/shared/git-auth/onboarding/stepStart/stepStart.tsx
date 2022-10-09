@@ -39,7 +39,7 @@ function stepStart({ callback }:StepStartProps) {
             for joining&nbsp;
             <a href="/">SOURC3</a>
             {' '}
-            and
+            &nbsp;and&nbsp;
           </span>
           the community shaping
           {' '}
