@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import {
   Notifications,
   Preload,
-  DownloadPage, NavButton, FailPage, OnboardingStep
+  DownloadPage, NavButton, FailPage, OnboardingStep, ReferralProgramm
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
 import {
@@ -18,7 +18,6 @@ import { AC } from '@libs/action-creators';
 import ProfileGit from '@components/shared/git-auth/profile/profileGit';
 import { useDispatch } from '@libs/redux';
 import { Popup } from '@components/shared/popup';
-import ReferralProgramm from '@components/shared/referral-programm/referralProgramm';
 import { Footer } from './footer';
 import styles from './app.module.scss';
 import { Lendos } from './lendos';
