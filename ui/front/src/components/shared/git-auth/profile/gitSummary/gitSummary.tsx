@@ -16,6 +16,7 @@ function GitSummary({ profile }:gitSummaryType) {
   const [reliasedRep, setReliasedRep] = useState(0);
   const [allOwnRepos, setAllOwnRepos] = useState(0);
   const [topics, setTopics] = useState<[] | number>(0);
+  const [cntOrg, setCntOrg] = useState(0);
   const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
   const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
@@ -27,25 +28,25 @@ function GitSummary({ profile }:gitSummaryType) {
       setTopics(profile && profile.github_repos.sort((a, b) => b.rating - a.rating).slice(0, 1)[0].topics);
     }
   };
-  const calcRepInORg = () => {
-    if (profile.github_orgs) {
-      const repOrg = [];
-      for (let i = 0; i < profile.github_orgs.length; i++) {
-        profile.github_repos.map((el) => {
-          if (el.owner_login === profile.github_orgs[i].login) {
-            repOrg.push(el);
-          }
-        });
-      }
-      const mostPopularRep = repOrg && repOrg.sort((a, b) => b.rating - a.rating);
-      setMostPopularOrgRep(mostPopularRep);
-      setRelisedOrgs(repOrg.filter((el) => el.user_releases_cnt).length);
-      setRelisedCount(repOrg && repOrg.reduce((acc, rep) => acc + rep.user_releases_cnt, relisedCount));
-      setAllOrgs(repOrg.length);
-    }
-  };
+  // const calcRepInORg = () => {
+  //   if (profile.github_orgs) {
+  //     const repOrg = [];
+  //     for (let i = 0; i < profile.github_orgs.length; i++) {
+  //       profile.github_repos.map((el) => {
+  //         if (el.owner_login === profile.github_orgs[i].login) {
+  //           repOrg.push(el);
+  //         }
+  //       });
+  //     }
+  //     const mostPopularRep = repOrg && repOrg.sort((a, b) => b.rating - a.rating);
+  //     setMostPopularOrgRep(mostPopularRep);
+  //     setRelisedOrgs(repOrg.filter((el) => el.user_releases_cnt).length);
+  //     setRelisedCount(repOrg && repOrg.reduce((acc, rep) => acc + rep.user_releases_cnt, relisedCount));
+  //     setAllOrgs(repOrg.length);
+  //   }
+  // };
 
-  function languagePopularitySlice(languageList, sliceSize) {
+  function languagePopularitySlice(languageList) {
     const popularityMap = languageList.reduce(
       (map, { language, rate }) => ({
         ...map,
@@ -53,7 +54,6 @@ function GitSummary({ profile }:gitSummaryType) {
       }),
       {}
     );
-
     const sortedPopularityMap = {};
 
     for (const language in popularityMap) {
@@ -66,7 +66,20 @@ function GitSummary({ profile }:gitSummaryType) {
       .filter((el) => el.rate > 0.5 && el.language !== 'Renamed files' && el.language !== 'Other')
       .sort((a, b) => b.rate - a.rate);
   }
-
+  const calcRepInORg = () => {
+    if (profile.github_repos) {
+      const orgRep = profile.github_repos.filter((el) => el.owner_login !== profile.github_login);
+      setAllOrgs(orgRep.length);
+      const popularityMap = orgRep.reduce(
+        (map, { owner_login, rate }) => ({
+          ...map,
+          [owner_login]: owner_login in map
+        }),
+        {}
+      );
+      setCntOrg(Object.keys(popularityMap).length);
+    }
+  };
   const languages = () => {
     const langArray = [];
     profile.github_repos.map((item) => {
@@ -99,7 +112,10 @@ function GitSummary({ profile }:gitSummaryType) {
 
   useEffect(() => {
     if (profile.github_repos) {
-      setCreatedRepos(profile.github_repos.length - forkedRepos);
+      setForkedRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + (rep.fork ? 1 : 0), 0));
+      setCreatedRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).length - forkedRepos);
+      console.log(profile.github_repos);
+      console.log(profile.github_repos && profile.github_repos.filter((el) => !el.org_repo));
       setReputation((allCommits * 10) + stars);
       languages();
       getTopics();
@@ -117,8 +133,8 @@ function GitSummary({ profile }:gitSummaryType) {
             <div className={styles.resumeLeft}>
               <div className={styles.resumeLeft_wrapper}>
                 <span className={styles.title}>
-                  {`${profile.github_repos.length} ${
-                    profile.github_repos.length === 1 ? 'repository' : 'repositories'}`}
+                  {`${allOwnRepos} ${
+                    allOwnRepos === 1 ? 'repository' : 'repositories'}`}
                   <span className={styles.text}>
                     {
                       ` (${createdRepos} created, ${forkedRepos} forked)`
@@ -177,54 +193,53 @@ function GitSummary({ profile }:gitSummaryType) {
             <div />
           </div>
         )}
-        {profile.github_orgs && (
-          <div className={styles.blockRight}>
-            <div className={styles.resumeLeft_wrapper}>
-              <span
-                className={styles.title}
-              >
-                {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
-                {profile.github_orgs.length === 1
-                  ? `${profile.github_orgs.length} organization`
-                  : `${profile.github_orgs.length} organizations`}
-              </span>
-            </div>
 
-            <div className={styles.resumeLeft_wrapper}>
-              <span
-                className={styles.title}
-              >
-                {relisedCount}
+        <div className={styles.blockRight}>
+          <div className={styles.resumeLeft_wrapper}>
+            <span
+              className={styles.title}
+            >
+              {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
+              {cntOrg === 1
+                ? `${cntOrg} organization`
+                : `${cntOrg} organizations`}
+            </span>
+          </div>
+
+          <div className={styles.resumeLeft_wrapper}>
+            <span
+              className={styles.title}
+            >
+              {relisedCount}
+              {' '}
+              <span className={styles.text}>
+                {relisedCount === 1 ? 'release' : 'releases'}
                 {' '}
+                in
+                {' '}
+                <span className={styles.title}>
+                  {relisedOrgs}
+                  {' '}
+                </span>
                 <span className={styles.text}>
-                  {relisedCount === 1 ? 'release' : 'releases'}
-                  {' '}
-                  in
-                  {' '}
-                  <span className={styles.title}>
-                    {relisedOrgs}
-                    {' '}
-                  </span>
-                  <span className={styles.text}>
-                    {relisedOrgs === 1
-                      ? ' repository' : 'repositories'}
-                  </span>
+                  {relisedOrgs === 1
+                    ? ' repository' : 'repositories'}
                 </span>
               </span>
-            </div>
-            {mostPopularOrgRep?.length > 0 && (
-              <div className={styles.resumeLeft_wrapper}>
-                <span
-                  className={styles.text}
-                >
-                  Most popular repository:
-                  {' '}
-                  <a href={`https://github.com/${mostPopularOrgRep[0].full_name}`}>{mostPopularOrgRep[0].full_name}</a>
-                </span>
-              </div>
-            )}
+            </span>
           </div>
-        )}
+          {mostPopularOrgRep?.length > 0 && (
+            <div className={styles.resumeLeft_wrapper}>
+              <span
+                className={styles.text}
+              >
+                Most popular repository:
+                {' '}
+                <a href={`https://github.com/${mostPopularOrgRep[0].full_name}`}>{mostPopularOrgRep[0].full_name}</a>
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       {mostLanguages?.length > 0 && (
         <div className={styles.languages}>
