@@ -160,23 +160,25 @@
 
 @media (max-width: 745px) {
     .wrapper {
-        width: max-content;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 121px 121px 121px 121px;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
         grid-template-rows: auto;
+        .achieveItem {
+            justify-self: center;
+        }
     }
 }
 
 
 @media (max-width: 600px) {
     .wrapper {
-        grid-template-columns: 121px 121px 121px;
+        grid-template-columns: 1fr 1fr 1fr;
     }
 }
 
 @media (max-width: 420px) {
     .wrapper {
-        grid-template-columns: 121px 121px;
+        grid-template-columns: 1fr 1fr;
     }
 }
