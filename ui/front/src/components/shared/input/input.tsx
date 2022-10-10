@@ -51,8 +51,7 @@ function InputCustom({
       </div>
     ) : (
       <div className={styles.wrapperInput}>
-        <label htmlFor="input" className={styles.labelUp}>{label}</label>
-        <label htmlFor="input" className={styles.labelDown}>{err}</label>
+        {label ? <label htmlFor="input" className={styles.labelUp}>{label}</label> : null}
         <input
           autoFocus={autoFocus}
           id="input"
@@ -61,6 +60,7 @@ function InputCustom({
           {...rest}
           type="text"
         />
+        <label htmlFor="input" className={styles.labelDown}>{err}</label>
       </div>
     )
   );
