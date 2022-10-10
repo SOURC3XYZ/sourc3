@@ -122,7 +122,7 @@
 .wrapperOrganization{
   display: flex;
   flex-direction: column;
-  width: max-content;
+  width: 100%;
   margin-top: 24px;
   .title{
     font-family: 'PublicSans-ExtraBold';
@@ -131,11 +131,14 @@
     font-size: 18px;
     line-height: 20px;
     color: black;
-    margin-bottom: 16px;
+    margin-bottom: 11px;
   }
   &_avatar{
     display: flex;
+    flex-wrap: wrap;
+    width: 100%;
     &>a{
+      margin-top: 5px;
       margin-right: 5px;
     }
     .wrapp{
@@ -190,7 +193,7 @@
   .wrapperOrganization{
     margin-left: 3rem;
   }
-  
+
   .supHeader{
     display: flex;
     flex-wrap: wrap;
