@@ -17,6 +17,7 @@ function GitSummary({ profile }:gitSummaryType) {
   const [allOwnRepos, setAllOwnRepos] = useState(0);
   const [topics, setTopics] = useState<[] | number>(0);
   const [cntOrg, setCntOrg] = useState(0);
+  const [repInOrg, setRepInORG] = useState(0);
   const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
   const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
@@ -28,23 +29,6 @@ function GitSummary({ profile }:gitSummaryType) {
       setTopics(profile && profile.github_repos.sort((a, b) => b.rating - a.rating).slice(0, 1)[0].topics);
     }
   };
-  // const calcRepInORg = () => {
-  //   if (profile.github_orgs) {
-  //     const repOrg = [];
-  //     for (let i = 0; i < profile.github_orgs.length; i++) {
-  //       profile.github_repos.map((el) => {
-  //         if (el.owner_login === profile.github_orgs[i].login) {
-  //           repOrg.push(el);
-  //         }
-  //       });
-  //     }
-  //     const mostPopularRep = repOrg && repOrg.sort((a, b) => b.rating - a.rating);
-  //     setMostPopularOrgRep(mostPopularRep);
-  //     setRelisedOrgs(repOrg.filter((el) => el.user_releases_cnt).length);
-  //     setRelisedCount(repOrg && repOrg.reduce((acc, rep) => acc + rep.user_releases_cnt, relisedCount));
-  //     setAllOrgs(repOrg.length);
-  //   }
-  // };
 
   function languagePopularitySlice(languageList) {
     const popularityMap = languageList.reduce(
@@ -69,8 +53,10 @@ function GitSummary({ profile }:gitSummaryType) {
   const calcRepInORg = () => {
     if (profile.github_repos) {
       const orgRep = profile.github_repos.filter((el) => el.owner_login !== profile.github_login);
+      const repIn = orgRep.filter((el) => el.org_repo);
+      setRepInORG(repIn.length);
       setAllOrgs(orgRep.length);
-      const popularityMap = orgRep.reduce(
+      const popularityMap = repIn.reduce(
         (map, { owner_login, rate }) => ({
           ...map,
           [owner_login]: owner_login in map
@@ -114,8 +100,6 @@ function GitSummary({ profile }:gitSummaryType) {
     if (profile.github_repos) {
       setForkedRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + (rep.fork ? 1 : 0), 0));
       setCreatedRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).length - forkedRepos);
-      console.log(profile.github_repos);
-      console.log(profile.github_repos && profile.github_repos.filter((el) => !el.org_repo));
       setReputation((allCommits * 10) + stars);
       languages();
       getTopics();
@@ -199,7 +183,7 @@ function GitSummary({ profile }:gitSummaryType) {
             <span
               className={styles.title}
             >
-              {allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs} repositories in `}
+              {allOrgs === 1 && allOrgs === repInOrg ? `${allOrgs} repository in ` : allOrgs === repInOrg ? `${repInOrg} repositories in ` : allOrgs === 1 ? `${allOrgs} repository in ` : `${allOrgs}  repositories, ${repInOrg} in `}
               {cntOrg === 1
                 ? `${cntOrg} organization`
                 : `${cntOrg} organizations`}
