@@ -50,8 +50,10 @@
           display: block;
         }
         .indent{
-          word-break: break-all;
           padding-left: 63px;
+          span {
+            word-break: break-all;
+          }
         }
       }
     }
