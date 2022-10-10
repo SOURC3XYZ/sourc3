@@ -22,7 +22,7 @@ function App() {
   const settings:CarouselProps = {
     dotPosition: 'left',
     adaptiveHeight: true,
-    infinite: true,
+    infinite: false,
     dots: false,
     vertical: true,
     verticalSwiping: true,
