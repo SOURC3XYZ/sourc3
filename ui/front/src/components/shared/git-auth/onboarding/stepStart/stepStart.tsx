@@ -34,7 +34,7 @@ function stepStart({ callback }:StepStartProps) {
         <h1>
           <span className={styles.indent}>
             <span>{`${github_profile.name || github_login}`}</span>
-            , thank
+            , thank you
             {' '}
           </span>
           <span className={styles.drop}>
