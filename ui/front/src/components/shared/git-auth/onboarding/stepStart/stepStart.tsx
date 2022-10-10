@@ -33,7 +33,9 @@ function stepStart({ callback }:StepStartProps) {
         </div>
         <h1>
           <span className={styles.indent}>
-            {`${github_profile.name || github_login}, thank you ` }
+            <span>{`${github_profile.name || github_login}`}</span>
+            , thank
+            {' '}
           </span>
           <span className={styles.drop}>
             for joining&nbsp;
