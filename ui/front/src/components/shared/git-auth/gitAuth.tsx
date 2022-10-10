@@ -3,7 +3,7 @@ import { Preload } from '@components/shared';
 
 function GitAuth() {
   function closeWindow() {
-    window.open('', '_parent', '');
+    window.open('', '_self', '');
     window.close();
   }
   useEffect(() => {
