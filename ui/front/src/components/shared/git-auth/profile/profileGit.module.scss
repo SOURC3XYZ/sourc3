@@ -38,7 +38,7 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      width: max-content;
+      width: 100%;
 
       .mainHeader {
         display: flex;
@@ -189,5 +189,20 @@
   }
   .wrapperOrganization{
     margin-left: 3rem;
+  }
+  
+  .supHeader{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    width: 100%;
+    & > span {
+      width: 100%;
+      word-break: break-all;
+    }
+    & >span:before {
+      content: '' !important;
+      margin: 0 !important;
+    }
   }
 }
