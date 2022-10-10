@@ -96,6 +96,14 @@
     margin-bottom: 40px;
     .input{
       margin: 52px 0;
+      label{
+        position: unset;
+        margin-bottom: 15px;
+        height: 14px;
+        width: 100%;
+        margin-left: 22px;
+        color: red;
+      }
       div{
         width: 100%;
       }
