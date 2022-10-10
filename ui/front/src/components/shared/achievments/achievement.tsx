@@ -31,23 +31,28 @@ function Achievement({
 
   useOutsideClick(ref, () => setInvisible());
 
+  const ghostBlockClass = popupVisible ? styles.ghostBlockActive : styles.ghostBlock;
+
   return (
-    <div ref={ref} className={styles.achieveItem}>
-      <a className={styles.icon} href="/" onClick={setVisible}>
-        <img
-          alt="prog-lang"
-          src={img}
-        />
-      </a>
-      <AchievementPopup
-        color={color}
-        name={item.title}
-        isVisible={popupVisible}
-        setInvisible={setInvisible}
-      >
-        {children}
-      </AchievementPopup>
-    </div>
+    <>
+      <div className={ghostBlockClass} />
+      <div ref={ref} className={styles.achieveItem}>
+        <a className={styles.icon} href="/" onClick={setVisible}>
+          <img
+            alt="prog-lang"
+            src={img}
+          />
+        </a>
+        <AchievementPopup
+          color={color}
+          name={item.title}
+          isVisible={popupVisible}
+          setInvisible={setInvisible}
+        >
+          {children}
+        </AchievementPopup>
+      </div>
+    </>
   );
 }
 
