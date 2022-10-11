@@ -2,11 +2,13 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable @typescript-eslint/no-shadow */
+import { getQueryParam } from '@libs/utils';
 import { notification } from 'antd';
 import { NotificationPlacement } from 'antd/lib/notification';
 import React, {
   memo, useCallback, useEffect, useState
 } from 'react';
+import { useParams } from 'react-router-dom';
 
 export type objectType = {
   [key: string]: any
@@ -44,6 +46,11 @@ export function LoginSocialGithub({
   onResolve
 }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const { params } = useParams();
+
+  const engage = getQueryParam(window.location.href, 'engage') || '';
+  const code = getQueryParam(window.location.href, 'code') || '';
 
   useEffect(() => {
     const popupWindowURL = new URL(window.location.href);
@@ -98,6 +105,12 @@ export function LoginSocialGithub({
       );
     }
   };
+
+  useEffect(() => {
+    if (engage && code) {
+      handlePostMessage({ provider: 'github', type: 'code', code });
+    }
+  }, [params]);
 
   return (
     <div className={className} onClick={onLogin}>

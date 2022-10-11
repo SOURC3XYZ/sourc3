@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react';
 import { Preload } from '@components/shared';
+import { useNavigate } from 'react-router-dom';
 
 function GitAuth() {
   function closeWindow() {
     window.open('', '_self', '');
     window.close();
   }
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     const popupWindowURL = new URL(window.location.href);
     const code = popupWindowURL.searchParams.get('code');
@@ -13,8 +17,13 @@ function GitAuth() {
 
     if (state?.includes('_github') && code) {
       localStorage.setItem('github', code);
-      closeWindow();
+      return closeWindow();
     }
+    if (state?.includes('_engage') && code) {
+      localStorage.setItem('github', code);
+      return navigate(`/?engage=true&code=${code}`);
+    }
+    return undefined;
   }, []);
   return (
     <Preload messageBlack message="Waite a few sec..." />
