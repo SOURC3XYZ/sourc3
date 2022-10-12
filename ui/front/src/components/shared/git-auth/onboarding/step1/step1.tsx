@@ -58,7 +58,7 @@ function Step1({ callback }:Spep1Props) {
               Connecting your wallet address also means we can airdrop SOURC3 rewards&nbsp;
               <span className={styles.drop}>and benefits directly.</span>
             </p>
-            <p>Pop your Ethereum wallet address (hex or ENS) below:</p>
+            <p>Pop your Ethereum wallet address hex below:</p>
           </div>
           <div className={styles.input}>
             <InputCustom
