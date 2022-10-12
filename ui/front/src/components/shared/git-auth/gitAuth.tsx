@@ -26,7 +26,7 @@ function GitAuth() {
     return undefined;
   }, []);
   return (
-    <Preload messageBlack message="Waite a few sec..." />
+    <Preload messageBlack message="Wait a few sec..." />
   );
 }
 
