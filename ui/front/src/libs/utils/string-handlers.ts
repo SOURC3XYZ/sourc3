@@ -177,21 +177,14 @@ export function getHoursDiff(startDate: number, endDate: number) {
   return Math.round(Math.abs(endDate - startDate) / msInHour);
 }
 
-export const isEns = (address:string) => {
-  if (
-    address.includes(' ')
-  || address[0] === '.'
-  || address[address.length - 1] === '.'
-  || address.length < 7) return false;
-
-  const arr = address.split('.');
-  if (arr[arr.length - 1] !== 'eth' || (arr.length > 2 && arr[arr.length - 2] === 'eth')) {
-    return false;
-  }
-  arr.pop();
-  const { length, [length - 1]: last } = arr.join('.');
-
-  return last !== '.';
+export const isEns = (address: string) => {
+  if (address.length < 7) { return false; }
+  if (address.substring(address.length - 4) !== '.eth') { return false; }
+  address = address.substring(0, address.length - 4);
+  const hasSpace = /\s/g.test(address);
+  if (address[0] === '.' || address[address.length - 1] === '.' || hasSpace) { return false; }
+  if (address.length >= 4 && address.substring(address.length - 4) === '.eth') { return false; }
+  return true;
 };
 
 export const isEthAddress = function (address:string) {
