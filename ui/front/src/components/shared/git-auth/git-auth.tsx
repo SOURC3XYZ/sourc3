@@ -87,7 +87,7 @@ function GitConnectAuth({ name, small, why }:GitConnectAuthProps) {
                 });
               });
           }}
-          scope="read:user user:email repo"
+          scope="read:user user:email public_repo"
         >
           <NavButton
             name={name}
