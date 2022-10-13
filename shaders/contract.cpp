@@ -549,6 +549,10 @@ BEAM_EXPORT void Method_26(const method::MigrateContractState& params) { // NOLI
     cs.projects_num = cs_old.last_project_id - 1;
     cs.repos_num = cs_old.last_repo_id - 1;
     Env::SaveVar_T(0, cs);
+
+    Upgradable3::Settings stgs;
+    stgs.Load();
+    stgs.TestAdminSigs(1);
 }
 
 BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLINT
@@ -575,6 +579,9 @@ BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLI
         Env::SaveVar_T(Member<Organization>::Key{org->creator, org_id}, Member<Organization>{Organization::Permissions::kAll});
         SaveVLObject(Organization::Key{org_id}, org, sizeof(Organization) + org->data.name_len);
     }
+    Upgradable3::Settings stgs;
+    stgs.Load();
+    stgs.TestAdminSigs(1);
 }
 
 BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
@@ -603,6 +610,9 @@ BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
         Env::SaveVar_T(Member<Project>::Key{proj->creator, proj_id}, Member<Project>{Project::Permissions::kAll});
         SaveVLObject(Project::Key{proj_id}, proj, sizeof(Project) + proj->data.name_len);
     }
+    Upgradable3::Settings stgs;
+    stgs.Load();
+    stgs.TestAdminSigs(1);
 }
 
 BEAM_EXPORT void Method_29(const method::MigrateRepos& params) { // NOLINT
@@ -635,4 +645,8 @@ BEAM_EXPORT void Method_29(const method::MigrateRepos& params) { // NOLINT
         Env::SaveVar_T(Member<Repo>::Key{repo->owner, repo_id}, Member<Repo>{Repo::Permissions::kAll});
         SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
     }
+
+    Upgradable3::Settings stgs;
+    stgs.Load();
+    stgs.TestAdminSigs(1);
 }
