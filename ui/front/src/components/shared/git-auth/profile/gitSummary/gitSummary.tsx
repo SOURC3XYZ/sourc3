@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { IProfiles } from '@types';
+import { IGitRepos, IProfiles } from '@types';
 import { Milestone } from '@components/shared/git-auth/profile/repository/components';
 import styles from './gitSummary.module.scss';
 
@@ -18,7 +18,7 @@ function GitSummary({ profile }:gitSummaryType) {
   const [topics, setTopics] = useState<[] | number>(0);
   const [cntOrg, setCntOrg] = useState(0);
   const [repInOrg, setRepInORG] = useState(0);
-  const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[] | undefined>(undefined);
+  const [mostPopularOrgRep, setMostPopularOrgRep] = useState<[IGitRepos] | undefined>(undefined);
   const [mostLanguages, setMostLanguages] = useState<[] | undefined>(undefined);
   const mostPopularOwnRep = profile && profile.github_repos.filter((el) => el.owner_login === profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1);
 
@@ -56,6 +56,11 @@ function GitSummary({ profile }:gitSummaryType) {
       const repIn = orgRep.filter((el) => el.org_repo);
       setRepInORG(repIn.length);
       setAllOrgs(orgRep.length);
+      setRelisedCount(repIn && repIn.reduce((acc, rep) => acc + rep.user_releases_cnt, 0));
+      setRelisedOrgs(repIn && repIn.filter((el) => el.user_releases_cnt).length);
+      if (orgRep.length) {
+        setMostPopularOrgRep(profile && profile.github_repos.filter((el) => el.owner_login !== profile.github_login).sort((a, b) => b.rating - a.rating).slice(0, 1));
+      }
       const popularityMap = repIn.reduce(
         (map, { owner_login, rate }) => ({
           ...map,
@@ -212,7 +217,7 @@ function GitSummary({ profile }:gitSummaryType) {
               </span>
             </span>
           </div>
-          {mostPopularOrgRep?.length > 0 && (
+          {mostPopularOrgRep?.length ? (
             <div className={styles.resumeLeft_wrapper}>
               <span
                 className={styles.text}
@@ -222,7 +227,7 @@ function GitSummary({ profile }:gitSummaryType) {
                 <a href={`https://github.com/${mostPopularOrgRep[0].full_name}`}>{mostPopularOrgRep[0].full_name}</a>
               </span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
       {mostLanguages?.length > 0 && (
