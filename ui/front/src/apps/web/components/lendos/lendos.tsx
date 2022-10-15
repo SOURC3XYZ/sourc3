@@ -19,7 +19,7 @@ function Lendos() {
   const isAuth = !!authData.token;
 
   const buttons = useMemo(() => {
-    if (!isAuth) return <GitConnectAuth why name="Connect Github" />;
+    if (!isAuth) return <div className={styles.afterConnect}><GitConnectAuth why name="Connect Github" /></div>;
     const goToOnboarding = () => {
       const step = localStorage.getItem('onbording_step');
       navigate(`/onboarding${step ? `?${LOCAL_STORAGE_ITEMS.ONBOARDING_STEP}=${step}` : ''}`);

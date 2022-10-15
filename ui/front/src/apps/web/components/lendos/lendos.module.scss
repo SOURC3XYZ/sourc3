@@ -3,6 +3,7 @@
   width: 100%;
   // height: 100%;
 
+
   .wrapper {
     position: relative;
     right: 100px;
@@ -10,6 +11,19 @@
     margin: 0 auto;
     font-family: PublicSans-Regular;
     color: white;
+    flex-basis: 100%;
+
+    &::before {
+      background: url('@assets/img/rect.png');
+      position: absolute;
+      content: '';
+      top: 66vh;
+      left: -100px;
+      width: 84px;
+      height: 84px;
+      display: block;
+      animation: fadein 10s alternate;
+    }
 
     .logo {
       position: relative;
@@ -33,16 +47,6 @@
       animation: fadein 2s alternate;
     }
 
-    h1 {
-      color: white;
-      font-size: 80px;
-      font-weight: 900;
-      line-height: 90px;
-      max-width: 609px;
-      height: 180px;
-      margin-bottom: 16px;
-    }
-
     .intro::before {
       position: absolute;
       content: '';
@@ -55,10 +59,11 @@
       animation: fadein 4s alternate;
     }
 
+
     .intro {
       position: relative;
       width: max-content;
-      margin: 10vh auto;
+      margin: 10vh auto 0;
 
       h1 {
         color: white;
@@ -107,38 +112,32 @@
         line-height: 20px;
         font-weight: 600;
       }
-      .afterConnect{
+
+      .afterConnect {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        margin: 0 -12px;
-        button{
-          width: 281px;
-          height: 52px;
+        width: 100%;
+
+        button {
+          max-width: 281px;
+          width: 100%;
+          padding: 16px 5px;
+          text-align: center;
           border: 1px solid #FF791F;
           border-radius: 8px;
-          margin: 0 12px;
-          &:nth-child(2){
+
+          &:nth-child(2) {
             color: #FF791F !important;
-            background: transparent;
+            background: #000;
           }
         }
       }
     }
   }
-
-  .wrapper::before {
-    background: url('@assets/img/rect.png');
-    position: absolute;
-    content: '';
-    bottom: -15vh;
-    left: -42px;
-    width: 84px;
-    height: 84px;
-    display: block;
-    animation: fadein 10s alternate;
-  }
 }
+
+
 
 @keyframes fadein {
   from {
@@ -150,107 +149,274 @@
   }
 }
 
-@media screen and (min-width: 1920px) and (max-width: 2560px) {
-  .wrapper {
-    right: 0 !important;
-  }
-}
 
-@media screen and (max-width: 1280px) {
-  .wrapper {
-    right: 0 !important;
-      &::before {
-        left: unset !important;
-        right: 5px;
+@media (max-width: 1024px) {
+  .bg {
+    margin-top: 29px;
+    padding: 0 32px;
+
+    .wrapper {
+      width: 100%;
+      right: unset;
+      max-width: unset;
+
+      .logo {
+        width: 100%;
+
+        img {
+          display: block;
+          height: 100%;
+          margin-top: 0;
+        }
+
+        &::after {
+          right: unset;
+          width: 52px;
+          height: 52px;
+          top: unset;
+          bottom: 20px;
+          left: 60%;
+        }
       }
-  }
 
-  .logo::after {
-    right: -152px !important;
-  }
-}
+      &::before {
+        display: none;
+      }
 
-@media screen and (max-width: 992px) {
-  .wrapper {
-    .logo::after {
-      display: none !important;
-    }
+      .intro {
+        margin: 64px 0 0;
+        height: unset;
+        width: 100%;
 
-    .intro::before {
-      display: none !important;
-    }
+        &:before {
+          display: none;
+        }
 
-    .intro p:after {
-      display: none !important;
-    }
-  }
-}
+        .afterConnect {
+          width: 100%;
+          max-width: unset;
+          gap: 16px 0;
 
-@media screen and (max-width: 768px) {
-  .wrapper {
-    img {
-      margin: 0 auto;
-      margin-top: 40px !important;
-    }
+          button {
+            width: 100%;
+            max-width: unset;
+          }
+        }
 
-    .intro {
-      margin: 25px 0 !important;
-      padding: 0 20px;
-    }
-  }
-}
+        h1 {
+          margin: 0;
+          font-weight: 500;
+          height: unset;
+        }
 
-@media screen and (max-width: 600px) {
-  .wrapper {
-    width: 100% !important;
-
-    &::before {
-      left: unset !important;
-      right: 5px;
-      bottom: 35% !important;
-    }
-
-    .logo {
-      width: 200px;
-    }
-
-    .intro {
-      width: 100% !important;
-      padding: 0 10px;
-
-      h1 {
-        font-size: 50px !important;
-        height: auto !important;
-        line-height: 1.2 !important;
       }
 
       p {
-        font-size: 14px !important;
+        margin-top: 32px;
       }
+    }
+  }
 
-      .button {
-        width: 130px !important;
-        height: 40px !important;
-        font-size: 14px !important;
+}
+
+@media (max-width: 768px) {
+  .bg {
+    margin-top: 29px;
+    padding: 0 32px;
+
+
+    &::before {
+      display: block;
+      left: 3px;
+      top: 71vh;
+      width: 28px;
+      height: 28px;
+      background-size: contain;
+    }
+
+    .wrapper {
+      width: 100%;
+      right: unset;
+      max-width: unset;
+      &::before {
+        display: block;
+        left: 3px;
+        top: 71vh;
+        width: 28px;
+        height: 28px;
+        background-size: contain;
       }
-      .afterConnect{
-        margin: 0 !important;
-        button{
-          width: 300px !important;
-          margin: 12px 0 !important;
+      .logo {
+        width: 100%;
+        height: 11.9vw;
+
+        img {
+          display: block;
+          height: 100%;
+          margin-top: 0;
+        }
+
+        &::after {
+          // right: 77px;
+          width: 52px;
+          height: 52px;
+          top: unset;
+          bottom: 20px;
         }
       }
-    }
-  }
-}
-@media screen and (max-height: 900px) {
 
-  .wrapper{
-    .intro{
-      margin: 8vh 0 !important;
+      .intro {
+        margin: 64px 0 0;
+        font-weight: 500;
+        font-size: 8.88vw;
+        height: unset;
+        width: 100%;
+
+       
+
+        .afterConnect {
+          width: 100%;
+          max-width: unset;
+          gap: 16px 0;
+
+          button {
+            width: 100%;
+            max-width: unset;
+          }
+        }
+
+        h1 {
+          margin: 0;
+          font-weight: 500;
+          font-size: 8.88vw;
+          line-height: 131.5%;
+          height: unset;
+        }
+
+        p {
+          font-weight: 400;
+          font-size: 3.88vw;
+          line-height: 177.5%;
+          position: static;
+          max-width: unset;
+
+          &:after {
+            right: 0;
+            top: 15px;
+            width: 39px;
+            height: 95px;
+            background-image: url('@assets/img/right-rect-mobile.svg');
+          }
+
+        }
+
+      }
     }
   }
-    &::before{
-      left: -100px !important;
-    }
 }
+
+
+// @media screen and (min-width: 1920px) and (max-width: 2560px) {
+//   .wrapper {
+//     right: 0 !important;
+//   }
+// }
+
+// @media screen and (max-width: 1280px) {
+//   .wrapper {
+//     right: 0 !important;
+//       &::before {
+//         left: unset !important;
+//         right: 5px;
+//       }
+//   }
+
+//   .logo::after {
+//     right: -152px !important;
+//   }
+// }
+
+// @media screen and (max-width: 992px) {
+//   .wrapper {
+//     .logo::after {
+//       display: none !important;
+//     }
+
+//     .intro::before {
+//       display: none !important;
+//     }
+
+//     .intro p:after {
+//       display: none !important;
+//     }
+//   }
+// }
+
+// @media screen and (max-width: 768px) {
+//   .wrapper {
+//     img {
+//       margin: 0 auto;
+//       margin-top: 40px !important;
+//     }
+
+//     .intro {
+//       margin: 25px 0 !important;
+//       padding: 0 20px;
+//     }
+//   }
+// }
+
+// @media screen and (max-width: 600px) {
+//   .wrapper {
+//     width: 100% !important;
+
+//     &::before {
+//       left: unset !important;
+//       right: 5px;
+//       bottom: 35% !important;
+//     }
+
+//     .logo {
+//       width: 200px;
+//     }
+
+//     .intro {
+//       width: 100% !important;
+//       padding: 0 10px;
+
+//       h1 {
+//         font-size: 50px !important;
+//         height: auto !important;
+//         line-height: 1.2 !important;
+//       }
+
+//       p {
+//         font-size: 14px !important;
+//       }
+
+//       .button {
+//         width: 130px !important;
+//         height: 40px !important;
+//         font-size: 14px !important;
+//       }
+//       .afterConnect{
+//         margin: 0 !important;
+//         button{
+//           width: 300px !important;
+//           margin: 12px 0 !important;
+//         }
+//       }
+//     }
+//   }
+// }
+// @media screen and (max-height: 900px) {
+
+//   .wrapper{
+//     .intro{
+//       margin: 8vh 0 !important;
+//     }
+//   }
+//     &::before{
+//       left: -100px !important;
+//     }
+// }
