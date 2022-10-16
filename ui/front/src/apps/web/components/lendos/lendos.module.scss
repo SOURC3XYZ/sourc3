@@ -6,8 +6,9 @@
 
   .wrapper {
     position: relative;
-    right: 100px;
-    width: max-content;
+    right: 6.94%;
+    width: 100%;
+    max-width: 669px;
     margin: 0 auto;
     font-family: PublicSans-Regular;
     color: white;
@@ -153,7 +154,7 @@
 @media (max-width: 1024px) {
   .bg {
     margin-top: 29px;
-    padding: 0 32px;
+    padding: 0 8.88vw;
 
     .wrapper {
       width: 100%;
@@ -191,18 +192,6 @@
         &:before {
           display: none;
         }
-
-        .afterConnect {
-          width: 100%;
-          max-width: unset;
-          gap: 16px 0;
-
-          button {
-            width: 100%;
-            max-width: unset;
-          }
-        }
-
         h1 {
           margin: 0;
           font-weight: 500;
@@ -221,10 +210,6 @@
 
 @media (max-width: 768px) {
   .bg {
-    margin-top: 29px;
-    padding: 0 32px;
-
-
     &::before {
       display: block;
       left: 3px;
@@ -235,9 +220,6 @@
     }
 
     .wrapper {
-      width: 100%;
-      right: unset;
-      max-width: unset;
       &::before {
         display: block;
         left: 3px;
@@ -257,23 +239,20 @@
         }
 
         &::after {
-          // right: 77px;
-          width: 52px;
-          height: 52px;
+          width: 14.44vw;
+          height: 14.44vw;
           top: unset;
           bottom: 20px;
+          background-size: contain;
+          background-repeat: no-repeat;
         }
       }
 
       .intro {
-        margin: 64px 0 0;
         font-weight: 500;
         font-size: 8.88vw;
         height: unset;
-        width: 100%;
-
-       
-
+  
         .afterConnect {
           width: 100%;
           max-width: unset;
@@ -286,11 +265,8 @@
         }
 
         h1 {
-          margin: 0;
-          font-weight: 500;
           font-size: 8.88vw;
           line-height: 131.5%;
-          height: unset;
         }
 
         p {
@@ -303,8 +279,10 @@
           &:after {
             right: 0;
             top: 15px;
-            width: 39px;
-            height: 95px;
+            width: 10.83vw;
+            height: auto;
+            background-size: contain;
+            background-repeat: no-repeat;
             background-image: url('@assets/img/right-rect-mobile.svg');
           }
 

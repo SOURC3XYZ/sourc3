@@ -8,7 +8,7 @@
   align-items: center;
   flex-grow: 1;
   flex-direction: column;
-  max-width: $max-width;
+  // max-width: $max-width;
 }
 
 .appWrapper {
@@ -24,6 +24,7 @@
   text-align: center;
   // margin-top: 145px;
 }
+
 .footerWhiteBg {
   composes: footer;
   // position: sticky;
@@ -31,9 +32,6 @@
   // bottom: 0;
   //background: rgb(51, 51, 51);
   // margin-top: 50px;
-  .content {
-    max-width: 1440px;
-  }
 
   .icons {
     a {
@@ -43,6 +41,7 @@
       }
     }
   }
+
   .item {
     a {
       h4 {
@@ -51,7 +50,8 @@
     }
   }
 }
-.footerBottom{
+
+.footerBottom {
   composes: footerWhiteBg;
   position: absolute;
   bottom: 0;
@@ -62,7 +62,9 @@ footer {
   width: 100%;
 
   .content {
-    max-width: 900px;
+    position: relative;
+    right: 6.94%;
+    max-width: 669px;
     width: 100%;
     display: flex;
     justify-content: flex-start;
@@ -89,7 +91,7 @@ footer {
     }
 
     .icons {
-      padding: 16px 0 20px 42px;
+      padding: 10px 0 20px;
 
       a:nth-child(1) {
         margin-right: 28px;
@@ -97,20 +99,23 @@ footer {
     }
   }
 }
-@media screen and (max-height: 900px) {
-  .footer{
-    .content{
-      .icons {
-        padding-bottom: 30px;
+
+@media (max-width: 1024px) {
+  .footer {
+    .content {
+      position: static;
+      margin: 0;
+      padding: 0 8.88vw;
+      justify-content: flex-start;  
+      gap: 0 11vw;
+      .item {
+        display: flex;
+        align-items: center;
+        margin-left: 0;
+        gap: 0 8.88vw;
+        a:nth-child(1) {
+          margin-right: 0;
         }
-      }
-    }
-}
-@media screen and (max-width: 374px) {
-  .footer{
-    .content{
-      .icons {
-        padding-left: 10px;
       }
     }
   }
