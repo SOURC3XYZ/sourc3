@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
         cerr << "USAGE: git-remote-sourc3 <remote> <url>" << endl;
         return -1;
     }
+    ::MessageBox(NULL, "3232323", "", MB_OK);
     try {
         IWalletClient::Options options;
         po::options_description desc("SOURC3 config options");

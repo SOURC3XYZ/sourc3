@@ -3,6 +3,8 @@
 #include <iostream>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/json.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/strand.hpp>
 
 #include "wallets/base_client.h"
 
@@ -235,128 +237,289 @@ IEngine::CommandResult IPFSBlockChainEngine::DoFetchAsync(const vector<string_vi
     auto progress = MakeProgress("Receiving objects", to_receive, options_.progress);
 
     size_t done = 0;
+
+
     namespace ba = boost::asio;
     ba::io_context& io_context = client_.GetContext();
-    boost::asio::steady_timer timer(io_context);
+    boost::asio::steady_timer timer(io_context), timer2(io_context);
+    ba::strand<ba::io_context::executor_type> read_strand(io_context.get_executor());
+
+    std::map<size_t, std::string> processing_hashes;
+    std::map<size_t, std::string> ipfs_requests;
+    std::map<std::string, std::string> ipfs_hashes;
+    size_t request_id = 0;
+
+    auto proceed = [&]() {
+        return !ipfs_hashes.empty() || !ipfs_requests.empty();
+    };
+
+    auto lookup_object = [&objects](const std::string& id_str) {
+        git_oid oid;
+        git_oid_fromstr(&oid, id_str.data());
+        return std::find_if(objects.begin(), objects.end(), [&](auto&& o) {
+            return o.hash == oid;
+        });
+    };
+
+    auto add_object = [&](const ByteBuffer& buf, const git_oid& hash, git_object_t type) {
+        git_oid res_oid;
+        git_oid r;
+        git_odb_hash(&r, buf.data(), buf.size(), type);
+        if (r != hash) {
+            // invalid hash
+            return CommandResult::Failed;
+        }
+        if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
+            return CommandResult::Failed;
+        }
+        if (!options_.cloning) {
+            if (type == GIT_OBJECT_TREE) {
+                git::Tree tree;
+                git_tree_lookup(tree.Addr(), *accessor.m_repo, &hash);
+
+                auto count = git_tree_entrycount(*tree);
+                for (size_t i = 0; i < count; ++i) {
+                    auto* entry = git_tree_entry_byindex(*tree, i);
+                    auto s = ToString(*git_tree_entry_id(entry));
+                    enuque_object(s);
+                }
+            } else if (type == GIT_OBJECT_COMMIT) {
+                git::Commit commit;
+                git_commit_lookup(commit.Addr(), *accessor.m_repo, &hash);
+                if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+                    auto count = git_commit_parentcount(*commit);
+                    for (unsigned i = 0; i < count; ++i) {
+                        auto* parent_id = git_commit_parent_id(*commit, i);
+                        auto s = ToString(*parent_id);
+                        enuque_object(s);
+                    }
+                    ++depth;
+                }
+                enuque_object(ToString(*git_commit_tree_id(*commit)));
+            }
+        }
+        if (progress) {
+            progress->UpdateProgress(++done);
+        }
+        return CommandResult::Batch;
+    };
+
+    auto res = client_.GetAllObjectsData();
+    auto root = ParseJsonAndTest(res);
+    for (auto& obj_val : root.as_object()["objects"].as_array()) {
+        auto& obj = obj_val.as_object();
+
+        std::string id_str = obj["object_hash"].as_string().c_str();
+        auto data = obj["object_data"].as_string();
+        auto cit = lookup_object(id_str);
+        if (cit == objects.end()) {
+            continue;
+        }
+        object_hashes.erase(id_str);
+        if (cit->IsIPFSObject()) {
+            ipfs_hashes.emplace(std::string(data.begin(), data.end()), id_str);
+            continue;
+        }
+        ByteBuffer buf = FromHex(data);
+        
+        add_object(buf, cit->hash, cit->GetObjectType());
+    }
 
     CommandResult result = CommandResult::Batch;
     ba::spawn(io_context, [&](ba::yield_context yield) {
-        std::set<std::string> processing_hashes;
-        while (!object_hashes.empty() || !processing_hashes.empty()) {
-            if (object_hashes.empty() || processing_hashes.size() >= 400) {
-                timer.expires_from_now(std::chrono::milliseconds(100));
-                timer.async_wait(yield);
-                continue;
-            }
-            auto it_to_receive = object_hashes.begin();
-            const auto& object_to_receive = *it_to_receive;
-            auto pit = processing_hashes.insert(object_to_receive);
-            if (pit.second == false) {
+        while (proceed()) {
+            if ((object_hashes.empty() && ipfs_hashes.empty()) ||
+                processing_hashes.size() + ipfs_requests.size() >= 4000) {
+                 timer.expires_from_now(std::chrono::milliseconds(1000));
+                 timer.async_wait(yield);
+                 continue;
+             }
+
+            if (!object_hashes.empty()) {
+                auto it_to_receive = object_hashes.begin();
+                const auto& object_to_receive = *it_to_receive;
+                auto pit = processing_hashes.emplace(++request_id, object_to_receive);
+                if (pit.second == false) {
+                    object_hashes.erase(it_to_receive);
+                    continue;
+                }
+
+                client_.GetObjectDataAsync2(request_id, object_to_receive, yield);
                 object_hashes.erase(it_to_receive);
+
+            }
+
+            if (!ipfs_hashes.empty()) {
+                auto it_to_receive = ipfs_hashes.begin();
+                const auto& object_to_receive = it_to_receive->first;
+                auto hash = FromHex(object_to_receive);
+                client_.LoadObjectFromIPFSAsync2(++request_id,
+                                                 std::string(hash.cbegin(), hash.cend()), yield);
+                ipfs_requests.emplace(request_id, it_to_receive->second);
+                ipfs_hashes.erase(it_to_receive);
+            }
+        }
+    });
+
+
+    //std::function<void(std::string)> cb;
+    //cb = [&](std::string responce) {
+    //        do{
+    //            auto root = ParseJsonAndTest(responce);
+
+    //            auto lookup_object = [&objects](const std::string& id_str) {
+    //                git_oid oid;
+    //                git_oid_fromstr(&oid, id_str.data());
+    //                return std::find_if(objects.begin(), objects.end(), [&](auto&& o) {
+    //                    return o.hash == oid;
+    //                });
+    //            };
+
+    //            std::vector<GitObject>::const_iterator cit;
+    //            std::string id_str;
+    //            ByteBuffer buf;
+    //            size_t id = root.as_object()["id"].as_int64();
+    //            if (auto it = processing_hashes.find(id); it != processing_hashes.end()) {
+    //                id_str = it->second;
+    //                received_objects.insert(id_str);
+    //                processing_hashes.erase(id);
+    //                cit = lookup_object(id_str);
+    //                if (cit == objects.end()) {
+    //                    break;
+    //                }
+    //                auto output = boost::json::parse(
+    //                    root.as_object()["result"].as_object()["output"].as_string());
+    //                auto data = output.as_object()["object_data"].as_string();
+    //                if (cit->IsIPFSObject()) {
+    //                    ipfs_hashes.emplace(std::string(data.begin(), data.end()), id_str);
+    //                    break;
+    //                }
+    //                buf = FromHex(data);
+
+    //            } else if (auto it2 = ipfs_requests.find(id); it2 != ipfs_requests.end()) {
+    //                id_str = it2->second;
+    //                ipfs_requests.erase(id);
+
+    //                auto d = root.as_object()["result"].as_object()["data"].as_array();
+    //                buf.reserve(d.size());
+    //                for (auto&& v : d) {
+    //                    buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+    //                }
+    //            } else {
+    //                break;  // skip
+    //            }
+
+    //            cit = lookup_object(id_str);
+    //            if (cit == objects.end()) {
+    //                break;
+    //            }
+    //            git_oid res_oid;
+    //            auto type = cit->GetObjectType();
+    //            git_oid r;
+    //            git_odb_hash(&r, buf.data(), buf.size(), type);
+    //            if (r != cit->hash) {
+    //                // invalid hash
+    //                result = CommandResult::Failed;
+    //                return;
+    //            }
+    //            if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
+    //                result = CommandResult::Failed;
+    //                return;
+    //            }
+    //            if (!options_.cloning) {
+    //                if (type == GIT_OBJECT_TREE) {
+    //                    git::Tree tree;
+    //                    git_tree_lookup(tree.Addr(), *accessor.m_repo, &cit->hash);
+
+    //                    auto count = git_tree_entrycount(*tree);
+    //                    for (size_t i = 0; i < count; ++i) {
+    //                        auto* entry = git_tree_entry_byindex(*tree, i);
+    //                        auto s = ToString(*git_tree_entry_id(entry));
+    //                        enuque_object(s);
+    //                    }
+    //                } else if (type == GIT_OBJECT_COMMIT) {
+    //                    git::Commit commit;
+    //                    git_commit_lookup(commit.Addr(), *accessor.m_repo, &cit->hash);
+    //                    if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
+    //                        auto count = git_commit_parentcount(*commit);
+    //                        for (unsigned i = 0; i < count; ++i) {
+    //                            auto* parent_id = git_commit_parent_id(*commit, i);
+    //                            auto s = ToString(*parent_id);
+    //                            enuque_object(s);
+    //                        }
+    //                        ++depth;
+    //                    }
+    //                    enuque_object(ToString(*git_commit_tree_id(*commit)));
+    //                }
+    //            }
+    //            if (progress) {
+    //                progress->UpdateProgress(++done);
+    //            }
+    //        } while (false);
+
+    //        if (proceed()) {
+    //            client_.ListenAPIResponceAsync(cb);
+    //        }
+    //};
+
+    //client_.ListenAPIResponceAsync(cb);
+
+    ba::spawn(io_context, [&](ba::yield_context yield2) {
+        while (proceed()) {
+            if (ipfs_requests.empty() && processing_hashes.empty()) {
+                timer2.expires_from_now(std::chrono::milliseconds(100));
+                timer2.async_wait(yield2);
+                continue;
+            }
+            auto res = client_.ReadAPIResponseAsync(yield2);
+            /*res;
+            if (progress) {
+                progress->UpdateProgress(++done);
+            }
+            continue;*/
+            auto root = ParseJsonAndTest(res);
+
+            
+
+            std::vector<GitObject>::const_iterator cit;
+            std::string id_str;
+            ByteBuffer buf;
+            size_t id = root.as_object()["id"].as_int64();
+            if (auto it = processing_hashes.find(id); it != processing_hashes.end()) {
+                id_str = it->second;
+                received_objects.insert(id_str);
+                processing_hashes.erase(id);
+                cit = lookup_object(id_str);
+                if (cit == objects.end()) {
+                    continue;
+                }
+                auto output = boost::json::parse(root.as_object()["result"].as_object()["output"].as_string());
+                auto data = output.as_object()["object_data"].as_string();
+                if (cit->IsIPFSObject()) {
+                    ipfs_hashes.emplace(std::string(data.begin(), data.end()), id_str);
+                    continue;
+                }
+                buf = FromHex(data);
+
+            } else if (auto it2 = ipfs_requests.find(id); it2 != ipfs_requests.end()) {
+                id_str = it2->second;
+                ipfs_requests.erase(id);
+
+                auto d = root.as_object()["result"].as_object()["data"].as_array();
+                buf.reserve(d.size());
+                for (auto&& v : d) {
+                    buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
+                }
+            } else {
+                continue;  // skip
+            }
+
+            cit = lookup_object(id_str);
+            if (cit == objects.end()) {
                 continue;
             }
 
-            client_.LoadObjectFromIPFSAsync2(object_to_receive, yield);
-            ba::spawn(yield, [&, it2 = pit.first,
-                              obj = object_to_receive](ba::yield_context yield2) {
-                auto res = client_.ReadAPIResponseAsync(yield2);
-                auto root = ParseJsonAndTest(res);
-                git_oid oid;
-                git_oid_fromstr(&oid, obj.data());
-
-                auto it = std::find_if(objects.begin(), objects.end(), [&](auto&& o) {
-                    return o.hash == oid;
-                });
-                if (it == objects.end()) {
-                    received_objects.insert(obj);  // move to received
-                    processing_hashes.erase(it2);
-
-                    return;
-                }
-
-                auto data = root.as_object()["object_data"].as_string();
-
-                ByteBuffer buf;
-                if (it->IsIPFSObject()) {
-                    auto hash = FromHex(data);
-                    try {
-                        client_.LoadObjectFromIPFSAsync(std::string(hash.cbegin(), hash.cend()),
-                                                        yield2);
-                        ba::spawn(yield, [&](ba::yield_context yield3) {
-                            auto responce = client_.ReadAPIResponseAsync(yield3);
-
-                            auto r = ParseJsonAndTest(responce);
-                            if (r.as_object().find("result") == r.as_object().end()) {
-                                cerr << "message: "
-                                     << r.as_object()["error"].as_object()["message"].as_string()
-                                     << "\ndata:    "
-                                     << r.as_object()["error"].as_object()["data"].as_string()
-                                     << endl;
-                                result = CommandResult::Failed;
-                                return;
-                            }
-                            auto d = r.as_object()["result"].as_object()["data"].as_array();
-                            buf.reserve(d.size());
-                            for (auto&& v : d) {
-                                buf.emplace_back(static_cast<uint8_t>(v.get_int64()));
-                            }
-                        });
-                    } catch (...) {
-                        object_hashes.emplace(obj);
-                        processing_hashes.erase(it2);
-                        return;
-                    }
-
-                } else {
-                    buf = FromHex(data);
-                }
-
-                git_oid res_oid;
-                auto type = it->GetObjectType();
-                git_oid r;
-                git_odb_hash(&r, buf.data(), buf.size(), type);
-                if (r != oid) {
-                    // invalid hash
-                    result = CommandResult::Failed;
-                    return;
-                }
-                if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
-                    result = CommandResult::Failed;
-                    return;
-                }
-                if (!options_.cloning) {
-                    if (type == GIT_OBJECT_TREE) {
-                        git::Tree tree;
-                        git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
-
-                        auto count = git_tree_entrycount(*tree);
-                        for (size_t i = 0; i < count; ++i) {
-                            auto* entry = git_tree_entry_byindex(*tree, i);
-                            auto s = ToString(*git_tree_entry_id(entry));
-                            enuque_object(s);
-                        }
-                    } else if (type == GIT_OBJECT_COMMIT) {
-                        git::Commit commit;
-                        git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-                        if (depth < options_.depth || options_.depth == Options::kInfiniteDepth) {
-                            auto count = git_commit_parentcount(*commit);
-                            for (unsigned i = 0; i < count; ++i) {
-                                auto* id = git_commit_parent_id(*commit, i);
-                                auto s = ToString(*id);
-                                enuque_object(s);
-                            }
-                            ++depth;
-                        }
-                        enuque_object(ToString(*git_commit_tree_id(*commit)));
-                    }
-                }
-                received_objects.insert(obj);
-                if (progress) {
-                    progress->UpdateProgress(++done);
-                }
-                processing_hashes.erase(it2);
-            });
-            object_hashes.erase(it_to_receive);
+            result = add_object(buf, cit->hash, cit->GetObjectType());
         }
     });
 

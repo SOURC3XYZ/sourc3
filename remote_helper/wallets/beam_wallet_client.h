@@ -39,6 +39,7 @@ class BeamWalletClient final : public IWalletClient {
 public:
     explicit BeamWalletClient(const Options& options)
         : IWalletClient(options), resolver_(ioc_), stream_(ioc_) {
+        
         PrintVersion();
     }
 
@@ -64,7 +65,8 @@ public:
     std::string SaveObjectToIPFS(const uint8_t* data, size_t size) final;
     std::string LoadObjectFromIPFSAsync(std::string hash,
                                         boost::asio::yield_context context) override;
-    void LoadObjectFromIPFSAsync2(std::string hash, boost::asio::yield_context context) override;
+    void LoadObjectFromIPFSAsync2(size_t id, std::string hash,
+                                  boost::asio::yield_context context) override;
     std::string SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
                                       boost::asio::yield_context context) override;
     void LoadObjectsFromIPFSAsync(const std::vector<std::string>& objects,
@@ -97,6 +99,8 @@ private:
     std::string SubUnsubEvents(bool sub);
     void EnsureConnected();
     void EnsureConnectedAsync(AsyncContext context);
+
+public:
     std::string ExtractResult(const std::string& response);
     std::string InvokeShader(const std::string& args, bool create_tx);
     std::string InvokeShaderAsync(const std::string& args, bool create_tx, AsyncContext context);
@@ -108,7 +112,9 @@ private:
                                  boost::asio::yield_context context);
     void SendObjectToIPFSAsync(size_t id, const uint8_t* data, size_t size, AsyncContext context);
     std::string ReadAPIResponceAsync(AsyncContext context);
-    void ListenAPIResponceAsync(std::function<void(std::string)> cb);
+
+public:
+    void ListenAPIResponceAsync(std::function<void(std::string)> cb) override;
     bool SendAPIRequestAsync(std::string request, AsyncContext context);
     std::string CallAPIAsync(std::string request, AsyncContext context);
     std::string ReadAPI();
@@ -123,8 +129,10 @@ public:
     std::string PushObjects(const std::string& data, const std::vector<sourc3::Ref>& refs,
                             bool push_refs) override;
     std::string GetAllObjectsMetadata() override;
+    std::string GetAllObjectsData() override;
     std::string GetObjectData(const std::string& obj_id) override;
     std::string GetObjectDataAsync(const std::string& obj_id, AsyncContext context) override;
+    void GetObjectDataAsync2(size_t id, const std::string& obj_id, AsyncContext context) override;
     std::string GetReferences() override;
 
 private:

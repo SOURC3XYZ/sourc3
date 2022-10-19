@@ -52,10 +52,10 @@ std::string BeamWalletClient::LoadObjectFromIPFSAsync(std::string hash,
     return CallAPIAsync(json::serialize(msg), context);
 }
 
-void BeamWalletClient::LoadObjectFromIPFSAsync2(std::string hash,
+void BeamWalletClient::LoadObjectFromIPFSAsync2(size_t id, std::string hash,
                                                 boost::asio::yield_context context) {
     auto msg = json::value{{kJsonRpcHeader, kJsonRpcVersion},
-                           {"id", 1},
+                           {"id", id},
                            {"method", "ipfs_get"},
                            {"params", {{"hash", hash}}}};
     // return CallAPIAsync(json::serialize(msg), context);
@@ -381,7 +381,7 @@ std::string BeamWalletClient::GetInvokeShaderRequest(size_t id, const std::strin
                                                      bool create_tx) {
     auto msg = json::value{
         {kJsonRpcHeader, kJsonRpcVersion},
-        {"id", "invoke" + std::to_string(id)},
+        {"id", id},
         {"method", "invoke_contract"},
         {"params",
          {{"contract_file", options_.appPath}, {"args", args}, {"create_tx", create_tx}}}};
@@ -541,6 +541,10 @@ std::string BeamWalletClient::GetAllObjectsMetadata() {
     return InvokeWallet("role=user,action=repo_get_meta", false);
 }
 
+std::string BeamWalletClient::GetAllObjectsData() {
+    return InvokeWallet("role=user,action=repo_get_data2", false);
+}
+
 std::string BeamWalletClient::GetObjectData(const std::string& obj_id) {
     std::stringstream ss;
     ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
@@ -554,10 +558,20 @@ std::string BeamWalletClient::GetObjectDataAsync(const std::string& obj_id,
     return InvokeWalletAsync(ss.str(), false, context);
 }
 
+void BeamWalletClient::GetObjectDataAsync2(size_t id, const std::string& obj_id,
+                                           AsyncContext context) {
+    std::stringstream ss;
+    ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    ss << ",repo_id=" << GetRepoIDAsync(context) << ",cid=" << GetCID();
+    SendAPIRequestAsync(GetInvokeShaderRequest(id, ss.str(), false), context);
+}
+
 void BeamWalletClient::GetObjectDataAsync(size_t id, const std::string& obj_id,
                                           IWalletClient::AsyncContext context) {
     std::stringstream ss;
     ss << "role=user,action=repo_get_data,obj_id=" << obj_id;
+    ss << ",repo_id=" << GetRepoIDAsync(context) << ",cid=" << GetCID();
+
     SendAPIRequestAsync(GetInvokeShaderRequest(id, ss.str(), false), context);
 }
 

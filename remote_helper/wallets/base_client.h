@@ -60,7 +60,7 @@ struct IWalletClient {
 
     virtual std::string LoadObjectFromIPFS(std::string hash) = 0;
     virtual std::string LoadObjectFromIPFSAsync(std::string hash, AsyncContext context) = 0;
-    virtual void LoadObjectFromIPFSAsync2(std::string hash, AsyncContext context) = 0;
+    virtual void LoadObjectFromIPFSAsync2(size_t id, std::string hash, AsyncContext context) = 0;
     virtual std::string SaveObjectToIPFS(const uint8_t* data, size_t size) = 0;
     virtual std::string SaveObjectToIPFSAsync(const uint8_t* data, size_t size,
                                               AsyncContext context) = 0;
@@ -70,11 +70,15 @@ struct IWalletClient {
                                           ReadCallback read_callback) = 0;
     virtual void SaveObjectsToIPFSAsync(const std::vector<sourc3::ObjectInfo>& objects,
                                         ReadCallback read_callback) = 0;
+    virtual void ListenAPIResponceAsync(std::function<void(std::string)> cb) = 0;
     virtual std::string ReadAPIResponseAsync(AsyncContext context) = 0;
 
     virtual std::string GetAllObjectsMetadata();
+    virtual std::string GetAllObjectsData() = 0;
     virtual std::string GetObjectData(const std::string& obj_id);
     virtual std::string GetObjectDataAsync(const std::string& obj_id, AsyncContext context);
+    virtual void GetObjectDataAsync2(size_t id, const std::string& obj_id,
+                                     AsyncContext context) = 0;
     virtual std::string GetReferences();
 
     using WaitFunc = std::function<void(size_t, const std::string&)>;
