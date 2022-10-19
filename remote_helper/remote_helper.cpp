@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 #endif
         std::string config_path = PROTO_NAME "-remote.cfg";
         if (home_dir != nullptr) {
-            config_path = std::string(home_dir) + "/." PROTO_NAME "/" + config_path;
+            config_path = (boost::filesystem::path(home_dir) / "." PROTO_NAME / config_path).string();
         }
         cerr << "Reading config from: " << config_path << "..." << endl;
         const auto full_path = boost::filesystem::system_complete(config_path).string();
@@ -145,6 +145,7 @@ int main(int argc, char* argv[]) {
             res = engine->DoCommand(args[0], args);
 
             if (res == IEngine::CommandResult::Failed) {
+                cerr << input << " failed!" << endl;
                 return -1;
             } else if (res == IEngine::CommandResult::Ok) {
                 cout << endl;

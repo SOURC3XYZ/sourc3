@@ -260,7 +260,6 @@ std::vector<ObjectWithContent> GetUploadedObjects(const std::vector<sourc3::Ref>
         auto ref_objects = GetAllObjects(ref.ipfs_hash, *progress, client);
         std::move(ref_objects.begin(), ref_objects.end(), std::back_inserter(objects));
     }
-    progress->Done();
     return objects;
 }
 
@@ -275,7 +274,6 @@ std::vector<ObjectWithContent> GetUploadedObjectsAsync(const std::vector<sourc3:
         auto ref_objects = GetAllObjectsAsync(ref.ipfs_hash, *progress, client, context);
         std::move(ref_objects.begin(), ref_objects.end(), std::back_inserter(objects));
     }
-    progress->Done();
     return objects;
 }
 
@@ -364,7 +362,6 @@ ObjectsAndMetas GetUploadedObjectsWithMetas(const std::vector<sourc3::Ref>& refs
             metas[std::move(key)] = std::move(value);
         }
     }
-    progress->Done();
     return {std::move(objects), std::move(metas)};
 }
 
@@ -384,7 +381,6 @@ ObjectsAndMetas GetUploadedObjectsWithMetasAsync(const std::vector<sourc3::Ref>&
             metas[std::move(key)] = std::move(value);
         }
     }
-    progress->Done();
     return {std::move(objects), std::move(metas)};
 }
 
@@ -454,6 +450,7 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
                       << std::endl;
             oid_to_ipfs[obj.oid] = std::string(kIpfsAddressSize, '0');
             obj.ipfsHash = ByteBuffer(oid_to_ipfs[obj.oid].cbegin(), oid_to_ipfs[obj.oid].cend());
+            obj.type = GIT_OBJECT_BLOB;
         } else {
             auto res = client.SaveObjectToIPFS(obj.GetData(), obj.GetSize());
             auto r = ParseJsonAndTest(res);
@@ -580,36 +577,39 @@ IEngine::CommandResult FullIPFSEngine::DoFetch(const vector<std::string_view>& a
         auto type = it->GetObjectType();
         git_oid r;
         git_odb_hash(&r, buf.data(), buf.size(), type);
-        if (r != oid) {
+        if (r != oid && !buf.empty()) {
+            std::cerr << "Invalid hash! " << buf.size() << ", " << buf << ", " << ToString(r) << ", " << ToString(oid) << ", type: " << type << std::endl;
             // invalid hash
             return CommandResult::Failed;
         }
         if (git_odb_write(&res_oid, *accessor.m_odb, buf.data(), buf.size(), type) < 0) {
             return CommandResult::Failed;
         }
-        if (type == GIT_OBJECT_TREE) {
-            git::Tree tree;
-            git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
+        if (!buf.empty()) {
+            if (type == GIT_OBJECT_TREE) {
+                git::Tree tree;
+                git_tree_lookup(tree.Addr(), *accessor.m_repo, &oid);
 
-            auto count = git_tree_entrycount(*tree);
-            for (size_t i = 0; i < count; ++i) {
-                auto* entry = git_tree_entry_byindex(*tree, i);
-                auto s = ToString(*git_tree_entry_id(entry));
-                enuque_object(s);
-            }
-        } else if (type == GIT_OBJECT_COMMIT) {
-            git::Commit commit;
-            git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
-            if (depth < options_->depth || options_->depth == Options::kInfiniteDepth) {
-                auto count = git_commit_parentcount(*commit);
-                for (unsigned i = 0; i < count; ++i) {
-                    auto* id = git_commit_parent_id(*commit, i);
-                    auto s = ToString(*id);
+                auto count = git_tree_entrycount(*tree);
+                for (size_t i = 0; i < count; ++i) {
+                    auto* entry = git_tree_entry_byindex(*tree, i);
+                    auto s = ToString(*git_tree_entry_id(entry));
                     enuque_object(s);
                 }
-                ++depth;
+            } else if (type == GIT_OBJECT_COMMIT) {
+                git::Commit commit;
+                git_commit_lookup(commit.Addr(), *accessor.m_repo, &oid);
+                if (depth < options_->depth || options_->depth == Options::kInfiniteDepth) {
+                    auto count = git_commit_parentcount(*commit);
+                    for (unsigned i = 0; i < count; ++i) {
+                        auto* id = git_commit_parent_id(*commit, i);
+                        auto s = ToString(*id);
+                        enuque_object(s);
+                    }
+                    ++depth;
+                }
+                enuque_object(ToString(*git_commit_tree_id(*commit)));
             }
-            enuque_object(ToString(*git_commit_tree_id(*commit)));
         }
         progress->UpdateProgress(++done);
 
