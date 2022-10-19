@@ -557,6 +557,28 @@ struct ModifyUser {
     UserData data;
 };
 
+struct MigrateContractState {
+    static const uint32_t kMethod = 26;
+};
+
+struct MigrateOrganizations {
+    static const uint32_t kMethod = 27;
+    Organization::Id from;
+    Organization::Id to;
+};
+
+struct MigrateProjects {
+    static const uint32_t kMethod = 28;
+    Project::Id from;
+    Project::Id to;
+};
+
+struct MigrateRepos {
+    static const uint32_t kMethod = 29;
+    Repo::Id from;
+    Repo::Id to;
+};
+
 #pragma pack(pop)
 }  // namespace method
 }  // namespace sourc3
