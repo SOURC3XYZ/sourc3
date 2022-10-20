@@ -242,7 +242,8 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value,
     Env::DocAddText("organization_name", org_name);
 }
 
-void PrintRepo(const sourc3::Repo& repo, const ContractID& cid) {
+void PrintRepo(const sourc3::Repo::Key& key,
+               const sourc3::Repo& repo, const ContractID& cid) {
     using sourc3::Project;
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<sourc3::Project::Key>;
@@ -251,6 +252,7 @@ void PrintRepo(const sourc3::Repo& repo, const ContractID& cid) {
         sizeof(Project) + ProjectData::GetMaxSize();
 
     Env::DocAddText("repo_name", repo.name);
+    Env::DocAddNum("repo_id", key.id);
     // Env::DocAddNum("project_id", value->project_id);
     Env::DocAddNum64("cur_objects", repo.cur_objs_number);
     Env::DocAddBlob_T("repo_owner", repo.owner);
@@ -1300,7 +1302,7 @@ void OnActionMyRepos(const ContractID& cid) {
         auto* value = reinterpret_cast<Repo*>(buf.get());
         if ((_POD_(value->owner) == my_key) != 0u) {
             Env::DocGroup repo_object("");
-            PrintRepo(*value, cid);
+            PrintRepo(key.m_KeyInContract, *value, cid);
         }
         value_len = 0;
     }
@@ -1324,7 +1326,7 @@ void OnActionAllRepos(const ContractID& cid) {
         reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
         auto* value = reinterpret_cast<Repo*>(buf.get());
         Env::DocGroup repo_object("");
-        PrintRepo(*value, cid);
+        PrintRepo(key.m_KeyInContract, *value, cid);
         value_len = 0;
     }
 }
@@ -1811,6 +1813,10 @@ void OnActionGetTreeFromData(const ContractID&) {
     });
 }
 
+void OnActionRepoGetId(const ContractID& cid) {
+    Env::DocAddNum("repo_id", GetIdByName<sourc3::Repo>(cid, ReadRepoNameId()));
+}
+
 void OnActionDeposit(const ContractID& cid) {
     sourc3::method::Deposit args;
     Env::DocGetNum64("amount", &args.amount);
@@ -2179,6 +2185,13 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
+                Env::DocGroup gr_method("repo_get_id");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_name", "Name of repo");
+                Env::DocAddText("project_name", "Project name");
+                Env::DocAddText("organization_name", "Organization name");
+            }
+            {
                 Env::DocGroup gr_method("list_commits");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
@@ -2332,6 +2345,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"repo_get_commit_from_data", OnActionGetCommitFromData},
         {"repo_get_tree", OnActionGetTree},
         {"repo_get_tree_from_data", OnActionGetTreeFromData},
+        {"repo_get_id", OnActionRepoGetId},
         {"list_commits", OnActionGetCommits},
         {"list_trees", OnActionGetTrees},
         {"list_projects", OnActionListProjects},
