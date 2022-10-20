@@ -27,19 +27,27 @@ function CreateOrgRepo({ projects, goBack }:CreateOrgRepoProps) {
     setValid(!!(regExp.test(e.target.value) && inputName));
   };
 
-  const [idProject, setIdProject] = useState(projects[0].project_id || null);
+  const [idProject, setIdProject] = useState(1);
 
   const handleOk = () => {
-    if (idProject) createRepo(`"${inputName}"`, idProject, +isPrivate as 0 | 1, 0);
+    if (idProject) {
+      createRepo(
+        `"${inputName}"`,
+        projects[idProject].project_name,
+        projects[idProject].organization_name,
+        +isPrivate as 0 | 1,
+        0
+      );
+    }
   };
 
   const handleChangeProject = (value:any) => setIdProject(value);
 
-  const projectOptions = useMemo(() => projects?.map(({ project_id, project_name }) => (
+  const projectOptions = useMemo(() => projects?.map(({ project_name }, i) => (
     <Select.Option
       className={styles.option}
-      key={project_id}
-      value={project_id}
+      key={project_name}
+      value={i + 1}
     >
       {project_name}
     </Select.Option>
@@ -56,14 +64,15 @@ function CreateOrgRepo({ projects, goBack }:CreateOrgRepoProps) {
     >
       <div className={styles.wrapper}>
         <SelectPopup
-          defaultValue={idProject || undefined}
-          value={idProject || 0}
+          defaultValue={idProject}
+          value={idProject}
           disabled={typeof idProject === null}
           onChange={handleChangeProject}
           title="Select project"
         >
           {projectOptions}
         </SelectPopup>
+
         <InputCustom
           label="Repository name"
           type="text"

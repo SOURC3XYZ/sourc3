@@ -66,7 +66,7 @@ const useProject = () => {
     const indexes = [];
     for (const project of projects) {
       for (let i = 0; i < allReposCopy.length; i++) {
-        if (project.project_id === allReposCopy[i].project_id) {
+        if (project.project_name === allReposCopy[i].project_name) {
           foundRepos.push(allReposCopy[i]);
           indexes.push(i);
         }

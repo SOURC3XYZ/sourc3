@@ -162,7 +162,7 @@ function Projects() {
       ],
       fieldsToSearch: ['repo_id', 'repo_name'],
       itemComponent: repoListItem,
-      createEntity: () => navigate('create-repo')
+      createEntity: projects.length ? () => navigate('create-repo') : undefined
     },
     {
       path: 'users',
@@ -213,17 +213,17 @@ function Projects() {
         element={(
           <ProjectList
             isShowNav={pkey === org.organization_creator}
-            id={orgName}
+            // orgName={orgName}
             pkey={pkey}
-            path={path}
+            // path={path}
             page={page}
             type={type}
             placeholder={el.placeholder}
-            route={el.path}
+            // route={el.path}
             projects={el.items}
             header={el.headerElements}
             navItems={el.navItems}
-            fieldsToSearch={el.fieldsToSearch}
+            fieldsToSearch={el.fieldsToSearch as any}
             listItem={el.itemComponent}
             createEntity={el.createEntity}
           />
@@ -233,7 +233,7 @@ function Projects() {
   ), [projects, members, repos, currentRoute, routes]);
 
   const addUserMember = useCallback((obj: ArgumentTypes<typeof addMemberToOrg>[0]) => {
-    addMemberToOrg(obj);
+    addMemberToOrg({ ...obj, organization_name: org.organization_name });
   }, []);
 
   return (
@@ -274,7 +274,6 @@ function Projects() {
           element={(
             <AddUserOrg
               data={orgData}
-              oldName={org.organization_name}
               goBack={goBack}
               callback={addUserMember as (obj: unknown) => void}
             />

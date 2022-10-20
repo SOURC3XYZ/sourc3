@@ -23,10 +23,10 @@ export type LocalRepoId = string | null;
 export type BeamReqAction = { [key: string]: string };
 
 export type RepoType = {
+  repo_id: number;
   repo_name: RepoName;
-  repo_id: RepoId;
   repo_owner: string;
-  project_id: number;
+  project_name: string;
   cur_objects: number;
   private: 0 | 1;
 };
@@ -171,8 +171,6 @@ export type UpdateProps = {
 
 export type Project = {
   project_tag:number;
-  project_id:number;
-  organization_id:number;
   project_name:string;
   project_creator:string;
   project_description:string,
@@ -182,7 +180,8 @@ export type Project = {
   project_instagram:string,
   project_telegram:string,
   project_discord:string,
-  project_logo_ipfs_hash:string
+  project_logo_ipfs_hash:string,
+  organization_name: string
 };
 
 export interface ProjectsResp extends ContractResp {
