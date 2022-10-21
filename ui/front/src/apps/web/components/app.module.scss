@@ -4,7 +4,7 @@
   width: 100%;
   height: auto;
   margin: 0 auto;
-  display: flex;
+  // display: flex;
   align-items: center;
   flex-grow: 1;
   flex-direction: column;
@@ -24,12 +24,11 @@
   text-align: center;
   // margin-top: 145px;
 }
-
 .footerWhiteBg {
   composes: footer;
-  position: sticky;
+  // position: sticky;
   background-color: $color-white;
-  bottom: 0;
+  // bottom: 0;
   //background: rgb(51, 51, 51);
   // margin-top: 50px;
   .content {
@@ -44,7 +43,6 @@
       }
     }
   }
-
   .item {
     a {
       h4 {
@@ -52,6 +50,11 @@
       }
     }
   }
+}
+.footerBottom{
+  composes: footerWhiteBg;
+  position: absolute;
+  bottom: 0;
 }
 
 footer {
@@ -102,4 +105,13 @@ footer {
         }
       }
     }
+}
+@media screen and (max-width: 374px) {
+  .footer{
+    .content{
+      .icons {
+        padding-left: 10px;
+      }
+    }
+  }
 }

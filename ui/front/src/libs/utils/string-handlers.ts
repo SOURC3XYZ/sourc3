@@ -154,17 +154,47 @@ export const getDateFromMs = (ms: number) => {
 
   return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 };
+
 export const copyToClipboard = (value: string) => navigator.clipboard.writeText(value);
 
-export function compact(value: string, stringLength: number = 8): string {
-  if (value.length <= 8) {
+export function compact(value: string, stringLength: number = 6): string {
+  if (value.length <= 11) {
     return value;
   }
-  return `${value.substring(-stringLength, stringLength)}...`;
+  return `${value.substring(0, stringLength)}…`;
 }
+
+export const classNameList = (...classes: string[]) => [...classes].join(' ');
 
 export function getQueryParam(url:string, param:string) {
   let location = url;
   location = location.replace('#', '/');
   return new URL(location).searchParams.get(param);
 }
+
+export function getHoursDiff(startDate: number, endDate: number) {
+  const msInHour = 1000 * 60 * 60;
+  return Math.round(Math.abs(endDate - startDate) / msInHour);
+}
+
+export const isEns = (address: string) => {
+  if (address.length < 7) { return false; }
+  if (address.substring(address.length - 4) !== '.eth') { return false; }
+  address = address.substring(0, address.length - 4);
+  const hasSpace = /\s/g.test(address);
+  if (address[0] === '.' || address[address.length - 1] === '.' || hasSpace) { return false; }
+  if (address.length >= 4 && address.substring(address.length - 4) === '.eth') { return false; }
+  return true;
+};
+
+export const isEthAddress = function (address:string) {
+  // check if it has the basic requirements of an address
+  if (/^(0x)?[0-9a-f]{40}$/i.test(address)
+  || /^(0x|0X)?[0-9a-f]{40}$/.test(address)
+  || /^(0x|0X)?[0-9A-F]{40}$/.test(address)
+  || isEns(address.trim())) {
+    return true;
+    // If it's ALL lowercase or ALL upppercase
+  }
+  return false;
+};

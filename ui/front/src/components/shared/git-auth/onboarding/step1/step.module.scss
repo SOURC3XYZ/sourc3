@@ -1,0 +1,134 @@
+.section {
+  .content{
+    h1{
+      font-family: 'PublicSans-ExtraBold', serif;
+      font-weight: 900;
+      font-size: 40px;
+      line-height: 52px;
+      margin: 0 0 40px 0;
+      .color{
+        font-style: italic;
+        color: #FF791F;
+      }
+      .drop{
+        display: block;
+      }
+    }
+    .text{
+      p{
+        font-family: 'PublicSans-Regular', serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 28px;
+        color: #000000;
+        margin-bottom: 0;
+        &:nth-child(2){
+          margin: 28px 0;
+        }
+        .drop{
+          display: block;
+        }
+      }
+    }
+    .skip{
+      border: 0;
+      background-color: transparent;
+      font-family: 'PublicSans-Bold', serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 28px;
+      color: #FF791F;
+    }
+  }
+  .input{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 52px 0 116px 0;
+    label{
+      margin-bottom: 0;
+    }
+    input{
+      background: #FFFFFF;
+      width: 637px;
+      height: 52px;
+      border-color: #FF791F;
+      margin-right: 24px;
+    }
+    button{
+      width: 127px;
+      height: 52px;
+      background: #FF791F;
+      //opacity: 0.3;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      color: #FFFFFF !important;
+      cursor: pointer;
+    }
+    button:disabled{
+      background: #FF791F;
+      opacity: 0.3;
+    }
+  }
+}
+
+@media only screen and (max-width: 1135px) {
+  .section{
+    .content{
+      h1{
+        font-size: 30px;
+      }
+      .text{
+        p{
+          .drop{
+            display: inline;
+          }
+        }
+      }
+    }
+  }
+}
+@media only screen and (max-width: 867px) {
+  .section {
+    margin-top: 0;
+    margin-bottom: 40px;
+    .input{
+      margin: 52px 0;
+      label{
+        position: unset;
+        margin-bottom: 15px;
+        height: 14px;
+        width: 100%;
+        margin-left: 22px;
+        color: red;
+      }
+      div{
+        width: 100%;
+      }
+      input{
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 15px;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .section{
+    padding: 0 10px;
+    .content {
+      h1 {
+        margin-left: 35px;
+        .drop{
+          display: inline;
+        }
+      }
+    }
+    button{
+      width: 100%;
+    }
+  }
+}

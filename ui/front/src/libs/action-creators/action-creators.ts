@@ -18,7 +18,7 @@ import {
   TxInfo,
   Organization,
   Project,
-  User, IProfile,
+  User, IProfile
 } from '@types';
 
 export const AC = {
@@ -189,6 +189,14 @@ export const AC = {
   setModifyUser: (payload: IProfile) => ({
     type: ACTIONS.SET_VIEW_USER,
     payload
+  } as const),
+  getAuthGitUser: (payload: any) => ({
+    type: ACTIONS.GET_GIT_USER,
+    payload
+  } as const),
+
+  gitUserLogout: () => ({
+    type: ACTIONS.GIT_USER_LOGOUT
   } as const)
 };
 

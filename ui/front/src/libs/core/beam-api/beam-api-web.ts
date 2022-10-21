@@ -120,7 +120,6 @@ export class BeamWebAPI extends BeamAPI<RequestSchema['params']> {
       await window.BeamApi
         .callWalletApiResult(this.onApiResult);
       const users = (await window.BeamApi.localStorage()).activePid;
-      console.log(users);
       if (this.walletConnectResolve) this.walletConnectResolve({ api: window.BeamApi, users });
     }
   };

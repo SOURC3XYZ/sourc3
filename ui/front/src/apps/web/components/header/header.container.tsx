@@ -1,13 +1,14 @@
 import {
-  AutocompeteSearch,
-  ConnectBtn,
+  // AutocompeteSearch,
+  // ConnectBtn,
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
-import img from '@assets/img/source-header-logo.svg';
+import img from '@assets/img/source-header-logo-alpha.svg';
 import { useHeader } from '@libs/hooks/container/header';
 import { useMemo } from 'react';
 import { GitConnectAuth } from '@components/shared/git-auth';
+import { useSelector } from '@libs/redux';
 import styles from './header.module.scss';
 
 type HeaderPropsType = {
@@ -22,11 +23,12 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const {
     pkey,
     users,
-    isVisible,
-    onConnect
+    isVisible
+    // onConnect
   } = containerProps;
 
-  const autoCompleteClassName = isOnLending ? styles.lendosInput : '';
+  const isAuth = Boolean(useSelector((state) => state.profile.data.token));
+  // const autoCompleteClassName = isOnLending ? styles.lendosInput : '';
 
   const headerClassName = isOnLending ? styles.header : styles.headerActive;
 
@@ -52,26 +54,22 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
 
   const searchElement = useMemo(() => (
     <div className={styles.connect}>
-      {isOnLending && (
-        <AutocompeteSearch
-          className={autoCompleteClassName}
-          placeholder="Search"
-        />
-      )}
+      {/* {isOnLending && ( */}
+      {/*  // <AutocompeteSearch */}
+      {/*  //   className={autoCompleteClassName} */}
+      {/*  //   placeholder="Search" */}
+      {/*  // /> */}
+      {/* )} */}
       { !desktop ? (
         <>
-          {pkey && (<ProfileBlock pKey={pkey} profile />)}
+          {/* {pkey && (<ProfileBlock pKey={pkey} />)} */}
+          {/* <ConnectBtn */}
+          {/*  pkey={pkey} */}
+          {/*  users={users} */}
+          {/*  onConnect={onConnect} */}
+          {/* /> */}
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
-          {!pkey
-              && (
-                  <div>
-                <ConnectBtn
-                  pkey={pkey}
-                  users={users}
-                  onConnect={onConnect}
-                />
-                  </div>
-              )}
+          {isAuth ? <ProfileBlock git /> : null}
         </>
       ) : (
 
@@ -82,7 +80,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         />
       ) }
     </div>
-  ), [isOnLending, pkey, users]);
+  ), [isOnLending, pkey, users, isAuth]);
 
   const header = useMemo(() => (isVisible ? (
     <header className={headerClassName}>
@@ -91,7 +89,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
         {searchElement}
       </div>
     </header>
-  ) : null), [isVisible, pkey, isOnLending]);
+  ) : null), [isVisible, pkey, isOnLending, isAuth]);
 
   return header;
 }

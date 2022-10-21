@@ -1,0 +1,211 @@
+@import '@styles/vars.scss';
+.appWrapper {
+  height: max-content;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.wrapperContent{
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-template-rows: 1fr;
+}
+
+.leftSide{
+  display: flex;
+  margin-right: 40px;
+  margin-top: 24px;
+  flex-direction: column;
+}
+.wrapper {
+  max-width: 1010px;
+  height: auto;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    .header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+
+      .mainHeader {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        .name {
+          font-family: 'PublicSans-ExtraBold';
+          font-style: normal;
+          font-weight: 900;
+          font-size: 18px;
+          line-height: 21px;
+          text-align: center;
+        }
+
+        .social {
+          max-width: 176px;
+          display: flex;
+          justify-content: space-around;
+          height: 16px;
+        }
+        .copyButton{
+          border: none;
+          background: none;
+          cursor: pointer;
+        }
+      }
+
+      .supHeader {
+        margin-top: 8px;
+
+        & > span {
+          font-family: 'PublicSans-Regular';
+          font-style: normal;
+          font-weight: 400;
+          font-size: 14px;
+          line-height: 16px;
+          color: rgba(0, 0, 0, 0.5)
+        }
+
+        & > span:not(:first-child)::before {
+          content: '|';
+          margin: 0 5px;
+        }
+      }
+    }
+
+    .topContent {
+      max-width: 47.5rem;
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 0.5rem;
+
+      .wrapperData {
+        margin-top: 24px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin-bottom: 24px;
+      }
+
+      .preloader {
+        margin-bottom: 20px;
+      }
+    }
+
+    .org {
+      display: flex;
+      justify-content: flex-start;
+      flex-direction: row;
+      width: 100%;
+      margin: 10px;
+    }
+  }
+}
+
+.wrapperOrganization{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 24px;
+  .title{
+    font-family: 'PublicSans-ExtraBold';
+    font-style: normal;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 20px;
+    color: black;
+    margin-bottom: 11px;
+  }
+  &_avatar{
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    &>a{
+      margin-top: 5px;
+      margin-right: 5px;
+    }
+    .wrapp{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .label{
+      margin-top: 8px;
+      font-family: 'PublicSans-Regular';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 130%;
+      color: black;
+    }
+  }
+}
+@media screen and (max-width: 745px) {
+  .mainHeader{
+    padding: .5rem;
+  }
+ .wrapperContent{
+   //flex-direction: column;
+   grid-template-columns: 1fr;
+   grid-template-rows: auto;
+   .leftSide{
+     display: flex;
+     margin-right: 40px;
+     margin-top: 24px;
+     flex-direction: row;
+     padding: .5rem;
+   }
+ }
+  .wrapperOrganization{
+    margin-left: 3rem;
+  }
+}
+@media screen and (max-width: 570px) {
+  .wrapper{
+    padding: 2.5rem 0;
+  }
+  .wrapperContent{
+    flex-direction: column;
+    .leftSide{
+      display: flex;
+      margin-right: 40px;
+      margin-top: 24px;
+      flex-direction: row
+    }
+  }
+  .wrapperOrganization{
+    margin-left: 3rem;
+  }
+
+  .supHeader{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    width: 100%;
+    & > span {
+      width: 100%;
+      word-break: break-all;
+    }
+    & >span:before {
+      content: '' !important;
+      margin: 0 !important;
+    }
+  }
+}

@@ -15,7 +15,8 @@
     width: 100%;
     justify-content: space-between;
     padding: 0 44px;
-   &span {
+
+    &span {
       color: #fff;
       font-family: PublicSans-Bold;
       font-size: 18px;
@@ -34,7 +35,7 @@
   background-color: #fff;
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 997;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
   .textColor {
@@ -76,14 +77,15 @@
   // width: 425px;
   // margin-right: 40px;
   justify-content: space-between;
+  align-items: center;
 
   input {
     margin-right: 5px;
   }
 
-  button {
-    margin-left: auto;
-  }
+  //button {
+  //  margin-left: auto;
+  //}
 }
 
 .lendosInput {
@@ -145,27 +147,27 @@
 }
 
 @media screen and (max-width: 768px) {
+
   .header {
     height: auto;
 
     .nav {
-      flex-direction: column;
+      // flex-direction: column;
       align-items: flex-end;
-      padding: 10px;
+      padding: 0 10px;
     }
   }
 
-  .headerActive {
+  .header {
     .nav {
-      flex-direction: row;
       align-items: center;
-      padding: 10px;
+      padding: 0 10px;
     }
   }
 
   .connect {
     width: 100%;
-    margin-top: 10px;
+    // margin-top: 10px;
     margin-right: 0 !important;
 
     button {
@@ -180,9 +182,13 @@
     margin-left: 0 !important;
 
     .logo {
-      margin-bottom: 10px;
+      // margin-bottom: 10px;
       margin-right: 0;
     }
+  }
+
+  .connect>div {
+    margin-left: auto;
   }
 
   .navList {
@@ -196,18 +202,11 @@
   .navWrapper {
     align-items: flex-start;
   }
-
-  .headerActive {
+  .header {
     .nav {
-      flex-direction: column;
+      // flex-direction: column;
       align-items: center;
-      padding: 10px;
-    }
-  }
-
-  .connect {
-    button {
-      margin: 0 auto 0 0;
+      padding: 0 10px;
     }
   }
 

@@ -1,9 +1,14 @@
+/* eslint-disable max-len */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable @typescript-eslint/no-shadow */
+import { getQueryParam } from '@libs/utils';
+import { notification } from 'antd';
+import { NotificationPlacement } from 'antd/lib/notification';
 import React, {
   memo, useCallback, useEffect, useState
 } from 'react';
+import { useParams } from 'react-router-dom';
 
 export type objectType = {
   [key: string]: any
@@ -29,89 +34,89 @@ const GITHUB_URL: string = 'https://github.com';
 // const GITHUB_API_URL: string = 'https://api.github.com/'
 // const PREVENT_CORS_URL: string = 'https://cors-anywhere.herokuapp.com'
 
-export const LoginSocialGithub = memo(
-  ({
-    state = 'DCEeFWf45A53sdfKef424',
-    scope = '',
-    client_id,
-    // client_secret,
-    className = '',
-    redirect_uri,
-    allow_signup = false,
-    children,
-    // onReject,
-    onResolve
-  }: Props) => {
-    const [isProcessing, setIsProcessing] = useState(false);
+export function LoginSocialGithub({
+  state = '',
+  scope = '',
+  client_id,
+  // client_secret,
+  className = '',
+  redirect_uri,
+  allow_signup = false,
+  children,
+  onResolve
+}: Props) {
+  const [isProcessing, setIsProcessing] = useState(false);
 
-    useEffect(() => {
-      const popupWindowURL = new URL(window.location.href);
-      const code = popupWindowURL.searchParams.get('code');
-      const state = popupWindowURL.searchParams.get('state');
-      if (state?.includes('_github') && code) {
-        localStorage.setItem('github', code);
-        window.close();
-      }
-    }, []);
+  const { params } = useParams();
 
-    const getAccessToken = useCallback(
-      (code: string) => {
-        setIsProcessing(false);
-        onResolve({ provider: 'github', data: { code } });
-      },
-      [onResolve]
-    );
+  const engage = getQueryParam(window.location.href, 'engage') || '';
+  const code = getQueryParam(window.location.href, 'code') || '';
 
-    const handlePostMessage = useCallback(
-      async ({ type, code, provider }) => type === 'code'
+  useEffect(() => {
+    const popupWindowURL = new URL(window.location.href);
+    const code = popupWindowURL.searchParams.get('code');
+    const state = popupWindowURL.searchParams.get('state');
+    if (state?.includes('_github') && code) {
+      localStorage.setItem('github', code);
+      window.close();
+    }
+  }, []);
+
+  const getAccessToken = (code: string) => {
+    setIsProcessing(false);
+    onResolve({ provider: 'github', data: { code } });
+  };
+
+  const handlePostMessage = async ({ type, code, provider }) => type === 'code'
          && provider === 'github'
          && code
-         && getAccessToken(code),
-      [getAccessToken]
-    );
+         && getAccessToken(code);
 
-    const onChangeLocalStorage = useCallback(() => {
-      window.removeEventListener('storage', onChangeLocalStorage, false);
-      const code = localStorage.getItem('github');
-      if (code) {
-        setIsProcessing(true);
-        handlePostMessage({ provider: 'github', type: 'code', code });
-        localStorage.removeItem('instagram');
-      }
-    }, []);
+  const onChangeLocalStorage = () => {
+    const code = localStorage.getItem('github');
+    if (code) {
+      setIsProcessing(true);
+      handlePostMessage({ provider: 'github', type: 'code', code });
+      localStorage.removeItem('instagram');
+      window.removeEventListener('storage', onChangeLocalStorage);
+    }
+  };
 
-    const onLogin = useCallback(() => {
-      if (!isProcessing) {
-        window.addEventListener('storage', onChangeLocalStorage, false);
-        const oauthUrl = `
-        ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=''&state=${
-  `${state}_github`
-}&redirect_uri=${redirect_uri}&allow_signup=${allow_signup}`;
-        const width = 450;
-        const height = 730;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        window.open(
-          oauthUrl,
-          'Github',
-          `menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=${
-            width
-          }, height=${
-            height
-          }, top=${
-            top
-          }, left=${
-            left}`
-        );
-      }
-    }, [isProcessing, client_id, scope, state, redirect_uri, allow_signup]);
+  const onLogin = () => {
+    if (!isProcessing) {
+      window.addEventListener('storage', onChangeLocalStorage);
+      const oauthUrl = `
+                ${GITHUB_URL}/login/oauth/authorize?client_id=${client_id}&scope=${encodeURIComponent(scope)}&state=_github&allow_signup=${allow_signup}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
-    return (
-      <div className={className} onClick={onLogin}>
-        {children}
-      </div>
-    );
-  }
-);
+      const width = 450;
+      const height = 730;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      console.log('URL', oauthUrl);
+      window.open(
+        oauthUrl,
+        'Github',
+        `menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=${width}, height=${
+          height
+        }, top=${
+          top
+        }, left=${
+          left}`
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (engage && code) {
+      handlePostMessage({ provider: 'github', type: 'code', code });
+    }
+  }, [params]);
+
+  return (
+    <div className={className} onClick={onLogin}>
+      {children}
+    </div>
+  );
+}
 
 export default LoginSocialGithub;

@@ -1,0 +1,139 @@
+.section {
+  margin-top: 70px;
+  .step{
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+
+  }
+  .content{
+    h1{
+      font-family: 'PublicSans-ExtraBold', serif;
+      font-weight: 900;
+      font-size: 40px;
+      line-height: 52px;
+      margin: 0 0 40px 0;
+      .color{
+        color: #4DA2E6;
+        font-style: italic;
+      }
+      .drop{
+        display: block;
+      }
+    }
+    .text{
+      p{
+        font-family: 'PublicSans-Regular', serif;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.4;
+        color: #000000;
+        margin-bottom: 0;
+        .drop{
+          display: block;
+        }
+        &:nth-child(1){
+          margin-bottom: 28px;
+        }
+      }
+    }
+    .button{
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 80px -12px 167px;
+      .next{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 127px;
+        height: 52px;
+        background: #4DA2E6;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: 'PublicSans-ExtraBold', serif;
+        font-style: normal;
+        font-weight: 800;
+        font-size: 20px;
+        line-height: 20px;
+        color: #FFFFFF !important;
+      }
+      .buttonItem{
+        width: auto;
+        background: #4DA2E6;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        font-family: 'PublicSans-ExtraBold', serif;
+        font-style: normal;
+        font-weight: 800;
+        font-size: 20px;
+        line-height: 20px;
+        color: #FFFFFF !important;
+        margin: 0 12px;
+        padding: 16px 40px;
+        &:nth-child(2){
+          color: #4DA2E6 !important;
+          background: #FFFFFF;
+          border: 1px solid #4DA2E6;
+        }
+      }
+    }
+    .skip{
+      border: 0;
+      background-color: transparent;
+      font-family: 'PublicSans-Bold', serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 28px;
+      color: #4DA2E6;
+    }
+  }
+}
+
+@media only screen and (max-width: 1135px) {
+  .section{
+    .content{
+      h1{
+        font-size: 30px;
+      }
+    }
+  }
+}
+@media only screen and (max-width: 867px) {
+  .section {
+    margin-bottom: 40px;
+    .skip{
+      width: 100%;
+    }
+  }
+}
+@media only screen and (max-width: 796px) {
+  .section{
+    .content{
+      .button{
+        margin: 40px -12px;
+        .buttonItem{
+          width: 100%;
+          margin: 12px;
+        }
+        .next{
+          margin: 12px;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .section{
+    padding: 0 10px;
+    .content{
+      h1{
+        margin-left: 35px;
+      }
+    }
+  }
+}

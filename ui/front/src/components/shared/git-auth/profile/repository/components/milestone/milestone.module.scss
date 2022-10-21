@@ -1,0 +1,83 @@
+
+.wrapper{
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 2px 8px;
+  margin: 4px 4px;
+  width: max-content;
+  font-style: italic;
+
+  .title{
+    font-family: 'PublicSans-Bold';
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 14px;
+    color: rgba(0,0,0,.5);
+    .procent{
+      font-family: 'PublicSans-Regular';
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 14px;
+    }
+  }
+}
+.summary {
+  composes: wrapper;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+
+
+  .title {
+    font-family: 'PublicSans-Regular';
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    color: rgba(0, 0, 0, .5)
+  }
+}
+
+$colors: rgba(77, 162, 230, 1), rgba(63, 208, 90, 1), rgba(255, 121, 31, 1);
+$repeat: 3;  // How often you want the pattern to repeat.
+  // Warning: a higher number outputs more CSS.
+
+
+
+.tags{
+  composes: wrapper;
+  margin: 4px 4px 4px 0;
+
+}
+//@for $i from 10 through 20 {
+//  .tags:nth-child(#{$i}) {
+//    background:
+//    #{rgba(random(255), random(255), random(255), .5)};
+//   .title {
+//     color: rgb(random(255),random(255),random(255));
+//   }
+//  }
+//  }
+@for $i from 1 through length($colors) {
+  .tags:nth-child(#{length($colors)}n+#{$i}) {
+    background: rgba(nth($colors, $i), 0.1);
+    border: rgba(nth($colors, $i), 0.1);
+  }
+}
+@for $i from 1 through length($colors) {
+  .tags:nth-child(#{length($colors)}n+#{$i}) {
+    .title{
+      color: rgba(nth($colors, $i), 1);
+    }
+  }
+}
+
+
+//@for $i from 1 through $repeat {
+//  $col: hsl(random(360), $s-min+random($s-max+-$s-min), $l-min+random($l-max+-$l-min));
+//  .tags:nth-child(#{$i}) {
+//    background: darken($col, 0.5%)
+//  }
+//
+//}

@@ -6,7 +6,7 @@ import { useExcludeRoute } from '@libs/hooks/shared';
 import styles from '../app.module.scss';
 
 type FooterProps = {
-  isOnLending: boolean
+  isOnLending: boolean,
 };
 
 const SOCIAL = {
