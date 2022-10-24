@@ -2,38 +2,43 @@ import {
   AllRepos, DownloadPage, FailPage, OrganizationPage, Organizations, ProjectPage, Repo
 } from '@components/shared';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
+import { ROUTES } from '@libs/constants';
+
+const {
+  REPOS, REPO, ORG_LIST, ORG, PROJECT, DOWNLOAD, ADD_WEB, DEFAULT
+} = ROUTES;
 
 export const routesData = [
   {
-    path: 'repos/:type/:page',
+    path: `${REPOS}/:type/:page`,
     element: AllRepos
   },
   {
-    path: 'repo/:repoParams/*',
+    path: `${REPO}/:repoParams/*`,
     element: Repo
   },
   {
-    path: 'organizations-list/:type/:page',
+    path: `${ORG_LIST}/:type/:page`,
     element: Organizations
   },
   {
-    path: 'organization/:orgName/*',
+    path: `${ORG}/:orgName/*`,
     element: OrganizationPage
   },
   {
-    path: 'project/:projectName/*',
+    path: `${PROJECT}/:projectName/*`,
     element: ProjectPage
   },
   {
-    path: 'download',
+    path: DOWNLOAD,
     element: DownloadPage
   },
   {
-    path: 'add-web',
+    path: ADD_WEB,
     element: CreateProjectWeb
   },
   {
-    path: '/*',
+    path: DEFAULT,
     element: FailPage
   }
 ];

@@ -1,3 +1,4 @@
+import { ROUTES } from '@libs/constants';
 import { useModal } from '@libs/hooks/shared';
 import { useSearch } from '@libs/hooks/shared/useSearch';
 import { useEntitiesAction } from '@libs/hooks/thunk';
@@ -14,7 +15,7 @@ type LocationState = {
 const useOrganizationsList = () => {
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
-  const path = pathname.split('organizations/')[0];
+  const path = pathname.split(`${ROUTES.ORG_LIST}/`)[0];
 
   const { setInputText, createOrganization } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);

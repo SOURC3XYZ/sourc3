@@ -38,3 +38,5 @@ export * from './ipfs-avatar';
 export * from './achievments';
 export * from './git-auth';
 export * from './referral-programm';
+export * from './breadcrumbs';
+export * from './container';

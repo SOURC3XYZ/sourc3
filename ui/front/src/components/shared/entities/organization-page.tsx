@@ -10,6 +10,7 @@ import { useProject } from '@libs/hooks/container/organization';
 import { ArgumentTypes } from '@types';
 import { CSSProperties, useCallback, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { ROUTES } from '@libs/constants';
 import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
 import {
@@ -18,6 +19,7 @@ import {
 import { MemberListItem, ProjectListItem } from './items';
 import { orgData, ORG_PERMISSION } from './helpers/permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
+import { EntityBreadCrumbs } from './hocs';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -124,12 +126,12 @@ function OrganizationPage() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${orgName}/projects?type=all&page=1`,
+          to: `${path}${ROUTES.ORG}/${orgName}/projects?type=all&page=1`,
           text: 'All Projects'
         },
         {
           key: 'my',
-          to: `${path}projects/${orgName}/projects?type=my&page=1`,
+          to: `${path}${ROUTES.ORG}/${orgName}/projects?type=my&page=1`,
           text: 'My Projects'
         }
       ],
@@ -149,12 +151,12 @@ function OrganizationPage() {
       navItems: [
         {
           key: 'all',
-          to: `${path}projects/${orgName}/repos?type=all&page=1`,
+          to: `${path}${ROUTES.ORG}/${orgName}/repos?type=all&page=1`,
           text: 'All Repositories'
         },
         {
           key: 'my',
-          to: `${path}projects/${orgName}/repos?type=my&page=1`,
+          to: `${path}${ROUTES.ORG}/${orgName}/repos?type=my&page=1`,
           text: 'My Repositories'
         }
       ],
@@ -293,4 +295,4 @@ function OrganizationPage() {
   );
 }
 
-export default OrganizationPage;
+export default EntityBreadCrumbs(OrganizationPage);

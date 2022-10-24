@@ -107,3 +107,15 @@ export enum MODE { AUTHINFO, SEED, CONFIRM, PASS, OK, SUCCESS, LOADING }
 export enum RestoreStatus { SEED, PASS, OK, LOADING }
 
 export enum MODAL { NONE, REPOS, CLONE, ORGANIZATION, PROJECT, EXISTING, ADD }
+
+export enum ROUTES {
+  REPOS = 'repos',
+  REPO = 'repo',
+  ORG_LIST = 'organizations-list',
+  ORG = 'organization',
+  PROJECT = 'project',
+  DOWNLOAD = 'download',
+  ADD_WEB = 'add-web',
+  DEFAULT = '/*'
+
+}

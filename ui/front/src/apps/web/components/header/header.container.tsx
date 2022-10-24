@@ -1,4 +1,5 @@
 import {
+  ConnectBtn,
   // AutocompeteSearch,
   // ConnectBtn,
   ProfileBlock
@@ -23,8 +24,8 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const {
     pkey,
     users,
-    isVisible
-    // onConnect
+    isVisible,
+    onConnect
   } = containerProps;
 
   const isAuth = Boolean(useSelector((state) => state.profile.data.token));
@@ -44,7 +45,7 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
           </Link>
         </li>
         <li>
-          <Link className={styles.textColor} to="/organizations/all/1">
+          <Link className={styles.textColor} to="/organizations-list/all/1">
             Organizations
           </Link>
         </li>
@@ -62,12 +63,12 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       {/* )} */}
       { !desktop ? (
         <>
-          {/* {pkey && (<ProfileBlock pKey={pkey} />)} */}
-          {/* <ConnectBtn */}
-          {/*  pkey={pkey} */}
-          {/*  users={users} */}
-          {/*  onConnect={onConnect} */}
-          {/* /> */}
+          {pkey && (<ProfileBlock pKey={pkey} />)}
+          <ConnectBtn
+            pkey={pkey}
+            users={users}
+            onConnect={onConnect}
+          />
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           {isAuth ? <ProfileBlock git /> : null}
         </>

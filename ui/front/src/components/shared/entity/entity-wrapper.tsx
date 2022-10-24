@@ -1,4 +1,4 @@
-import { Tab } from '@components/shared';
+import { Container, Tab } from '@components/shared';
 import { useMemo } from 'react';
 import styles from './entity-wrapper.module.scss';
 import EntityHeader, { AvatarParams, SocialLinks } from './entity-header';
@@ -44,10 +44,12 @@ function EntityWrapper({
   ), [headerFields, title]);
 
   return (
-    <div className={styles.content}>
-      {header}
-      {children}
-    </div>
+    <Container>
+      <div className={styles.content}>
+        {header}
+        {children}
+      </div>
+    </Container>
   );
 }
 

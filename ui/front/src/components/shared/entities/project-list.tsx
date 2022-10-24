@@ -1,4 +1,5 @@
 import {
+  Container,
   CreateModal,
   EntityList,
   EntityManager,
@@ -62,7 +63,7 @@ function ProjectList<T>({
   const isAddBtnVisible = useMemo(() => !!createEntity, [createEntity]);
 
   return (
-    <>
+    <Container>
       <EntityManager
         type={type}
         pkey={pkey}
@@ -88,7 +89,7 @@ function ProjectList<T>({
         items={foundedItems}
         renderItem={listItem(searchText)}
       />
-    </>
+    </Container>
   );
 }
 

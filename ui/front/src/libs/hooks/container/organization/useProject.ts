@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import { RC } from '@libs/action-creators';
+import { ROUTES } from '@libs/constants';
 import { useCallApi } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
@@ -24,7 +25,7 @@ type LocationState = {
 const useProject = () => {
   const { pathname } = useLocation();
   const { orgName } = useParams<'orgName'>() as LocationState;
-  const path = pathname.split('projects/')[0];
+  const path = pathname.split(`${ROUTES.ORG}/`)[0];
 
   const type:OwnerListType = useMemo(() => (
     getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'

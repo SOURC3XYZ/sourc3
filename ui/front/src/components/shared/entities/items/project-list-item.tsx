@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
 import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
-import { AVATAR_COLORS } from '@libs/constants';
-import styles from '../project-list.module.scss';
+import { AVATAR_COLORS, ROUTES } from '@libs/constants';
+import styles from './project-list.module.scss';
 
 type ListItemProps = {
   item: Project;
@@ -27,7 +27,7 @@ export function ProjectListItem({
     message.info(key);
   };
 
-  const link = `${path}project/${project_name}/repos?type=${type}&page=1`;
+  const link = `${path}${ROUTES.PROJECT}/${project_name}/repos?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />

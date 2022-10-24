@@ -16,6 +16,7 @@ import { HeaderFields } from '../entity/entity-wrapper';
 import { AddUserOrg, CreateProjectRepo, ModifyProject } from './forms';
 import { projectData, PROJECT_PERMISSION } from './helpers/permissions-data';
 import { MemberListItem } from './items';
+import { EntityBreadCrumbs } from './hocs';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -241,4 +242,4 @@ function ProjectPage() {
   );
 }
 
-export default ProjectPage;
+export default EntityBreadCrumbs(ProjectPage);

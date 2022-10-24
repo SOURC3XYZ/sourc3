@@ -11,8 +11,8 @@ import {
 } from 'react';
 import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
-import { AVATAR_COLORS } from '@libs/constants';
-import styles from '../project-list.module.scss';
+import { AVATAR_COLORS, ROUTES } from '@libs/constants';
+import styles from './project-list.module.scss';
 
 type ListItemProps = {
   item: MemberId;
@@ -48,7 +48,7 @@ export function MemberListItem({
     message.info(key);
   };
 
-  const link = `${path}project/${item.member}/1`;
+  const link = `${path}${ROUTES.PROJECT}/${item.member}/1`;
 
   const handleGetPkey = () => navigator.clipboard.writeText(item.member);
 
