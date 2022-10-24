@@ -40,5 +40,5 @@ jobs:
                   && docker pull ${{ secrets.DEV_TAG_NAME }} 
                   && docker image tag ${{ secrets.DEV_TAG_NAME }} sourc3-ui-dev:latest  
                   && docker rm -f dev-sourc3-ui || true
-                  && docker run -d --name  dev-sourc3-ui sourc3-ui-dev:latest 
-                  && ${{ secrets.DOCKER_NETWORK }} 
+                  && docker run -d --name dev-sourc3-ui sourc3-ui-dev:latest 
+                  && ${{ secrets.DEV_DOCKER_NETWORK }} 
