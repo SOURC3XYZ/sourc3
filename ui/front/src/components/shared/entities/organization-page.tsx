@@ -13,13 +13,11 @@ import { Route, Routes } from 'react-router-dom';
 import { HeaderFields } from '../entity/entity-wrapper';
 import TabItem from '../entity/tab-item';
 import {
-  AddUserOrg,
-  CreateOrgRepo, CreateProject, ModifyOrganization
+  AddUserOrg, CreateOrgRepo, CreateProject, ModifyOrganization
 } from './forms';
-import MemberListItem from './member-list-item';
-import { orgData, ORG_PERMISSION } from './permissions-data';
+import { MemberListItem, ProjectListItem } from './items';
+import { orgData, ORG_PERMISSION } from './helpers/permissions-data';
 import ProjectList, { HeaderElements } from './project-list';
-import ProjectListItem from './project-list-item';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -33,7 +31,7 @@ type RoutesType<T> = {
   itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
 
-function Projects() {
+function OrganizationPage() {
   const {
     orgName,
     org,
@@ -213,13 +211,10 @@ function Projects() {
         element={(
           <ProjectList
             isShowNav={pkey === org.organization_creator}
-            // orgName={orgName}
             pkey={pkey}
-            // path={path}
             page={page}
             type={type}
             placeholder={el.placeholder}
-            // route={el.path}
             projects={el.items}
             header={el.headerElements}
             navItems={el.navItems}
@@ -298,4 +293,4 @@ function Projects() {
   );
 }
 
-export default Projects;
+export default OrganizationPage;

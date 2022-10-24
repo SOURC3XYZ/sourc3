@@ -7,7 +7,7 @@ import dotsImg from '@assets/img/dots.svg';
 import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
 import { AVATAR_COLORS } from '@libs/constants';
-import styles from './project-list.module.scss';
+import styles from '../project-list.module.scss';
 
 type ListItemProps = {
   item: Project;
@@ -16,7 +16,7 @@ type ListItemProps = {
   type: OwnerListType;
 };
 
-function ProjectListItem({
+export function ProjectListItem({
   item, path, searchText, type
 }:ListItemProps) {
   const {
@@ -84,5 +84,3 @@ function ProjectListItem({
     </List.Item>
   );
 }
-
-export default ProjectListItem;

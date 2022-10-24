@@ -1,5 +1,5 @@
 import {
-  AllRepos, DownloadPage, FailPage, Organizations, ProjectRepos, Projects, Repo
+  AllRepos, DownloadPage, FailPage, OrganizationPage, Organizations, ProjectPage, Repo
 } from '@components/shared';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
 
@@ -13,16 +13,16 @@ export const routesData = [
     element: Repo
   },
   {
-    path: 'organizations/:type/:page',
+    path: 'organizations-list/:type/:page',
     element: Organizations
   },
   {
-    path: 'projects/:orgName/*',
-    element: Projects
+    path: 'organization/:orgName/*',
+    element: OrganizationPage
   },
   {
     path: 'project/:projectName/*',
-    element: ProjectRepos
+    element: ProjectPage
   },
   {
     path: 'download',

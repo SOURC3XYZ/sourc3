@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import { Excretion, IpfsAvatars } from '@components/shared';
 import { getSetValueByIndex, textEllipsis } from '@libs/utils';
 import {
   useCallback, useEffect, useMemo, useState
@@ -12,8 +12,7 @@ import {
 import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
 import { AVATAR_COLORS } from '@libs/constants';
-import styles from './project-list.module.scss';
-import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
+import styles from '../project-list.module.scss';
 
 type ListItemProps = {
   item: MemberId;
@@ -22,7 +21,7 @@ type ListItemProps = {
   searchText: string;
 };
 
-function MemberListItem({
+export function MemberListItem({
   item, path, data, searchText
 }:ListItemProps) {
   const parsedPermissions = useMemo(
@@ -67,7 +66,7 @@ function MemberListItem({
   }).filter((el) => el), [parsedPermissions]);
 
   const image = useMemo(() => itemData && (
-    <IpfsAvatar
+    <IpfsAvatars
       colors={AVATAR_COLORS}
       name={item.member}
       size={56}
@@ -117,5 +116,3 @@ function MemberListItem({
     </List.Item>
   );
 }
-
-export default MemberListItem;

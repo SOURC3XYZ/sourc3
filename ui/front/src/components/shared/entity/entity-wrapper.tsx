@@ -30,6 +30,7 @@ function EntityWrapper({
 }:EntityWrapperProps) {
   const header = useMemo(() => !!headerFields && (
     <EntityHeader
+      title={title}
       pkey={pkey}
       yourPermissions={headerFields.yourPermissions}
       owner={headerFields.owner}
@@ -39,9 +40,9 @@ function EntityWrapper({
       avatar={headerFields.avatar}
       description={headerFields.description}
       socialLinks={headerFields.socialLinks}
-      title={title}
     />
   ), [headerFields, title]);
+
   return (
     <div className={styles.content}>
       {header}

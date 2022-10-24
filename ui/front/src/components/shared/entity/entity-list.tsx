@@ -19,15 +19,11 @@ function EntityList<T>({
 
   const [pageSize, setPageSize] = useState(4);
   const [current, setCurrentPage] = useState(1);
-
-  // const onChange = (next:number) => navigate(`${path}${route}/${type}/${next}`);
-
   const onChange = (next:number) => setCurrentPage(next);
 
   useEffect(() => {
     if (textCash.current !== searchText) {
       textCash.current = searchText;
-      // navigate(`${path}${route}/${type}/${1}`, { replace: true });
     }
   }, [searchText]);
 

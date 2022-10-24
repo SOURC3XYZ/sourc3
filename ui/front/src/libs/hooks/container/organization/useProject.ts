@@ -45,9 +45,7 @@ const useProject = () => {
 
   const [members, setMembers] = useState<MemberId[]>([]);
 
-  // const { setInputText, createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
-  // const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
     (state) => getProjectsByOrgId(orgName, state.entities.projects, type, pkey)
@@ -79,10 +77,6 @@ const useProject = () => {
     return foundRepos;
   }, [projects, allRepos]);
 
-  // const modalApi = useModal(
-  //   (txt: string) => setInputText(txt),
-  //   (name: string) => createProject(name, id, pid)
-  // );
   const goBack = useCallback(() => navigate('projects'), []);
 
   const getOrgMembers = useCallback(async () => {
@@ -119,7 +113,6 @@ const useProject = () => {
     searchText,
     orgName,
     yourPermissions,
-    // modalApi,
     repos,
     navigate,
     goBack,

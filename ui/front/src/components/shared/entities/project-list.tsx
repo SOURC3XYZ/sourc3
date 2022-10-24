@@ -17,9 +17,7 @@ export type HeaderElements = {
 };
 
 type ProjectListProps<T> = {
-  // orgName: string;
   projects: T[];
-  // path:string;
   page: number;
   pkey: string;
   type: OwnerListType;
@@ -32,22 +30,18 @@ type ProjectListProps<T> = {
     label?: string,
     placeholder?: string
   },
-  // route: string;
   createEntity?: () => void;
   listItem: (searchText:string) => (item: T) => JSX.Element;
 };
 
 function ProjectList<T>({
-  // orgName,
   navItems,
   placeholder,
-  // path,
   type,
   pkey,
   projects,
   page,
   header,
-  // route,
   isShowNav,
   fieldsToSearch,
   listItem,
@@ -90,11 +84,8 @@ function ProjectList<T>({
       />
       <EntityList
         searchText={searchText}
-        // route={`${route}/${orgName}`}
-        // path={path}
         page={page}
         items={foundedItems}
-        // type={type}
         renderItem={listItem(searchText)}
       />
     </>

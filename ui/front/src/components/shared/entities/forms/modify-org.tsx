@@ -15,7 +15,7 @@ function ModifyOrganization({
   const { setModifyOrg } = useEntitiesAction();
 
   const orgFields = {
-    organization_id: item.organization_id,
+    organization_name: item.organization_name,
     name: item.organization_name,
     short_title: item.organization_short_title,
     about: item.organization_about,

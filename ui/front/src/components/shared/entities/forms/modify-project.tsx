@@ -15,8 +15,8 @@ function ModifyProject({
   const { setModifyProject } = useEntitiesAction();
 
   const projectFields = {
-    organization_id: project.organization_id,
-    project_id: project.project_id,
+    organization_name: project.organization_name,
+    project_name: project.project_name,
     name: project.project_name,
     short_title: project.project_description,
     telegram: project.project_telegram,

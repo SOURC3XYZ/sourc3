@@ -18,7 +18,7 @@ import { AVATAR_COLORS } from '@libs/constants';
 import { AvatarProps } from 'boring-avatars';
 import styles from './entity-wrapper.module.scss';
 import IpfsAvatar from '../ipfs-avatar/ipfs-avatar';
-import { ORG_PERMISSION } from '../organization-page/permissions-data';
+import { ORG_PERMISSION } from '../entities/helpers/permissions-data';
 
 export type SocialLinks = {
   website: string
@@ -80,7 +80,7 @@ const socialLinksData = new Map<keyof SocialLinks, SocialLinkMapObject>()
     link: 'https://www.linkedin.com/'
   });
 
-function SocialLinkHOC({ key, value }: {
+function SocialLink({ key, value }: {
   key: keyof SocialLinks,
   value: string
 }) {
@@ -126,7 +126,7 @@ function EntityHeader({
     const entries = Object.entries(socialLinks) as Entries<SocialLinks>;
     const links = entries.map((el) => {
       const [key, value] = el;
-      return SocialLinkHOC({ key, value });
+      return SocialLink({ key, value });
     })
       .filter((el) => el);
     return links;

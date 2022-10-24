@@ -11,7 +11,7 @@ type LocationState = {
   type: OwnerListType
 };
 
-const useOrganization = () => {
+const useOrganizationsList = () => {
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const path = pathname.split('organizations/')[0];
@@ -22,7 +22,7 @@ const useOrganization = () => {
   const items = useSelector((state) => itemsFilter(state.entities.organizations, type, pkey));
   const searchText = useSelector((state) => state.entities.searchText);
 
-  const elements = useSearch(searchText, items, ['organization_name', 'organization_id'], type);
+  const elements = useSearch(searchText, items, ['organization_name'], type);
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
@@ -40,4 +40,4 @@ const useOrganization = () => {
   };
 };
 
-export default useOrganization;
+export default useOrganizationsList;

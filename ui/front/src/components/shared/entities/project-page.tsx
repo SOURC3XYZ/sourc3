@@ -11,11 +11,11 @@ import { Route, Routes } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
 import { ArgumentTypes } from '@types';
 import ProjectList, { HeaderElements } from './project-list';
-import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
 import { HeaderFields } from '../entity/entity-wrapper';
 import { AddUserOrg, CreateProjectRepo, ModifyProject } from './forms';
-import { projectData, PROJECT_PERMISSION } from './permissions-data';
+import { projectData, PROJECT_PERMISSION } from './helpers/permissions-data';
+import { MemberListItem } from './items';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -29,7 +29,7 @@ type RoutesType<T> = {
   itemComponent: (searchText:string) => (item: T) => JSX.Element;
 };
 
-function ProjectRepos() {
+function ProjectPage() {
   const {
     path,
     type,
@@ -165,13 +165,10 @@ function ProjectRepos() {
         element={(
           <ProjectList
             isShowNav={pkey === project.project_creator}
-            // id={id}
             pkey={pkey}
-            // path={path}
             page={page}
             type={type}
             placeholder={el.placeholder}
-            // route={el.path}
             projects={el.items}
             header={el.headerElements}
             navItems={el.navItems}
@@ -244,4 +241,4 @@ function ProjectRepos() {
   );
 }
 
-export default ProjectRepos;
+export default ProjectPage;

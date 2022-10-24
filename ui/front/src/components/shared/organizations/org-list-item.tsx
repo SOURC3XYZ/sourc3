@@ -25,7 +25,7 @@ function OrgListItem({
     message.info(key);
   };
 
-  const link = `${path}projects/${organization_name}/projects?type=${type}&page=1`;
+  const link = `${path}organizations-list/${organization_name}/projects?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />

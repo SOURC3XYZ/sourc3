@@ -5,7 +5,7 @@ import {
 import React, { useState } from 'react';
 import { useSelector } from '@libs/redux';
 import OrgListItem from '@components/shared/organizations/org-list-item';
-import ProjectListItem from '@components/shared/organization-page/project-list-item';
+import { ProjectListItem } from '@components/shared/entities/items';
 import styles from './userData.module.scss';
 
 const placeholder = (type:string) => `type your ${type} name, or ID`;

@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import {
   Notifications,
   Preload,
-  DownloadPage, NavButton, FailPage, OnboardingStep, ReferralProgramm
+  DownloadPage, NavButton, OnboardingStep, ReferralProgramm
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
 import {
