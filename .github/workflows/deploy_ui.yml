@@ -3,7 +3,7 @@ name: Deploying the UI
 
 on:
   push:
-    branches: [ demo ]
+    branches: [ main ]
 
 jobs:
   deploy:
