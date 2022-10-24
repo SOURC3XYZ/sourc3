@@ -14,15 +14,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-18.04, macos-10.15]
+        os: [windows-2019, ubuntu-18.04, macos-11]
         include:
           - os: windows-2019
             PLATFORM_NAME: win
           - os: ubuntu-18.04
             PLATFORM_NAME: linux
-          - os: macos-10.15
+          - os: macos-11
             PLATFORM_NAME: mac
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -38,23 +37,21 @@ jobs:
       with:
         github_token: ${{secrets.INSTALLER_TOKEN}}
         workflow: build.yml
-        workflow_conclusion: success
-        branch: master
+        branch: dappnet
         path: downloads
         repo: BeamMW/beam
         platform_name: ${{matrix.PLATFORM_NAME}}
-        net_name: masternet
+        net_name: dappnet
         search_artifacts: true
 ###############################################################################
 # Create Build Environment
 ###############################################################################
 
-    - name: Create Build Environment [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Create Build Environment [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         echo $GITHUB_WORKSPACE
         echo "OPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1" >> $GITHUB_ENV
-        brew install boost
         brew install krb5
         export TZ=GMT-3
         sudo systemsetup -gettimezone
@@ -103,6 +100,7 @@ jobs:
         echo "BOOST_LIBRARYDIR=${{runner.workspace}}/boost_prebuild/lib/" >> $GITHUB_ENV
     
     - name: Beam Shader SDK
+      if: ${{false}} 
       shell: bash
       run: |
         WORKSPACE='${{runner.workspace}}'
@@ -117,8 +115,8 @@ jobs:
 ###############################################################################
 # Configure CMake
 ###############################################################################
-    - name: Configure CMake [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Configure CMake [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         cmake $GITHUB_WORKSPACE -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DUSE_BUNDLED_ZLIB=ON -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSOURC3_USE_STATIC=ON -DBRANCH_NAME=${GITHUB_REF##*/} .
       env:
@@ -142,8 +140,7 @@ jobs:
       shell: bash
       run: |
         echo "PACKAGE_VERSION=$(cat version.gen)" >> $GITHUB_ENV
-        echo "BEAM_TARGET_SUFFIX=-masternet" >> $GITHUB_ENV
-        echo "BEAM_VERSION=6.3.12629" >> $GITHUB_ENV
+        echo "BEAM_TARGET_SUFFIX=-dappnet" >> $GITHUB_ENV
         
     - name: Change version for Electron
       shell: bash
@@ -164,12 +161,12 @@ jobs:
         cp ./downloads/beam-wallet${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/cli/
         cp ./downloads/beam-node${{env.BEAM_TARGET_SUFFIX}}* ./ui/beam-res/node/
         cp ./downloads/wasm-client.* ./ui/front/dist/
-        
+
         npm install --global yarn
-        
-    - name: Prepare for electron build [macos-10.15 && ubuntu all]
+
+    - name: Prepare for electron build [macos-11 && ubuntu all]
       shell: bash
-      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-10.15'
+      if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'macos-11'
       run: |
         mkdir -p ./ui/beam-res/{api,cli,node} ./ui/front/dist/assets
         tar xvf ./downloads/wallet-api${{env.BEAM_TARGET_SUFFIX}}.tar -C ./ui/beam-res/api
@@ -178,33 +175,33 @@ jobs:
         cp ./downloads/wasm-client* ./ui/front/dist
         sudo npm install --global yarn
 
-    - name: Cache node modules
+    - name: Cache Electron node modules
       uses: actions/cache@v3
       id: cache-electron-modules
+      if: ${{false}}
       env:
         cache-name: electron-node-modules
       with:
         path: |
-          ui/front/node_modules
           ui/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}-
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
     - name: Install front dependencies
-      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       shell: bash
       run: |
         cd ui/front
-        npm i --legacy-peer-deps
+        yarn
 
     - name: Build front
       shell: bash
       run: |
         cd ui/front
-        NODE_ENV=production npm run build
+        NODE_ENV=production yarn build
 
     - name: Copy app
       shell: bash
@@ -213,30 +210,39 @@ jobs:
 
     - name: Install electron dependencies
       shell: bash
-      if: steps.cache-electron-modules.outputs.cache-hit != 'true'
       run: |
         cd ui
-        npm i --legacy-peer-deps
+        yarn
 
-    - name: Install dmg licence [macos-10.15]
+    - name: Install dmg licence [macos-11]
       shell: bash
-      if: matrix.os == 'macos-10.15' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'macos-11'
       run: |
         cd ui
         npm i dmg-license
 
-    - name: Install wasm [windows-2019]
+    - name: Install nasm [windows-2019]
       if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
       uses: ilammy/setup-nasm@v1
-      
+
     - name: Set up perl [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: '5.34'
 
+    - name: Disable tests in rebuilding modules [windows-2019]
+      if: matrix.os == 'windows-2019'
+      shell: bash
+      run: |
+        cd ui
+        if [ -d "./node_modules/nodegit" ]; then
+          sed -i 's/nmake test/REM nmake test/g' node_modules/nodegit/utils/build-openssl.bat
+          sed -i 's/no-ssl2/no-ssl2 no-tests/g' node_modules/nodegit/utils/build-openssl.bat
+        fi
+
     - name: Rebuild modules [windows-2019]
-      if: matrix.os == 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os == 'windows-2019'
       run: |
         cd ui
         .\node_modules\.bin\electron-rebuild.cmd
@@ -244,7 +250,7 @@ jobs:
         npm_config_vcvarsall_path: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat'
 
     - name: Rebuild modules [ubuntu-all && macos-all]
-      if: matrix.os != 'windows-2019' && steps.cache-electron-modules.outputs.cache-hit != 'true'
+      if: matrix.os != 'windows-2019'
       run: |
         cd ui
 
@@ -261,8 +267,8 @@ jobs:
 ###############################################################################
 # Build
 ###############################################################################
-    - name: Build [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Build [macos-11]
+      if: matrix.os == 'macos-11'
       run: cmake --build . --parallel --config $BUILD_TYPE
 
     - name: Build [ubuntu all]
@@ -278,8 +284,8 @@ jobs:
 ###############################################################################
 # Test
 ###############################################################################
-    - name: Test [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Test [macos-11]
+      if: matrix.os == 'macos-11'
       continue-on-error: false
       run: ctest -C $BUILD_TYPE --verbose
 
@@ -309,7 +315,7 @@ jobs:
       shell: bash
       if: matrix.os == 'windows-2019'
       run: |
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/git-remote-sourc3.exe
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.exe ui/build/git-remote-sourc3.exe
         cp remote_helper/sourc3-remote.cfg ui/sourc3-remote.cfg
 
     - name: Build electron
@@ -325,7 +331,7 @@ jobs:
         cd ui/dist
         wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
         chmod a+x appimagetool-x86_64.AppImage
-        filename=$(ls | grep client-master | grep AppImage)
+        filename=$(ls | grep client-dappnet | grep AppImage)
         ./$filename --appimage-extract
         cd squashfs-root/usr/lib
         for sym_file in libssl.so libkrb5.so libk5crypto.so libcom_err.so libcrypto.so libkrb5support.so
@@ -344,14 +350,14 @@ jobs:
 ###############################################################################
 # Collect artifacts
 ###############################################################################
-    - name: Import Code-Signing Certificates [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Import Code-Signing Certificates [macos-11]
+      if: matrix.os == 'macos-11'
       uses: Apple-Actions/import-codesign-certs@v1
       with:
         p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
         p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-    - name: Sign the mac binaries [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Sign the mac binaries [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         codesign --deep --force -v -s "${{secrets.MACOS_SIGN_IDENTITY}}" -o runtime --timestamp remote_helper/git-remote-sourc3
 
@@ -360,12 +366,12 @@ jobs:
       run: |
         sha256sum remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Checksum [macos-10.15]
-      if: matrix.os == 'macos-10.15'
+    - name: Checksum [macos-11]
+      if: matrix.os == 'macos-11'
       run: |
         shasum -a 256 remote_helper/git-remote-sourc3 > remote_helper/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Collect [macos-10.15 && ubuntu all]
+    - name: Collect [macos-11 && ubuntu all]
       shell: bash
       if: matrix.os != 'windows-2019'
       run: |
@@ -385,16 +391,16 @@ jobs:
       if: matrix.os == 'windows-2019'
       run: |
         mkdir pdb
-        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.pdb pdb/git-remote-sourc3{{env.BEAM_TARGET_SUFFIX}}.pdb
+        cp remote_helper/${{env.BUILD_CONFIG}}/git-remote-sourc3.pdb pdb/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}.pdb
 
     - name: Checksum [windows]
       if: matrix.os == 'windows-2019'
       run: |
         certUtil -hashfile artifacts/git-remote-sourc3.exe SHA256 > artifacts/git-remote-sourc3${{env.BEAM_TARGET_SUFFIX}}-checksum.txt
 
-    - name: Notarize [macos-10.15]
+    - name: Notarize [macos-11]
       shell: bash
-      if: matrix.os == 'macos-10.15'
+      if: matrix.os == 'macos-11'
       env:
         MACOS_NOTARIZE_USER: ${{ secrets.MACOS_NOTARIZE_USER }}
         MACOS_NOTARIZE_PASS: ${{ secrets.MACOS_NOTARIZE_PASS }}
@@ -415,7 +421,7 @@ jobs:
         cp ui/dist/*.AppImage installer/${{matrix.PLATFORM_NAME}}
 
     - name: Prepare artifacts [macos]
-      if: matrix.os == 'macos-10.15'
+      if: matrix.os == 'macos-11'
       shell: bash
       run: |
         mkdir -p installer/${{matrix.PLATFORM_NAME}}
@@ -430,7 +436,7 @@ jobs:
 
         #TODO
         #- name: Prepare artifacts [macos]
-        #if: matrix.os == 'macos-10.15'
+        #if: matrix.os == 'macos-11'
         #shell: bash
         #run: |
         #mkdir -p installer
@@ -448,7 +454,7 @@ jobs:
 
           # TODO
           #- uses: actions/upload-artifact@v2
-          #if: matrix.os == 'macos-10.15'
+          #if: matrix.os == 'macos-11'
           #with:
           #name: sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}-${{matrix.PLATFORM_NAME}}
           #path: installer/*
@@ -460,9 +466,9 @@ jobs:
         name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.AppImage
         if-no-files-found: error
-    
+
     - uses: actions/upload-artifact@v2
-      if: matrix.os == 'macos-10.15'
+      if: matrix.os == 'macos-11'
       with:
         name: ${{matrix.PLATFORM_NAME}}-sourc3-client${{env.BEAM_TARGET_SUFFIX}}-${{env.PACKAGE_VERSION}}
         path: installer/${{matrix.PLATFORM_NAME}}/*.dmg

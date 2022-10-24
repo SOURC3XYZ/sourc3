@@ -13,6 +13,24 @@ function NavMenu() {
     padding: '0 1rem'
   };
 
+  const linksData = [
+    {
+      key: 'all',
+      to: 'repos/all/1',
+      title: 'Repositories'
+    },
+    {
+      key: 'orgs',
+      to: 'organizations/all/1',
+      title: 'Organizations'
+    },
+    {
+      key: 'local',
+      to: 'localRepos',
+      title: 'Local Repositories'
+    }
+  ];
+
   return (
     <div className={styles.menu}>
       <Menu
@@ -21,12 +39,11 @@ function NavMenu() {
         defaultOpenKeys={['all']}
       >
         <Menu.Divider />
-        <Menu.Item key="all" icon={<ContainerOutlined />}>
-          <Link to="/main/repos/all/1">Repositories</Link>
-        </Menu.Item>
-        <Menu.Item key="local" icon={<ContainerOutlined />}>
-          <Link to="/main/localRepos">Local Repositories</Link>
-        </Menu.Item>
+        {linksData.map((el) => (
+          <Menu.Item key={el.key} icon={<ContainerOutlined />}>
+            <Link to={el.to}>{el.title}</Link>
+          </Menu.Item>
+        ))}
       </Menu>
     </div>
   );

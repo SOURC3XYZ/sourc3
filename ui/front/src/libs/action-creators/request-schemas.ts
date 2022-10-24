@@ -1,4 +1,4 @@
-import { CONTRACT } from '@libs/constants';
+import { CONFIG } from '@libs/constants';
 import {
   CommitHash, PropertiesType, RepoId, TreeElementOid, TreeOid
 } from '@types';
@@ -15,7 +15,8 @@ export const RC = {
     callID: 'ipfs_get',
     method: 'ipfs_get',
     params: {
-      hash: ipfsHash
+      hash: ipfsHash,
+      timeout: CONFIG.IPFS_TIMEOUT
     }
   } as const),
 
@@ -226,17 +227,18 @@ export const RC = {
       address,
       comment,
       offline,
-      asset_id: CONTRACT.ASSET_ID
+      asset_id: CONFIG.ASSET_ID
     }
   } as const),
 
-  setPublicKey: () => ({
+  getPublicKey: (pid = 0) => ({
     callID: 'set_public_key',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
-        action: 'get_key'
+        action: 'get_key',
+        pid
       },
       create_tx: false
     }

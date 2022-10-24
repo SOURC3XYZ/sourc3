@@ -1,35 +1,42 @@
 import { BeamButton } from '@components/shared';
 import { ToastMessages } from '@libs/constants';
-import { NotificationPlacement } from '@types';
+import { textEllipsis } from '@libs/utils';
+import { NotificationPlacement, User } from '@types';
 import { notification } from 'antd';
 import { useEffect, useMemo } from 'react';
 import styles from './connect-btn.module.scss';
 
+const WORD_COUNT = 7;
+
+const CONNECT = 'Connect wallet';
+
 type ConnectBtnProps = {
-  isLogined: boolean;
+  pkey: string;
+  users: User[];
   onConnect: () => void;
 };
 
-function ConnectBtn({ isLogined, onConnect }:ConnectBtnProps) {
-  const connectInner = useMemo(() => (
-    isLogined
-      ? 'wallet'
-      : 'connect'), [isLogined]);
+function ConnectBtn({ pkey, users, onConnect }:ConnectBtnProps) {
+  const connectInner = useMemo(() => {
+    const foundActive = users.find((el) => el.active);
+    if (pkey) return textEllipsis(foundActive?.name || pkey, WORD_COUNT, { ellipsis: '' });
+    return CONNECT;
+  }, [pkey, users]);
 
   const onConnectHandler = () => {
-    if (!isLogined)onConnect();
+    if (!pkey)onConnect();
   };
 
-  const btnClassname = isLogined ? styles.connectBtnLogined : styles.connectBtn;
+  const btnClassname = pkey ? styles.connectBtnLogined : styles.connectBtn;
 
   useEffect(() => {
-    if (isLogined) {
+    if (pkey) {
       notification.open({
         message: ToastMessages.WALLET_CONNECTED,
         placement: 'bottomRight' as NotificationPlacement
       });
     }
-  }, [isLogined]);
+  }, [pkey]);
 
   return (
     <BeamButton classes={btnClassname} callback={onConnectHandler}>

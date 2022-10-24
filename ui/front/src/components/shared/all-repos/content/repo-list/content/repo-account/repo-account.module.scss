@@ -3,44 +3,52 @@
     border-radius: 8px;
     color: #FFFFFF;
     padding: 24px 27px 21px;
-    .list{
+
+    .list {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 5px;
-        .block{
+
+        .block {
             display: flex;
             align-items: center;
+
             .logo {
                 max-width: 80px;
                 max-height: 80px;
-                img{
+
+                img {
                     width: 100%;
                     height: 100%;
                 }
             }
-            .title{
+
+            .title {
                 display: flex;
                 align-items: start;
                 margin-left: 24px;
-                h1{
-                    font-family: 'Visby', serif;
+
+                h1 {
+                    font-family: 'PublicSans-Regular';
                     font-style: normal;
                     font-weight: 400;
                     font-size: 24px;
                     line-height: 24px;
                     color: #FFFFFF;
                 }
-                h4{
-                    font-family: 'Visby', serif;
+
+                h4 {
+                    font-family: 'PublicSans-Regular';
                     font-style: normal;
                     font-weight: 400;
                     font-size: 16px;
                     line-height: 16px;
                     color: #FFFFFF;
                 }
-                .status{
-                    font-family: 'Visby', serif;
+
+                .status {
+                    font-family: 'PublicSans-Regular';
                     font-style: italic;
                     font-weight: 700;
                     font-size: 14px;
@@ -54,24 +62,29 @@
             }
         }
     }
-    .social{
+
+    .social {
         margin: 0 -9px;
-        a{
+
+        a {
             margin: 0 9px;
         }
     }
-    .counts{
+
+    .counts {
         display: flex;
         justify-content: center;
         align-items: center;
         margin: 0 -14px;
-        .countsItem{
+
+        .countsItem {
             display: flex;
             align-items: center;
             margin: 0 14px;
         }
-        h4{
-            font-family: 'Visby', serif;
+
+        h4 {
+            font-family: 'PublicSans-Regular';
             font-style: normal;
             font-weight: 400;
             font-size: 14px;
@@ -79,10 +92,11 @@
             color: #FFFFFF;
             margin: 0 8px 0 0;
         }
-        p{
+
+        p {
             background-color: #FFFFFF;
             border-radius: 11px;
-            font-family: 'Visby', serif;
+            font-family: 'PublicSans-Regular';
             font-style: normal;
             font-weight: 700;
             font-size: 14px;
@@ -95,37 +109,45 @@
 }
 
 @media screen and (max-width: 991px) {
-    .repoAccount{
-        .list{
+    .repoAccount {
+        .list {
             flex-direction: column;
             align-items: flex-start !important;
         }
-        .social{
+
+        .social {
             margin: 0 -9px 0 93px;
         }
-        .counts{
+
+        .counts {
             flex-wrap: wrap;
             max-width: 320px;
             width: 100%;
             justify-content: flex-start;
             margin-top: 20px;
-            .countsItem{
+
+            .countsItem {
                 margin-bottom: 15px;
             }
         }
     }
 }
+
 @media screen and (max-width: 600px) {
-    .repoAccount{
+    .repoAccount {
         padding: 24px 15px;
-        .list{
+
+        .list {
             position: relative;
-            .block{
+
+            .block {
                 flex-direction: column;
                 align-items: flex-start;
-                .title{
+
+                .title {
                     margin: 15px 0 15px 0;
-                    .status{
+
+                    .status {
                         position: absolute;
                         top: 0;
                         right: 0;
@@ -133,10 +155,12 @@
                 }
             }
         }
-        .social{
+
+        .social {
             margin: 0 -9px;
         }
-        .counts{
+
+        .counts {
             max-width: unset;
             width: auto;
         }

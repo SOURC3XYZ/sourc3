@@ -1,7 +1,8 @@
-import { AC, thunks } from '@libs/action-creators';
-import { useDispatch, useSelector } from '@libs/redux';
+import { useModal } from '@libs/hooks/shared';
+import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { OwnerListType } from '@types';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { getOrgName, getProjectsByOrgId } from './selectors';
 
@@ -11,8 +12,6 @@ type LocationState = {
   page: string
 };
 
-// orgId/:type/:page
-
 const useProject = () => {
   const { pathname } = useLocation();
   const { type, page, orgId } = useParams<'type' & 'page' & 'orgId'>() as LocationState;
@@ -20,8 +19,9 @@ const useProject = () => {
 
   const id = useMemo(() => +orgId, [orgId]);
 
-  const dispatch = useDispatch();
+  const { setInputText, createProject } = useEntitiesAction();
   const pkey = useSelector((state) => state.app.pkey);
+  const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
     (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
@@ -30,19 +30,11 @@ const useProject = () => {
     (state) => getOrgName(id, state.entities.organizations) || 'NO_NAME'
   );
 
-  const [isModal, setIsModal] = useState(false);
+  const modalApi = useModal(
+    (txt: string) => setInputText(txt),
+    (name: string) => createProject(name, id, pid)
 
-  const setInputText = (txt: string) => dispatch(AC.setSearch(txt));
-
-  const showModal = () => setIsModal(true);
-
-  const closeModal = () => setIsModal(false);
-
-  const handleOk = (name: string) => {
-    closeModal();
-    console.log(name);
-    dispatch(thunks.createProject(name, id));
-  };
+  );
 
   return {
     items: projects,
@@ -52,12 +44,8 @@ const useProject = () => {
     pkey,
     type,
     searchText,
-    isModal,
     id,
-    setInputText,
-    showModal,
-    closeModal,
-    handleOk
+    modalApi
   };
 };
 

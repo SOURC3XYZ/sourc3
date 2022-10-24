@@ -1,0 +1,22 @@
+.avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.small{
+  composes: avatar;
+  width: 40px;
+  height: 40px;
+}
+
+.medium{
+  composes: avatar;
+  width: 64px;
+  height: 64px;
+}.achievements{
+  composes: avatar;
+  width: 120px;
+  height: 120px;
+}

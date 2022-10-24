@@ -2,18 +2,16 @@ import {
   Button, Menu, Dropdown
 } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useSelector } from '@libs/redux';
 import Send from './send';
 import Receive from './receive';
-import styles from './balance.module.css';
+import styles from './balance.module.scss';
 
-type BalancePropsType = {
-  current:number;
-};
-
-function Balance({ current }:BalancePropsType) {
+function Balance() {
   const [isVisible, setIsVisible] = useState(false);
   const [visible, setVisible] = useState(false);
+
+  const balance = useSelector((state) => state.app.balance);
 
   const showModal = () => {
     setIsVisible(true);
@@ -33,17 +31,10 @@ function Balance({ current }:BalancePropsType) {
   const menu = (
     <Menu>
       <Menu.Item>
-        <Button type="link" onClick={showModal}>Send</Button>
+        <Button type="link" onClick={showModal} className={styles.button}>Send</Button>
       </Menu.Item>
       <Menu.Item>
-        <Button type="link" onClick={showModals}>Receive</Button>
-      </Menu.Item>
-      <Menu.Item>
-        <Button type="link">
-          <Link type="link" to="manager">
-            Get More
-          </Link>
-        </Button>
+        <Button type="link" onClick={showModals} className={styles.button}>Receive</Button>
       </Menu.Item>
     </Menu>
   );
@@ -54,21 +45,17 @@ function Balance({ current }:BalancePropsType) {
         overlay={menu}
         placement="bottomCenter"
         trigger={['click']}
+        overlayClassName={styles.dropdown}
+        overlayStyle={{ position: 'fixed' }}
       >
-        <Button style={{
-          border: 'none', height: 60
-        }}
-        >
-          {' '}
-          Current balance:
-          <br />
-          {current}
+        <Button className={styles.button}>
+          {balance}
           {' '}
           SC3
         </Button>
       </Dropdown>
       <Send
-        current={current}
+        current={balance}
         isVisible={isVisible}
         onClose={closeModal}
       />

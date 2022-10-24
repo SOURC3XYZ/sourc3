@@ -2,7 +2,7 @@
 .button{
   cursor:pointer;
   white-space: nowrap;
-  color: white;
+  color: white !important;
 	background: #FF791F;
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
@@ -11,4 +11,11 @@
   font-size: 14px;
   line-height: 20px;
   padding: 8px 24px;
+  &:disabled{
+    pointer-events: none;
+    // background-color: transparent;
+    background: rgba(0, 0, 0, 0.15);
+    border-color: rgba(0, 0, 0, 0.05);
+    color: white !important;
+  }
   }

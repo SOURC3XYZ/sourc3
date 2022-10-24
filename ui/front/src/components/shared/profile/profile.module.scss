@@ -1,0 +1,40 @@
+@import '@styles/vars.scss';
+
+.wrapper{
+    cursor: pointer;
+}
+.disabled{
+    margin-left: 5px;
+}
+
+@media (max-width: 520px) { 
+    .disabled{
+    display: none;
+    }
+}
+.button {color: black;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    font-size: 16px;
+    font-family: 'PublicSans-Regular';
+    font-weight: 400;
+    width: 100%;
+    text-align: left;
+&:hover{
+    background-color: transparent;
+    color: $color-orange;
+}
+}
+.dropdown{
+    ul{
+        border-radius: 16px;
+        li:hover{
+            background-color: transparent;
+            color: $color-orange;
+        }
+        li:nth-child(6), li:nth-child(8) {
+            border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+        }
+    }
+}

@@ -1,11 +1,13 @@
 import { ActionCreators } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import {
-  DataNode, BranchCommit, BranchName, RepoId, MetaHash, RepoMeta
+  DataNode, BranchCommit, BranchName, RepoId, MetaHash, RepoMeta, Branch
 } from '@types';
 
 interface IRepo {
   id: RepoId | null,
+  branches: Branch[],
+  commitsMap: Map<string, BranchCommit> | null,
   repoMetas: Map<MetaHash, RepoMeta>,
   repoMap: Map<BranchName, BranchCommit[]> | null,
   tree: DataNode[] | null,
@@ -16,8 +18,10 @@ interface IRepo {
 
 export const initialState:IRepo = {
   id: null,
+  branches: [],
   repoMetas: new Map(),
   filesMap: new Map(),
+  commitsMap: null,
   repoMap: null,
   tree: null,
   fileText: null,
@@ -36,6 +40,10 @@ const reducer = (
     filesMap: new Map(Array.from(state.filesMap))
   } as IRepo;
   switch (action.type) {
+    case ACTIONS.SET_BRANCH_REF_LIST:
+      newState.branches = action.payload as IRepo['branches'];
+      return newState;
+
     case ACTIONS.SET_REPO_ID: {
       newState.id = action.payload as IRepo['id'];
       newState.filesMap = new Map();
@@ -55,6 +63,10 @@ const reducer = (
     }
     case ACTIONS.SET_REPO_MAP: {
       newState.repoMap = action.payload as IRepo['repoMap'];
+      return newState;
+    }
+    case ACTIONS.SET_COMMITS_MAP: {
+      newState.commitsMap = action.payload as IRepo['commitsMap'];
       return newState;
     }
     case ACTIONS.SET_PREV_REPO_HREF: {

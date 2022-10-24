@@ -3,7 +3,7 @@ import { Menu } from 'antd';
 import { Link } from 'react-router-dom';
 import style from './nav.module.scss';
 
-type NavItem = {
+export type NavItem = {
   key: string,
   to: string,
   text: string
@@ -23,7 +23,10 @@ function Nav({ type, items }:NavProps) {
 
   return (
     <div className={style.nav}>
-      <Menu defaultSelectedKeys={[type]} mode="horizontal">
+      <Menu
+        selectedKeys={[type]}
+        mode="horizontal"
+      >
         {itemsRender}
       </Menu>
     </div>

@@ -1,7 +1,8 @@
-import { useObjectState } from '@libs/hooks/shared';
 import { useSearch } from '@libs/hooks/shared/useSearch';
-import { RepoListType, RepoType } from '@types';
-import { ChangeEvent, useEffect } from 'react';
+import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
+import { RepoListType } from '@types';
+import { useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 type LocationState = {
@@ -9,29 +10,15 @@ type LocationState = {
   type: RepoListType
 };
 
-type useAllRepoProps = {
-  pkey:string,
-  repos: RepoType[],
-  searchText: string,
-  setPrevHref: (href: string) => void,
-  createRepos: (repo_name:string) => void,
-};
-
-const initialState = {
-  isLoading: true,
-  isModalVisible: false,
-  inputRepoName: ''
-};
-
-const useAllRepos = ({
-  pkey, repos, searchText, setPrevHref, createRepos
-}:useAllRepoProps) => {
-  const [state, setState] = useObjectState<typeof initialState>(initialState);
+const useAllRepos = (prevHref = false) => {
+  const pkey = useSelector((state) => state.app.pkey);
+  const { repos, searchText } = useSelector(
+    ({ entities }) => ({ repos: entities.repos, searchText: entities.searchText })
+  );
+  const { setPrevHref, setInputText, deleteRepo } = useEntitiesAction();
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const path = pathname.split('repos/')[0];
-
-  const { isModalVisible, inputRepoName } = state;
 
   const byRouteRepos = pkey && type === 'my'
     ? repos.filter(({ repo_owner }) => repo_owner === pkey)
@@ -40,39 +27,18 @@ const useAllRepos = ({
   const elements = useSearch(searchText, byRouteRepos, ['repo_name', 'repo_owner'], type);
 
   useEffect(() => {
-    setPrevHref(pathname);
+    if (prevHref) setPrevHref(pathname);
   }, [page]);
 
-  const showModal = () => {
-    setState({ isModalVisible: true });
-  };
-
-  const handleOk = () => {
-    setState({ isModalVisible: false });
-    createRepos(inputRepoName);
-  };
-
-  const handleCancel = () => {
-    setState({ isModalVisible: false });
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setState({ inputRepoName: e.target.value });
-  };
-
-  const repoListProps = {
-    page: +page, type, items: elements, path
-  };
-
   return {
-    state,
-    repoListProps,
-    isModalVisible,
-    inputRepoName,
-    showModal,
-    handleOk,
-    handleCancel,
-    handleChange
+    pkey,
+    page: +page,
+    type,
+    items: elements,
+    path,
+    searchText,
+    setInputText,
+    deleteRepo
   };
 };
 

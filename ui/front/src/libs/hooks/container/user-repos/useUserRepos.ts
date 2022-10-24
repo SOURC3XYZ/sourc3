@@ -1,27 +1,28 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
+import { useCallApi } from '@libs/hooks/shared';
+import { useRepoAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { loadingData } from '@libs/utils';
-import { RepoId, UpdateProps } from '@types';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 type LocationState = {
   repoParams:string;
 };
 
-type useUserReposProps = {
-  currentId: RepoId | null;
-  getRepoData: (
-    id: RepoId, errHandler: (e: Error) => void
-  ) => (resolve: () => void) => void;
-  updateTree: (
-    id: RepoId, errHandler: (e: Error) =>void
-  ) => (props: Omit<UpdateProps, 'id'>) => void;
-};
+const useUserRepos = () => {
+  const {
+    id: currentId, branches, commitsMap, filesMap, tree, prevReposHref, repoMetas
+  } = useSelector(({ repo }) => repo);
 
-const useUserRepos = ({
-  currentId, getRepoData, updateTree
-}:useUserReposProps) => {
-  const setError = useAsyncError();
+  const [callApi, isLoading, callApiErr] = useCallApi();
+
+  const setError = useErrorBoundary();
+
+  const {
+    getRepo, updateTree, getFileData, killTree, clearRepo
+  } = useRepoAction();
+
   const location = useParams<'repoParams'>() as LocationState;
   const { repoParams } = location;
   const [id, repoName] = repoParams.split('&');
@@ -31,17 +32,38 @@ const useUserRepos = ({
   const [isLoaded, setIsLoaded] = useState(currentId === numId);
 
   const loadingHandler = useCallback(() => {
-    loadingData(getRepoData(numId, setError))
+    loadingData(getRepo(numId, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));
   }, []);
 
+  useEffect(() => () => {
+    const cancelCommitPendingEvent = new Event('stop-commit-pending');
+    window.dispatchEvent(cancelCommitPendingEvent);
+    clearRepo();
+  }, []);
+
+  const startLoading = useCallback(() => setIsLoaded(false), []);
+
   return {
     id: numId,
+    branches,
     isLoaded,
     repoName,
+    filesMap,
+    tree,
+    prevReposHref,
+    repoMetas,
+    commitsMap,
+    callApiErr,
+    callApi,
+    isLoading,
+    setIsLoaded,
     updateTree: update,
-    loadingHandler
+    startLoading,
+    killTree,
+    loadingHandler,
+    getFileData
   };
 };
 

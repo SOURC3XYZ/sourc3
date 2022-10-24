@@ -85,10 +85,11 @@ export type CallApiProps<T> = {
   callID: string;
   method: string;
   params: T;
+  isContractInit?: boolean
 };
 
 export type TxResponse = {
-  message: string;
+  comment: string;
   status_string: string;
 };
 

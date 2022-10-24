@@ -7,52 +7,45 @@ import {
   WechatOutlined
 } from '@ant-design/icons';
 import { useEffect } from 'react';
-import { thunks } from '@libs/action-creators';
-import { AppThunkDispatch, RootState } from '@libs/redux';
-import { connect } from 'react-redux';
 import { useObjectState } from '@libs/hooks/shared';
-import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
+// import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
+import { useUserAction } from '@libs/hooks/thunk';
 
 type SendPropsType = {
   current:number;
   isVisible:boolean;
   onClose: () => void;
   // getWalletAddressList: ()=> void
-  setWalletSendBeam: (
-    amountValue: number,
-    addressValue:string,
-    commentValue:string,
-    offline: boolean)=> void;
 };
 
 function Send({
   current,
   isVisible,
-  onClose,
-  // getWalletAddressList,
-  setWalletSendBeam
+  onClose
 }:SendPropsType) {
   const initialState = {
     visible: false,
     address: '',
-    amount: 0,
+    amount: '',
     comment: '',
     offline: false
   };
+
+  const { setWalletSendBeam } = useUserAction();
 
   const [state, setState] = useObjectState(initialState);
 
   const showModal = () => {
     setState({
       address: '',
-      amount: 0,
+      amount: '',
       comment: '',
       visible: true,
       offline: false
     });
   };
 
-  const handleCancel = () => {
+  const handleClose = () => {
     setState({ visible: false });
     onClose();
   };
@@ -60,7 +53,7 @@ function Send({
     if (isVisible) {
       showModal();
     } else {
-      handleCancel();
+      handleClose();
     }
   }, [isVisible]);
 
@@ -78,7 +71,7 @@ function Send({
       return;
     }
     setWalletSendBeam(amount, address, comment, offline);
-    setState({ visible: false });
+    handleClose();
   };
 
   const handleAddressValue = (event:any) => {
@@ -95,17 +88,17 @@ function Send({
     setState({ comment: event?.target.value });
   };
 
-  const handleOffline = (e:CheckboxChangeEvent) => {
-    setState({ offline: e.target.checked });
-  };
+  // const handleOffline = (e:CheckboxChangeEvent) => {
+  //   setState({ offline: e.target.checked });
+  // };
 
   return (
     <Modal
-      title="SEND BEAM"
+      title="SEND SC3"
       visible={visible}
-      onCancel={handleCancel}
+      onCancel={handleClose}
       footer={[
-        <Button key="back" onClick={handleCancel}>
+        <Button key="back" onClick={handleClose}>
           Cancel
         </Button>,
         <Button key="submit" type="primary" onClick={handleOk}>
@@ -140,8 +133,8 @@ function Send({
           placeholder="0"
           suffix={(
             <>
-              <span className="beam">BEAM</span>
-              <Tooltip title={`Max available:${current} BEAM`}>
+              <span className="beam">SC3</span>
+              <Tooltip title={`Max available:${current} SC3`}>
                 <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
               </Tooltip>
 
@@ -164,34 +157,34 @@ function Send({
         />
 
       </label>
-      <Checkbox checked={offline} onChange={handleOffline}>
+      {/* <Checkbox checked={offline} onChange={handleOffline}>
         Offline
-      </Checkbox>
+      </Checkbox> */}
     </Modal>
   );
 }
-const mapState = ({ app: { balance, addrList } }: RootState) => ({
-  balance,
-  addrList
-});
-const mapDispatch = (dispatch: AppThunkDispatch) => ({
-  getWalletStatus: () => {
-    dispatch(thunks.getWalletStatus());
-  },
-  getWalletAddressList: () => {
-    dispatch(thunks.getWalletAddressList());
-  },
-  setWalletSendBeam: (
-    amountValue: number,
-    fromValue:string,
-    commentValue:string,
-    offline: boolean
-  ) => dispatch(thunks.setWalletSendBeam(
-    amountValue,
-    fromValue,
-    commentValue,
-    offline
-  ))
-});
+// const mapState = ({ app: { balance, addrList } }: RootState) => ({
+//   balance,
+//   addrList
+// });
+// const mapDispatch = (dispatch: AppThunkDispatch) => ({
+//   getWalletStatus: () => {
+//     dispatch(thunks.getWalletStatus());
+//   },
+//   getWalletAddressList: () => {
+//     dispatch(thunks.getWalletAddressList());
+//   },
+//   setWalletSendBeam: (
+//     amountValue: number,
+//     fromValue:string,
+//     commentValue:string,
+//     offline: boolean
+//   ) => dispatch(thunks.setWalletSendBeam(
+//     amountValue,
+//     fromValue,
+//     commentValue,
+//     offline
+//   ))
+// });
 
-export default connect(mapState, mapDispatch)(Send);
+export default Send;

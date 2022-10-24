@@ -1,4 +1,4 @@
-import { useAsyncError } from '@libs/hooks/shared';
+import { useErrorBoundary } from '@components/context';
 import { getTree } from '@libs/utils';
 import {
   UpdateProps,
@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 export type FileTextProps = {
   id: RepoId;
   tree: DataNode[] | null;
-  pathArray: string[];
+  params: string[];
   pathname: string;
   filesMap: Map<MetaHash, string>,
   getFileData: (repoId: RepoId, oid: string, errHandler: ErrorHandler) => void;
@@ -21,9 +21,9 @@ export type FileTextProps = {
 };
 
 export const useFileText = ({
-  id, tree, filesMap, pathArray, pathname, getFileData, updateTree
+  id, tree, params, filesMap, getFileData, updateTree
 }: FileTextProps) => {
-  const setError = useAsyncError();
+  const setError = useErrorBoundary();
   const [ext, setExt] = useState('');
   const [text, setText] = useState<string | null>(null);
 
@@ -32,9 +32,10 @@ export const useFileText = ({
   };
 
   const fileChecker = () => {
-    if (text !== null) setText(null);
-    const fileName = pathArray.pop();
-    const currentFileList = tree && getTree(tree, pathArray, updateTreeDecor);
+    // if (text !== null) setText(null);
+    const paramsCopy = [...params];
+    const fileName = paramsCopy.pop();
+    const currentFileList = tree && getTree(tree, paramsCopy, updateTreeDecor);
     if (currentFileList) {
       const file = currentFileList.find(
         (el) => el.title === fileName
@@ -52,7 +53,7 @@ export const useFileText = ({
     }
   };
 
-  useEffect(fileChecker, [tree, filesMap, pathname]);
+  useEffect(fileChecker, [filesMap]);
 
   const isLoaded = text !== null;
 

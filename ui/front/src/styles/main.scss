@@ -1,4 +1,5 @@
 @import './fonts.scss';
+@import '@styles/vars.scss';
 
 * {
   margin: 0;
@@ -12,5 +13,31 @@ html {
 }
 
 body {
-  font-family: Visby, serif;
+  font-family: PublicSans-Regular, sans-serif;
+  line-height: unset;
+}
+
+body::-webkit-scrollbar {
+  width: 11px;
+  height: 10px;
+}
+
+body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: $color-green;
+  border: 3px solid rgba(0, 0, 0, 0);
+  background-clip: padding-box;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-button {
+  display: none;
+}
+
+body::-webkit-scrollbar-corner {
+  background-color: transparent;
+  display: none;
 }

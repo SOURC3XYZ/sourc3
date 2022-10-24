@@ -7,10 +7,9 @@
 	justify-content: center;
 	align-items: center;
 	height: 100%;
-
-	.content {
-		margin-top: -20%;
-	}
+	// .content {
+	// 	margin-top: -20%;
+	// }
 }
 
 .message {
@@ -18,7 +17,13 @@
 	font-weight: 600;
 	font-size: 1.2rem;
 }
-
+.messageBlack{
+	color: black;
+	font-family: 'PublicSans-Regular';
+	font-style: normal;
+	font-weight: 400;
+	font-size: 1rem;
+}
 .spin {
 	margin: 0 auto 20px;
 	display: block;
