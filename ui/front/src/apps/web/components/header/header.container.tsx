@@ -1,6 +1,6 @@
 import {
   // AutocompeteSearch,
-  // ConnectBtn,
+  ConnectBtn,
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
@@ -23,8 +23,8 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const {
     pkey,
     users,
-    isVisible
-    // onConnect
+    isVisible,
+    onConnect
   } = containerProps;
 
   const isAuth = Boolean(useSelector((state) => state.profile.data.token));
@@ -62,12 +62,18 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       {/* )} */}
       { !desktop ? (
         <>
-          {/* {pkey && (<ProfileBlock pKey={pkey} />)} */}
-          {/* <ConnectBtn */}
-          {/*  pkey={pkey} */}
-          {/*  users={users} */}
-          {/*  onConnect={onConnect} */}
-          {/* /> */}
+          {pkey && (
+            <ProfileBlock
+              pKey={pkey}
+              profile
+            />
+          )}
+          <ConnectBtn
+            pkey={pkey}
+            users={users}
+            onConnect={onConnect}
+
+          />
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           {isAuth ? <ProfileBlock git /> : null}
         </>

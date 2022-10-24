@@ -139,3 +139,32 @@ export interface IGitRepos {
   topics: [],
   org_repo: Boolean
 }
+
+export interface ISourceProfiles {
+  user_avatar_ipfs_hash: string,
+  user_id: string,
+  user_name: string,
+  user_nickname: string,
+  user_email: string,
+  user_description: string,
+  user_website: string
+  user_twitter: string,
+  user_instagram: string,
+  user_telegram: string,
+  user_linkedin: string,
+  user_discord: string
+}
+export interface IProfile {
+  names: string,
+  avatar_addr: string,
+  id: string,
+  nickname: string,
+  email: string,
+  description: string,
+  website: string
+  twitter: string,
+  instagram: string,
+  telegram: string,
+  linkedin: string,
+  discord: string
+}

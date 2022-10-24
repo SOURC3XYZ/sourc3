@@ -18,7 +18,7 @@ function ProfilesEdit() {
 
   const navigate = useNavigate();
 
-  const profile = useSelector((state) => state.profile);
+  const profile = useSelector((state) => state.sourc3Profile);
 
   const pkey = useSelector((state) => state.app.pkey);
 
@@ -68,7 +68,7 @@ function ProfilesEdit() {
   }, [profile.user_avatar_ipfs_hash]);
 
   const onSubmit: SubmitHandler<IProfile> = (data) => {
-    setModifyUser(data);
+    // setModifyUser(data);
     console.log(data);
     onCancel();
   };
@@ -136,7 +136,7 @@ function ProfilesEdit() {
                 }
               )}
               placeholder="Name"
-              valid={!errors.names?.message?.length}
+              // valid={!errors.names?.message?.length}
             />
             <InputCustom
               label="Nickname"
@@ -266,7 +266,7 @@ function ProfilesEdit() {
             </fieldset>
             <div className={styles.blockButton}>
               <NavButton name="Cancel" onClick={onCancel} classes={styles.buttonCancel} />
-              <NavButton name="Update info" type="submit" active classes={styles.button} isDisabled={!isValid} />
+              <NavButton name="Update info" type="submit" active classes={styles.button} />
             </div>
           </form>
         </div>

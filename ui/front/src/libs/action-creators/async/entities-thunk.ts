@@ -2,7 +2,7 @@
 import { CustomAction } from '@libs/redux';
 import {
   ArgumentTypes,
-  CallBeamApi, IProfile,
+  CallBeamApi, ISourceProfiles,
   OrganizationsResp, PKeyRes,
   ProjectsResp,
   RepoListType,
@@ -87,7 +87,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
       dispatch,
       RC.getPublicKey(),
       (output) => {
-        contractQuery<IProfile>(
+        contractQuery<ISourceProfiles>(
           dispatch,
           RC.getUser(output.key),
           (profile) => [AC.setViewUser(profile)]
