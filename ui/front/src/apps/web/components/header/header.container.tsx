@@ -1,7 +1,6 @@
 import {
   ConnectBtn,
   // AutocompeteSearch,
-  // ConnectBtn,
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
@@ -63,7 +62,12 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       {/* )} */}
       { !desktop ? (
         <>
-          {pkey && (<ProfileBlock pKey={pkey} />)}
+          {pkey && (
+            <ProfileBlock
+              pKey={pkey}
+              profile
+            />
+          )}
           <ConnectBtn
             pkey={pkey}
             users={users}

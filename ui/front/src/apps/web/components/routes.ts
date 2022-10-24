@@ -1,8 +1,9 @@
 import {
-  AllRepos, DownloadPage, FailPage, OrganizationPage, Organizations, ProjectPage, Repo
+  AllRepos, DownloadPage, FailPage, OrganizationPage, Organizations, ProfilesPage, ProjectPage, Repo
 } from '@components/shared';
 import { CreateProjectWeb } from '@components/shared/add-org/content/create-project-web';
 import { ROUTES } from '@libs/constants';
+import ProfilesEdit from '@components/shared/profiles-page/profiles-edit';
 
 const {
   REPOS, REPO, ORG_LIST, ORG, PROJECT, DOWNLOAD, ADD_WEB, DEFAULT
@@ -40,6 +41,14 @@ export const routesData = [
   {
     path: DEFAULT,
     element: FailPage
+  },
+  {
+    path: 'profiles/:id/*',
+    element: ProfilesPage
+  },
+  {
+    path: 'profiles/:id/edit',
+    element: ProfilesEdit
   }
 ];
 
