@@ -1569,7 +1569,7 @@ void OnActionListRefs(const ContractID& cid) {
     Key start, end;
     Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
 
-    start.m_KeyInContract.repo_id = repo_id;
+    start.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(start.m_KeyInContract.name_hash).SetZero();
     _POD_(end) = start;
