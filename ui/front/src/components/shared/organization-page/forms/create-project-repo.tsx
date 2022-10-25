@@ -1,22 +1,27 @@
 import { FormWrapper } from '@components/shared';
 import { InputCustom } from '@components/shared/input';
 import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import { useState } from 'react';
 import styles from './form-styles.module.scss';
 
 type InputChange = React.ChangeEventHandler<HTMLInputElement>;
 
 type CreateOrgRepoProps = {
-  idProject: number;
+  projectName: string;
   goBack: () => void;
 };
 
-function CreateProjectRepo({ idProject, goBack }:CreateOrgRepoProps) {
+function CreateProjectRepo({ projectName, goBack }:CreateOrgRepoProps) {
   const [inputName, setInputName] = useState('');
   const { createRepo } = useEntitiesAction();
   const [valid, setValid] = useState(false);
 
   const [isPrivate, setPrivate] = useState<boolean>(false);
+
+  const item = useSelector(
+    (state) => state.entities.projects.find((el) => el.project_name === projectName)
+  );
 
   const handleChange:InputChange = (e) => {
     const regExp = /(.|\s)*\S(.|\s)*/;
@@ -25,7 +30,9 @@ function CreateProjectRepo({ idProject, goBack }:CreateOrgRepoProps) {
   };
 
   const handleOk = () => {
-    createRepo(`"${inputName}"`, idProject, +isPrivate as 0 | 1, 0);
+    if (item) {
+      createRepo(`"${inputName}"`, projectName, item?.organization_name, +isPrivate as 0 | 1, 0);
+    }
   };
 
   const isDisabled = !valid && !inputName;

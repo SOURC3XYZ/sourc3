@@ -9,16 +9,16 @@ type FooterProps = {
   isOnLending: boolean
 };
 
+const SOCIAL = {
+  DISCORD: 'https://discord.com/invite/Fw3Wvqt42b',
+  TWITTER: 'https://twitter.com/SOURC3xyz',
+  SOURC3: 'https://www.sourc3.xyz'
+};
+
 function Footer({ isOnLending }: FooterProps) {
   const footerClassname = isOnLending ? styles.footer : styles.footerWhiteBg;
 
   const isVisible = useExcludeRoute('/download');
-
-  const SOCIAL = {
-    DISCORD: 'https://discord.com/invite/Fw3Wvqt42b',
-    TWITTER: 'https://twitter.com/SOURC3xyz',
-    SOURC3: 'https://www.sourc3.xyz'
-  };
 
   const footer = useMemo(() => (isVisible ? (
     <AntFooter className={footerClassname}>

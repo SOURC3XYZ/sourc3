@@ -13,13 +13,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
-  projId: string,
-  page: string
+  projectName: string,
 };
 
 const useProjectRepos = () => {
   const { pathname } = useLocation();
-  const { projId } = useParams<keyof LocationState>() as LocationState;
+  const { projectName } = useParams<keyof LocationState>() as LocationState;
   const path = pathname.split('project/')[0];
 
   const type:OwnerListType = useMemo(() => (
@@ -37,34 +36,42 @@ const useProjectRepos = () => {
     [window.location.href]
   );
 
-  const id = useMemo(() => +projId, [projId]);
-
   const { setInputText, createRepo } = useEntitiesAction();
 
   const [callApi] = useCallApi();
 
   const navigate = useNavigate();
 
+  const item = useSelector(
+    (state) => state.entities.projects.find((el) => el.project_name === projectName)
+  );
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const repos = useSelector(
-    (state) => getReposByProject(id, state.entities.repos, type, pkey)
+    (state) => getReposByProject(projectName, state.entities.repos, type, pkey)
   );
   const project = useSelector(
-    (state) => getProjectName(id, state.entities.projects)
+    (state) => getProjectName(projectName, state.entities.projects)
   );
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
-    (name: string) => createRepo(name, id, pid)
+    (name: string) => createRepo(name, projectName, pid)
   );
 
   const [members, setMembers] = useState<MemberId[]>([]);
 
   const getOrgMembers = useCallback(async () => {
-    const recievedMembers = await callApi<MemberList>(RC.getProjectMembers(id));
-    if (recievedMembers) setMembers(recievedMembers.members);
+    if (item) {
+      const recievedMembers = await callApi<MemberList>(
+        RC.getProjectMembers(
+          projectName,
+          item.organization_name
+        )
+      );
+      if (recievedMembers) setMembers(recievedMembers.members);
+    }
   }, []);
 
   const goBack = useCallback(() => navigate('repos'), []);
@@ -97,7 +104,7 @@ const useProjectRepos = () => {
     type,
     page: +page,
     searchText,
-    id,
+    projectName,
     modalApi,
     yourPermissions,
     navigate,

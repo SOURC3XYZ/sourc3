@@ -17,12 +17,13 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
 
   const createRepo = (
     name: string,
-    projectId: number,
+    projectName: string,
+    organizationName:string,
     priv: 0 | 1,
     pid = 0
   ):CustomAction => async (dispatch) => contractMutation(
     dispatch,
-    RC.createRepo(name, projectId, priv, pid)
+    RC.createRepo(name, projectName, organizationName, priv, pid)
   );
 
   const deleteRepo = (

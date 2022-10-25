@@ -15,7 +15,7 @@ import MemberListItem from './member-list-item';
 import TabItem from '../entity/tab-item';
 import { HeaderFields } from '../entity/entity-wrapper';
 import { AddUserOrg, CreateProjectRepo, ModifyProject } from './forms';
-import { projectData, repoData, PROJECT_PERMISSION } from './permissions-data';
+import { projectData, PROJECT_PERMISSION } from './permissions-data';
 
 type RoutesType<T> = {
   headerElements?: HeaderElements;
@@ -34,11 +34,11 @@ function ProjectRepos() {
     path,
     type,
     pkey,
-    id,
     repos,
     page,
     members,
     project,
+    projectName,
     yourPermissions,
     navigate,
     goBack,
@@ -90,12 +90,12 @@ function ProjectRepos() {
       navItems: [
         {
           key: 'all',
-          to: `${path}project/${id}/repos?type=all&page=1`,
+          to: `${path}project/${projectName}/repos?type=all&page=1`,
           text: 'All Repositories'
         },
         {
           key: 'my',
-          to: `${path}project/${id}/repos?type=my&page=1`,
+          to: `${path}project/${projectName}/repos?type=my&page=1`,
           text: 'My Repositories'
         }
       ],
@@ -128,7 +128,7 @@ function ProjectRepos() {
     routes: routes.map((el) => el.path),
     avatar: {
       ipfs: project.project_logo_ipfs_hash,
-      name: `${project.project_id}${project.project_name}${project.project_creator}`,
+      name: `${project.project_name}${project.project_name}${project.project_creator}`,
       square: true,
       variant: 'pixel'
     },
@@ -165,13 +165,13 @@ function ProjectRepos() {
         element={(
           <ProjectList
             isShowNav={pkey === project.project_creator}
-            id={id}
+            // id={id}
             pkey={pkey}
-            path={path}
+            // path={path}
             page={page}
             type={type}
             placeholder={el.placeholder}
-            route={el.path}
+            // route={el.path}
             projects={el.items}
             header={el.headerElements}
             navItems={el.navItems}
@@ -185,7 +185,11 @@ function ProjectRepos() {
   ), [members, repos, currentRoute]);
 
   const addUserMember = useCallback((obj: ArgumentTypes<typeof addMemberToProject>[0]) => {
-    addMemberToProject(obj);
+    addMemberToProject({
+      ...obj,
+      project_name: project.project_name,
+      organization_name: project.organization_name
+    });
   }, []);
 
   return (
@@ -207,7 +211,7 @@ function ProjectRepos() {
           element={(
             <CreateProjectRepo
               goBack={goBack}
-              idProject={id}
+              projectName={projectName}
             />
           )}
         />
@@ -216,7 +220,6 @@ function ProjectRepos() {
           element={(
             <AddUserOrg
               data={projectData}
-              id={id}
               goBack={goBack}
               callback={addUserMember as (obj: unknown) => void}
             />

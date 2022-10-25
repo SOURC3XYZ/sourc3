@@ -36,7 +36,6 @@ const useEntitiesAction = () => {
   ) => dispatch(mutations.createRepo(...args));
 
   const setModifyUser = (state:any):any => {
-    console.log(state);
     dispatch(queries.setModifyUser(state));
   };
 

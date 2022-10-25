@@ -294,7 +294,7 @@ export const RC = {
   }),
   createProject: ({
     name,
-    organization_id,
+    organization_name,
     logo_addr = '',
     short_title = '',
     website = '',
@@ -313,7 +313,7 @@ export const RC = {
         role: 'user',
         action: 'create_project',
         name,
-        organization_id,
+        organization_name,
         pid,
         logo_addr,
         description: short_title,
@@ -327,7 +327,14 @@ export const RC = {
     }
   }),
 
-  createRepo: (repo_name:string, project_id: number, secure: 0 | 1, pid = 0) => ({
+  createRepo: (
+    repo_name:string,
+    project_name: string,
+    organization_name:string,
+    secure: 0 | 1,
+    pid = 0
+  ) => ({
+
     callID: 'create_repo',
     method: 'invoke_contract',
     params: {
@@ -337,7 +344,8 @@ export const RC = {
         action: 'create_repo',
         private: secure,
         repo_name,
-        project_id,
+        project_name,
+        organization_name,
         pid
       }
     }
@@ -402,7 +410,7 @@ export const RC = {
       }
     }
   } as const),
-  getOrgMembers: (organization_id: number) => ({
+  getOrgMembers: (organization_name: string) => ({
     callID: 'list_organization_members',
     method: 'invoke_contract',
     params: {
@@ -410,11 +418,11 @@ export const RC = {
       args: {
         role: 'user',
         action: 'list_organization_members',
-        organization_id
+        organization_name
       }
     }
   } as const),
-  getProjectMembers: (project_id: number) => ({
+  getProjectMembers: (project_name: string, organization_name: string) => ({
     callID: 'list_project_members',
     method: 'invoke_contract',
     params: {
@@ -422,7 +430,8 @@ export const RC = {
       args: {
         role: 'user',
         action: 'list_project_members',
-        project_id
+        project_name,
+        organization_name
       }
     }
   } as const),
@@ -499,12 +508,12 @@ export const RC = {
     }
   } as const),
   addOrganizationMember: ({
-    id,
+    organization_name,
     member,
     permissions,
     pid = 0
   }: {
-    id: number,
+    organization_name: string,
     member: string,
     permissions: number,
     pid?:number
@@ -516,7 +525,7 @@ export const RC = {
       args: {
         role: 'user',
         action: 'add_organization_member',
-        organization_id: id,
+        organization_name,
         member,
         permissions,
         pid
@@ -549,12 +558,14 @@ export const RC = {
     }
   } as const),
   addProjectMember: ({
-    id,
+    project_name,
+    organization_name,
     member,
     permissions,
     pid = 0
   }: {
-    id: number,
+    project_name: string,
+    organization_name: string,
     member: string,
     permissions: number,
     pid:number
@@ -566,7 +577,8 @@ export const RC = {
       args: {
         role: 'user',
         action: 'add_project_member',
-        project_id: id,
+        project_name,
+        organization_name,
         member,
         permissions,
         pid
@@ -600,12 +612,16 @@ export const RC = {
   } as const),
 
   addRepoMember: ({
-    id,
+    repo_name,
+    project_name,
+    organization_name,
     member,
     permissions,
     pid = 0
   }:{
-    id: number,
+    repo_name: string,
+    project_name:string,
+    organization_name:string,
     member: string,
     permissions: number,
     pid:number
@@ -617,15 +633,17 @@ export const RC = {
       args: {
         role: 'user',
         action: 'add_repo_member',
-        repo_id: id,
-        user: member,
+        repo_name,
+        project_name,
+        organization_name,
+        member,
         permissions,
         pid
       }
     }
 
   } as const),
-  listRepoMembers: (repo_id:number) => ({
+  listRepoMembers: (repo_name:string, project_name:string, organization_name:string) => ({
     callID: 'list_repo_members',
     method: 'invoke_contract',
     params: {
@@ -633,7 +651,24 @@ export const RC = {
       args: {
         role: 'user',
         action: 'list_repo_members',
-        repo_id
+        repo_name,
+        project_name,
+        organization_name
+      }
+    }
+
+  } as const),
+
+  listProjectRepos: (projectName:string, orgName: string) => ({
+    callID: 'list_project_repos',
+    method: 'invoke_contract',
+    params: {
+      create_tx: false,
+      args: {
+        role: 'user',
+        action: 'list_project_repos',
+        project_name: projectName,
+        organization_name: orgName
       }
     }
 

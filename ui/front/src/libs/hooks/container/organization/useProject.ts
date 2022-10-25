@@ -18,14 +18,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getOrg, getProjectsByOrgId } from './selectors';
 
 type LocationState = {
-  orgId: number,
-  type: OwnerListType,
-  page: string
+  orgName: string
 };
 
 const useProject = () => {
   const { pathname } = useLocation();
-  const { orgId } = useParams<'page' & 'orgId'>() as LocationState;
+  const { orgName } = useParams<'orgName'>() as LocationState;
   const path = pathname.split('projects/')[0];
 
   const type:OwnerListType = useMemo(() => (
@@ -45,8 +43,6 @@ const useProject = () => {
 
   const [callApi] = useCallApi();
 
-  const id = useMemo(() => +orgId, [orgId]);
-
   const [members, setMembers] = useState<MemberId[]>([]);
 
   // const { setInputText, createProject } = useEntitiesAction();
@@ -54,10 +50,10 @@ const useProject = () => {
   // const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const projects = useSelector(
-    (state) => getProjectsByOrgId(id, state.entities.projects, type, pkey)
+    (state) => getProjectsByOrgId(orgName, state.entities.projects, type, pkey)
   );
   const org = useSelector(
-    (state) => getOrg(id, state.entities.organizations)
+    (state) => getOrg(orgName, state.entities.organizations)
   );
 
   const allRepos = useSelector((state) => state.entities.repos);
@@ -70,7 +66,7 @@ const useProject = () => {
     const indexes = [];
     for (const project of projects) {
       for (let i = 0; i < allReposCopy.length; i++) {
-        if (project.project_id === allReposCopy[i].project_id) {
+        if (project.project_name === allReposCopy[i].project_name) {
           foundRepos.push(allReposCopy[i]);
           indexes.push(i);
         }
@@ -90,7 +86,7 @@ const useProject = () => {
   const goBack = useCallback(() => navigate('projects'), []);
 
   const getOrgMembers = useCallback(async () => {
-    const recievedMembers = await callApi<MemberList>(RC.getOrgMembers(id));
+    const recievedMembers = await callApi<MemberList>(RC.getOrgMembers(orgName));
     if (recievedMembers) setMembers(recievedMembers.members);
   }, []);
 
@@ -121,7 +117,7 @@ const useProject = () => {
     pkey,
     type,
     searchText,
-    id,
+    orgName,
     yourPermissions,
     // modalApi,
     repos,

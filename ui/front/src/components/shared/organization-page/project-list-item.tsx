@@ -20,14 +20,14 @@ function ProjectListItem({
   item, path, searchText, type
 }:ListItemProps) {
   const {
-    organization_id, project_creator, project_name, project_id
+    organization_name, project_creator, project_name
   } = item;
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
   };
 
-  const link = `${path}project/${project_id}/repos?type=${type}&page=1`;
+  const link = `${path}project/${project_name}/repos?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
@@ -44,7 +44,7 @@ function ProjectListItem({
   return (
     <List.Item
       className={styles.listItem}
-      key={organization_id}
+      key={organization_name}
       actions={[(
         <span key="org-times" className={styles.time}>
           {`creator: ${textEllipsis(project_creator, 10)}`}
@@ -62,7 +62,7 @@ function ProjectListItem({
           <IpfsAvatars
             ipfs={item.project_logo_ipfs_hash}
             colors={AVATAR_COLORS}
-            name={`${project_id}${item.project_name}${item.project_creator}`}
+            name={`${project_name}${item.project_name}${item.project_creator}`}
             size={56}
             variant="pixel"
             square
@@ -70,20 +70,13 @@ function ProjectListItem({
         )}
         title={(
           <div className={styles.title}>
-            <Link to={link} state={{ id: organization_id }}>
+            <Link to={link} state={{ id: organization_name }}>
               <Excretion name={project_name} inputText={searchText} />
             </Link>
           </div>
         )}
         description={(
           <div className={styles.subtitle}>
-            <div className={styles.idField}>
-              <span>ID: </span>
-              <Excretion
-                name={String(project_id)}
-                inputText={searchText}
-              />
-            </div>
             {content}
           </div>
         )}

@@ -1,4 +1,6 @@
-import { MemberList, RepoType } from '@types';
+import {
+  ArgumentTypes, MemberList, Project, RepoType
+} from '@types';
 import {
   Menu, Dropdown, List, message
 } from 'antd';
@@ -18,6 +20,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
 import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import styles from './list-item.module.scss';
 import PendingIndicator from './pending-indicator';
 import { useRepoItem } from './useRepoItem';
@@ -48,13 +51,19 @@ type ListItemProps = {
 function RepoItem({
   item, path, searchText, deleteRepo
 }:ListItemProps) {
-  const { repo_id, repo_name } = item;
+  const {
+    repo_id, repo_name, project_name
+  } = item;
 
   const {
     pkey,
     meta,
     repoLink
   } = useRepoItem(item);
+
+  const project = useSelector(
+    (state) => state.entities.projects.find((el) => el.project_name === project_name)
+  ) as Project;
 
   const [visible, setVisible] = useState(false);
 
@@ -67,7 +76,9 @@ function RepoItem({
   const { commit, masterBranch, loading } = meta;
 
   const getPermissionForRepo = useCallback(async () => {
-    const repoMembers = await callApi<MemberList>(RC.listRepoMembers(item.repo_id));
+    const repoMembers = await callApi<MemberList>(
+      RC.listRepoMembers(repo_name, project_name, project.organization_name)
+    );
     if (repoMembers) {
       const yourPkey = repoMembers.members.find((el) => pkey === el.member);
       if (yourPkey) {
@@ -139,6 +150,12 @@ function RepoItem({
     if (!masterBranch) e.preventDefault();
   };
 
+  const handleAddRepoMember = useCallback((obj: ArgumentTypes<typeof addRepoMember>[0]) => {
+    addRepoMember({
+      ...obj, repo_name, project_name, organization_name: project.organization_name
+    });
+  }, []);
+
   const titleClassname = commit ? styles.titleWrapper : styles.titleWrapperDisabled;
 
   const secure = !!item.private && <div className={styles.privateLabel}>Private</div>;
@@ -169,10 +186,9 @@ function RepoItem({
       <>
         <Popup onCancel={handleCreateVisible(false)} visible={visible}>
           <AddUserOrg
-            id={item.repo_id}
             data={repoData}
             goBack={handleCreateVisible(false)}
-            callback={addRepoMember as (obj: unknown) => void}
+            callback={handleAddRepoMember as (obj: unknown) => void}
           />
         </Popup>
         <List.Item.Meta
@@ -188,13 +204,6 @@ function RepoItem({
           )}
           description={(
             <div className={styles.subtitle}>
-              <div className={styles.idField}>
-                <span>ID: </span>
-                <Excretion
-                  name={String(repo_id)}
-                  inputText={searchText}
-                />
-              </div>
               <div className={styles.interaction}>
                 {iteractionRender}
               </div>
