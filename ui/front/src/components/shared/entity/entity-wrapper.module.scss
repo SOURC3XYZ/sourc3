@@ -1,13 +1,148 @@
-.content {
-    width: 100%;
-    max-width: 60rem;
-    margin: 0 auto;
-    padding: 2.5rem;
-    h3{
-        font-family: "PublicSans-Medium";
+@import '@styles/vars.scss';
+
+.navigationGrid{
+    display: grid;
+    margin-top: 25px;
+    grid-template-columns: 4fr 1fr;
+    .settingLink {
+        justify-self: flex-end;
     }
 }
 
+.icon{
+    fill: #fff;
+}
+
+.TabsRoot {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.TabLabel {
+    span:first-child {
+        font-family: "PublicSans-Medium";
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 16px;
+        color: #FFFFFF;
+        cursor: pointer;
+    }
+
+    span:last-child {
+        display: inline-block;
+        text-align: center;
+        margin-left: 4px;
+        padding: 3px 8px;
+        border-radius: 11px;
+        background: #fff;
+        color: #000000;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 16px;
+        min-width: 25px
+    }
+
+    &Selected {
+        @extend .TabLabel;
+
+        span:first-child {
+            color: #FF791F;
+        }
+
+        span:last-child {
+            background: #FF791F;
+
+        }
+    }
+}
+
+
+.content {
+    padding: 2.5rem;
+    h3 {
+        font-family: "PublicSans-Medium";
+    }
+
+    .specBlock {
+        background-color: #000;
+        padding: 24px 24px 40px;
+        border-radius: 8px;
+        margin-bottom: 40px;
+
+        .entityHeader {
+            display: flex;
+            font-family: "PublicSans-Medium";
+            gap: 0 24px;
+
+            // .entityPicture {
+            //     width: 80px;
+            //     height: 80px;
+            //     object-fit: contain;
+            //     border-radius: 8px;
+            //     visibility: hidden;
+
+            //     &Active {
+            //         visibility: visible;
+            //     }
+            // }
+
+            .titleBlock {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .title {
+                    color: #fff;
+                    margin: 0;
+                }
+
+                .shortTitle {
+                    color: #fff;
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 19px;
+                }
+            }
+
+            .socialBlock {
+                margin-left: auto;
+
+                .icon+.icon {
+                    margin-left: 18px;
+                }
+
+            }
+        }
+
+        .descriptionBlock {
+            padding-top: 11px;
+            padding-left: 100px;
+
+            .description {
+                display: none;
+                color: #808080;
+                padding-bottom: 8px;
+
+                &Active {
+                    @extend .description;
+                    display: block;
+
+                }
+            }
+
+            .showMoreBtn {
+                background-color: transparent;
+                border: none;
+                color: $color-orange;
+                cursor: pointer;
+            }
+        }
+    }
+}
 @media screen and (max-width: 600px) {
     .content {
         padding: 2.5rem 5px;

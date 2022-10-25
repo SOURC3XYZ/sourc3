@@ -2,8 +2,8 @@ import React from 'react';
 import { IconGitLogo, IconStar } from '@components/svg';
 import { IGitRepos } from '@types';
 import { List } from 'antd';
-import moment from 'antd/node_modules/moment';
 import { PullRequest, Milestone, Languages } from '@components/shared/git-auth/profile/repository/components';
+import moment from 'moment';
 import styles from './gitOwnRepos.module.scss';
 
 type GitOwnReposType = {

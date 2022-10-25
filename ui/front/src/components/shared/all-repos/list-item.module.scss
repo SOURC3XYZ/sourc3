@@ -7,6 +7,39 @@
         align-self: flex-start;
     }
 
+
+    .titleWrapper {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 8px;
+
+        &Disabled {
+            @extend .titleWrapper;
+            opacity: .4;
+        }
+
+        .title {
+            * {
+                font-size: 1.12rem;
+                font-family: 'PublicSans-Bold';
+                color: #000000;
+            }
+        }
+
+        .privateLabel {
+            font-family: 'PublicSans-Regular';
+            font-style: italic;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 16px;
+            color: #000000;
+            background: #4DA2E6;
+            border-radius: 11px;
+            display: inline-block;
+            padding: 4px 12px;
+        }
+    }
 }
 
 .pending {
@@ -18,23 +51,6 @@
     cursor: pointer;
 }
 
-.title {
-    margin-bottom: 8px;
-
-    * {
-        font-size: 1.12rem;
-        font-family: 'PublicSans-Bold';
-        color: #000000;
-    }
-}
-
-.titleDisabled {
-    composes: title;
-
-    * {
-        color: rgba(0, 0, 0, 0.4);
-    }
-}
 
 
 .subtitle {

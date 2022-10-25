@@ -1,6 +1,6 @@
 import {
+  ConnectBtn,
   // AutocompeteSearch,
-  // ConnectBtn,
   ProfileBlock
 } from '@components/shared';
 import { Link } from 'react-router-dom';
@@ -23,8 +23,8 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
   const {
     pkey,
     users,
-    isVisible
-    // onConnect
+    isVisible,
+    onConnect
   } = containerProps;
 
   const isAuth = Boolean(useSelector((state) => state.profile.data.token));
@@ -37,18 +37,18 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       <Link to="/">
         <img className={styles.logo} alt="source" src={img} />
       </Link>
-      {/* <ul className={[styles.navList, styles.textColor].join(' ')}> */}
-      {/*  <li> */}
-      {/*    <Link className={styles.textColor} to="/repos/all/1"> */}
-      {/*      Repositories */}
-      {/*    </Link> */}
-      {/*  </li> */}
-      {/*  <li> */}
-      {/*    <Link className={styles.textColor} to="/organizations/all/1"> */}
-      {/*      Organizations */}
-      {/*    </Link> */}
-      {/*  </li> */}
-      {/* </ul> */}
+      <ul className={[styles.navList, styles.textColor].join(' ')}>
+        <li>
+          <Link className={styles.textColor} to="/repos/all/1">
+            Repositories
+          </Link>
+        </li>
+        <li>
+          <Link className={styles.textColor} to="/organizations-list/all/1">
+            Organizations
+          </Link>
+        </li>
+      </ul>
     </div>
   );
 
@@ -62,12 +62,17 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
       {/* )} */}
       { !desktop ? (
         <>
-          {/* {pkey && (<ProfileBlock pKey={pkey} />)} */}
-          {/* <ConnectBtn */}
-          {/*  pkey={pkey} */}
-          {/*  users={users} */}
-          {/*  onConnect={onConnect} */}
-          {/* /> */}
+          {pkey && (
+            <ProfileBlock
+              pKey={pkey}
+              profile
+            />
+          )}
+          <ConnectBtn
+            pkey={pkey}
+            users={users}
+            onConnect={onConnect}
+          />
           {!isOnLending && <GitConnectAuth small name="Connect Github" />}
           {isAuth ? <ProfileBlock git /> : null}
         </>

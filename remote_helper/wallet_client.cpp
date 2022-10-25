@@ -211,47 +211,6 @@ const char* SimpleWalletClient::GetCID() const {
     return "e95c0ab0b2ccbd79f542ea307bf6aa6f1898dcc607a4faedf187e7309e8d38b9";
 }
 
-const std::string& SimpleWalletClient::GetRepoID() {
-    if (repo_id_.empty()) {
-        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
-        request.append(options_.repoName)
-            .append("\",repo_owner=")
-            .append(options_.repoOwner)
-            .append(",cid=")
-            .append(GetCID());
-
-        auto root = json::parse(InvokeShader(request, false));
-        assert(root.is_object());
-        if (auto it = root.as_object().find("repo_id");
-            it != root.as_object().end()) {
-            auto& id = *it;
-            repo_id_ = std::to_string(id.value().to_number<uint32_t>());
-        }
-    }
-    return repo_id_;
-}
-
-const std::string& SimpleWalletClient::GetRepoIDAsync(
-    net::yield_context yield) {
-    if (repo_id_.empty()) {
-        std::string request = "role=user,action=repo_id_by_name,repo_name=\"";
-        request.append(options_.repoName)
-            .append("\",repo_owner=")
-            .append(options_.repoOwner)
-            .append(",cid=")
-            .append(GetCID());
-
-        auto root = json::parse(InvokeShaderAsync(request, false, yield));
-        assert(root.is_object());
-        if (auto it = root.as_object().find("repo_id");
-            it != root.as_object().end()) {
-            auto& id = *it;
-            repo_id_ = std::to_string(id.value().to_number<uint32_t>());
-        }
-    }
-    return repo_id_;
-}
-
 std::string SimpleWalletClient::CallAPI(std::string&& request) {
     EnsureConnected();
     request.push_back('\n');

@@ -1,6 +1,6 @@
 import {
   BeamApiContext,
-  BeamApiRes,
+  BeamApiRes, IProfile,
   NotificationPlacement,
   PKeyRes,
   PromiseArg,
@@ -64,7 +64,14 @@ export const userThunk = ({
       await query<PKeyRes>(
         dispatch,
         RC.getPublicKey(),
-        (output) => [AC.setPublicKey(output.key)]
+        (output) => {
+          query<IProfile>(
+            dispatch,
+            RC.getUser(output.key),
+            (profile) => [AC.setPublicKey(output.key), AC.setViewUser(profile)]
+          );
+          return [];
+        }
       );
     } catch (error:any) {
       notification.error({

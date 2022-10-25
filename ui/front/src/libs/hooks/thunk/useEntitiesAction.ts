@@ -4,7 +4,7 @@ import { entitiesThunk } from '@libs/action-creators/async';
 import { useDispatch } from '@libs/redux';
 import { RepoListType, ArgumentTypes } from '@types';
 
-const useUserAsync = () => {
+const useEntitiesAction = () => {
   const dispatch = useDispatch();
   const api = useSourc3Api();
   const [queries, mutations] = entitiesThunk(api.callApi);
@@ -35,6 +35,30 @@ const useUserAsync = () => {
     ...args: ArgumentTypes<typeof mutations.createRepo>
   ) => dispatch(mutations.createRepo(...args));
 
+  const setModifyUser = (state:any):any => {
+    dispatch(queries.setModifyUser(state));
+  };
+
+  const setModifyOrg = (...args: ArgumentTypes<typeof mutations.setModifyOrganization>) => {
+    dispatch(mutations.setModifyOrganization(...args));
+  };
+
+  const setModifyProject = (...args: ArgumentTypes<typeof mutations.setModifyProject>) => {
+    dispatch(mutations.setModifyProject(...args));
+  };
+
+  const addMemberToOrg = (...args: ArgumentTypes<typeof mutations.addMemberToOrg>) => {
+    dispatch(mutations.addMemberToOrg(...args));
+  };
+
+  const addMemberToProject = (...args: ArgumentTypes<typeof mutations.addMemberToProject>) => {
+    dispatch(mutations.addMemberToProject(...args));
+  };
+
+  const addRepoMember = (...args: ArgumentTypes<typeof mutations.addRepoMember>) => {
+    dispatch(mutations.addRepoMember(...args));
+  };
+
   return {
     setInputText,
     setPrevHref,
@@ -44,8 +68,14 @@ const useUserAsync = () => {
     createOrganization,
     createProject,
     createRepo,
-    deleteRepo
+    deleteRepo,
+    setModifyUser,
+    setModifyOrg,
+    setModifyProject,
+    addMemberToOrg,
+    addMemberToProject,
+    addRepoMember
   };
 };
 
-export default useUserAsync;
+export default useEntitiesAction;

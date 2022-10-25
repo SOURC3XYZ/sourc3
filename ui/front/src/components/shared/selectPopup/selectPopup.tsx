@@ -4,15 +4,16 @@ import styles from './selectPopup.module.scss';
 
   type SelectPopupProps = {
     title:string;
-    value: number | string,
+    value: number,
+    disabled?:boolean,
     children?: ReactNode,
-    defaultValue?:number | string,
+    defaultValue?:number,
     className?: string,
     onChange: (value: number) => void
   };
 
 function SelectPopup({
-  title, value, children, defaultValue, className = '', onChange
+  title, value, children, defaultValue, className = '', disabled = false, onChange
 }:SelectPopupProps) {
   const selectClassName = [className, styles.select].join(' ');
   return (
@@ -23,6 +24,7 @@ function SelectPopup({
       <div>
         <Select
           bordered
+          disabled={disabled}
           className={selectClassName}
           defaultValue={defaultValue}
           size="small"

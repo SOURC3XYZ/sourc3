@@ -1,56 +1,116 @@
-import { useModal } from '@libs/hooks/shared';
-import { useSearch } from '@libs/hooks/shared/useSearch';
+import { RC } from '@libs/action-creators';
+import { useCallApi, useModal } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
-import { OwnerListType } from '@types';
-import { useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { getQueryParam } from '@libs/utils';
+import {
+  MemberId, MemberList, OwnerListType, Project
+} from '@types';
+import {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getProjectName, getReposByProject } from './selectors';
 
 type LocationState = {
-  projId: string,
-  type: OwnerListType,
-  page: string
+  projectName: string,
 };
 
 const useProjectRepos = () => {
   const { pathname } = useLocation();
-  const { type, page, projId } = useParams<'type' & 'page' & 'projId'>() as LocationState;
+  const { projectName } = useParams<keyof LocationState>() as LocationState;
   const path = pathname.split('project/')[0];
 
-  const id = useMemo(() => +projId, [projId]);
+  const type:OwnerListType = useMemo(() => (
+    getQueryParam(window.location.href, 'type') === 'my' ? 'my' : 'all'
+  ), [window.location.href]);
+
+  const { addMemberToProject } = useEntitiesAction();
+
+  const page = useMemo(
+    () => {
+      const curPage = getQueryParam(window.location.href, 'page');
+      if (curPage) return +curPage;
+      return 1;
+    },
+    [window.location.href]
+  );
 
   const { setInputText, createRepo } = useEntitiesAction();
 
+  const [callApi] = useCallApi();
+
+  const navigate = useNavigate();
+
+  const item = useSelector(
+    (state) => state.entities.projects.find((el) => el.project_name === projectName)
+  );
   const pkey = useSelector((state) => state.app.pkey);
   const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const repos = useSelector(
-    (state) => getReposByProject(id, state.entities.repos, type, pkey)
+    (state) => getReposByProject(projectName, state.entities.repos, type, pkey)
   );
-  const projectName = useSelector(
-    (state) => getProjectName(id, state.entities.projects) || 'NO_NAME'
+  const project = useSelector(
+    (state) => getProjectName(projectName, state.entities.projects)
   );
-
-  const items = useSearch(searchText, repos, ['repo_name', 'repo_id']);
 
   const modalApi = useModal(
     (txt: string) => setInputText(txt),
-    (name: string) => createRepo(name, id, pid)
+    (name: string) => createRepo(name, projectName, pid)
   );
+
+  const [members, setMembers] = useState<MemberId[]>([]);
+
+  const getOrgMembers = useCallback(async () => {
+    if (item) {
+      const recievedMembers = await callApi<MemberList>(
+        RC.getProjectMembers(
+          projectName,
+          item.organization_name
+        )
+      );
+      if (recievedMembers) setMembers(recievedMembers.members);
+    }
+  }, []);
+
+  const goBack = useCallback(() => navigate('repos'), []);
+
+  const yourPermissions = useMemo(
+    () => {
+      const foundPermissions = members.find((el) => el.member === pkey)?.permissions;
+      if (foundPermissions) {
+        return foundPermissions
+          .toString(2)
+          .split('')
+          .map((el) => !!+el)
+          .reverse();
+      } return null;
+    },
+    [members]
+  );
+
+  useEffect(() => {
+    getOrgMembers();
+  }, []);
 
   const deleteRepo = () => {};
   return {
-    items,
-    projectName,
+    repos,
+    members,
+    project: project as Project,
     path,
     pkey,
     type,
     page: +page,
     searchText,
-    id,
+    projectName,
     modalApi,
-    deleteRepo
+    yourPermissions,
+    navigate,
+    deleteRepo,
+    addMemberToProject,
+    goBack
   };
 };
 

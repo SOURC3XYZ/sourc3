@@ -1,0 +1,33 @@
+@import './content/create-project/create-project.module.scss';
+
+.icon {
+    fill: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    left: 17px;
+    z-index: 1;
+}
+
+.main {
+    margin: 40px auto 71px auto;
+    h4{
+        font-family: 'PublicSans-Black', serif;
+        font-style: normal;
+        font-weight: 900;
+        font-size: 24px;
+        line-height: 28px;
+        text-align: center;
+        color: #000000;
+        margin-bottom: 23px;
+    }
+}
+
+.upload{
+    img {
+        height: 60px;
+        width: 60px;
+        object-fit: cover;
+        display: block;
+    }
+}

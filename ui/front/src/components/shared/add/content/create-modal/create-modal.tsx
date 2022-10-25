@@ -43,10 +43,6 @@ function CreateModal({
     (state) => getProjectsByOrgId(5, state.entities.projects, 'my', pkey)
   );
 
-  console.log(repos);
-  console.log(projects);
-  console.log(items);
-
   const onSubmit = (nameRep: string) => {
     createRepo(nameRep, pid);
     handleOk();

@@ -23,11 +23,12 @@ export type LocalRepoId = string | null;
 export type BeamReqAction = { [key: string]: string };
 
 export type RepoType = {
+  repo_id: number;
   repo_name: RepoName;
-  repo_id: RepoId;
   repo_owner: string;
-  project_id: number;
+  project_name: string;
   cur_objects: number;
+  private: 0 | 1;
 };
 
 export interface ReposResp extends ContractResp {
@@ -94,6 +95,26 @@ export type BranchCommit = {
 
 export type User = { active: boolean, avatar: number, id: number, name: string };
 
+export interface Member extends ContractResp {
+  user_id:string;
+  user_name:string;
+  user_nickname:string;
+  user_email:string;
+  user_description:string;
+  user_website:string;
+  user_twitter:string;
+  user_linkedin:string;
+  user_instagram:string;
+  user_telegram:string;
+  user_discord:string;
+  user_avatar_ipfs_hash:string;
+}
+
+export type MemberId = {
+  member:string;
+  permissions: number;
+};
+
 export interface RepoCommitResp extends ContractResp {
   commit: BranchCommit;
 }
@@ -112,11 +133,24 @@ export interface RepoTreeResp extends ContractResp {
   }
 }
 
+export interface MemberList extends ContractResp {
+  members: MemberId[]
+}
+
 export type Organization = {
   organization_tag: number,
-  organization_id: number,
+  // organization_id: number,
   organization_name: string,
-  organization_creator: string
+  organization_creator: string,
+  organization_short_title: string,
+  organization_about: string,
+  organization_website: string,
+  organization_twitter: string,
+  organization_linkedin: string,
+  organization_instagram: string,
+  organization_telegram: string,
+  organization_discord: string,
+  organization_logo_ipfs_hash: string
 };
 
 export interface OrganizationsResp extends ContractResp {
@@ -137,10 +171,17 @@ export type UpdateProps = {
 
 export type Project = {
   project_tag:number;
-  project_id:number;
-  organization_id:number;
   project_name:string;
   project_creator:string;
+  project_description:string,
+  project_website:string,
+  project_twitter:string,
+  project_linkedin:string,
+  project_instagram:string,
+  project_telegram:string,
+  project_discord:string,
+  project_logo_ipfs_hash:string,
+  organization_name: string
 };
 
 export interface ProjectsResp extends ContractResp {

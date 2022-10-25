@@ -1,8 +1,10 @@
 import { IconEyeOpen, IconEyeCrossed } from '@components/svg';
 import React, { useRef, useState } from 'react';
+import IconSocial from '@components/shared/input/Icon';
+import classNames from 'classnames';
 import styles from './input.module.scss';
 
-interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   autoFocus?: boolean,
   label?: string | null;
   valid?: boolean;
@@ -10,11 +12,14 @@ interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   length?: number;
   type?: string,
   err?:string | null;
+  icon?: JSX.Element | string;
+  refs?: React.InputHTMLAttributes<HTMLInputElement>;
+
 }
 
-function InputCustom({
-  label, autoFocus = true, valid = true, password, length, type, err, ...rest
-}: IputProps) {
+const InputCustom = React.forwardRef(({
+  label, autoFocus = true, valid = true, icon, password, length, type, err, ...rest
+}: InputProps, refs) => {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
     setPasswordShown(!passwordShown);
@@ -51,19 +56,29 @@ function InputCustom({
       </div>
     ) : (
       <div className={styles.wrapperInput}>
-        {label ? <label htmlFor="input" className={styles.labelUp}>{label}</label> : null}
+        {label ? <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>{label}</label> : null}
         <input
           autoFocus={autoFocus}
           id="input"
-          className={valid ? styles.inputText : styles.invalid}
-          // ref={ref}
+          className={
+            classNames(
+              { [`${styles.inputText}`]: valid },
+              { [`${styles.invalid}`]: !valid },
+              { [`${styles.iconsMargin}`]: icon }
+            )
+          }
+          ref={refs}
           {...rest}
           type="text"
         />
+        {icon && (
+          typeof icon === 'object' ? icon
+            : <IconSocial icon={icon} className={styles.icon} />
+        ) }
         <label htmlFor="input" className={styles.labelDown}>{err}</label>
       </div>
     )
   );
-}
+});
 
 export default InputCustom;

@@ -1,0 +1,10 @@
+.entityPicture {
+    object-fit: contain;
+    border-radius: 8px;
+    visibility: hidden;
+    display: block;
+
+    &Active {
+        visibility: visible;
+    }
+}

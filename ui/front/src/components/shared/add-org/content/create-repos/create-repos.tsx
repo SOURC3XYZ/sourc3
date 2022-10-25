@@ -55,7 +55,7 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
 
   return (
     <Popup
-      title="Add new repository to project"
+      title="Add new repository"
       visible
       onCancel={handleCancel}
       confirmButton={(
@@ -109,6 +109,26 @@ function CreateRepos({ handleCancel, closePopup }: CreateReposType) {
           onChange={handleChange}
           valid={valid}
         />
+        <div className={styles.type}>
+          <h4>Repository type</h4>
+          <ul>
+            <li>
+              <input type="radio" id="f-option" name="selector" checked/>
+                <label htmlFor="f-option">Public</label>
+
+                <div className={styles.check}></div>
+            </li>
+
+            <li>
+              <input type="radio" id="s-option" name="selector" />
+                <label htmlFor="s-option">Private</label>
+
+                <div className={styles.check}>
+                  <div className="inside"></div>
+                </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </Popup>
   );

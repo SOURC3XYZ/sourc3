@@ -1,4 +1,6 @@
-import { RepoType } from '@types';
+import {
+  ArgumentTypes, MemberList, Project, RepoType
+} from '@types';
 import {
   Menu, Dropdown, List, message
 } from 'antd';
@@ -7,13 +9,22 @@ import forkImg from '@assets/img/fork.svg';
 import shareImg from '@assets/img/share.svg';
 import starImg from '@assets/img/star.svg';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import {
+  AddUserOrg, Excretion, repoData, REPO_PERMISSION
+} from '@components/shared';
 import { actualTime, clipString, dateCreator } from '@libs/utils';
-import React, { useMemo } from 'react';
+import React, {
+  useCallback, useEffect, useMemo, useState
+} from 'react';
 import { SyncOutlined } from '@ant-design/icons';
+import { useCallApi } from '@libs/hooks/shared';
+import { RC } from '@libs/action-creators';
+import { useEntitiesAction } from '@libs/hooks/thunk';
+import { useSelector } from '@libs/redux';
 import styles from './list-item.module.scss';
 import PendingIndicator from './pending-indicator';
 import { useRepoItem } from './useRepoItem';
+import { Popup } from '../popup';
 
 const iteractionItems = [
   {
@@ -40,20 +51,47 @@ type ListItemProps = {
 function RepoItem({
   item, path, searchText, deleteRepo
 }:ListItemProps) {
-  const { repo_id, repo_name } = item;
+  const {
+    repo_id, repo_name, project_name
+  } = item;
 
   const {
     pkey,
     meta,
     repoLink
-    // getLastMasterCommit
   } = useRepoItem(item);
 
+  const project = useSelector(
+    (state) => state.entities.projects.find((el) => el.project_name === project_name)
+  ) as Project;
+
+  const [visible, setVisible] = useState(false);
+
+  const [callApi] = useCallApi();
+
+  const [permission, setPermisstion] = useState<boolean[] | null>(null);
+
+  const { addRepoMember } = useEntitiesAction();
+
   const { commit, masterBranch, loading } = meta;
+
+  const getPermissionForRepo = useCallback(async () => {
+    const repoMembers = await callApi<MemberList>(
+      RC.listRepoMembers(repo_name, project_name, project.organization_name)
+    );
+    if (repoMembers) {
+      const yourPkey = repoMembers.members.find((el) => pkey === el.member);
+      if (yourPkey) {
+        setPermisstion(yourPkey.permissions.toString(2).split('').map((el) => !!+el));
+      }
+    }
+  }, [item]);
 
   const handleCloneRepo = () => navigator.clipboard.writeText(repoLink);
 
   const handleDeleteRepo = () => deleteRepo(repo_id);
+
+  const handleCreateVisible = useCallback((value: boolean) => () => setVisible(value), []);
 
   const iteractionRender = iteractionItems.map(({ alt, src }) => (
     <div key={`list-item-${alt}`}>
@@ -62,11 +100,23 @@ function RepoItem({
     </div>
   ));
 
-  const onClick = ({ key }: { key:string }) => message.info(key);
+  const onClick = ({ key }: { key:string }) => {
+    if (key !== 'null') message.info(key);
+  };
 
   const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
     masterBranch ? clipString(masterBranch.name) : ''
   }`;
+
+  const canAddMember = () => {
+    if (permission) {
+      return permission[REPO_PERMISSION.ADD_MEMBER];
+    } return null;
+  };
+
+  useEffect(() => {
+    getPermissionForRepo();
+  }, [item]);
 
   const menuRender = (
     <Menu onClick={onClick}>
@@ -78,6 +128,14 @@ function RepoItem({
       <Menu.Item onClick={handleCloneRepo} key={`${repoLink} copied to clipboard!`}>
         Clone Repo
       </Menu.Item>
+      {canAddMember() && (
+        <Menu.Item
+          key={null}
+          onClick={handleCreateVisible(true)}
+        >
+          Add Member
+        </Menu.Item>
+      ) }
     </Menu>
   );
 
@@ -92,7 +150,15 @@ function RepoItem({
     if (!masterBranch) e.preventDefault();
   };
 
-  const titleClassname = commit ? styles.title : styles.titleDisabled;
+  const handleAddRepoMember = useCallback((obj: ArgumentTypes<typeof addRepoMember>[0]) => {
+    addRepoMember({
+      ...obj, repo_name, project_name, organization_name: project.organization_name
+    });
+  }, []);
+
+  const titleClassname = commit ? styles.titleWrapper : styles.titleWrapperDisabled;
+
+  const secure = !!item.private && <div className={styles.privateLabel}>Private</div>;
 
   return (
     <List.Item
@@ -100,7 +166,7 @@ function RepoItem({
       key={repo_id}
       actions={[
         <span
-          key={`repo-${item.repo_id}`}
+          key={item.repo_id}
           className={styles.time}
         >
           {time}
@@ -108,7 +174,7 @@ function RepoItem({
         </span>,
         (
           <Dropdown
-            key={`dropdown-${item.repo_id}`}
+            key={item.repo_id}
             overlay={menuRender}
             placement="bottomRight"
           >
@@ -117,29 +183,34 @@ function RepoItem({
         )
       ]}
     >
-      <List.Item.Meta
-        title={(
-          <div className={titleClassname}>
-            <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
-              <Excretion name={repo_name} inputText={searchText} />
-            </Link>
-          </div>
-        )}
-        description={(
-          <div className={styles.subtitle}>
-            <div className={styles.idField}>
-              <span>ID: </span>
-              <Excretion
-                name={String(repo_id)}
-                inputText={searchText}
-              />
+      <>
+        <Popup onCancel={handleCreateVisible(false)} visible={visible}>
+          <AddUserOrg
+            data={repoData}
+            goBack={handleCreateVisible(false)}
+            callback={handleAddRepoMember as (obj: unknown) => void}
+          />
+        </Popup>
+        <List.Item.Meta
+          title={(
+            <div className={titleClassname}>
+              <div className={styles.title}>
+                <Link to={link} onClick={handleRepoLink} state={{ id: repo_id }}>
+                  <Excretion name={repo_name} inputText={searchText} />
+                </Link>
+              </div>
+              {secure}
             </div>
-            <div className={styles.interaction}>
-              {iteractionRender}
+          )}
+          description={(
+            <div className={styles.subtitle}>
+              <div className={styles.interaction}>
+                {iteractionRender}
+              </div>
             </div>
-          </div>
-        )}
-      />
+          )}
+        />
+      </>
     </List.Item>
   );
 }

@@ -827,12 +827,18 @@ int main(int argc, char* argv[]) {
             po::store(po::parse_config_file(cfg, desc), vm);
         }
         vm.notify();
+
         string_view sv(argv[2]);
         const string_view schema = PROTO_NAME "://";
+
         sv = sv.substr(schema.size());
-        auto delimiter_owner_name_pos = sv.find('/');
-        options.repoOwner = sv.substr(0, delimiter_owner_name_pos);
-        options.repoName = sv.substr(delimiter_owner_name_pos + 1);
+        auto delimiter_pos = sv.find('/');
+        options.organizationName = sv.substr(0, delimiter_pos);
+        sv = sv.substr(delimiter_pos + 1);
+        delimiter_pos = sv.find('/');
+        options.projectName = sv.substr(0, delimiter_pos);
+        options.repoName = sv.substr(delimiter_pos + 1);
+
         auto* git_dir = std::getenv("GIT_DIR");  // set during clone
         if (git_dir != nullptr) {
             options.repoPath = git_dir;

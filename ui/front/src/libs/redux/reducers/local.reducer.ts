@@ -12,9 +12,7 @@ export const initialState:ILocalRepo = {
   localMap: null
 };
 
-const reducer = (
-  state:ILocalRepo = initialState, action: ActionCreators
-):ILocalRepo => {
+const reducer = (state:ILocalRepo = initialState, action: ActionCreators):ILocalRepo => {
   const newState = {
     ...state,
     localMap: state.localMap ? new Map(Array.from(state.localMap)) : null

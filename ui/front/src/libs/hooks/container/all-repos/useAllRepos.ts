@@ -19,7 +19,6 @@ const useAllRepos = (prevHref = false) => {
   const { pathname } = useLocation();
   const { type, page } = useParams<'type' & 'page'>() as LocationState;
   const path = pathname.split('repos/')[0];
-
   const byRouteRepos = pkey && type === 'my'
     ? repos.filter(({ repo_owner }) => repo_owner === pkey)
     : repos;
