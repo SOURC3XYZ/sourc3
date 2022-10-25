@@ -3,7 +3,7 @@ name: Deploying the UI
 
 on:
   push:
-    branches: [ demo ]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -27,7 +27,7 @@ jobs:
         uses: docker/build-push-action@v3.1.0
         with:
           push: true
-          tags: ${{ secrets.TAG_NAME }}
+          tags: ${{ secrets.DEV_TAG_NAME }}
           
       - name: Deployment
         uses: appleboy/ssh-action@master
@@ -36,5 +36,9 @@ jobs:
           username: ${{ secrets.INSTANCE_USERNAME }}
           key: ${{ secrets.INSTANCE_KEY }}
           passphrase: ${{ secrets.INSTANCE_PASSPHRASE }}  
-          script: docker login -u="${{ secrets.DOCKER_USERNAME }}" -p="${{ secrets.DOCKER_TOKEN }}" && docker pull ${{ secrets.TAG_NAME }} && docker image tag ${{ secrets.TAG_NAME }} sourc3-ui:latest  &&  docker rm -f sourc3-ui || true && docker run -d --name  sourc3-ui sourc3-ui:latest && ${{ secrets.DOCKER_NETWORK }} 
-
+          script: docker login -u="${{ secrets.DOCKER_USERNAME }}" -p="${{ secrets.DOCKER_TOKEN }}" 
+                  && docker pull ${{ secrets.DEV_TAG_NAME }} 
+                  && docker image tag ${{ secrets.DEV_TAG_NAME }} sourc3-ui-dev:latest  
+                  && docker rm -f dev-sourc3-ui || true
+                  && docker run -d --name dev-sourc3-ui sourc3-ui-dev:latest 
+                  && ${{ secrets.DEV_DOCKER_NETWORK }} 
