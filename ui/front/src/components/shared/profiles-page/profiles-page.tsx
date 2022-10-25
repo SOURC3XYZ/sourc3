@@ -16,7 +16,7 @@ import Avatar from './avatar/avatar';
 import styles from './profiles-page.module.scss';
 
 function ProfilesPage() {
-  const profile = useSelector((state) => state.sourc3Profile);
+  const profile = useSelector((state) => state.sc3Frofile);
   const pkey = useSelector((state) => state.app.pkey);
   const navigate = useNavigate();
   const handlerEdit = () => {

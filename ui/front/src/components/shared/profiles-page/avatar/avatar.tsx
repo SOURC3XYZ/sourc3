@@ -10,7 +10,7 @@ type AvatarProps = {
   url?: string
 };
 function Avatar({ small, url }: AvatarProps) {
-  const profile = useSelector((state) => state.profile);
+  const profile = useSelector((state) => state.sc3Frofile);
 
   const [src, setSrc] = useState<string | null>(null);
   const { getImgUrlFromIpfs } = useUpload();

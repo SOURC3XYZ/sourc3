@@ -118,7 +118,7 @@ export interface IProfile {
   nickname: string,
   email: string,
   description: string,
-  website: string
+  website: string,
   twitter: string,
   instagram: string,
   telegram: string,

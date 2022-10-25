@@ -4,7 +4,7 @@ import IconSocial from '@components/shared/input/Icon';
 import classNames from 'classnames';
 import styles from './input.module.scss';
 
-interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   autoFocus?: boolean,
   label?: string | null;
   valid?: boolean;
@@ -13,11 +13,13 @@ interface IputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   type?: string,
   err?:string | null;
   icon?: JSX.Element | string;
+  refs?: React.InputHTMLAttributes<HTMLInputElement>;
+
 }
 
-function InputCustom({
+const InputCustom = React.forwardRef(({
   label, autoFocus = true, valid = true, icon, password, length, type, err, ...rest
-}: IputProps) {
+}: InputProps, refs) => {
   const [passwordShown, setPasswordShown] = useState(false);
   const handleShowPassword: React.MouseEventHandler = () => {
     setPasswordShown(!passwordShown);
@@ -54,18 +56,18 @@ function InputCustom({
       </div>
     ) : (
       <div className={styles.wrapperInput}>
-        {label ? <label htmlFor="input" className={styles.labelUp}>{label}</label> : null}
+        {label ? <label htmlFor="input" className={valid ? styles.labelUp : styles.labelUpRed}>{label}</label> : null}
         <input
           autoFocus={autoFocus}
           id="input"
           className={
-              classNames(
-                  { [`${styles.inputText}`]: valid },
-                  { [`${styles.invalid}`]: !valid },
-                  { [`${styles.iconsMargin}`]: icon }
-              )
+            classNames(
+              { [`${styles.inputText}`]: valid },
+              { [`${styles.invalid}`]: !valid },
+              { [`${styles.iconsMargin}`]: icon }
+            )
           }
-          // ref={ref}
+          ref={refs}
           {...rest}
           type="text"
         />
@@ -77,6 +79,6 @@ function InputCustom({
       </div>
     )
   );
-}
+});
 
 export default InputCustom;

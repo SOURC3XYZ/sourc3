@@ -18,7 +18,7 @@ import {
   TxInfo,
   Organization,
   Project,
-  User, IProfile, ISourceProfiles
+  User, IProfile
 } from '@types';
 
 export const AC = {
@@ -182,11 +182,11 @@ export const AC = {
     payload
   } as const),
 
-  setViewUser: (payload: ISourceProfiles) => ({
+  setViewUser: (payload: IProfile) => ({
     type: ACTIONS.SET_VIEW_USER,
     payload
   } as const),
-  setModifyUser: (payload: any) => ({
+  setModifyUser: (payload: IProfile) => ({
     type: ACTIONS.SET_MODIFY_USER,
     payload
   } as const),
