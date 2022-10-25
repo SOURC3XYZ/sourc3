@@ -14,6 +14,7 @@ function GitSummary({ profile }:gitSummaryType) {
   const [allOrgs, setAllOrgs] = useState(0);
   const [relisedCount, setRelisedCount] = useState(0);
   const [reliasedRep, setReliasedRep] = useState(0);
+  const [reliasedRepCount, setReliasedRepCount] = useState(0);
   const [allOwnRepos, setAllOwnRepos] = useState(0);
   const [topics, setTopics] = useState<[] | number>(0);
   const [cntOrg, setCntOrg] = useState(0);
@@ -98,6 +99,7 @@ function GitSummary({ profile }:gitSummaryType) {
     setAllCommits(profile.github_repos && profile.github_repos.reduce((acc, rep) => acc + rep.user_commits_cnt, allCommits));
     setForkedHis(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + rep.forks_count, forkedHis));
     setReliasedRep(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).reduce((acc, rep) => acc + rep.user_releases_cnt, reliasedRep));
+    setReliasedRepCount(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).filter((el) => el.user_releases_cnt).length);
     setAllOwnRepos(profile.github_repos && profile.github_repos.filter((el) => el.owner_login === profile.github_login).length);
   }, [profile.github_repos]);
 
@@ -155,10 +157,10 @@ function GitSummary({ profile }:gitSummaryType) {
                     {' '}
                     in
                     {' '}
-                    <span className={styles.title}>{allOwnRepos}</span>
+                    <span className={styles.title}>{reliasedRepCount}</span>
                     <span className={styles.text}>
                       {' '}
-                      {allOwnRepos === 1 ? 'repository' : 'repositories'}
+                      {reliasedRepCount === 1 ? 'repository' : 'repositories'}
                     </span>
                   </span>
                 </span>
