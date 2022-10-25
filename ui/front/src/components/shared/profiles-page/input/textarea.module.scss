@@ -1,0 +1,58 @@
+.labelUp{
+  color: black;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: 'PublicSans-Bold';
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.labelRed{
+  composes: labelUp;
+  color: red;
+}
+
+.wrapperInput{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.textarea{
+  width: 100%;
+  resize: none;
+    height: 120px;
+    line-height: 20px;
+    border-radius: 8px;
+    caret-color: orange;
+    padding: 5px 10px 0 10px;
+  border: solid 1px rgba(0, 0, 0, 0.1);
+    outline: none;
+    background: transparent;
+    color: #000;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: "PublicSans-Regular";
+
+    &::placeholder {
+      font-family: "PublicSans-Regular";
+      color: rgba(0,0,0, 0.3);
+      font-size: 14px;
+      transform: translateX(1px);
+      letter-spacing: 0;
+
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    &:focus-within{
+      border: solid 1px #000;
+    }
+
+}
+

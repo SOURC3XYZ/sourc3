@@ -4,8 +4,9 @@ import {
 } from 'antd';
 import { Link } from 'react-router-dom';
 import dotsImg from '@assets/img/dots.svg';
-import { Excretion } from '@components/shared';
+import { Excretion, IpfsAvatars } from '@components/shared';
 import { textEllipsis } from '@libs/utils';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './org-list.module.scss';
 
 type ListItemProps = {
@@ -18,13 +19,13 @@ type ListItemProps = {
 function OrgListItem({
   item, path, searchText, type
 }:ListItemProps) {
-  const { organization_name, organization_id, organization_creator } = item;
+  const { organization_name, organization_creator, organization_logo_ipfs_hash } = item;
 
   const onClick = ({ key }: { key:string }) => {
     message.info(key);
   };
 
-  const link = `${path}projects/${organization_id}/${type}/1`;
+  const link = `${path}organization/${organization_name}/projects?type=${type}&page=1`;
 
   const menuRender = (
     <Menu onClick={onClick} />
@@ -33,7 +34,7 @@ function OrgListItem({
   return (
     <List.Item
       className={styles.listItem}
-      key={organization_id}
+      key={organization_name}
       actions={[(
         <span key="org-times" className={styles.time}>
           {`owner: ${textEllipsis(organization_creator, 10)}`}
@@ -47,9 +48,18 @@ function OrgListItem({
       ]}
     >
       <List.Item.Meta
+        avatar={(
+          <IpfsAvatars
+            ipfs={organization_logo_ipfs_hash}
+            colors={AVATAR_COLORS}
+            name={`${organization_name}${organization_creator}`}
+            size={56}
+            variant="ring"
+          />
+        )}
         title={(
           <div className={styles.title}>
-            <Link to={link} state={{ id: organization_id }}>
+            <Link to={link} state={{ id: organization_name }}>
               <Excretion name={organization_name} inputText={searchText} />
             </Link>
           </div>
@@ -59,7 +69,7 @@ function OrgListItem({
             <div className={styles.idField}>
               <span>ID: </span>
               <Excretion
-                name={String(organization_id)}
+                name={String(organization_name)}
                 inputText={searchText}
               />
             </div>

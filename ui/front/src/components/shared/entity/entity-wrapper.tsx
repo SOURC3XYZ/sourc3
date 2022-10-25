@@ -1,37 +1,55 @@
-import Title from 'antd/lib/typography/Title';
-import { EntityManager, NavItem } from '@components/shared';
-import { OwnerListType } from '@types';
+import { Container, Tab } from '@components/shared';
+import { useMemo } from 'react';
 import styles from './entity-wrapper.module.scss';
+import EntityHeader, { AvatarParams, SocialLinks } from './entity-header';
+
+export type HeaderFields = {
+  pkey: string,
+  owner: string,
+  shortTitle:string,
+  yourPermissions: boolean[] | null
+  tabData: Tab[],
+  routes: string[],
+  avatar: AvatarParams,
+  description?: string,
+  socialLinks: SocialLinks,
+};
 
 type EntityWrapperProps = {
+  headerFields?: HeaderFields
   title: string;
-  type: OwnerListType;
   pkey:string;
-  searchText: string;
-  navItems: NavItem[];
   children:JSX.Element;
-  placeholder: string;
-  setInputText:(str: string) => void
-  showModal?: () => void;
 };
 
 function EntityWrapper({
-  title, type, pkey, searchText, navItems, children, placeholder, showModal, setInputText
+  title,
+  headerFields,
+  pkey,
+  children
 }:EntityWrapperProps) {
+  const header = useMemo(() => !!headerFields && (
+    <EntityHeader
+      title={title}
+      pkey={pkey}
+      yourPermissions={headerFields.yourPermissions}
+      owner={headerFields.owner}
+      shortTitle={headerFields.shortTitle}
+      routes={headerFields.routes}
+      tabData={headerFields.tabData}
+      avatar={headerFields.avatar}
+      description={headerFields.description}
+      socialLinks={headerFields.socialLinks}
+    />
+  ), [headerFields, title]);
+
   return (
-    <div className={styles.content}>
-      <Title level={3}>{title}</Title>
-      <EntityManager
-        type={type}
-        pkey={pkey}
-        searchText={searchText}
-        navItems={navItems}
-        setInputText={setInputText}
-        placeholder={placeholder}
-        showModal={showModal}
-      />
-      {children}
-    </div>
+    <Container>
+      <div className={styles.content}>
+        {header}
+        {children}
+      </div>
+    </Container>
   );
 }
 

@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import {
   Notifications,
   Preload,
-  DownloadPage, NavButton, FailPage, OnboardingStep, ReferralProgramm
+  DownloadPage, NavButton, OnboardingStep, ReferralProgramm
 } from '@components/shared';
 import { PreloadComponent } from '@components/hoc';
 import {
@@ -142,8 +142,8 @@ function Main() {
                         path="/profile/:id"
                         element={<ProfileGit />}
                       />
-                      {/* <Route path="/*" element={routes} /> */}
-                      <Route path="/*" element={<FailPage />} />
+                      <Route path="/*" element={routes} />
+                      {/* <Route path="/*" element={<FailPage />} /> */}
 
                     </Routes>
                   </ErrorBoundary>

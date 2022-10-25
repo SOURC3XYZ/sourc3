@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import {
   AllRepos,
-  Manager, Notifications, Organizations, Preload, ProjectRepos, Projects, Repo
+  Manager, Notifications, OrganizationPage, Organizations, Preload, ProjectPage, Repo
 } from '@components/shared';
 import { useSelector } from '@libs/redux';
 import React, { useCallback, useMemo } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useUserAction } from '@libs/hooks/thunk';
-import { LoadingMessages } from '@libs/constants';
+import { LoadingMessages, ROUTES } from '@libs/constants';
 import { PreloadComponent } from '@components/hoc';
 import { ErrorBoundary } from '@components/context';
+import ProfilesPage from '@components/shared/profiles-page/profiles-page';
+import ProfilesEdit from '@components/shared/profiles-page/profiles-edit';
 import Header from '../../../web/components/header/header.container';
 import styles from './main.module.scss';
 import { LocalRepos } from './content';
@@ -22,30 +24,34 @@ function App() {
 
   const { connectToDesktopApi } = useUserAction();
 
+  const {
+    REPOS, REPO, ORG_LIST, ORG, PROJECT
+  } = ROUTES;
+
   const data = [
     {
       path: '/',
       element: <Navigate replace to="/repos/all/1" />
     },
     {
-      path: 'repos/:type/:page',
+      path: `${REPOS}/:type/:page`,
       element: <AllRepos />
     },
     {
-      path: 'repo/:repoParams/*',
+      path: `${REPO}/:repoParams/*`,
       element: <Repo />
     },
     {
-      path: 'organizations/:type/:page',
+      path: `${ORG_LIST}/:type/:page`,
       element: <Organizations />
     },
     {
-      path: 'projects/:orgId/:type/:page',
-      element: <Projects />
+      path: `${ORG}/:orgName/*`,
+      element: <OrganizationPage />
     },
     {
-      path: 'project/:projId/:type/:page',
-      element: <ProjectRepos />
+      path: `${PROJECT}/:projectName/*`,
+      element: <ProjectPage />
     },
     {
       path: 'manager',
@@ -54,7 +60,16 @@ function App() {
     {
       path: 'localRepos/',
       element: <LocalRepos />
+    },
+    {
+      path: 'profiles/:id/*',
+      element: <ProfilesPage />
+    },
+    {
+      path: 'profiles/:id/edit',
+      element: <ProfilesEdit />
     }
+
   ];
 
   const routes = data.map(

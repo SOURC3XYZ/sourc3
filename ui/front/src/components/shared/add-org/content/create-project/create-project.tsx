@@ -7,12 +7,18 @@ import { InputCustom } from '@components/shared/input';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import SelectPopup from '@components/shared/selectPopup/selectPopup';
 import { Select } from 'antd';
+import siteIcon from '@assets/icons/site.svg';
+import linkedinIcon from '@assets/icons/linkedin.svg';
+import telegramIcon from '@assets/icons/telegram.svg';
+import instagramIcon from '@assets/icons/instagram.svg';
+import twitterSecIcon from '@assets/icons/twitterSec.svg';
+import discordSecIcon from '@assets/icons/discordSec.svg';
 import styles from './create-project.module.scss';
 
 type InputChange = React.ChangeEventHandler<HTMLInputElement>;
 type CreateProjectType = {
-  handleCancel: ()=>void;
-  closePopup: ()=>void;
+  handleCancel: () => void;
+  closePopup: () => void;
 };
 // type OrganizationType = {
 //   organization_creator: string
@@ -29,7 +35,7 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
 
   const [valid, setValid] = useState(true);
 
-  const handleChange:InputChange = (e) => {
+  const handleChange: InputChange = (e) => {
     const regExp = /[А-я]+/;
     setInputName(e.target.value);
     setValid(!regExp.test(e.target.value));
@@ -40,12 +46,12 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
   ) => itemsFilter(state.entities.organizations, 'my', pkey));
   const [idOrg, setIdOrg] = useState(organizations[0].organization_id);
 
-  const handleOk = (name:string, id:number) => {
+  const handleOk = (name: string, id: number) => {
     createProject(`"${name}"`, id, pid);
     closePopup();
   };
 
-  const handleChangeOption = (value:number) => {
+  const handleChangeOption = (value: number) => {
     setIdOrg(value);
   };
 
@@ -56,21 +62,31 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
 
   return (
     <Popup
-      title="Add new project to organization"
+      title="Add new project"
       visible
       onCancel={handleCanceled}
-      confirmButton={(
-        <NavButton
-          key="all-repos-addBtn"
-          onClick={() => handleOk(inputName, idOrg)}
-          isDisabled={!inputName || !valid}
-          name="Add"
-          active
-        />
-      )}
+      // confirmButton={(
+      //   <NavButton
+      //     key="all-repos-addBtn"
+      //     onClick={() => handleOk(inputName, idOrg)}
+      //     isDisabled={!inputName || !valid}
+      //     name="Add"
+      //     active
+      //   />
+      // )}
       agree
     >
-      <div className={styles.wrapper}>
+      <div className={styles.main}>
+        <div className={styles.name}>
+          <InputCustom
+            label="Project name"
+            type="text"
+            placeholder="Test organization"
+            value={inputName}
+            onChange={handleChange}
+            valid={valid}
+          />
+        </div>
         <SelectPopup
           onChange={handleChangeOption}
           defaultValue={idOrg}
@@ -87,13 +103,82 @@ function CreateProject({ handleCancel, closePopup }: CreateProjectType) {
             </Select.Option>
           ))}
         </SelectPopup>
-        <InputCustom
-          label="Project name"
-          type="text"
-          value={inputName}
-          onChange={handleChange}
-          valid={valid}
-        />
+
+        <div className={styles.description}>
+          <h4>Short description</h4>
+          <InputCustom
+            type="text"
+            placeholder="Test organization short description"
+          />
+          <p>100 characters max</p>
+        </div>
+
+        <div className={styles.upload}>
+          <input type="file" id="upload" hidden />
+          <label htmlFor="upload">Upload logo</label>
+          <p>300x300 px (jpg, png, gif)</p>
+        </div>
+
+        <div className={styles.social}>
+          <h4>Social networks</h4>
+          <div className={styles.inputs}>
+            <div className={styles.input}>
+              <img src={siteIcon} alt="siteicon" />
+              <InputCustom
+                type="text"
+                placeholder="https://website.name/"
+              />
+            </div>
+            <div className={styles.input}>
+              <img src={linkedinIcon} alt="linkedinIcon" />
+              <InputCustom
+                type="text"
+                placeholder="@nickname"
+              />
+            </div>
+            <div className={styles.input}>
+              <img src={telegramIcon} alt="telegramIcon" />
+              <InputCustom
+                type="text"
+                placeholder="@nickname"
+              />
+            </div>
+            <div className={styles.input}>
+              <img src={instagramIcon} alt="instagramIcon" />
+              <InputCustom
+                type="text"
+                placeholder="@nickname"
+              />
+            </div>
+            <div className={styles.input}>
+              <img src={twitterSecIcon} alt="twitterSecIcon" />
+              <InputCustom
+                type="text"
+                placeholder="@nickname"
+              />
+            </div>
+            <div className={styles.input}>
+              <img src={discordSecIcon} alt="discordSecIcon" />
+              <InputCustom
+                type="text"
+                placeholder="login#0000"
+              />
+            </div>
+          </div>
+        </div>
+        <div className={styles.buttons}>
+          <NavButton
+            name="Cancel"
+            isDisabled
+          />
+          <NavButton
+            key="all-repos-addBtn"
+            onClick={() => handleOk(inputName, idOrg)}
+            isDisabled={!inputName || !valid}
+            name="Add"
+            active
+          />
+        </div>
       </div>
     </Popup>
   );

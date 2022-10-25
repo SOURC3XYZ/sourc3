@@ -9,7 +9,7 @@ const useCallApi = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
 
-  const callApi = useCallback(async <T extends ContractResp>(arg: RequestSchema) => {
+  const callContract = useCallback(async <T extends ContractResp>(arg: RequestSchema) => {
     try {
       setLoading(true);
       const data = await api.callApi(arg);
@@ -31,7 +31,7 @@ const useCallApi = () => {
     }
   }, [api.callApi]);
 
-  return [callApi, callIpfs, isLoading, error] as const;
+  return [callContract, callIpfs, isLoading, error] as const;
 };
 
 export default useCallApi;

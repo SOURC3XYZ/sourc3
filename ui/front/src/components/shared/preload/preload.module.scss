@@ -2,6 +2,7 @@
 
 
 .loaderWrapper {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -51,4 +52,19 @@
 .messageWhiteBg {
 	composes: message;
 	color: $color-black;
+}
+
+.version{
+	position: absolute;
+	bottom: 5%;
+	h4{
+		font-family: 'PublicSans-Regular', serif;
+		font-style: normal;
+		font-weight: 400;
+		font-size: 14px;
+		line-height: 16px;
+		text-align: center;
+		color: #000000;
+		opacity: 0.3;
+	}
 }

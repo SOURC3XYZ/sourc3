@@ -22,6 +22,9 @@ function Preload({
         <img alt="spinner" src={orange} className={styles.spin} />
         <div className={messageClassName}>{message}</div>
       </div>
+      <div className={styles.version}>
+        <h4>v01.73803.822</h4>
+      </div>
     </div>
   );
 }

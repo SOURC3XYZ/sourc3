@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOrganization } from '@libs/hooks/container/organization';
+import { useOrganizationsList } from '@libs/hooks/container/organization';
 import { CreateModal } from '@components/shared';
 
 type CRORG = {
@@ -8,7 +8,7 @@ type CRORG = {
 };
 
 function CreateOrg({ handleCancel, closePopup }: CRORG) {
-  const { modalApi } = useOrganization();
+  const { modalApi } = useOrganizationsList();
   const {
     handleOk
   } = modalApi;

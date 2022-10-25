@@ -43,20 +43,20 @@ function AllRepos() {
   return (
     <EntityWrapper
       title="Repositories"
-      placeholder={placeholder}
-      type={type}
+      // placeholder={placeholder}
+      // type={type}
       pkey={pkey}
-      searchText={searchText}
-      navItems={navItems}
-      setInputText={setInputText}
+      // searchText={searchText}
+      // navItems={navItems}
+      // setInputText={setInputText}
     >
       <EntityList
         searchText={searchText}
         renderItem={listItem}
-        path={path}
+        // path={path}
         page={page}
         items={items}
-        type={type}
+        // type={type}
       />
     </EntityWrapper>
   );

@@ -1,18 +1,18 @@
 .wrapper {
     display: flex;
-    margin-bottom: 36px;
+    margin-bottom: 32px;
     flex-direction: column;
     width: 100%;
 
     .title {
-        font-family: 'PublicSans-Regular';
+        font-family: "PublicSans-ExtraBold", serif;
         font-style: normal;
-        font-weight: 400;
-        font-size: 14px !important;
+        font-weight: 800;
+        font-size: 14px;
         line-height: 20px;
-        width: 100%;
-    text-align: left;
-    margin-bottom: 8px;
+        color: #000000;
+        text-align: start;
+        margin-bottom: 8px;
     }
     span{
         color:black !important;

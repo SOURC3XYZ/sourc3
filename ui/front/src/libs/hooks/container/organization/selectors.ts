@@ -8,30 +8,30 @@ export const itemsFilter = (items: Organization[], type: OwnerListType, pkey?:st
 };
 
 export const getProjectsByOrgId = (
-  id: number,
+  orgName: string,
   items: Project[],
   type: OwnerListType,
   pkey?:string
 ) => {
-  const orgProjects = items.filter((el) => el.organization_id === id);
+  const orgProjects = items.filter((el) => el.organization_name === orgName);
   if (pkey && type === 'my') {
     return orgProjects.filter((el) => el.project_creator === pkey);
   } return orgProjects;
 };
 
-export const getOrgName = (orgId: number, items: Organization[]) => items
-  .find((el) => el.organization_id === orgId)?.organization_name;
+export const getOrg = (name: string, items: Organization[]) => items
+  .find((el) => el.organization_name === name);
 
-export const getProjectName = (id: number, items: Project[]) => items
-  .find((el) => el.project_id === id)?.project_name;
+export const getProjectName = (projectName: string, items: Project[]) => items
+  .find((el) => el.project_name === projectName);
 
 export const getReposByProject = (
-  id: number,
+  projectName: string,
   items: RepoType[],
   type: OwnerListType,
   pkey?:string
 ) => {
-  const repos = items.filter((el) => el.project_id === id);
+  const repos = items.filter((el) => el.project_name === projectName);
   if (pkey && type === 'my') return repos.filter((el) => el.repo_owner === pkey);
   return repos;
 };
