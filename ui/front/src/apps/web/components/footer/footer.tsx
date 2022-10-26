@@ -3,6 +3,7 @@ import discordIcon from '@assets/icons/discordIcon.svg';
 import twitterIcon from '@assets/icons/twitterIcon.svg';
 import { useMemo } from 'react';
 import { useExcludeRoute } from '@libs/hooks/shared';
+import { SOCIAL_LINKS } from '@libs/constants';
 import styles from '../app.module.scss';
 
 type FooterProps = {
@@ -11,7 +12,7 @@ type FooterProps = {
 
 const SOCIAL = {
   DISCORD: 'https://discord.com/invite/Fw3Wvqt42b',
-  TWITTER: 'https://twitter.com/SOURC3xyz',
+  TWITTER: SOCIAL_LINKS.TWITTER,
   SOURC3: 'https://www.sourc3.xyz'
 };
 

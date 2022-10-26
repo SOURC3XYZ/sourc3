@@ -19,13 +19,13 @@ interface PopupProps {
 function Popup({
   title,
   visible,
-  onCancel,
   defaultCancel,
   cancelButton,
   confirmButton,
   children,
   footer,
-  agree = false
+  agree = false,
+  onCancel
 }:PopupProps) {
   const cancelBtn = useMemo(() => cancelButton || (
     <Button onClick={onCancel}>

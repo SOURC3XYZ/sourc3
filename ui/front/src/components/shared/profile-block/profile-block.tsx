@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
 import { Button, Dropdown, Menu } from 'antd';
 import { useGitProfile } from '@libs/hooks/thunk';
+import { SOCIAL_LINKS } from '@libs/constants';
 import styles from './profile-block.module.scss';
 
 type HeaderPropsType = {
@@ -44,8 +45,8 @@ function ProfileBlock({
         navigate('/referral-programm');
       }
     },
-    { title: 'Twitter', link: 'https://twitter.com/SOURC3xyz' },
-    { title: 'Discord', link: 'https://discord.gg/nqTTMXrhMc', delimeter: true },
+    { title: 'Twitter', link: SOCIAL_LINKS.TWITTER },
+    { title: 'Discord', link: SOCIAL_LINKS.DISCORD, delimeter: true },
     { title: 'Logout', onClick: handleUserLogout }
   ];
   const menu = (

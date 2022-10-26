@@ -5,6 +5,7 @@ import { NotificationPlacement, User } from '@types';
 import { notification } from 'antd';
 import { useEffect, useMemo } from 'react';
 import styles from './connect-btn.module.scss';
+import { badConnectPopup } from './hocs';
 
 const WORD_COUNT = 7;
 
@@ -45,4 +46,4 @@ function ConnectBtn({ pkey, users, onConnect }:ConnectBtnProps) {
   );
 }
 
-export default ConnectBtn;
+export default badConnectPopup(ConnectBtn);

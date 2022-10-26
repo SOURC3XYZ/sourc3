@@ -117,5 +117,11 @@ export enum ROUTES {
   DOWNLOAD = 'download',
   ADD_WEB = 'add-web',
   DEFAULT = '/*'
+}
 
+export enum SOCIAL_LINKS {
+  TG = 'https://t.me/+LNGm_GSTGpI2OTdk',
+  DISCORD = 'https://discord.com/invite/Fw3Wvqt42b',
+  TWITTER = 'https://twitter.com/SOURC3xyz',
+  SOURCE = 'https://www.sourc3.xyz'
 }
