@@ -80,32 +80,6 @@ std::string GetStringFromIPFSAsync(const std::string& hash, IWalletClient& walle
     return ByteBufferToString(buf);
 }
 
-std::vector<ObjectWithContent> GetObjectsFromTreeMeta(const TreeMetaBlock& tree,
-                                                      sourc3::IProgressReporter& progress,
-                                                      IWalletClient& client) {
-    std::vector<ObjectWithContent> objects;
-    auto tree_content = GetStringFromIPFS(tree.hash.ipfs, client);
-    objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
-                         std::move(tree_content));
-    for (auto&& [type, oid, hash] : tree.entries) {
-        auto object_type = type;
-        std::string file_content;
-        if (!std::all_of(hash.begin(), hash.end(), [](char c) {
-                return c == '0';
-            })) {
-            file_content = GetStringFromIPFS(hash, client);
-            if (object_type == GIT_OBJECT_TREE) {
-                TreeMetaBlock subtree(file_content);
-                auto subtree_objects = GetObjectsFromTreeMeta(subtree, progress, client);
-                std::move(subtree_objects.begin(), subtree_objects.end(),
-                          std::back_inserter(objects));
-            }
-        }
-        objects.emplace_back(object_type, std::move(oid), std::move(hash), std::move(file_content));
-    }
-    return objects;
-}
-
 std::vector<ObjectWithContent> GetUniqueObjectsFromTreeMeta(
     const TreeMetaBlock& tree, sourc3::IProgressReporter& progress, IWalletClient& client,
     std::unordered_set<git_oid, OidHasher>& used) {
@@ -282,29 +256,85 @@ struct ObjectsAndMetas {
     Metas metas;
 };
 
-ObjectsAndMetas GetAllObjectsWithMeta(const std::string& root_ipfs_hash,
-                                      sourc3::IProgressReporter& progress, IWalletClient& client) {
+ObjectsAndMetas GetUniqueObjectsWithMetasFromTreeMeta(
+    const TreeMetaBlock& tree, sourc3::IProgressReporter& progress, IWalletClient& client,
+    std::unordered_set<git_oid, OidHasher>& used) {
+    std::vector<ObjectWithContent> objects;
+    unordered_map<string, variant<TreeMetaBlock, CommitMetaBlock>> metas;
+    auto tree_content = GetStringFromIPFS(tree.hash.ipfs, client);
+    objects.emplace_back(GIT_OBJECT_TREE, std::move(tree.hash.oid), std::move(tree.hash.ipfs),
+                         std::move(tree_content));
+    for (auto&& [type, oid, hash] : tree.entries) {
+        if (used.count(oid) > 0) {
+            continue;
+        }
+        auto object_type = type;
+        std::string file_content;
+        if (!std::all_of(hash.begin(), hash.end(), [](char c) {
+                return c == '0';
+            })) {
+            file_content = GetStringFromIPFS(hash, client);
+            if (object_type == GIT_OBJECT_TREE) {
+                TreeMetaBlock subtree(file_content);
+                auto[subtree_objects, subtree_metas] =
+                    GetUniqueObjectsWithMetasFromTreeMeta(subtree, progress, client, used);
+                std::move(subtree_objects.begin(), subtree_objects.end(),
+                          std::back_inserter(objects));
+                metas[hash] = subtree;
+                for (auto&& [key, value] : subtree_metas) {
+                    metas[std::move(key)] = std::move(value);
+                }
+            }
+        }
+        objects.emplace_back(object_type, std::move(oid), std::move(hash), std::move(file_content));
+    }
+    return {std::move(objects), std::move(metas)};
+}
+
+ObjectsAndMetas GetAllUniqueObjectsWithMetas(const std::string& root_ipfs_hash,
+                                                   sourc3::IProgressReporter& progress,
+                                                   IWalletClient& client,
+                                                   std::unordered_set<git_oid, OidHasher>& used) {
     std::vector<ObjectWithContent> objects;
     unordered_map<string, variant<TreeMetaBlock, CommitMetaBlock>> metas;
     CommitMetaBlock commit(GetStringFromIPFS(root_ipfs_hash, client));
     metas[root_ipfs_hash] = commit;
     auto commit_content = GetStringFromIPFS(commit.hash.ipfs, client);
+    used.insert(commit.hash.oid);
     objects.emplace_back(GIT_OBJECT_COMMIT, std::move(commit.hash.oid), std::move(commit.hash.ipfs),
                          std::move(commit_content));
     progress.AddProgress(1);
     TreeMetaBlock tree(GetStringFromIPFS(commit.tree_meta_hash, client));
     metas[commit.tree_meta_hash] = tree;
-    auto tree_objects = GetObjectsFromTreeMeta(tree, progress, client);
-    std::move(tree_objects.begin(), tree_objects.end(), std::back_inserter(objects));
+    auto[tree_objects, tree_metas] = GetUniqueObjectsWithMetasFromTreeMeta(tree, progress,
+                                                                            client, used);
+    for (auto&& [key, value] : tree_metas) {
+        metas[std::move(key)] = std::move(value);
+    }
+    for (auto&& tree_obj : tree_objects) {
+        if (used.count(tree_obj.hash) == 0) {
+            used.insert(tree_obj.hash);
+            objects.push_back(std::move(tree_obj));
+            progress.AddProgress(1);
+        }
+    }
     for (auto&& parent_hash : commit.parent_hashes) {
-        auto [parent_objects, parent_metas] =
-            GetAllObjectsWithMeta(parent_hash.ipfs, progress, client);
-        std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
-        for (auto&& [key, value] : parent_metas) {
-            metas[std::move(key)] = std::move(value);
+        if (used.count(parent_hash.oid) == 0) {
+            auto [parent_objects, parent_metas] =
+                GetAllUniqueObjectsWithMetas(parent_hash.ipfs, progress, client, used);
+            std::move(parent_objects.begin(), parent_objects.end(), std::back_inserter(objects));
+            for (auto&& [key, value] : parent_metas) {
+                metas[std::move(key)] = std::move(value);
+            }
         }
     }
     return {std::move(objects), std::move(metas)};
+}
+
+ObjectsAndMetas GetAllObjectsWithMeta(const std::string& root_ipfs_hash,
+                                      sourc3::IProgressReporter& progress, IWalletClient& client) {
+    std::unordered_set<git_oid, OidHasher> used;
+    return GetAllUniqueObjectsWithMetas(root_ipfs_hash, progress, client, used);
 }
 
 template <typename Context>
@@ -399,6 +429,9 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
         MakeProgress("Uploading objects to IPFS", collector.m_objects.size(), reporter_type);
     size_t i = 0;
     std::unordered_set<git_oid, OidHasher> used_oids;
+    for (const auto&[oid, _] : oid_to_ipfs) {
+        used_oids.insert(oid);
+    }
     std::deque<ObjectInfo> upload_objects(collector.m_objects.begin(), collector.m_objects.end());
     while (!upload_objects.empty()) {
         ObjectInfo obj = std::move(upload_objects.front());

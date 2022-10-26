@@ -15,6 +15,7 @@
 #include "utils.h"
 
 #include <boost/json/parse.hpp>
+#include <boost/json.hpp>
 
 #include <iterator>
 #include <sstream>
@@ -131,6 +132,11 @@ boost::json::value ParseJsonAndTest(boost::json::string_view sv) {
     }
 
     if (const auto* error = r.as_object().if_contains("error"); error) {
+        std::cerr << "message: " 
+                  << r.as_object()["error"].as_object()["message"].as_string()
+                  << "\ndata:    " 
+                  << r.as_object()["error"].as_object()["data"].as_string() 
+                  << std::endl;
         throw std::runtime_error(error->as_object().at("message").as_string().c_str());
     }
     return r;

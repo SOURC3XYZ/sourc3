@@ -35,6 +35,9 @@ private:
     CommandResult DoFetchSync(const std::vector<std::string_view>& args);
     CommandResult DoFetchAsync(const std::vector<std::string_view>& args);
 
+    CommandResult DoPushSync(const std::vector<std::string_view>& args);
+    CommandResult DoPushAsync(const std::vector<std::string_view>& args);
+
     std::set<git_oid> GetUploadedObjects();
 
     struct Options final : BaseOptions {

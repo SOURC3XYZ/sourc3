@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#define BEAM_SHADER_USE_STL
+#include <algorithm>
+#include <vector>
+#include <utility>
+#include <string_view>
+#include <memory>
+#include <charconv>
+#include <limits>
+
 #include "Shaders/common.h"
 #include "Shaders/app_common_impl.h"
 #include "contract.h"
@@ -20,14 +29,6 @@
 namespace Env {  // NOLINT
 #include "bvm2_cost.h"
 }  // namespace Env
-
-#include <algorithm>
-#include <vector>
-#include <utility>
-#include <string_view>
-#include <memory>
-#include <charconv>
-#include <limits>
 
 #include "libgit2/full_git.h"
 
@@ -57,6 +58,7 @@ static const ShaderID s_SID = {  // NOLINT
 }  // namespace sourc3
 
 namespace {
+using namespace sourc3;
 using ActionFunc = void (*)(const ContractID&);
 using ActionsMap = std::vector<std::pair<std::string_view, ActionFunc>>;
 using RolesMap = std::vector<std::pair<std::string_view, const ActionsMap&>>;
@@ -1681,9 +1683,6 @@ using MetaKey = Env::Key_T<sourc3::GitObject::Meta::Key>;
 using DataKey = Env::Key_T<sourc3::GitObject::Data::Key>;
 
 std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
-    using sourc3::GitObject;
-    using sourc3::Repo;
-
     Repo::Id repo_id;
     Env::DocGet("repo_id", repo_id);
     MetaKey start{.m_KeyInContract = {repo_id, 0}};
@@ -1696,29 +1695,8 @@ std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
     return {start, end, key};
 }
 
-void OnActionGetRepoMeta(const ContractID& cid) {
-    using sourc3::GitObject;
-    auto [start, end, key] = PrepareGetObject(cid);
-
-    GitObject::Meta value;
-    Env::DocArray objects_array("objects");
-    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
-        Env::DocGroup obj("");
-        Env::DocAddBlob_T("object_hash", value.hash);
-        Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
-        Env::DocAddNum("object_size", value.data_size);
-    }
-}
-
-void OnActionGetRepoData(const ContractID& cid) {
-    using sourc3::GitObject;
-    using sourc3::GitOid;
-    using sourc3::Repo;
-    Repo::Id repo_id;
-    GitOid hash;
-    Env::DocGet("repo_id", repo_id);
-    Env::DocGetBlob("obj_id", &hash, sizeof(hash));
-    DataKey key{.m_KeyInContract = {repo_id, hash}};
+void LoadRepoData(const ContractID& cid, Repo::Id repo_id, const GitOid& obj_id) {
+    DataKey key{.m_KeyInContract = {repo_id, obj_id}};
     key.m_Prefix.m_Cid = cid;
     uint32_t value_len = 0, key_len = 0;
     Env::VarReader reader(key, key);
@@ -1730,6 +1708,51 @@ void OnActionGetRepoData(const ContractID& cid) {
     } else {
         Env::DocAddBlob("object_data", nullptr, 0);
     }
+}
+
+void OnActionGetRepoMeta(const ContractID& cid) {
+    auto [start, end, key] = PrepareGetObject(cid);
+
+    GitObject::Meta value;
+    Env::DocArray objects_array("objects");
+    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+        Env::DocGroup obj("");
+        Env::DocAddBlob_T("object_hash", value.hash);
+        Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+        Env::DocAddNum("object_size", value.data_size);
+        Env::DocAddBlob_T("object_data", value.hash);
+    }
+}
+
+void OnActionGetRepoData2(const ContractID& cid) {
+    Repo::Id repo_id;
+    GitOid hash;
+    _POD_(hash).SetZero();
+    Env::DocGet("repo_id", repo_id);
+    
+    DataKey key{.m_KeyInContract = {repo_id, hash}};
+    key.m_Prefix.m_Cid = cid;
+    DataKey end = key;
+    _POD_(end.m_KeyInContract.hash).SetObject(0xff);
+    uint32_t value_len = 0, key_len = 0;
+    Env::DocArray objects_array("objects");
+    for (Env::VarReader reader(key, end);
+         reader.MoveNext(&key, key_len, nullptr, value_len, 0);) {
+        auto buf = std::make_unique<uint8_t[]>(value_len);
+        reader.MoveNext(&key, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<GitObject::Data*>(buf.get());
+        Env::DocGroup obj("");
+        Env::DocAddBlob_T("object_hash", key.m_KeyInContract.hash);
+        Env::DocAddBlob("object_data", value->data, value_len);
+    } 
+}
+
+void OnActionGetRepoData(const ContractID& cid) {
+    Repo::Id repo_id;
+    GitOid hash;
+    Env::DocGet("repo_id", repo_id);
+    Env::DocGetBlob("obj_id", &hash, sizeof(hash));
+    LoadRepoData(cid, repo_id, hash);
 }
 
 void AddCommit(const mygit2::git_commit& commit, const sourc3::GitOid& hash) {
@@ -2374,6 +2397,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"project_id_by_name", OnActionProjectByName},
         {"organization_id_by_name", OnActionOrganizationByName},
         {"repo_get_data", OnActionGetRepoData},
+        {"repo_get_data2", OnActionGetRepoData2},
         {"repo_get_state", OnActionGetState},
         {"repo_get_meta", OnActionGetRepoMeta},
         {"repo_get_commit", OnActionGetCommit},

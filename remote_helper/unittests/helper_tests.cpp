@@ -60,7 +60,7 @@ void GenerateTestRepo(std::string_view root) {
 }
 }  // namespace
 
-BOOST_AUTO_TEST_CASE(TestObjectCollector) {
+BOOST_AUTO_TEST_CASE(TestObjectCollector) { // NOLINT
     std::string_view root = "./temp/testrepo";
     git::Init init;
     GenerateTestRepo(root);
@@ -68,20 +68,20 @@ BOOST_AUTO_TEST_CASE(TestObjectCollector) {
 
     collector.Traverse({{"refs/heads/master", "refs/heads/master"}}, {});
 
-    BOOST_TEST_CHECK(collector.m_objects.size() == 27);
+    BOOST_TEST_CHECK(collector.m_objects.size() == 27); // NOLINT
 
     collector.Serialize([&](const auto& buf, size_t done) {
         size_t size = sizeof(sourc3::ObjectsInfo);
         const auto* p = reinterpret_cast<const sourc3::ObjectsInfo*>(buf.data());
-        BOOST_TEST_CHECK(p->objects_number == uint32_t(27));
-        BOOST_TEST_CHECK(done == p->objects_number);
+        BOOST_TEST_CHECK(p->objects_number == uint32_t(27)); // NOLINT
+        BOOST_TEST_CHECK(done == p->objects_number); // NOLINT
         const auto* o = reinterpret_cast<const sourc3::GitObject*>(p + 1);
         for (uint32_t i = 0; i < p->objects_number; ++i) {
             size += sizeof(sourc3::GitObject) + o->data_size;
             o = reinterpret_cast<const sourc3::GitObject*>(reinterpret_cast<const uint8_t*>(o + 1) +
                                                            o->data_size);
         }
-        BOOST_TEST_CHECK(size == buf.size());
+        BOOST_TEST_CHECK(size == buf.size());// NOLINT
         return false;
     });
 }
