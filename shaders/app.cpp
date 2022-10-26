@@ -55,6 +55,7 @@ static const ShaderID s_SID = {  // NOLINT
     0xae, 0xbd, 0xd4, 0x9a, 0x59, 0x16, 0xc2, 0xcc, 0xaf, 0x3d};
 }  // namespace v2
 */
+
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -1930,9 +1931,7 @@ void OnActionGetTrees(const ContractID& cid) {
 }
 
 void OnActionMigrateContractState(const ContractID& cid) {
-    UserKey user_key(cid);
-    SigRequest sig;
-    user_key.FillSigRequest(sig);
+    MyKeyID kid;
     sourc3::method::MigrateContractState args;
     Amount charge = 1000000;
     CompensateFee(cid, charge);
@@ -1942,20 +1941,18 @@ void OnActionMigrateContractState(const ContractID& cid) {
                         /*nArgs=*/sizeof(args),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
-                        /*pSig=*/&sig,
+                        /*pSig=*/&kid,
                         /*nSig=*/1,
                         /*szComment=*/"migrate contract state",
                         /*nCharge=*/charge);
 }
 
 void OnActionMigrateOrganizations(const ContractID& cid) {
-    UserKey user_key(cid);
-    SigRequest sig;
-    user_key.FillSigRequest(sig);
+    MyKeyID kid;
     sourc3::method::MigrateOrganizations args;
     Env::DocGetNum64("from", &args.from);
     Env::DocGetNum64("to", &args.to);
-    Amount charge = 1000000;
+    Amount charge = 10000000;
     CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/sourc3::method::MigrateOrganizations::kMethod,
@@ -1963,20 +1960,18 @@ void OnActionMigrateOrganizations(const ContractID& cid) {
                         /*nArgs=*/sizeof(args),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
-                        /*pSig=*/&sig,
+                        /*pSig=*/&kid,
                         /*nSig=*/1,
                         /*szComment=*/"migrate organizations",
                         /*nCharge=*/charge);
 }
 
 void OnActionMigrateProjects(const ContractID& cid) {
-    UserKey user_key(cid);
-    SigRequest sig;
-    user_key.FillSigRequest(sig);
+    MyKeyID kid;
     sourc3::method::MigrateProjects args;
     Env::DocGetNum64("from", &args.from);
     Env::DocGetNum64("to", &args.to);
-    Amount charge = 1000000;
+    Amount charge = 10000000;
     CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/sourc3::method::MigrateProjects::kMethod,
@@ -1984,20 +1979,18 @@ void OnActionMigrateProjects(const ContractID& cid) {
                         /*nArgs=*/sizeof(args),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
-                        /*pSig=*/&sig,
+                        /*pSig=*/&kid,
                         /*nSig=*/1,
                         /*szComment=*/"migrate projects",
                         /*nCharge=*/charge);
 }
 
 void OnActionMigrateRepos(const ContractID& cid) {
-    UserKey user_key(cid);
-    SigRequest sig;
-    user_key.FillSigRequest(sig);
+    MyKeyID kid;
     sourc3::method::MigrateRepos args;
     Env::DocGetNum64("from", &args.from);
     Env::DocGetNum64("to", &args.to);
-    Amount charge = 1000000;
+    Amount charge = 10000000;
     CompensateFee(cid, charge);
     Env::GenerateKernel(/*pCid=*/&cid,
                         /*iMethod=*/sourc3::method::MigrateRepos::kMethod,
@@ -2005,7 +1998,7 @@ void OnActionMigrateRepos(const ContractID& cid) {
                         /*nArgs=*/sizeof(args),
                         /*pFunds=*/nullptr,
                         /*nFunds=*/0,
-                        /*pSig=*/&sig,
+                        /*pSig=*/&kid,
                         /*nSig=*/1,
                         /*szComment=*/"migrate repos",
                         /*nCharge=*/charge);

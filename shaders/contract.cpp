@@ -536,12 +536,14 @@ BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
 }
 
 BEAM_EXPORT void Method_26(const method::MigrateContractState& params) { // NOLINT
+#pragma pack(push, 1)
     struct OldContractState {
         uint64_t last_repo_id;
         uint64_t last_organizatino_id;
         uint64_t last_project_id;
         Amount faucet_balance;
     } cs_old;
+#pragma pack(pop)
     Env::LoadVar_T(0, cs_old);
     ContractState cs;
     cs.faucet_balance = cs_old.faucet_balance;
@@ -556,17 +558,19 @@ BEAM_EXPORT void Method_26(const method::MigrateContractState& params) { // NOLI
 }
 
 BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLINT
+#pragma pack(push, 1)
     struct OldOrganization {
         PubKey creator;
         size_t name_len;
         char name[256];
     } old_org;
-
-    std::unique_ptr<Organization> org(
-        static_cast<Organization*>(::operator new(sizeof(Organization) + old_org.name_len + 1)));
+#pragma pack(pop)
 
     for (Organization::Id org_id = params.from; org_id < params.to; ++org_id) {
         Env::LoadVar_T(Organization::Key{org_id}, old_org);
+        std::unique_ptr<Organization> org(
+            static_cast<Organization*>(::operator new(sizeof(Organization) + old_org.name_len + 1)));
+
         org->creator = old_org.creator;
         org->data.name_len = old_org.name_len + 1;
         Env::Memcpy(org->data.data, old_org.name, old_org.name_len);
@@ -576,6 +580,9 @@ BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLI
             }
         }
         org->data.data[old_org.name_len] = '\0';
+        Env::SaveVar_T(
+            IdByName<Organization>::Key{{GetNameHash(org->data.data, org->data.name_len)}},
+            org_id);
         Env::SaveVar_T(Member<Organization>::Key{org->creator, org_id}, Member<Organization>{Organization::Permissions::kAll});
         SaveVLObject(Organization::Key{org_id}, org, sizeof(Organization) + org->data.name_len);
     }
@@ -585,18 +592,20 @@ BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLI
 }
 
 BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
+#pragma pack(push, 1)
     struct OldProject {
         Organization::Id organization_id;
         PubKey creator;
         size_t name_len;
         char name[256];
     } old_proj;
-
-    std::unique_ptr<Project> proj(
-        static_cast<Project*>(::operator new(sizeof(Project) + old_proj.name_len + 1)));
+#pragma pack(pop)
 
     for (Project::Id proj_id = params.from; proj_id < params.to; ++proj_id) {
         Env::LoadVar_T(Project::Key{proj_id}, old_proj);
+        std::unique_ptr<Project> proj(
+            static_cast<Project*>(::operator new(sizeof(Project) + old_proj.name_len + 1)));
+
         proj->organization_id = old_proj.organization_id;
         proj->creator = old_proj.creator;
         proj->data.name_len = old_proj.name_len + 1;
@@ -607,6 +616,13 @@ BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
             }
         }
         proj->data.data[old_proj.name_len] = '\0';
+
+        std::unique_ptr<Organization> organization =
+            LoadVLObject<Organization>(proj->organization_id);
+        Env::SaveVar_T(IdByName<Project>::Key{
+            {{GetNameHash(organization->data.data, organization->data.name_len)},
+             GetNameHash(proj->data.data, proj->data.name_len)}},
+        proj_id);
         Env::SaveVar_T(Member<Project>::Key{proj->creator, proj_id}, Member<Project>{Project::Permissions::kAll});
         SaveVLObject(Project::Key{proj_id}, proj, sizeof(Project) + proj->data.name_len);
     }
@@ -616,6 +632,7 @@ BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
 }
 
 BEAM_EXPORT void Method_29(const method::MigrateRepos& params) { // NOLINT
+#pragma pack(push, 1)
     struct OldRepo {
         Project::Id project_id;
         Hash256 name_hash;
@@ -625,23 +642,31 @@ BEAM_EXPORT void Method_29(const method::MigrateRepos& params) { // NOLINT
         size_t name_len;
         char name[256];
     } old_repo;
-
-    std::unique_ptr<Repo> repo(
-        static_cast<Repo*>(::operator new(sizeof(Repo) + old_repo.name_len)));
+#pragma pack(pop)
 
     for (Repo::Id repo_id = params.from; repo_id < params.to; ++repo_id) {
         Env::LoadVar_T(Repo::Key{repo_id}, old_repo);
-        repo->project_id = old_repo.project_id;
+        std::unique_ptr<Repo> repo(
+            static_cast<Repo*>(::operator new(sizeof(Repo) + old_repo.name_len + 1)));
+repo->project_id = old_repo.project_id;
         repo->cur_objs_number = old_repo.cur_objs_number;
         repo->owner = old_repo.owner;
         repo->is_private = 0;
-        repo->name_len = old_repo.name_len;
+        repo->name_len = old_repo.name_len + 1;
         Env::Memcpy(repo->name, old_repo.name, old_repo.name_len);
+        repo->name[repo->name_len] = '\0';
         for (int i = 0; i < old_repo.name_len; ++i) {
             if (repo->name[i] == ' ') {
                 repo->name[i] = '_';
             }
         }
+        std::unique_ptr<Project> project = LoadVLObject<Project>(repo->project_id);
+        std::unique_ptr<Organization> organization =
+            LoadVLObject<Organization>(project->organization_id);
+        Env::SaveVar_T(
+            IdByName<Repo>::Key{
+                {{{GetNameHash(organization->data.data, organization->data.name_len)}, GetNameHash(project->data.data, project->data.name_len)}, GetNameHash(repo->name, repo->name_len)}},
+            repo_id);
         Env::SaveVar_T(Member<Repo>::Key{repo->owner, repo_id}, Member<Repo>{Repo::Permissions::kAll});
         SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
     }
