@@ -429,8 +429,8 @@ void UploadObjects(ObjectCollector& collector, uint32_t& new_objects, uint32_t& 
         MakeProgress("Uploading objects to IPFS", collector.m_objects.size(), reporter_type);
     size_t i = 0;
     std::unordered_set<git_oid, OidHasher> used_oids;
-    for (const auto&[oid, _] : oid_to_ipfs) {
-        used_oids.insert(oid);
+    for (const auto& oid_hash : oid_to_ipfs) {
+        used_oids.insert(oid_hash.first);
     }
     std::deque<ObjectInfo> upload_objects(collector.m_objects.begin(), collector.m_objects.end());
     while (!upload_objects.empty()) {
