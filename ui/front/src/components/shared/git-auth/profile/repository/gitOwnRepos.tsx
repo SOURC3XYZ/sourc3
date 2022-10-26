@@ -88,7 +88,7 @@ function GitOwnRepos({ data }:GitOwnReposType) {
                       <span>
                         <a
                           target="_blank"
-                          href={`https://gitgub.com/${rep.parent}`}
+                          href={`https://github.com/${rep.parent}`}
                           rel="noreferrer"
                         >
                           {rep.parent}
