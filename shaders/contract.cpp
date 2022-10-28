@@ -157,7 +157,7 @@ void OnUpgraded(uint32_t n_prev_version) {
 }
 
 uint32_t get_CurrentVersion() {  // NOLINT
-    return 0;
+    return 6;
 }
 }  // namespace Upgradable3
 
@@ -535,159 +535,30 @@ BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
     Env::AddSig(params.id);
 }
 
-BEAM_EXPORT void Method_26(  // NOLINT
-    const method::MigrateContractState& params) {
-#pragma pack(push, 1)
-    struct OldContractState {
-        uint64_t last_repo_id;
-        uint64_t last_organizatino_id;
-        uint64_t last_project_id;
-        Amount faucet_balance;
-    } cs_old;
-#pragma pack(pop)
-    Env::LoadVar_T(0, cs_old);
-    ContractState cs;
-    cs.faucet_balance = cs_old.faucet_balance;
-    cs.organizations_num = cs_old.last_organizatino_id - 1;
-    cs.projects_num = cs_old.last_project_id - 1;
-    cs.repos_num = cs_old.last_repo_id - 1;
-    Env::SaveVar_T(0, cs);
-
-    Upgradable3::Settings stgs;
-    stgs.Load();
-    stgs.TestAdminSigs(1);
-}
-
-BEAM_EXPORT void Method_27(  // NOLINT
-    const method::MigrateOrganizations& params) {
-#pragma pack(push, 1)
-    struct OldOrganization {
-        PubKey creator;
-        size_t name_len;
-        char name[256];
-    } old_org;
-#pragma pack(pop)
-
-    for (Organization::Id org_id = params.from; org_id < params.to; ++org_id) {
-        Env::LoadVar_T(Organization::Key{org_id}, old_org);
-        std::unique_ptr<Organization> org(static_cast<Organization*>(
-            ::operator new(sizeof(Organization) + old_org.name_len + 1)));
-
-        org->creator = old_org.creator;
-        org->data.name_len = old_org.name_len + 1;
-        Env::Memcpy(org->data.data, old_org.name, old_org.name_len);
-        for (int i = 0; i < old_org.name_len; ++i) {
-            if (org->data.data[i] == ' ') {
-                org->data.data[i] = '_';
-            }
-        }
-        org->data.data[old_org.name_len] = '\0';
-        auto name_hash = GetNameHash(org->data.data, org->data.name_len);
-        auto key = IdByName<Organization>::Key{{name_hash}};
-        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) !=
-            0u) {
-            // temporary workaround: if in old organization equal names existed
-            // then just increase the last character
-            // Note: it is must be guaranteed that this action will not lead to
-            // an unprinted character
-            org->data.data[org->data.name_len - 2]++;
-            name_hash = GetNameHash(org->data.data, org->data.name_len);
-            key.name_id.org_name_hash = name_hash;
-        }
-        Env::Halt_if(Env::SaveVar_T(key, org_id));
-        Env::SaveVar_T(Member<Organization>::Key{org->creator, org_id},
-                       Member<Organization>{Organization::Permissions::kAll});
-        SaveVLObject(Organization::Key{org_id}, org,
-                     sizeof(Organization) + org->data.name_len);
-    }
-    Upgradable3::Settings stgs;
-    stgs.Load();
-    stgs.TestAdminSigs(1);
-}
-
-BEAM_EXPORT void Method_28(const method::MigrateProjects& params) {  // NOLINT
-#pragma pack(push, 1)
-    struct OldProject {
-        Organization::Id organization_id;
-        PubKey creator;
-        size_t name_len;
-        char name[256];
-    } old_proj;
-#pragma pack(pop)
-
-    for (Project::Id proj_id = params.from; proj_id < params.to; ++proj_id) {
-        Env::LoadVar_T(Project::Key{proj_id}, old_proj);
-        std::unique_ptr<Project> proj(static_cast<Project*>(
-            ::operator new(sizeof(Project) + old_proj.name_len + 1)));
-
-        proj->organization_id = old_proj.organization_id;
-        proj->creator = old_proj.creator;
-        proj->data.name_len = old_proj.name_len + 1;
-        Env::Memcpy(proj->data.data, old_proj.name, old_proj.name_len);
-        for (int i = 0; i < old_proj.name_len; ++i) {
-            if (proj->data.data[i] == ' ') {
-                proj->data.data[i] = '_';
-            }
-        }
-        proj->data.data[old_proj.name_len] = '\0';
-
-        std::unique_ptr<Organization> organization =
-            LoadVLObject<Organization>(proj->organization_id);
-
-        auto name_hash = GetNameHash(proj->data.data, proj->data.name_len);
-        auto org_name_hash =
-            GetNameHash(organization->data.data, organization->data.name_len);
-        auto key = IdByName<Project>::Key{{{org_name_hash}, name_hash}};
-        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) !=
-            0u) {
-            // temporary workaround: if in old organization equal names existed
-            // then just increase the last character
-            // Note: it is must be guaranteed that this action will not lead to
-            // an unprinted character
-            proj->data.data[proj->data.name_len - 2]++;
-            name_hash = GetNameHash(proj->data.data, proj->data.name_len);
-            key.name_id.proj_name_hash = name_hash;
-        }
-        Env::Halt_if(Env::SaveVar_T(key, proj_id));
-        Env::SaveVar_T(Member<Project>::Key{proj->creator, proj_id},
-                       Member<Project>{Project::Permissions::kAll});
-        SaveVLObject(Project::Key{proj_id}, proj,
-                     sizeof(Project) + proj->data.name_len);
-    }
-    Upgradable3::Settings stgs;
-    stgs.Load();
-    stgs.TestAdminSigs(1);
-}
-
-BEAM_EXPORT void Method_29(const method::MigrateRepos& params) {  // NOLINT
+BEAM_EXPORT void Method_26(const method::MigrateRepos& params) {  // NOLINT
 #pragma pack(push, 1)
     struct OldRepo {
         Project::Id project_id;
-        Hash256 name_hash;
-        Repo::Id repo_id;
         size_t cur_objs_number;
         PubKey owner;
+        uint32_t is_private;
         size_t name_len;
-        char name[256];
+        char name[101];
     } old_repo;
 #pragma pack(pop)
 
     for (Repo::Id repo_id = params.from; repo_id < params.to; ++repo_id) {
         Env::LoadVar_T(Repo::Key{repo_id}, old_repo);
         std::unique_ptr<Repo> repo(static_cast<Repo*>(
-            ::operator new(sizeof(Repo) + old_repo.name_len + 1)));
+            ::operator new(sizeof(Repo) + old_repo.name_len)));
         repo->project_id = old_repo.project_id;
         repo->cur_objs_number = old_repo.cur_objs_number;
         repo->owner = old_repo.owner;
-        repo->is_private = 0;
-        repo->name_len = old_repo.name_len + 1;
+        repo->is_private = old_repo.is_private;
+        repo->name_len = old_repo.name_len;
         Env::Memcpy(repo->name, old_repo.name, old_repo.name_len);
-        repo->name[repo->name_len] = '\0';
-        for (int i = 0; i < old_repo.name_len; ++i) {
-            if (repo->name[i] == ' ') {
-                repo->name[i] = '_';
-            }
-        }
+        repo->name[repo->name_len - 1] = '\0';
+
         std::unique_ptr<Project> project =
             LoadVLObject<Project>(repo->project_id);
         std::unique_ptr<Organization> organization =
@@ -700,19 +571,7 @@ BEAM_EXPORT void Method_29(const method::MigrateRepos& params) {  // NOLINT
             GetNameHash(project->data.data, project->data.name_len);
         auto key =
             IdByName<Repo>::Key{{{{org_name_hash}, proj_name_hash}, name_hash}};
-        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) !=
-            0u) {
-            // temporary workaround: if in old organization equal names existed
-            // then just increase the last character
-            // Note: it is must be guaranteed that this action will not lead to
-            // an unprinted character
-            repo->name[repo->name_len - 2]++;
-            name_hash = GetNameHash(repo->name, repo->name_len);
-            key.name_id.repo_name_hash = name_hash;
-        }
-        Env::Halt_if(Env::SaveVar_T(key, repo_id));
-        Env::SaveVar_T(Member<Repo>::Key{repo->owner, repo_id},
-                       Member<Repo>{Repo::Permissions::kAll});
+        Env::SaveVar_T(key, repo_id);
         SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
     }
 

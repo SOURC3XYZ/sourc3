@@ -117,19 +117,29 @@ function ProfileGit() {
           </div>
           <div className={styles.topContent}>
 
-            {!taskStatus ? (
+            {!taskStatus && !gitProfiles?.github_repos.length ? (
               <div className={styles.preloader}>
                 <EarlyDescription gitProfiles={gitProfiles} />
-                <Preload messageBlack message="This may take a while..." />
+                <Preload messageBlack message="Updating..." />
               </div>
             )
-              : gitProfiles?.github_repos.length > 0
+              : !taskStatus && gitProfiles?.github_repos.length
                 ? (
-                  <GitSummary
-                    profile={gitProfiles}
-                  />
+                  <div className={styles.preloader}>
+                    <GitSummary
+                      profile={gitProfiles}
+                    />
+                    <Preload messageBlack message="Updating..." />
+                  </div>
+
                 )
-                : (<EarlyDescription gitProfiles={gitProfiles} />)}
+                : gitProfiles?.github_repos.length
+                  ? (
+                    <GitSummary
+                      profile={gitProfiles}
+                    />
+                  )
+                  : (<EarlyDescription gitProfiles={gitProfiles} />)}
             <Mane
               first={(
                 <AchievementList
