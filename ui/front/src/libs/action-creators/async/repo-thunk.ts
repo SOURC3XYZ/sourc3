@@ -5,7 +5,6 @@ import { CustomAction } from '@libs/redux';
 import {
   BeamApiContext,
   MetaHash,
-  RepoId,
   RepoMeta,
   RepoMetaResp,
   RepoRefsResp,
@@ -16,6 +15,7 @@ import { AC } from '../action-creators';
 import batcher from '../batcher';
 import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
+import { RepoReqType } from '../request-schemas-types';
 
 const CASH_PREFIX = [CONFIG.NETWORK, CONFIG.CID].join('-');
 
@@ -23,7 +23,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   const [,,getOutput] = contractCall(callApi);
 
   const getRepo = (
-    id: RepoId,
+    params: RepoReqType,
     errHandler: (err: Error) => void,
     resolve?: () => void
   ):CustomAction => async (dispatch) => {
@@ -35,26 +35,26 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
         AC.setCommits(null),
         AC.setTreeData(null)
       ]);
-      const cache = await caches.open([CASH_PREFIX, id].join('-'));
+      const cache = await caches.open([CASH_PREFIX, ...Object.values(params)].join('-'));
       const { pathname } = window.location;
       const metas = new Map<MetaHash, RepoMeta>();
-      const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(id), dispatch);
+      const metaArray = await getOutput<RepoMetaResp>(RC.repoGetMeta(params), dispatch);
       if (metaArray) metaArray.objects.forEach((el) => metas.set(el.object_hash, el));
 
       dispatch(AC.setRepoMeta(metas));
-      const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(id), dispatch);
+      const branches = await getOutput<RepoRefsResp>(RC.repoGetRefs(params), dispatch);
       if (branches && !stopPending) {
         if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
         if (resolve) resolve();
 
-        const commitsArray = await getOutput<RepoMetaResp>(RC.getCommitList(id), dispatch);
+        const commitsArray = await getOutput<RepoMetaResp>(RC.getCommitList(params), dispatch);
         if (commitsArray) {
           const commitMap = await new CommitListParser({
-            id, metas, pathname, expect: 'commit', cache, callApi, commits: commitsArray.objects
+            params, metas, pathname, expect: 'commit', cache, callApi, commits: commitsArray.objects
           }).getCommitMap();
 
           const commitTree = await new CommitMapParser({
-            id,
+            params,
             metas,
             pathname,
             expect: 'commit',
@@ -67,7 +67,7 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
           batcher(dispatch, [
             AC.setCommits(commitMap),
             AC.setRepoMeta(metas),
-            AC.setRepoId(id),
+            AC.setRepoId(params.repo_name),
             AC.setRepoMap(commitTree)
           ]);
         }
@@ -78,14 +78,14 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   };
 
   const getTree = ({
-    id, oid, key, resolve
+    params, oid, key, resolve
   }: UpdateProps, errHandler: (err: Error) => void):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CASH_PREFIX, id].join('-'));
+      const cache = await caches.open([CASH_PREFIX, ...Object.values(params)].join('-'));
       const { pathname } = window.location;
       const { repo: { tree, repoMetas: metas } } = getState();
       const parserProps = {
-        id, metas, callApi, key, pathname, cache
+        params, metas, callApi, key, pathname, cache
       };
       const updated = await new TreeListParser(
         { ...parserProps, expect: 'tree' }
@@ -96,17 +96,17 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
   };
 
   const getTextData = (
-    repoId: RepoId,
+    params: RepoReqType,
     oid: TreeElementOid,
     errHandler: (err: Error) => void,
     resolve?: () => void
   ):CustomAction => async (dispatch, getState) => {
     try {
-      const cache = await caches.open([CASH_PREFIX, repoId].join('-'));
+      const cache = await caches.open([CASH_PREFIX, ...Object.values(params)].join('-'));
       const { pathname } = window.location;
       const { repo: { repoMetas: metas } } = getState();
       const parserProps = {
-        id: repoId, metas, callApi, pathname, cache
+        params, metas, callApi, pathname, cache
       };
       const output = await new TreeBlobParser(
         { ...parserProps, expect: 'blob' }

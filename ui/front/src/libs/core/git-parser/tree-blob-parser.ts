@@ -12,7 +12,7 @@ export default class TreeBlobParser extends AbstractParser {
   };
 
   private readonly getDataFromBC = async (oid: string) => {
-    const output = await this.call<ObjectDataResp>(RC.getData(this.id, oid));
+    const output = await this.call<ObjectDataResp>(RC.getData({ ...this.params, obj_id: oid }));
     if (output.error) throw new Error(output.error);
     const str = hexParser(output.object_data);
     return str;

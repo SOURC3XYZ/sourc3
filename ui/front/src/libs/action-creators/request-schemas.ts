@@ -1,7 +1,8 @@
 import { CONFIG } from '@libs/constants';
 import {
-  CommitHash, IProfile, PropertiesType, RepoId, TreeElementOid, TreeOid
+  IProfile, PropertiesType
 } from '@types';
+import { RepoObjIdType, RepoReqType } from './request-schemas-types';
 
 export const RC = {
 
@@ -103,61 +104,61 @@ export const RC = {
     }
   } as const),
 
-  repoGetMeta: (repo_id:number) => ({
+  repoGetMeta: (data : RepoReqType) => ({
     callID: 'repo_get_meta',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'repo_get_meta',
-        repo_id
+        ...data
       },
       create_tx: false
     }
   } as const),
 
-  repoGetRefs: (repo_id:number) => ({
+  repoGetRefs: (
+    data : RepoReqType
+  ) => ({
     callID: 'repo_get_refs',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'list_refs',
-        repo_id
+        ...data
       },
       create_tx: false
     }
   } as const),
 
-  repoGetCommit: (repo_id: RepoId, obj_id: CommitHash) => ({
+  repoGetCommit: (data:RepoObjIdType) => ({
     callID: 'repo_get_commit',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'repo_get_commit',
-        obj_id,
-        repo_id
+        ...data
       },
       create_tx: false
     }
   } as const),
 
-  repoGetTree: (repo_id: RepoId, obj_id: TreeOid) => ({
+  repoGetTree: (data:RepoObjIdType) => ({
     callID: 'repo_get_tree',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'repo_get_tree',
-        obj_id,
-        repo_id
+        ...data
       },
       create_tx: false
     }
   } as const),
 
-  deleteRepos: (repo_id:RepoId) => ({
+  deleteRepos: (repo_id:string) => ({
     callID: 'delete_repo',
     method: 'invoke_contract',
     params: {
@@ -170,28 +171,27 @@ export const RC = {
     }
   } as const),
 
-  getData: (repo_id:RepoId, obj_id: TreeElementOid) => ({
+  getData: (data:RepoObjIdType) => ({
     callID: 'repo_get_data',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'repo_get_data',
-        repo_id,
-        obj_id
+        ...data
       },
       create_tx: false
     }
   } as const),
 
-  getCommitList: (repo_id:RepoId) => ({
+  getCommitList: (data : RepoReqType) => ({
     callID: 'repo_get_data',
     method: 'invoke_contract',
     params: {
       args: {
         role: 'user',
         action: 'list_commits',
-        repo_id
+        ...data
       },
       create_tx: false
     }

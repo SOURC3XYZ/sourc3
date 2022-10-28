@@ -38,7 +38,7 @@ export default class CommitMapParser extends AbstractParser {
     }
     const res = this.isIpfsHash(oid)
       ? await this.getIpfsData<RepoCommitResp>(oid)
-      : await this.call<RepoCommitResp>(RC.repoGetCommit(this.id, oid));
+      : await this.call<RepoCommitResp>(RC.repoGetCommit({ ...this.params, obj_id: oid }));
     const commit = new Blob([JSON.stringify(res.commit)], { type: 'application/json' });
     const init = { status: 200, statusText: 'OK!' };
     const response = new Response(commit, init);
@@ -74,14 +74,14 @@ export default class CommitMapParser extends AbstractParser {
     const commitResp = this.isIpfsHash(branch.commit_hash)
       ? await this.getIpfsData(branch.commit_hash) as RepoCommitResp
       : await this.call<RepoCommitResp>(
-        RC.repoGetCommit(this.id, branch.commit_hash)
+        RC.repoGetCommit({ ...this.params, obj_id: branch.commit_hash })
       );
     const commitList = await this.buildCommitList([commitResp.commit]);
     return commitList;
   };
 
   private readonly buildRepoMap = async () => {
-    const branches = await this.call<RepoRefsResp>(RC.repoGetRefs(this.id));
+    const branches = await this.call<RepoRefsResp>(RC.repoGetRefs(this.params));
     const branchMap = new Map<BranchName, BranchCommit[]>();
     const promises = branches.refs.map(this.getCommit);
     const commits = await Promise.all(promises);

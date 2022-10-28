@@ -30,17 +30,23 @@ export const useRepoItem = (item: RepoType) => {
 
   const [meta, setMeta] = useObjectState<Meta>(initial);
 
-  const { repo_name, repo_id, repo_owner } = item;
+  const {
+    repo_name, repo_owner, organization_name, project_name
+  } = item;
 
-  const repoLink = useMemo(() => `sourc3://${repo_owner}/${repo_name}`, [repo_id]);
-
+  const repoLink = useMemo(
+    () => `sourc3://${repo_owner}/${repo_name}`,
+    [organization_name, project_name]
+  );
   const getLastMasterCommit = useCallback(async () => {
     if (initial.loading) return undefined;
-    const refsResp = await callApi<RepoRefsResp>(RC.repoGetRefs(repo_id));
+    const refsResp = await callApi<RepoRefsResp>(
+      RC.repoGetRefs({ repo_name, project_name, organization_name })
+    );
     try {
       if (refsResp) {
         const { refs } = refsResp;
-        if (!refs.length) throw new Error(`No branches in repo №${repo_id}`);
+        if (!refs.length) throw new Error(`No branches in ${repo_name}`);
         let master = refs.find((ref) => ref.name.match(/(master|main)/));
 
         if (!master) {
@@ -48,15 +54,19 @@ export const useRepoItem = (item: RepoType) => {
           master = first;
         }
         const commitData = await callApi<ObjectDataResp>(
-          RC.getData(item.repo_id, master.commit_hash)
+          RC.getData({
+            repo_name, organization_name, project_name, obj_id: master.commit_hash
+          })
         );
         if (commitData) {
           const ipfsHash = hexParser(commitData.object_data);
           const ipfsData = await callIpfs(ipfsHash);
           if (ipfsData) {
+            console.log(repo_name, ipfsHash);
             const getCommitFromIpfs = await callApi<RepoCommitResp>(
               RC.getCommitFromData(master.commit_hash, ipfsData)
             );
+            console.log(repo_name, ipfsData);
             if (getCommitFromIpfs) {
               return setMeta({
                 commit: getCommitFromIpfs.commit,

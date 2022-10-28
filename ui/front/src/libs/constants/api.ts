@@ -2,7 +2,7 @@
 export enum CONFIG {
   HOST = 'http://localhost:5001',
   NETWORK = 'dappnet',
-  CID = 'aac69608d10e7ae3f5e59a3568f49e78dc527f0ad12d89c32668c60d3021d985',
+  CID = '17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3',
   // dc40c032245ea025ea288598feaa07dad9ac36db2997bfc3404fa56d9c408ebf
   // 1cf687aa590904eb75f567ed504760ab7eeffee31ec5d5bbac7465a1d982798c - new_fileds_v2
   // 9d6ae1118597570ce50b79580737777329730abca6cf91aa0b8bd7d2764485e5 - new_fields

@@ -1,5 +1,5 @@
 import {
-  ArgumentTypes, MemberList, Project, RepoType
+  ArgumentTypes, MemberList, RepoType
 } from '@types';
 import {
   Menu, Dropdown, List, message
@@ -20,7 +20,6 @@ import { SyncOutlined } from '@ant-design/icons';
 import { useCallApi } from '@libs/hooks/shared';
 import { RC } from '@libs/action-creators';
 import { useEntitiesAction } from '@libs/hooks/thunk';
-import { useSelector } from '@libs/redux';
 import styles from './list-item.module.scss';
 import PendingIndicator from './pending-indicator';
 import { useRepoItem } from './useRepoItem';
@@ -52,7 +51,7 @@ function RepoItem({
   item, path, searchText, deleteRepo
 }:ListItemProps) {
   const {
-    repo_id, repo_name, project_name
+    repo_id, repo_name, project_name, organization_name
   } = item;
 
   const {
@@ -60,10 +59,6 @@ function RepoItem({
     meta,
     repoLink
   } = useRepoItem(item);
-
-  const project = useSelector(
-    (state) => state.entities.projects.find((el) => el.project_name === project_name)
-  ) as Project;
 
   const [visible, setVisible] = useState(false);
 
@@ -75,17 +70,17 @@ function RepoItem({
 
   const { commit, masterBranch, loading } = meta;
 
-  const getPermissionForRepo = useCallback(async () => {
-    const repoMembers = await callApi<MemberList>(
-      RC.listRepoMembers(repo_name, project_name, project.organization_name)
-    );
-    if (repoMembers) {
-      const yourPkey = repoMembers.members.find((el) => pkey === el.member);
-      if (yourPkey) {
-        setPermisstion(yourPkey.permissions.toString(2).split('').map((el) => !!+el));
-      }
-    }
-  }, [item]);
+  // const getPermissionForRepo = useCallback(async () => {
+  //   const repoMembers = await callApi<MemberList>(
+  //     RC.listRepoMembers(repo_name, project_name, organization_name)
+  //   );
+  //   if (repoMembers) {
+  //     const yourPkey = repoMembers.members.find((el) => pkey === el.member);
+  //     if (yourPkey) {
+  //       setPermisstion(yourPkey.permissions.toString(2).split('').map((el) => !!+el));
+  //     }
+  //   }
+  // }, [repo_name]);
 
   const handleCloneRepo = () => navigator.clipboard.writeText(repoLink);
 
@@ -115,7 +110,7 @@ function RepoItem({
   };
 
   useEffect(() => {
-    getPermissionForRepo();
+    // getPermissionForRepo();
   }, [item]);
 
   const menuRender = (
@@ -152,7 +147,7 @@ function RepoItem({
 
   const handleAddRepoMember = useCallback((obj: ArgumentTypes<typeof addRepoMember>[0]) => {
     addRepoMember({
-      ...obj, repo_name, project_name, organization_name: project.organization_name
+      ...obj, repo_name, project_name, organization_name
     });
   }, []);
 

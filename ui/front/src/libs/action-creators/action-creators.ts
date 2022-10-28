@@ -10,7 +10,6 @@ import {
   CommitHash,
   Commit,
   BranchName,
-  RepoId,
   Seed2ValidationType,
   LocalRepoBranch,
   LocalRepoName,
@@ -137,7 +136,7 @@ export const AC = {
     payload
   } as const),
 
-  setRepoId: (payload: RepoId | null) => ({
+  setRepoId: (payload: string | null) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
   } as const),

@@ -35,7 +35,7 @@ export default class TreeListParser extends AbstractParser {
   };
 
   private readonly getTreeFromBC = async (oid: string) => {
-    const data = await this.call<DataResp>(RC.getData(this.id, oid));
+    const data = await this.call<DataResp>(RC.getData({ ...this.params, obj_id: oid }));
     const tree = await this.call<RepoTreeResp>(
       RC.getTreeFromData(oid, data.object_data)
     );

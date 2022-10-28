@@ -70,7 +70,7 @@ export default class CommitListParser extends AbstractParser {
     } else {
       const res = this.isIpfsHash(hash)
         ? await this.getIpfsData<RepoCommitResp>(hash)
-        : await this.call<RepoCommitResp>(RC.repoGetCommit(this.id, hash));
+        : await this.call<RepoCommitResp>(RC.repoGetCommit({ ...this.params, obj_id: hash }));
       const commit = new Blob([JSON.stringify(res.commit)], { type: 'application/json' });
       const init = { status: 200, statusText: 'OK!' };
       const response = new Response(commit, init);

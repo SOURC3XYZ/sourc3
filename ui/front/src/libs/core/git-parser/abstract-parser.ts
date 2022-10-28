@@ -1,6 +1,6 @@
-import { RC, RequestSchema } from '@libs/action-creators';
+import { RC, RepoReqType, RequestSchema } from '@libs/action-creators';
 import {
-  RepoId, MetaHash, RepoMeta, DataResp, IpfsResult, CallBeamApi
+  MetaHash, RepoMeta, DataResp, IpfsResult, CallBeamApi
 } from '@types';
 import { arrayBufferToString, buf2hex, hexParser } from '@libs/utils';
 
@@ -13,20 +13,20 @@ type IpfsRequestCreators = {
 };
 
 export type ParserProps = {
-  id:RepoId,
+  params:RepoReqType,
   metas: Map<MetaHash, RepoMeta>,
-  callApi: CallBeamApi,
+  callApi: CallBeamApi<RequestSchema['params']>,
   expect: IpfsRequestType,
   pathname: string;
   cache: Cache;
 };
 
 export default abstract class AbstractParser {
-  protected readonly id: RepoId;
+  protected readonly params: RepoReqType;
 
   protected readonly metas: Map<MetaHash, RepoMeta>;
 
-  protected readonly callApi: CallBeamApi;
+  protected readonly callApi: CallBeamApi<RequestSchema['params']>;
 
   private readonly expect: IpfsRequestType;
 
@@ -41,9 +41,9 @@ export default abstract class AbstractParser {
   };
 
   constructor({
-    id, metas, callApi, expect, pathname, cache
+    params, metas, callApi, expect, pathname, cache
   }:ParserProps) {
-    this.id = id;
+    this.params = params;
     this.metas = metas;
     this.callApi = callApi;
     this.expect = expect;
@@ -72,7 +72,7 @@ export default abstract class AbstractParser {
 
   protected readonly getIpfsData = async <T>(gitHash: string) => {
     const { object_data } = await this.call<DataResp>(
-      RC.getData(this.id, gitHash)
+      RC.getData({ ...this.params, obj_id: gitHash })
     );
     const ipfsHash = hexParser(object_data);
     return this.getIpfsHash<T>(ipfsHash, gitHash);

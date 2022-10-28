@@ -1,3 +1,4 @@
+import { RepoReqType } from '@libs/action-creators';
 import { DataNode } from './antd';
 
 export interface ContractResp {
@@ -5,7 +6,6 @@ export interface ContractResp {
 }
 
 export type RepoName = string;
-export type RepoId = number;
 export type BranchName = string;
 export type CommitHash = string;
 export type MetaHash = string;
@@ -27,6 +27,7 @@ export type RepoType = {
   repo_name: RepoName;
   repo_owner: string;
   project_name: string;
+  organization_name: string;
   cur_objects: number;
   private: 0 | 1;
 };
@@ -162,7 +163,7 @@ export interface IDataNodeCustom extends DataNode {
 }
 
 export type UpdateProps = {
-  id: RepoId,
+  params: RepoReqType,
   oid: TreeOid,
   index?:number,
   key?: React.Key,
