@@ -1575,7 +1575,7 @@ void OnActionListRefs(const ContractID& cid) {
     Key start, end;
     Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
 
-    start.m_KeyInContract.repo_id = repo_id;
+    start.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
     _POD_(start.m_Prefix.m_Cid) = cid;
     _POD_(start.m_KeyInContract.name_hash).SetZero();
     _POD_(end) = start;
@@ -1933,6 +1933,80 @@ void OnActionGetCommits(const ContractID& cid) {
 
 void OnActionGetTrees(const ContractID& cid) {
     GetObjects(cid, sourc3::GitObject::Meta::kGitObjectTree);
+}
+
+void OnActionMigrateContractState(const ContractID& cid) {
+    MyKeyID kid;
+    sourc3::method::MigrateContractState args;
+    Amount charge = 1000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/sourc3::method::MigrateContractState::kMethod,
+                        /*pArgs=*/&args,
+                        /*nArgs=*/sizeof(args),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&kid,
+                        /*nSig=*/1,
+                        /*szComment=*/"migrate contract state",
+                        /*nCharge=*/charge);
+}
+
+void OnActionMigrateOrganizations(const ContractID& cid) {
+    MyKeyID kid;
+    sourc3::method::MigrateOrganizations args;
+    Env::DocGetNum64("from", &args.from);
+    Env::DocGetNum64("to", &args.to);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/sourc3::method::MigrateOrganizations::kMethod,
+                        /*pArgs=*/&args,
+                        /*nArgs=*/sizeof(args),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&kid,
+                        /*nSig=*/1,
+                        /*szComment=*/"migrate organizations",
+                        /*nCharge=*/charge);
+}
+
+void OnActionMigrateProjects(const ContractID& cid) {
+    MyKeyID kid;
+    sourc3::method::MigrateProjects args;
+    Env::DocGetNum64("from", &args.from);
+    Env::DocGetNum64("to", &args.to);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/sourc3::method::MigrateProjects::kMethod,
+                        /*pArgs=*/&args,
+                        /*nArgs=*/sizeof(args),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&kid,
+                        /*nSig=*/1,
+                        /*szComment=*/"migrate projects",
+                        /*nCharge=*/charge);
+}
+
+void OnActionMigrateRepos(const ContractID& cid) {
+    MyKeyID kid;
+    sourc3::method::MigrateRepos args;
+    Env::DocGetNum64("from", &args.from);
+    Env::DocGetNum64("to", &args.to);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/sourc3::method::MigrateRepos::kMethod,
+                        /*pArgs=*/&args,
+                        /*nArgs=*/sizeof(args),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&kid,
+                        /*nSig=*/1,
+                        /*szComment=*/"migrate repos",
+                        /*nCharge=*/charge);
 }
 }  // namespace
 
@@ -2379,6 +2453,10 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"destroy_contract", OnActionDestroyContract},
         {"view_contracts", OnActionViewContracts},
         {"view_contract_params", OnActionViewContractParams},
+        {"migrate_contract_state", OnActionMigrateContractState},
+        {"migrate_organizations", OnActionMigrateOrganizations},
+        {"migrate_projects", OnActionMigrateProjects},
+        {"migrate_repos", OnActionMigrateRepos},
     };
 
     /* Add your new role's actions here */
