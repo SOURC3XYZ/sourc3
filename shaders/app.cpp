@@ -261,9 +261,13 @@ void PrintRepo(const sourc3::Repo::Key& key, const sourc3::Repo& repo,
     using sourc3::Project;
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<sourc3::Project::Key>;
+    using OrganizationKey = Env::Key_T<sourc3::Organization::Key>;
 
     constexpr auto kMaxProjectArgsSize =
         sizeof(Project) + ProjectData::GetMaxSize();
+
+    constexpr auto kMaxOrganizationArgsSize =
+        sizeof(sourc3::Organization) + sourc3::OrganizationData::GetMaxSize();
 
     Env::DocAddText("repo_name", repo.name);
     Env::DocAddNum("repo_id", Utils::FromBE(key.id));
@@ -283,6 +287,21 @@ void PrintRepo(const sourc3::Repo::Key& key, const sourc3::Repo& repo,
                              proj_value_len, 0)) {
         auto& data = project_buf->data;
         Env::DocAddText("project_name", data.name_len != 0u ? data.data : "");
+    }
+
+    OrganizationKey org_key{.m_Prefix = {.m_Cid = cid},
+                            .m_KeyInContract = sourc3::Organization::Key{
+                                project_buf->organization_id}};
+    uint32_t org_value_len = kMaxOrganizationArgsSize,
+             org_key_len = sizeof(OrganizationKey);
+    auto org_buf = std::unique_ptr<sourc3::Organization>(
+        static_cast<sourc3::Organization*>(
+            ::operator new(kMaxOrganizationArgsSize)));
+    if (Env::VarReader org_reader(org_key, org_key); org_reader.MoveNext(
+            &org_key, org_key_len, org_buf.get(), org_value_len, 0)) {
+        auto& data = org_buf->data;
+        Env::DocAddText("organization_name",
+                        data.name_len != 0u ? data.data : "");
     }
 }
 
