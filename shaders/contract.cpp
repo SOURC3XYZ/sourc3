@@ -580,9 +580,17 @@ BEAM_EXPORT void Method_27(const method::MigrateOrganizations& params) { // NOLI
             }
         }
         org->data.data[old_org.name_len] = '\0';
-        Env::SaveVar_T(
-            IdByName<Organization>::Key{{GetNameHash(org->data.data, org->data.name_len)}},
-            org_id);
+        auto name_hash = GetNameHash(org->data.data, org->data.name_len);
+        auto key = IdByName<Organization>::Key{{name_hash}};
+        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) != 0u) {
+            // temporary workaround: if in old organization equal names existed
+            // then just increase the last character
+            // Note: it is must be guaranteed that this action will not lead to
+            // an unprinted character
+            org->data.data[org->data.name_len - 2]++;
+            name_hash = GetNameHash(org->data.data, org->data.name_len);
+        }
+        Env::Halt_if(Env::SaveVar_T(key, org_id));
         Env::SaveVar_T(Member<Organization>::Key{org->creator, org_id}, Member<Organization>{Organization::Permissions::kAll});
         SaveVLObject(Organization::Key{org_id}, org, sizeof(Organization) + org->data.name_len);
     }
@@ -619,10 +627,19 @@ BEAM_EXPORT void Method_28(const method::MigrateProjects& params) { // NOLINT
 
         std::unique_ptr<Organization> organization =
             LoadVLObject<Organization>(proj->organization_id);
-        Env::SaveVar_T(IdByName<Project>::Key{
-            {{GetNameHash(organization->data.data, organization->data.name_len)},
-             GetNameHash(proj->data.data, proj->data.name_len)}},
-        proj_id);
+
+        auto name_hash = GetNameHash(proj->data.data, proj->data.name_len);
+        auto org_name_hash = GetNameHash(organization->data.data, organization->data.name_len);
+        auto key = IdByName<Project>::Key{{{org_name_hash}, name_hash}};
+        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) != 0u) {
+            // temporary workaround: if in old organization equal names existed
+            // then just increase the last character
+            // Note: it is must be guaranteed that this action will not lead to
+            // an unprinted character
+            proj->data.data[proj->data.name_len - 2]++;
+            name_hash = GetNameHash(proj->data.data, proj->data.name_len);
+        }
+        Env::Halt_if(Env::SaveVar_T(key, proj_id));
         Env::SaveVar_T(Member<Project>::Key{proj->creator, proj_id}, Member<Project>{Project::Permissions::kAll});
         SaveVLObject(Project::Key{proj_id}, proj, sizeof(Project) + proj->data.name_len);
     }
@@ -663,10 +680,20 @@ repo->project_id = old_repo.project_id;
         std::unique_ptr<Project> project = LoadVLObject<Project>(repo->project_id);
         std::unique_ptr<Organization> organization =
             LoadVLObject<Organization>(project->organization_id);
-        Env::SaveVar_T(
-            IdByName<Repo>::Key{
-                {{{GetNameHash(organization->data.data, organization->data.name_len)}, GetNameHash(project->data.data, project->data.name_len)}, GetNameHash(repo->name, repo->name_len)}},
-            repo_id);
+
+        auto name_hash = GetNameHash(repo->name, repo->name_len);
+        auto org_name_hash = GetNameHash(organization->data.data, organization->data.name_len);
+        auto proj_name_hash = GetNameHash(project->data.data, project->data.name_len);
+        auto key = IdByName<Repo>::Key{{{{org_name_hash}, proj_name_hash}, name_hash}};
+        if (Env::LoadVar(&key, sizeof(key), nullptr, 0, KeyTag::Internal) != 0u) {
+            // temporary workaround: if in old organization equal names existed
+            // then just increase the last character
+            // Note: it is must be guaranteed that this action will not lead to
+            // an unprinted character
+            repo->name[repo->name_len - 2]++;
+            name_hash = GetNameHash(repo->name, repo->name_len);
+        }
+        Env::Halt_if(Env::SaveVar_T(key, repo_id));
         Env::SaveVar_T(Member<Repo>::Key{repo->owner, repo_id}, Member<Repo>{Repo::Permissions::kAll});
         SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
     }
