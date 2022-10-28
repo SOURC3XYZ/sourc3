@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--fix-errors")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++17 -flto -fno-rtti -Wno-inline-new-delete -fno-exceptions -nostartfiles ") #-nostdlib ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-entry,--allow-undefined,--export=Ctor,--export=Dtor,--export=Method_0,--export=Method_1,--export=Method_2,--export=Method_3,--export=Method_4,--export=Method_5,--export=Method_6,--export=Method_7,--export=Method_8,--export=Method_9,--export=Method_10,--export=Method_11,--export=Method_12,--export=Method_13,--export=Method_14,--export=Method_15,--export=Method_16,--export=Method_17,--export=Method_18,--export=Method_19,--export=Method_20,--export=Method_21,--export=Method_22,--export=Method_23,--export=Method_24,--export=Method_25,--export=Method_26,--export=Method_27,--export=Method_28,--export=Method_29") #,--strip-all")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--no-entry,--allow-undefined,--export=Ctor,--export=Dtor,--export=Method_0,--export=Method_1,--export=Method_2,--export=Method_3,--export=Method_4,--export=Method_5,--export=Method_6,--export=Method_7,--export=Method_8,--export=Method_9,--export=Method_10,--export=Method_11,--export=Method_12,--export=Method_13,--export=Method_14,--export=Method_15,--export=Method_16,--export=Method_17,--export=Method_18,--export=Method_19,--export=Method_20,--export=Method_21,--export=Method_22,--export=Method_23,--export=Method_24,--export=Method_25,--export=Method_26") #,--strip-all")
 add_executable(contract contract.cpp)
 add_executable(app app.cpp)
 target_link_libraries(contract PRIVATE Beam::shader-lib)

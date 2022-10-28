@@ -67,6 +67,13 @@ static const ShaderID s_SID = {  // NOLINT
     0x9d, 0x50, 0x48, 0x1b, 0x47, 0x64, 0x36, 0x24, 0x8f, 0xb0, 0x29,
     0xa8, 0xed, 0x6c, 0xfb, 0xf0, 0x31, 0x40, 0xfe, 0x14, 0x37};
 }  // namespace v4
+namespace v5 {
+// SID: d83a999755d4b6ab24505ef1e3af0d7b6779b2bde91cd6ee7debdb74c0a652cb
+static const ShaderID s_SID = {  // NOLINT
+    0xd8, 0x3a, 0x99, 0x97, 0x55, 0xd4, 0xb6, 0xab, 0x24, 0x50, 0x5e,
+    0xf1, 0xe3, 0xaf, 0x0d, 0x7b, 0x67, 0x79, 0xb2, 0xbd, 0xe9, 0x1c,
+    0xd6, 0xee, 0x7d, 0xeb, 0xdb, 0x74, 0xc0, 0xa6, 0x52, 0xcb};
+}  // namespace v5
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -98,9 +105,9 @@ struct MyKeyID : public Env::KeyID {
 };
 
 // Add new SID here after changing contract.cpp
-const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID,
-                         sourc3::v2::s_SID, sourc3::v3::s_SID,
-                         sourc3::v4::s_SID, sourc3::s_SID};
+const ShaderID kSid[] = {
+    sourc3::v0::s_SID, sourc3::v1::s_SID, sourc3::v2::s_SID, sourc3::v3::s_SID,
+    sourc3::v4::s_SID, sourc3::v5::s_SID, sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
@@ -1961,63 +1968,6 @@ void OnActionGetTrees(const ContractID& cid) {
     GetObjects(cid, sourc3::GitObject::Meta::kGitObjectTree);
 }
 
-void OnActionMigrateContractState(const ContractID& cid) {
-    MyKeyID kid;
-    sourc3::method::MigrateContractState args;
-    Amount charge = 1000000;
-    CompensateFee(cid, charge);
-    Env::GenerateKernel(
-        /*pCid=*/&cid,
-        /*iMethod=*/sourc3::method::MigrateContractState::kMethod,
-        /*pArgs=*/&args,
-        /*nArgs=*/sizeof(args),
-        /*pFunds=*/nullptr,
-        /*nFunds=*/0,
-        /*pSig=*/&kid,
-        /*nSig=*/1,
-        /*szComment=*/"migrate contract state",
-        /*nCharge=*/charge);
-}
-
-void OnActionMigrateOrganizations(const ContractID& cid) {
-    MyKeyID kid;
-    sourc3::method::MigrateOrganizations args;
-    Env::DocGetNum64("from", &args.from);
-    Env::DocGetNum64("to", &args.to);
-    Amount charge = 10000000;
-    CompensateFee(cid, charge);
-    Env::GenerateKernel(
-        /*pCid=*/&cid,
-        /*iMethod=*/sourc3::method::MigrateOrganizations::kMethod,
-        /*pArgs=*/&args,
-        /*nArgs=*/sizeof(args),
-        /*pFunds=*/nullptr,
-        /*nFunds=*/0,
-        /*pSig=*/&kid,
-        /*nSig=*/1,
-        /*szComment=*/"migrate organizations",
-        /*nCharge=*/charge);
-}
-
-void OnActionMigrateProjects(const ContractID& cid) {
-    MyKeyID kid;
-    sourc3::method::MigrateProjects args;
-    Env::DocGetNum64("from", &args.from);
-    Env::DocGetNum64("to", &args.to);
-    Amount charge = 10000000;
-    CompensateFee(cid, charge);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/sourc3::method::MigrateProjects::kMethod,
-                        /*pArgs=*/&args,
-                        /*nArgs=*/sizeof(args),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&kid,
-                        /*nSig=*/1,
-                        /*szComment=*/"migrate projects",
-                        /*nCharge=*/charge);
-}
-
 void OnActionMigrateRepos(const ContractID& cid) {
     MyKeyID kid;
     sourc3::method::MigrateRepos args;
@@ -2481,9 +2431,6 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"destroy_contract", OnActionDestroyContract},
         {"view_contracts", OnActionViewContracts},
         {"view_contract_params", OnActionViewContractParams},
-        {"migrate_contract_state", OnActionMigrateContractState},
-        {"migrate_organizations", OnActionMigrateOrganizations},
-        {"migrate_projects", OnActionMigrateProjects},
         {"migrate_repos", OnActionMigrateRepos},
     };
 
