@@ -254,7 +254,8 @@ struct GitObject {
             Tag tag = kObjects;
             Repo::Id repo_id;
             Id obj_id;
-            Key(Repo::Id rid, const Id& oid) : repo_id(Utils::FromBE(rid)), obj_id(oid) {
+            Key(Repo::Id rid, const Id& oid)
+                : repo_id(Utils::FromBE(rid)), obj_id(oid) {
             }
         };
         enum Type : int8_t {
@@ -274,7 +275,8 @@ struct GitObject {
             Tag tag = kObjects;
             Repo::Id repo_id;
             GitOid hash;
-            Key(Repo::Id rid, const GitOid& oid) : repo_id(Utils::FromBE(rid)), hash(oid) {
+            Key(Repo::Id rid, const GitOid& oid)
+                : repo_id(Utils::FromBE(rid)), hash(oid) {
             }
         };
 
@@ -299,7 +301,8 @@ struct GitRef {
         Tag tag = kRefs;
         Repo::Id repo_id;
         Hash256 name_hash;
-        Key(Repo::Id rid, const Hash256& nh) : repo_id(Utils::FromBE(rid)), name_hash(nh) {
+        Key(Repo::Id rid, const Hash256& nh)
+            : repo_id(Utils::FromBE(rid)), name_hash(nh) {
         }
 
         Key(Repo::Id rid, const char* name, size_t len)

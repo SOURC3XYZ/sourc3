@@ -55,11 +55,18 @@ static const ShaderID s_SID = {  // NOLINT
 }  // namespace v2
 namespace v3 {
 // SID: e78e5c252d4616cac2d027b9fcf62d0166eaa35eb52baad20a90ee815a2fe227
-static const ShaderID s_SID = { // NOLINT
+static const ShaderID s_SID = {  // NOLINT
     0xe7, 0x8e, 0x5c, 0x25, 0x2d, 0x46, 0x16, 0xca, 0xc2, 0xd0, 0x27,
     0xb9, 0xfc, 0xf6, 0x2d, 0x01, 0x66, 0xea, 0xa3, 0x5e, 0xb5, 0x2b,
     0xaa, 0xd2, 0x0a, 0x90, 0xee, 0x81, 0x5a, 0x2f, 0xe2, 0x27};
-}   // namespace v3
+}  // namespace v3
+namespace v4 {
+// SID: 14c84c437ae6e6639abb059d50481b476436248fb029a8ed6cfbf03140fe1437
+static const ShaderID s_SID = {  // NOLINT
+    0x14, 0xc8, 0x4c, 0x43, 0x7a, 0xe6, 0xe6, 0x63, 0x9a, 0xbb, 0x05,
+    0x9d, 0x50, 0x48, 0x1b, 0x47, 0x64, 0x36, 0x24, 0x8f, 0xb0, 0x29,
+    0xa8, 0xed, 0x6c, 0xfb, 0xf0, 0x31, 0x40, 0xfe, 0x14, 0x37};
+}  // namespace v4
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -92,7 +99,8 @@ struct MyKeyID : public Env::KeyID {
 
 // Add new SID here after changing contract.cpp
 const ShaderID kSid[] = {sourc3::v0::s_SID, sourc3::v1::s_SID,
-                         sourc3::v2::s_SID, sourc3::v3::s_SID, sourc3::s_SID};
+                         sourc3::v2::s_SID, sourc3::v3::s_SID,
+                         sourc3::v4::s_SID, sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
@@ -248,8 +256,8 @@ void PrintProject(std::unique_ptr<sourc3::Project>& value,
     Env::DocAddText("organization_name", org_name);
 }
 
-void PrintRepo(const sourc3::Repo::Key& key,
-               const sourc3::Repo& repo, const ContractID& cid) {
+void PrintRepo(const sourc3::Repo::Key& key, const sourc3::Repo& repo,
+               const ContractID& cid) {
     using sourc3::Project;
     using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<sourc3::Project::Key>;
@@ -264,9 +272,8 @@ void PrintRepo(const sourc3::Repo::Key& key,
     Env::DocAddBlob_T("repo_owner", repo.owner);
     Env::DocAddNum32("private", repo.is_private);
 
-    ProjectKey project_key{
-        .m_Prefix = {.m_Cid = cid},
-        .m_KeyInContract = Project::Key{repo.project_id}};
+    ProjectKey project_key{.m_Prefix = {.m_Cid = cid},
+                           .m_KeyInContract = Project::Key{repo.project_id}};
     uint32_t proj_value_len = kMaxProjectArgsSize,
              proj_key_len = sizeof(ProjectKey);
     auto project_buf = std::unique_ptr<Project>(
@@ -673,10 +680,10 @@ void OnActionCreateProject(const ContractID& cid) {
 }
 
 void OnActionListProjects(const ContractID& cid) {
-    using sourc3::Project;
-    using sourc3::ProjectData;
     using sourc3::Organization;
     using sourc3::OrganizationData;
+    using sourc3::Project;
+    using sourc3::ProjectData;
     using ProjectKey = Env::Key_T<Project::Key>;
     using OrganizationKey = Env::Key_T<Organization::Key>;
 
@@ -1940,16 +1947,17 @@ void OnActionMigrateContractState(const ContractID& cid) {
     sourc3::method::MigrateContractState args;
     Amount charge = 1000000;
     CompensateFee(cid, charge);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/sourc3::method::MigrateContractState::kMethod,
-                        /*pArgs=*/&args,
-                        /*nArgs=*/sizeof(args),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&kid,
-                        /*nSig=*/1,
-                        /*szComment=*/"migrate contract state",
-                        /*nCharge=*/charge);
+    Env::GenerateKernel(
+        /*pCid=*/&cid,
+        /*iMethod=*/sourc3::method::MigrateContractState::kMethod,
+        /*pArgs=*/&args,
+        /*nArgs=*/sizeof(args),
+        /*pFunds=*/nullptr,
+        /*nFunds=*/0,
+        /*pSig=*/&kid,
+        /*nSig=*/1,
+        /*szComment=*/"migrate contract state",
+        /*nCharge=*/charge);
 }
 
 void OnActionMigrateOrganizations(const ContractID& cid) {
@@ -1959,16 +1967,17 @@ void OnActionMigrateOrganizations(const ContractID& cid) {
     Env::DocGetNum64("to", &args.to);
     Amount charge = 10000000;
     CompensateFee(cid, charge);
-    Env::GenerateKernel(/*pCid=*/&cid,
-                        /*iMethod=*/sourc3::method::MigrateOrganizations::kMethod,
-                        /*pArgs=*/&args,
-                        /*nArgs=*/sizeof(args),
-                        /*pFunds=*/nullptr,
-                        /*nFunds=*/0,
-                        /*pSig=*/&kid,
-                        /*nSig=*/1,
-                        /*szComment=*/"migrate organizations",
-                        /*nCharge=*/charge);
+    Env::GenerateKernel(
+        /*pCid=*/&cid,
+        /*iMethod=*/sourc3::method::MigrateOrganizations::kMethod,
+        /*pArgs=*/&args,
+        /*nArgs=*/sizeof(args),
+        /*pFunds=*/nullptr,
+        /*nFunds=*/0,
+        /*pSig=*/&kid,
+        /*nSig=*/1,
+        /*szComment=*/"migrate organizations",
+        /*nCharge=*/charge);
 }
 
 void OnActionMigrateProjects(const ContractID& cid) {
