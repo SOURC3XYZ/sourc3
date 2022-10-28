@@ -266,7 +266,7 @@ void PrintRepo(const sourc3::Repo::Key& key, const sourc3::Repo& repo,
         sizeof(Project) + ProjectData::GetMaxSize();
 
     Env::DocAddText("repo_name", repo.name);
-    Env::DocAddNum("repo_id", key.id);
+    Env::DocAddNum("repo_id", Utils::FromBE(key.id));
     // Env::DocAddNum("project_id", value->project_id);
     Env::DocAddNum64("cur_objects", repo.cur_objs_number);
     Env::DocAddBlob_T("repo_owner", repo.owner);
