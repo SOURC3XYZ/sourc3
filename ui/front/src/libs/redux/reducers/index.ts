@@ -4,7 +4,7 @@ import repo from './repo.reducer';
 import entities from './entities.reducer';
 import wallet from './wallet.reducer';
 import profile from './profiles.reducer';
-import sc3Frofile from './sc3Frofile';
+import sc3Frofile from './sc3Profile.reducer';
 
 export default combineReducers({
   app, repo, entities, wallet, profile, sc3Frofile

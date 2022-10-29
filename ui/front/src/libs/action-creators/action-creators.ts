@@ -19,6 +19,7 @@ import {
   Project,
   User, IProfile
 } from '@types';
+import { RepoReqType } from './request-schemas-types';
 
 export const AC = {
   setLocalRepoMap: (
@@ -136,7 +137,7 @@ export const AC = {
     payload
   } as const),
 
-  setRepoId: (payload: string | null) => ({
+  setRepoId: (payload: RepoReqType | null) => ({
     type: ACTIONS.SET_REPO_ID,
     payload
   } as const),

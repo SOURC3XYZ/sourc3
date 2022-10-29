@@ -1,11 +1,11 @@
-import { ActionCreators } from '@libs/action-creators';
+import { ActionCreators, RepoReqType } from '@libs/action-creators';
 import { ACTIONS } from '@libs/constants';
 import {
   DataNode, BranchCommit, BranchName, MetaHash, RepoMeta, Branch
 } from '@types';
 
 interface IRepo {
-  name: string | null,
+  params: RepoReqType | null,
   branches: Branch[],
   commitsMap: Map<string, BranchCommit> | null,
   repoMetas: Map<MetaHash, RepoMeta>,
@@ -17,7 +17,7 @@ interface IRepo {
 }
 
 export const initialState:IRepo = {
-  name: null,
+  params: null,
   branches: [],
   repoMetas: new Map(),
   filesMap: new Map(),
@@ -45,7 +45,7 @@ const reducer = (
       return newState;
 
     case ACTIONS.SET_REPO_ID: {
-      newState.name = action.payload as IRepo['name'];
+      newState.params = { ...action.payload } as IRepo['params'];
       newState.filesMap = new Map();
       return newState;
     }

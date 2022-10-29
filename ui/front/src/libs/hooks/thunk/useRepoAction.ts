@@ -1,9 +1,9 @@
 import { useSourc3Api } from '@components/context';
-import { AC } from '@libs/action-creators';
+import { AC, RepoReqType } from '@libs/action-creators';
 import { getRepoThunk } from '@libs/action-creators/async';
 import { useDispatch } from '@libs/redux';
 import {
-  ArgumentTypes, ErrorHandler, RepoId, UpdateProps
+  ArgumentTypes, ErrorHandler, UpdateOmitProps
 } from '@types';
 import { batch } from 'react-redux';
 
@@ -12,12 +12,15 @@ const useRepoAction = () => {
   const api = useSourc3Api();
   const thunks = getRepoThunk(api);
 
-  const getRepo = (id:RepoId, errHandler: ErrorHandler) => (resolve: () => void) => {
-    dispatch(thunks.getRepo(id, errHandler, resolve));
+  const getRepo = (params:RepoReqType, errHandler: ErrorHandler) => (resolve: () => void) => {
+    dispatch(thunks.getRepo(params, errHandler, resolve));
   };
 
-  const updateTree = (id: RepoId, errHandler: ErrorHandler) => (props: Omit<UpdateProps, 'id'>) => {
-    dispatch(thunks.getTree({ ...props, id }, errHandler));
+  const updateTree = (
+    params: RepoReqType,
+    errHandler: ErrorHandler
+  ) => (props: UpdateOmitProps) => {
+    dispatch(thunks.getTree({ ...props, params }, errHandler));
   };
 
   const getFileData = (

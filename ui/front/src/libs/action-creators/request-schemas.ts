@@ -185,7 +185,7 @@ export const RC = {
   } as const),
 
   getCommitList: (data : RepoReqType) => ({
-    callID: 'repo_get_data',
+    callID: 'list_commits',
     method: 'invoke_contract',
     params: {
       args: {

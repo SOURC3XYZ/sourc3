@@ -1,13 +1,14 @@
 import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
+import { RepoReqType } from '@libs/action-creators';
 import { LoadingMessages } from '@libs/constants';
 import useRepoContent from '@libs/hooks/container/user-repos/useRepoContent';
 import {
   Branch,
   DataNode,
   ErrorHandler,
-  MetaHash, RepoId,
-  UpdateProps
+  MetaHash,
+  UpdateOmitProps
 } from '@types';
 import { Col, Row } from 'antd';
 import { useCallback, useMemo } from 'react';
@@ -18,21 +19,21 @@ import { FileTreeBlock } from './file-tree-block';
 import { UpperMenu } from './upper-menu';
 
 export type UpperMenuProps = {
-  id: RepoId;
+  params: RepoReqType;
   goTo: (path: string) => void;
   tree: DataNode[] | null;
   branches: Branch[];
   filesMap: Map<MetaHash, string>;
   prevReposHref: string | null;
   updateTree: (
-    props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void;
+    props: UpdateOmitProps, errorHandler: ErrorHandler) => void;
   killTree: () => void;
   getFileData: (
-    repoId: RepoId, oid: string, errorHandler: ErrorHandler) => void;
+    params:RepoReqType, oid: string, errorHandler: ErrorHandler) => void;
 };
 
 function RepoContent({
-  id,
+  params: reqParams,
   branches,
   tree,
   filesMap,
@@ -53,13 +54,13 @@ function RepoContent({
     baseUrl,
     goToCommitTree,
     goToBranch
-  } = useRepoContent(id, branches, tree, goTo, updateTree, killTree);
+  } = useRepoContent(reqParams, branches, tree, goTo, updateTree, killTree);
 
   const content = useMemo(() => (
     type === 'blob'
       ? (
         <FileText
-          id={id}
+          repoParams={reqParams}
           tree={tree}
           pathname={pathname}
           filesMap={filesMap}
@@ -70,7 +71,7 @@ function RepoContent({
       )
       : (
         <FileTreeBlock
-          id={id}
+          params={reqParams}
           pathname={pathname}
           tree={tree}
           updateTree={updateTree}

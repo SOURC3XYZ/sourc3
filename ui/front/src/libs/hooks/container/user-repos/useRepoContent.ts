@@ -1,4 +1,5 @@
 import { useErrorBoundary } from '@components/context';
+import { RepoReqType } from '@libs/action-creators';
 import { useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 
@@ -7,7 +8,7 @@ import {
   BranchCommit,
   DataNode,
   ErrorHandler,
-  UpdateProps
+  UpdateOmitProps
 } from '@types';
 import {
   useCallback, useEffect, useMemo, useState
@@ -21,11 +22,11 @@ type LocationState = {
 };
 
 const useRepoContent = (
-  id: number,
+  reqParams: RepoReqType,
   branches: Branch[],
   tree: DataNode[] | null,
   goTo: (path: string) => void,
-  updateTree: (props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void,
+  updateTree: (props: UpdateOmitProps, errorHandler: ErrorHandler) => void,
   killTree: () => void
 ) => {
   const commitsMap = useSelector((state) => state.repo.commitsMap);
@@ -50,7 +51,10 @@ const useRepoContent = (
     const findedBranch = branches.find((el) => el.name.match(regex)) || first;
 
     if (!findedBranch) return setError(new Error('no branch'));
-    const lastCommit = await getCommit(id, findedBranch.commit_hash, callApi, callIpfs);
+    const lastCommit = await getCommit({
+      ...reqParams,
+      obj_id: findedBranch.commit_hash
+    }, callApi, callIpfs);
     if (lastCommit) {
       setCommit(lastCommit);
       return updateTree({ oid: lastCommit.tree_oid }, setError);

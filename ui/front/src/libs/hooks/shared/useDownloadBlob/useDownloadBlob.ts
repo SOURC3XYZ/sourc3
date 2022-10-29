@@ -1,4 +1,4 @@
-import { RC } from '@libs/action-creators';
+import { RC, RepoObjIdType } from '@libs/action-creators';
 import { CONFIG } from '@libs/constants';
 import { hexParser } from '@libs/utils';
 import { NotificationPlacement, ObjectDataResp } from '@types';
@@ -8,13 +8,12 @@ import { notification } from 'antd';
 import { forceDownload } from './util';
 
 type UseDownloadBlob = {
-  gitHash: string;
   name: string;
-  id: number;
+  params: RepoObjIdType;
 };
 
 export const useDownloadBlob = ({
-  gitHash, name, id
+  name, params
 }:UseDownloadBlob) => {
   const [isOnDownload, setIsDownload] = useState(false);
 
@@ -23,7 +22,7 @@ export const useDownloadBlob = ({
   const downloadResource = useCallback(async () => {
     setIsDownload(true);
     try {
-      const commitData = await callApi<ObjectDataResp>(RC.getData(id, gitHash));
+      const commitData = await callApi<ObjectDataResp>(RC.getData(params));
       if (!commitData) throw new Error('commit data error');
 
       const ipfsHash = hexParser(commitData.object_data);

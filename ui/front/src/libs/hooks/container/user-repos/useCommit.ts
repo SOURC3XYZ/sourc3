@@ -1,10 +1,11 @@
 import { useErrorBoundary } from '@components/context';
+import { RepoReqType } from '@libs/action-creators';
 import { useCallApi } from '@libs/hooks/shared';
 import { useSelector } from '@libs/redux';
 import { clipString } from '@libs/utils';
 import {
   Branch,
-  BranchCommit, DataNode, ErrorHandler, UpdateProps
+  BranchCommit, DataNode, ErrorHandler, UpdateOmitProps
 } from '@types';
 import {
   useCallback, useEffect, useMemo, useState
@@ -18,11 +19,11 @@ type LocationState = {
 };
 
 export const useCommit = (
-  id: number,
+  repoParams: RepoReqType,
   branches: Branch[],
   tree: DataNode[] | null,
   goTo: (path: string) => void,
-  updateTree: (props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void,
+  updateTree: (props: UpdateOmitProps, errorHandler: ErrorHandler) => void,
   killTree: () => void
 ) => {
   const commitsMap = useSelector((state) => state.repo.commitsMap);
@@ -39,7 +40,7 @@ export const useCommit = (
 
   const fetchCommit = async () => {
     setCommit(null);
-    const lastCommit = await getCommit(id, hash, callApi, callIpfs);
+    const lastCommit = await getCommit({ ...repoParams, obj_id: hash }, callApi, callIpfs);
     if (lastCommit) {
       setCommit(lastCommit);
       return updateTree({ oid: lastCommit.tree_oid }, setError);

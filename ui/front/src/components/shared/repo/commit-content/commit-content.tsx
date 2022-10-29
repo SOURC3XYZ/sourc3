@@ -1,9 +1,10 @@
 import { PreloadComponent } from '@components/hoc';
 import { Preload } from '@components/shared/preload';
+import { RepoReqType } from '@libs/action-creators';
 import { LoadingMessages } from '@libs/constants';
 import { useCommit } from '@libs/hooks/container/user-repos';
 import {
-  RepoId, MetaHash, UpdateProps, ErrorHandler, Branch
+  MetaHash, UpdateProps, ErrorHandler, Branch
 } from '@types';
 import { Col, Row } from 'antd';
 import { DataNode } from 'antd/lib/tree';
@@ -16,21 +17,29 @@ import { RepoMeta } from '../repo-meta';
 import styles from '../repo.module.scss';
 
 export type UpperMenuProps = {
-  id: RepoId;
+  params: RepoReqType;
   goTo: (path: string) => void;
   tree: DataNode[] | null;
   branches: Branch[];
   filesMap: Map<MetaHash, string>;
   prevReposHref: string | null;
   updateTree: (
-    props: Omit<UpdateProps, 'id'>, errorHandler: ErrorHandler) => void;
+    props: Omit<UpdateProps, 'params'>, errorHandler: ErrorHandler) => void;
   killTree: () => void;
   getFileData: (
-    repoId: RepoId, oid: string, errorHandler: ErrorHandler) => void;
+    repoId: RepoReqType, oid: string, errorHandler: ErrorHandler) => void;
 };
 
 function CommitContent({
-  id, branches, tree, filesMap, prevReposHref, getFileData, goTo, updateTree, killTree
+  params: repoParams,
+  branches,
+  tree,
+  filesMap,
+  prevReposHref,
+  getFileData,
+  goTo,
+  updateTree,
+  killTree
 }:UpperMenuProps) {
   const {
     commit,
@@ -41,13 +50,13 @@ function CommitContent({
     baseUrl,
     commitsMap,
     goToCommitTree
-  } = useCommit(id, branches, tree, goTo, updateTree, killTree);
+  } = useCommit(repoParams, branches, tree, goTo, updateTree, killTree);
 
   const content = useMemo(() => (
     type === 'blob'
       ? (
         <FileText
-          id={id}
+          repoParams={repoParams}
           tree={tree}
           pathname={pathname}
           filesMap={filesMap}
@@ -58,7 +67,7 @@ function CommitContent({
       )
       : (
         <FileTreeBlock
-          id={id}
+          params={repoParams}
           pathname={pathname}
           tree={tree}
           pathArray={params}

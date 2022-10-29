@@ -1,34 +1,35 @@
 import { useErrorBoundary } from '@components/context';
+import { RepoReqType } from '@libs/action-creators';
 import { getTree } from '@libs/utils';
 import {
   UpdateProps,
   DataNode,
   ErrorHandler,
   MetaHash,
-  RepoId,
-  IDataNodeCustom
+  IDataNodeCustom,
+  UpdateOmitProps
 } from '@types';
 import { useEffect, useState } from 'react';
 
 export type FileTextProps = {
-  id: RepoId;
+  repoParams: RepoReqType;
   tree: DataNode[] | null;
   params: string[];
   pathname: string;
   filesMap: Map<MetaHash, string>,
-  getFileData: (repoId: RepoId, oid: string, errHandler: ErrorHandler) => void;
-  updateTree: (props: UpdateProps, errHandler: ErrorHandler) => void
+  getFileData: (repoParams: RepoReqType, oid: string, errHandler: ErrorHandler) => void;
+  updateTree: (props: UpdateOmitProps, errHandler: ErrorHandler) => void
 };
 
 export const useFileText = ({
-  id, tree, params, filesMap, getFileData, updateTree
+  repoParams, tree, params, filesMap, getFileData, updateTree
 }: FileTextProps) => {
   const setError = useErrorBoundary();
   const [ext, setExt] = useState('');
   const [text, setText] = useState<string | null>(null);
 
-  const updateTreeDecor = (props: Omit<UpdateProps, 'id'>) => {
-    updateTree({ ...props, id }, setError);
+  const updateTreeDecor = (props: Omit<UpdateProps, 'params'>) => {
+    updateTree({ ...props }, setError);
   };
 
   const fileChecker = () => {
@@ -44,7 +45,7 @@ export const useFileText = ({
         const memoized = filesMap.get(file.dataRef.oid);
         if (memoized) setText(memoized);
         else {
-          getFileData(id, file.dataRef.oid, setError);
+          getFileData(repoParams, file.dataRef.oid, setError);
         }
       } else throw new Error('no file');
     }

@@ -20,18 +20,18 @@ function UserRepos() {
   const { items } = useAllRepos();
 
   const {
-    id, isLoaded, repoName, commitsMap, loadingHandler, startLoading
+    params, isLoaded, commitsMap, loadingHandler, startLoading
   } = containerProps;
 
   const handleCloneRepo = useCallback(() => {
-    const item = items.find((el) => el.repo_id === id);
+    const item = items.find((el) => el.repo_name === params?.repo_name);
     if (item) {
       const { repo_owner } = item;
-      const repoLink = `sourc3://${repo_owner}/${repoName}`;
+      const repoLink = `sourc3://${repo_owner}/${params.repo_name}`;
       navigator.clipboard.writeText(repoLink);
       return message.info(`${repoLink} copied to clipboard!`);
-    } return message.error(`Cannot clone repo №${id}`);
-  }, [items, id]);
+    } return message.error(`Cannot clone repo №${params?.repo_name}`);
+  }, [items, params]);
 
   const navigate = useNavigate();
 
@@ -54,13 +54,13 @@ function UserRepos() {
   const wrapperClass = useMemo(() => (
     isElectron ? styles.wrapperElectron : styles.wrapper), [isElectron]);
 
-  const isLoadedReload = !!(commitsMap && isLoaded);
+  const isLoadedReload = !!(params && commitsMap && isLoaded);
 
   return (
     <div className={wrapperClass}>
       {isElectron ? <BackButton onClick={back} /> : null}
       <div className={styles.titleWrapper}>
-        <Title className={styles.title} level={3}>{repoName}</Title>
+        <Title className={styles.title} level={3}>{params.repo_name}</Title>
         <NavButton
           name="Clone"
           onClick={handleCloneRepo}

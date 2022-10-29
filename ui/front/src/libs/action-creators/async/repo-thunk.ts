@@ -67,14 +67,17 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
           batcher(dispatch, [
             AC.setCommits(commitMap),
             AC.setRepoMeta(metas),
-            AC.setRepoId(params.repo_name),
+            AC.setRepoId(params),
             AC.setRepoMap(commitTree)
           ]);
         }
       }
       if (stopPending) throw new Error('commit pending stopped');
       window.removeEventListener('stop-commit-pending', stopPendingHandler);
-    } catch (error) { errHandler(error as Error); }
+    } catch (error) {
+      console.error(error);
+      errHandler(error as Error);
+    }
   };
 
   const getTree = ({

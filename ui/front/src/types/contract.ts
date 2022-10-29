@@ -170,6 +170,8 @@ export type UpdateProps = {
   resolve?: () => void
 };
 
+export type UpdateOmitProps = Omit<UpdateProps, 'params'>;
+
 export type Project = {
   project_tag:number;
   project_name:string;

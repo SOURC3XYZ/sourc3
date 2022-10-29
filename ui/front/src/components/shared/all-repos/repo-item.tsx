@@ -99,7 +99,7 @@ function RepoItem({
     if (key !== 'null') message.info(key);
   };
 
-  const link = `${path}repo/${repo_id}&${repo_name}/branch/tree/${
+  const link = `${path}repo/${organization_name}&${project_name}&${repo_name}/branch/tree/${
     masterBranch ? clipString(masterBranch.name) : ''
   }`;
 

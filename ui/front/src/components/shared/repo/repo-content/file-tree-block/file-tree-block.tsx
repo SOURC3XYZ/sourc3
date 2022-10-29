@@ -1,7 +1,7 @@
 import { Preload } from '@components/shared';
 import { getTree } from '@libs/utils';
 import {
-  DataNode, ErrorHandler, IDataNodeCustom, RepoId, UpdateProps
+  DataNode, ErrorHandler, IDataNodeCustom, UpdateProps
 } from '@types';
 import { List } from 'antd';
 import { useCallback, useMemo } from 'react';
@@ -13,10 +13,11 @@ import { PreloadComponent } from '@components/hoc';
 import { LoadingMessages } from '@libs/constants';
 import { CloudDownloadOutlined, FileZipOutlined, SyncOutlined } from '@ant-design/icons';
 import { useErrorBoundary } from '@components/context';
+import { RepoReqType } from '@libs/action-creators';
 import styles from './file-tree-block.module.scss';
 
 type FileTreeBlockProps = {
-  id: RepoId;
+  params: RepoReqType
   tree: DataNode[] | null;
   pathname:string;
   pathArray: string[];
@@ -25,18 +26,18 @@ type FileTreeBlockProps = {
 };
 
 type LeafCreatorProps = {
-  id: number,
+  params: RepoReqType,
   url: string;
   node: IDataNodeCustom;
 };
 
-function LeafCreator({ id, url, node }:LeafCreatorProps) {
+function LeafCreator({ params, url, node }:LeafCreatorProps) {
   // const date = `${dateCreator(time * 1000)}`;
 
   const { dataRef } = node;
 
   const [isOnDownload, downloadResource] = useDownloadBlob(
-    { id, name: dataRef.filename, gitHash: dataRef.oid }
+    { params: { ...params, obj_id: dataRef.oid }, name: dataRef.filename }
   );
 
   const downloadButton = useMemo(
@@ -108,13 +109,13 @@ function LeafCreator({ id, url, node }:LeafCreatorProps) {
 }
 
 function FileTreeBlock({
-  id, tree, pathname, pathArray, updateTree
+  params, tree, pathname, pathArray, updateTree
 }:FileTreeBlockProps) {
   const setError = useErrorBoundary();
 
   const updateTreeDecor = (
     props: Omit<UpdateProps, 'id'>
-  ) => updateTree({ ...props, id }, setError);
+  ) => updateTree({ ...props }, setError);
 
   const TreeListPreloadFallback = useCallback(() => (
     <Preload
@@ -139,7 +140,9 @@ function FileTreeBlock({
         bordered
         size="small"
         dataSource={treeList || undefined}
-        renderItem={(item) => <LeafCreator id={id} url={pathname} node={item as IDataNodeCustom} />}
+        renderItem={
+          (item) => <LeafCreator params={params} url={pathname} node={item as IDataNodeCustom} />
+        }
       />
     </PreloadComponent>
   );

@@ -12,7 +12,7 @@ type LocationState = {
 
 const useUserRepos = () => {
   const {
-    id: currentId, branches, commitsMap, filesMap, tree, prevReposHref, repoMetas
+    params, branches, commitsMap, filesMap, tree, prevReposHref, repoMetas
   } = useSelector(({ repo }) => repo);
 
   const [callApi, isLoading, callApiErr] = useCallApi();
@@ -25,14 +25,16 @@ const useUserRepos = () => {
 
   const location = useParams<'repoParams'>() as LocationState;
   const { repoParams } = location;
-  const [id, repoName] = repoParams.split('&');
-  const numId = Number(id);
+  const [organization_name, project_name, repo_name] = repoParams.split('&');
 
-  const update = useCallback(updateTree(numId, setError), []);
-  const [isLoaded, setIsLoaded] = useState(currentId === numId);
+  const update = useCallback(updateTree(
+    { organization_name, project_name, repo_name },
+    setError
+  ), []);
+  const [isLoaded, setIsLoaded] = useState(params?.repo_name === repo_name);
 
   const loadingHandler = useCallback(() => {
-    loadingData(getRepo(numId, setError))
+    loadingData(getRepo({ organization_name, project_name, repo_name }, setError))
       .then(() => setIsLoaded(true))
       .catch((err) => setError(err));
   }, []);
@@ -46,10 +48,9 @@ const useUserRepos = () => {
   const startLoading = useCallback(() => setIsLoaded(false), []);
 
   return {
-    id: numId,
+    params: { organization_name, project_name, repo_name },
     branches,
     isLoaded,
-    repoName,
     filesMap,
     tree,
     prevReposHref,
