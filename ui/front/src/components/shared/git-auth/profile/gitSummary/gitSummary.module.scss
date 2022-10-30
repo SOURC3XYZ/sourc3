@@ -5,6 +5,25 @@
   max-width: 47.5rem;
   width: 100%;
   padding: 24px 24px 16px;
+  position: relative;
+  .header{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 64px;
+    text-align: center;
+    height: 20px;
+    border-radius: 0 8px 0 8px;
+    background: #FF791F;
+    font-family: 'PublicSans-Bold';
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    &:hover, &:focus{
+        background-color: #EA6A13;
+    }
+  }
   .summary{
     width: 100%;
     display: flex;

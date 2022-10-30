@@ -20,7 +20,8 @@ export interface IProfilesGit {
   user: number,
   added_lines_cnt: number,
   user_commits_cnt: number,
-  removed_lines_cnt: number
+  removed_lines_cnt: number,
+  have_badge:boolean
 }
 export interface IGitOrgs {
   id: number,
@@ -137,7 +138,7 @@ export interface IGitRepos {
   owner_login: string,
   rating: number,
   topics: [],
-  org_repo: Boolean
+  org_repo: Boolean,
 }
 
 export interface ISourceProfiles {
