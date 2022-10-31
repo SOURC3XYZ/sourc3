@@ -6,11 +6,12 @@
   width: 100%;
   padding: 24px 24px 16px;
   position: relative;
-  .header{
+  .headerLabel{
     position: absolute;
     top: 0;
     right: 0;
-    width: 64px;
+    width: 100%;
+    max-width: 115px;
     text-align: center;
     height: 20px;
     border-radius: 0 8px 0 8px;

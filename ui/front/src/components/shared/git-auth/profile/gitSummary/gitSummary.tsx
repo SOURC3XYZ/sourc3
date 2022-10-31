@@ -128,7 +128,7 @@ function GitSummary({ profile }:gitSummaryType) {
 
   return (
     <div className={styles.wrapper}>
-      {login === profile.github_profile.login && profile.github_profile.have_badge && <button type="button" className={styles.header} onClick={() => (copySummary(profile?.github_login))}>copy</button>}
+      {login === profile.github_profile.login && profile.github_profile.have_badge && <button type="button" className={styles.headerLabel} onClick={() => (copySummary(profile?.github_login))}>Copy for GitHub</button>}
       <div className={styles.summary}>
         {profile.github_repos.length > 0 && (
           <div className={styles.blockLeft}>
