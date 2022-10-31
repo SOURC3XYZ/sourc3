@@ -1,4 +1,5 @@
 import React, {
+  useEffect
 } from 'react';
 import {
   NavButton
@@ -26,6 +27,10 @@ function ProfilesPage() {
   const copyId = async () => {
     await copyToClipboard(profile.user_id);
   };
+  useEffect(() => {
+    !pkey && navigate('/404', { replace: false });
+  }, []);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>

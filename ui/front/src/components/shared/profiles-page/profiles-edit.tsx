@@ -1,4 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, {
+  useEffect, useMemo, useRef, useState
+} from 'react';
 import styles from '@components/shared/profiles-page/profiles-page.module.scss';
 import { useSelector } from '@libs/redux';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -86,6 +88,11 @@ function ProfilesEdit() {
     setSrc('');
     setValue('avatar_addr', '');
   };
+
+  useEffect(() => {
+    !pkey && navigate('/404', { replace: false });
+  }, []);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
