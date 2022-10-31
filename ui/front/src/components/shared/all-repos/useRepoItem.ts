@@ -62,11 +62,9 @@ export const useRepoItem = (item: RepoType) => {
           const ipfsHash = hexParser(commitData.object_data);
           const ipfsData = await callIpfs(ipfsHash);
           if (ipfsData) {
-            console.log(repo_name, ipfsHash);
             const getCommitFromIpfs = await callApi<RepoCommitResp>(
               RC.getCommitFromData(master.commit_hash, ipfsData)
             );
-            console.log(repo_name, ipfsData);
             if (getCommitFromIpfs) {
               return setMeta({
                 commit: getCommitFromIpfs.commit,

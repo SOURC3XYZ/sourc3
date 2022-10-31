@@ -47,7 +47,11 @@ export const getRepoThunk = ({ callApi }: NonNullable<BeamApiContext>) => {
         if (branches?.refs) dispatch(AC.setBranchRefList(branches.refs));
         if (resolve) resolve();
 
-        const commitsArray = await getOutput<RepoMetaResp>(RC.getCommitList(params), dispatch);
+        const commitsArray = await getOutput<RepoMetaResp>(
+          RC.getCommitList(params),
+          dispatch,
+          true
+        );
         if (commitsArray) {
           const commitMap = await new CommitListParser({
             params, metas, pathname, expect: 'commit', cache, callApi, commits: commitsArray.objects
