@@ -3,11 +3,12 @@ import { IGitRepos, IProfiles } from '@types';
 import { Milestone } from '@components/shared/git-auth/profile/repository/components';
 import { copyToClipboard } from '@libs/utils';
 import message from 'antd/lib/message';
+import { useSelector } from '@libs/redux';
 import styles from './gitSummary.module.scss';
-import {useSelector} from "@libs/redux";
 
 function GitSummary({ profile }:gitSummaryType) {
-  const login = useSelector((state) => state.profile.data.github_login);
+  const path = window.location.host;
+  const loginAuth = useSelector((state) => state.profile.data.github_login);
   const [reputation, setReputation] = useState(0);
   const [stars, setStars] = useState(0);
   const [createdRepos, setCreatedRepos] = useState(0);
@@ -121,14 +122,14 @@ function GitSummary({ profile }:gitSummaryType) {
   }, [forkedRepos, profile.github_repos, stars]);
 
   const copySummary = (login:string) => {
-    const summary = `[![Sourc3](https://devapp.sourc3.xyz/badges/${login}.png)](https://devapp.sourc3.xyz/profile/${login})`;
+    const summary = `[![Sourc3](https://${path}/badges/${login}.png)](https://${path}/profile/${login})`;
     copyToClipboard(summary);
     return message.info('Summary copied to clipboard!');
   };
 
   return (
     <div className={styles.wrapper}>
-      {login === profile.github_profile.login && profile.github_profile.have_badge && <button type="button" className={styles.headerLabel} onClick={() => (copySummary(profile?.github_login))}>Copy for GitHub</button>}
+      {loginAuth === profile.github_profile.login && profile.github_profile.have_badge && <button type="button" className={styles.headerLabel} onClick={() => (copySummary(profile?.github_login))}>Copy for GitHub</button>}
       <div className={styles.summary}>
         {profile.github_repos.length > 0 && (
           <div className={styles.blockLeft}>
