@@ -40,54 +40,51 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
 
   const [query] = contractCall(api.callApi);
 
-  const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
-    if (!inProcess.current) {
-      inProcess.current = true;
+  const apiEventManager = useCallback((dispatch: AppThunkDispatch) => apiManagerHelper(
+    async () => {
+      if (!inProcess.current) {
+        inProcess.current = true;
+        const getOrgs = query(
+          dispatch,
+          RC.getOrganizations(),
+          (output:OrganizationsResp) => ({ orgs: output.organizations })
+        );
 
-      return apiManagerHelper(
-        async () => {
-          const getOrgs = query(
+        const getProject = query(
+          dispatch,
+          RC.getProjects(),
+          (output:ProjectsResp) => ({ projects: output.projects })
+        );
+
+        const getRepos = query(
+          dispatch,
+          RC.getAllRepos('all'),
+          (output:ReposResp) => ({ repos: output.repos })
+        );
+
+        const getViewUser = query<PKeyRes>(
+          dispatch,
+          RC.getPublicKey(),
+          (output) => query<IProfile>(
             dispatch,
-            RC.getOrganizations(),
-            (output:OrganizationsResp) => ({ orgs: output.organizations })
-          );
+            RC.getUser(output.key),
+            (profile) => ({ profile })
+          )
+        );
+        messageToRepo();
+        const [{ orgs }, { projects }, { repos }, { profile }] = await Promise
+          .all([getOrgs, getProject, getRepos, getViewUser]);
 
-          const getProject = query(
-            dispatch,
-            RC.getProjects(),
-            (output:ProjectsResp) => ({ projects: output.projects })
-          );
-
-          const getRepos = query(
-            dispatch,
-            RC.getAllRepos('all'),
-            (output:ReposResp) => ({ repos: output.repos })
-          );
-
-          const getViewUser = query<PKeyRes>(
-            dispatch,
-            RC.getPublicKey(),
-            (output) => query<IProfile>(
-              dispatch,
-              RC.getUser(output.key),
-              (profile) => ({ profile })
-            )
-          );
-          messageToRepo();
-          const [{ orgs }, { projects }, { repos }, { profile }] = await Promise
-            .all([getOrgs, getProject, getRepos, getViewUser]);
-
-          inProcess.current = false;
-          batcher(dispatch, [
-            AC.setOrganizationsList(orgs),
-            AC.setProjectsList(projects),
-            AC.setRepos(repos),
-            AC.setViewUser(profile)
-          ]);
-        }
-      );
-    } return null;
-  }, [api]);
+        inProcess.current = false;
+        batcher(dispatch, [
+          AC.setOrganizationsList(orgs),
+          AC.setProjectsList(projects),
+          AC.setRepos(repos),
+          AC.setViewUser(profile)
+        ]);
+      }
+    }
+  ), [api]);
 
   const setPidEventManager = useCallback((dispatch: AppThunkDispatch) => (users: User[]) => {
     if (!api.isHeadless()) {

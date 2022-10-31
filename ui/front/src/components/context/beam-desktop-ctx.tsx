@@ -1,14 +1,17 @@
 import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
-import { entitiesThunk, userThunk } from '@libs/action-creators/async';
 import { CONFIG, EVENTS } from '@libs/constants';
 import { BeamApiDesktop } from '@libs/core';
 import { AppThunkDispatch } from '@libs/redux';
 import wasm from '@assets/app.wasm';
-import { ContractsResp, IProfile, PKeyRes } from '@types';
+import {
+  ContractsResp, IProfile, OrganizationsResp, PKeyRes, ProjectsResp, ReposResp
+} from '@types';
 import { useCallback, useMemo, useRef } from 'react';
 import { useCustomEvent } from '@libs/hooks/shared';
+import batcher from '@libs/action-creators/batcher';
+import { parseToBeam } from '@libs/utils';
 import { BeamWebApiContext } from './shared-context';
 
 type BeamWebCtxProps = {
@@ -19,24 +22,63 @@ export function BeamDesktopApi({ children } : BeamWebCtxProps) {
 
   const messageToRepo = useCustomEvent(EVENTS.SUBUNSUB);
 
+  const inProcess = useRef(false);
+
   const [query] = contractCall(api.callApi);
 
-  const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
-    const [{
-      getOrganizations, getProjects, getRepos, getViewUser
-    }] = entitiesThunk(api.callApi);
-    const { getWalletStatus } = userThunk({ callApi: api.callApi });
+  const apiEventManager = useCallback((dispatch: AppThunkDispatch) => apiManagerHelper(
+    async () => {
+      if (!inProcess.current) {
+        inProcess.current = true;
+        const getOrgs = query(
+          dispatch,
+          RC.getOrganizations(),
+          (output:OrganizationsResp) => ({ orgs: output.organizations })
+        );
 
-    return apiManagerHelper(() => {
-      dispatch(getRepos('all'));
-      dispatch(getOrganizations());
-      dispatch(getProjects());
-      dispatch(getWalletStatus());
-      messageToRepo();
-      dispatch(getViewUser());
-      // dispatch(thunks.getTxList());
-    });
-  }, [api]);
+        const getProject = query(
+          dispatch,
+          RC.getProjects(),
+          (output:ProjectsResp) => ({ projects: output.projects })
+        );
+
+        const getRepos = query(
+          dispatch,
+          RC.getAllRepos('all'),
+          (output:ReposResp) => ({ repos: output.repos })
+        );
+
+        const getWalletStatus = (async () => {
+          const res = await api.callApi(RC.getWalletStatus());
+          if (res && !res.error) {
+            return { beams: parseToBeam(res.result.available) };
+          } throw new Error('unable to get wallet status');
+        })();
+
+        const getViewUser = query<PKeyRes>(
+          dispatch,
+          RC.getPublicKey(),
+          (output) => query<IProfile>(
+            dispatch,
+            RC.getUser(output.key),
+            (profile) => ({ profile })
+          )
+        );
+        messageToRepo();
+        const [{ orgs }, { projects }, { repos }, { profile }, { beams }] = await Promise
+          .all([getOrgs, getProject, getRepos, getViewUser, getWalletStatus]);
+
+        inProcess.current = false;
+        batcher(dispatch, [
+          AC.setOrganizationsList(orgs),
+          AC.setProjectsList(projects),
+          AC.setRepos(repos),
+          AC.setViewUser(profile),
+          AC.setWalletStatus(beams)
+        ]);
+      }
+    }
+  ), [api]);
 
   const setIsConnected = async (dispatch: AppThunkDispatch) => {
     await api.loadAPI();

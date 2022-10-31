@@ -438,6 +438,7 @@ export const RC = {
   setModifyOrganization: ({
     organization_id,
     name,
+    old_name,
     logo_addr = '',
     short_title = '',
     about = '',
@@ -467,6 +468,7 @@ export const RC = {
         instagram,
         telegram,
         discord,
+        old_name,
         pid
       }
     }

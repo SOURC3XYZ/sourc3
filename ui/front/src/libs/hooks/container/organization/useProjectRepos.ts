@@ -1,5 +1,5 @@
 import { RC } from '@libs/action-creators';
-import { useCallApi, useModal } from '@libs/hooks/shared';
+import { useCallApi } from '@libs/hooks/shared';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import { useSelector } from '@libs/redux';
 import { getQueryParam } from '@libs/utils';
@@ -36,8 +36,6 @@ const useProjectRepos = () => {
     [window.location.href]
   );
 
-  const { setInputText, createRepo } = useEntitiesAction();
-
   const [callApi] = useCallApi();
 
   const navigate = useNavigate();
@@ -46,18 +44,12 @@ const useProjectRepos = () => {
     (state) => state.entities.projects.find((el) => el.project_name === projectName)
   );
   const pkey = useSelector((state) => state.app.pkey);
-  const pid = useSelector((state) => state.app.pid);
   const searchText = useSelector((state) => state.entities.searchText);
   const repos = useSelector(
     (state) => getReposByProject(projectName, state.entities.repos, type, pkey)
   );
   const project = useSelector(
     (state) => getProjectName(projectName, state.entities.projects)
-  );
-
-  const modalApi = useModal(
-    (txt: string) => setInputText(txt),
-    (name: string) => createRepo(name, projectName, pid)
   );
 
   const [members, setMembers] = useState<MemberId[]>([]);
@@ -105,7 +97,6 @@ const useProjectRepos = () => {
     page: +page,
     searchText,
     projectName,
-    modalApi,
     yourPermissions,
     navigate,
     deleteRepo,

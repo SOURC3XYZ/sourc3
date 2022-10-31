@@ -29,7 +29,7 @@ function ModifyOrganization({
   };
 
   const handleCreateProject = useCallback((state: typeof orgFields) => {
-    setModifyOrg(state);
+    setModifyOrg({ ...state, old_name: item.organization_name });
   }, []);
 
   const labels = {

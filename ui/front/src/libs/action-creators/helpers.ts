@@ -95,7 +95,7 @@ export const contractCall = (callApi: CallBeamApi<RequestSchema['params']>) => {
           return dispatch(AC.setTx(tx.result.txid));
         }
       }
-      throw new Error('repo delete failed');
+      throw new Error('failed to change contract params');
     } catch (error) { return thunkCatch(error, dispatch); }
   };
   return [contractQuery, contractMutation, getOutput] as const;
