@@ -29,10 +29,12 @@
 
 .headerBtn {
   composes: buttonAuth;
+  width: 120px;
+  text-align: center;
   line-height: 16px;
-  // height: 36px;
-  padding: 16px 5px;
+  height: 36px;
   font-weight: 800;
+  color: #000000 !important;
   padding: 0;
   font-size: 14px;
   font-family: PublicSans-regular;
@@ -41,7 +43,7 @@
 
 @media screen and (max-width: 768px) {
   .buttonAuth {
-    width: 100%;
+    //width: 100%;
     padding: 5px;
     max-width: unset;
   }
@@ -60,7 +62,7 @@
 
 @media screen and (max-width: 600px) {
   .buttonAuth {
-    width: 100%;
+    //width: 100%;
     padding: 5px;
   }
 }
