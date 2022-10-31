@@ -27,7 +27,7 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
   );
 
   const deleteRepo = (
-    delete_repo: number
+    delete_repo: string
   ):CustomAction => async (dispatch) => contractMutation(
     dispatch,
     RC.deleteRepos(delete_repo)

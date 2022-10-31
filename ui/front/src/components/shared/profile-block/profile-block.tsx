@@ -82,7 +82,7 @@ function ProfileBlock({
       {git && (
         <Dropdown
           overlay={menu}
-          placement="bottomCenter"
+          placement="bottom"
           trigger={['click']}
           overlayClassName={styles.dropdown}
           overlayStyle={{ position: 'fixed' }}

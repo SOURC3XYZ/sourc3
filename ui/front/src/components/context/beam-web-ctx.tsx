@@ -2,12 +2,15 @@ import wasm from '@assets/app.wasm';
 import {
   AC, apiManagerHelper, contractCall, RC
 } from '@libs/action-creators';
-import { entitiesThunk } from '@libs/action-creators/async';
+import batcher from '@libs/action-creators/batcher';
 import { CONFIG, EVENTS } from '@libs/constants';
 import { BeamWebAPI } from '@libs/core';
 import { useCustomEvent } from '@libs/hooks/shared';
 import { AppThunkDispatch } from '@libs/redux';
-import { ContractsResp, PKeyRes, User } from '@types';
+import {
+  IProfile,
+  OrganizationsResp, PKeyRes, ProjectsResp, ReposResp, User
+} from '@types';
 import {
   useCallback, useMemo, useRef
 } from 'react';
@@ -33,21 +36,57 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
 
   const { current: api } = useRef(new BeamWebAPI(CONFIG.CID, navigate));
 
+  const inProcess = useRef(false);
+
   const [query] = contractCall(api.callApi);
 
   const apiEventManager = useCallback((dispatch: AppThunkDispatch) => {
-    const [{
-      getOrganizations, getProjects, getRepos, getViewUser
-    }] = entitiesThunk(api.callApi);
-    return apiManagerHelper(
-      () => {
-        dispatch(getRepos('all'));
-        dispatch(getOrganizations());
-        dispatch(getProjects());
-        dispatch(getViewUser());
-        messageToRepo();
-      }
-    );
+    if (!inProcess.current) {
+      inProcess.current = true;
+
+      return apiManagerHelper(
+        async () => {
+          const getOrgs = query(
+            dispatch,
+            RC.getOrganizations(),
+            (output:OrganizationsResp) => ({ orgs: output.organizations })
+          );
+
+          const getProject = query(
+            dispatch,
+            RC.getProjects(),
+            (output:ProjectsResp) => ({ projects: output.projects })
+          );
+
+          const getRepos = query(
+            dispatch,
+            RC.getAllRepos('all'),
+            (output:ReposResp) => ({ repos: output.repos })
+          );
+
+          const getViewUser = query<PKeyRes>(
+            dispatch,
+            RC.getPublicKey(),
+            (output) => query<IProfile>(
+              dispatch,
+              RC.getUser(output.key),
+              (profile) => ({ profile })
+            )
+          );
+          messageToRepo();
+          const [{ orgs }, { projects }, { repos }, { profile }] = await Promise
+            .all([getOrgs, getProject, getRepos, getViewUser]);
+
+          inProcess.current = false;
+          batcher(dispatch, [
+            AC.setOrganizationsList(orgs),
+            AC.setProjectsList(projects),
+            AC.setRepos(repos),
+            AC.setViewUser(profile)
+          ]);
+        }
+      );
+    } return null;
   }, [api]);
 
   const setPidEventManager = useCallback((dispatch: AppThunkDispatch) => (users: User[]) => {
@@ -69,32 +108,15 @@ export function BeamWebApi({ children }:BeamWebCtxProps) {
   const setIsConnected = async (dispatch: AppThunkDispatch) => {
     await api.loadAPI();
     await api.initContract(wasm);
-    api.loadApiEventManager(apiEventManager(dispatch));
     api.loadSetPidEventManager(setPidEventManager(dispatch));
-    await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
-      const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
-      if (!finded) throw new Error(`no specified cid (${api.cid})`);
-      return [AC.setIsConnected(!!finded)];
-    }, true);
+    api.loadApiEventManager(apiEventManager(dispatch));
   };
 
   const connectExtension = async (dispatch: AppThunkDispatch) => {
     const activeUser = await api.extensionConnect(messageBeam);
-    dispatch(AC.setUsers(activeUser));
-    if (!api.isHeadless()) {
-      await api.initContract(wasm);
-      await query<ContractsResp>(
-        dispatch,
-        RC.viewContracts(),
-        (output) => {
-          const finded = output.contracts.find((el) => el.cid === api.cid) || 1;
-          if (!finded) throw new Error(`no specified cid (${api.cid})`);
-          return [AC.setIsConnected(!!finded)];
-        },
-        true
-      );
-      api.loadApiEventManager(apiEventManager(dispatch));
-    }
+    await api.initContract(wasm);
+    api.loadApiEventManager(apiEventManager(dispatch));
+    return activeUser;
   };
 
   const contextObj = useMemo(() => ({

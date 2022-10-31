@@ -26,7 +26,7 @@ function CreateModal({
   };
 
   return (
-    <Modal visible onOk={handleOk} onCancel={onCancel} closable={false}>
+    <Modal open onOk={handleOk} onCancel={onCancel} closable={false}>
       <Input
         placeholder="Enter name repository"
         value={name}

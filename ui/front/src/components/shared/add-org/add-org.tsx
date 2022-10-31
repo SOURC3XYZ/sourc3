@@ -150,7 +150,7 @@ function AddButton() {
         {' '}
         <Dropdown
           overlay={menu}
-          placement="bottomCenter"
+          placement="bottom"
           trigger={['click']}
           overlayClassName={styles.dropdown}
           overlayStyle={{ position: 'fixed' }}

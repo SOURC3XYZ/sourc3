@@ -62,7 +62,7 @@ function Receive({
   return (
     <Modal
       title="RECEIVE SC3"
-      visible={visible}
+      open={visible}
       onCancel={handleCancel}
       footer={[
         <Button key="back" onClick={handleCancel}>

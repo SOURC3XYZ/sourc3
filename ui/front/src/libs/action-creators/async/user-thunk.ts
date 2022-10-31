@@ -1,6 +1,6 @@
 import {
   BeamApiContext,
-  BeamApiRes, IProfile,
+  BeamApiRes, ContractsResp, IProfile,
   NotificationPlacement,
   PKeyRes,
   PromiseArg,
@@ -9,7 +9,7 @@ import {
   TxResult
 } from '@types';
 import { notification } from 'antd';
-import { ToastMessages } from '@libs/constants';
+import { CONFIG, ToastMessages } from '@libs/constants';
 
 import { CustomAction } from '@libs/redux';
 import { parseToBeam, parseToGroth } from '@libs/utils';
@@ -19,6 +19,7 @@ import { AC } from '../action-creators';
 import { thunkCatch } from '../error-handlers';
 import { RC } from '../request-schemas';
 import { contractCall } from '../helpers';
+import batcher from '../batcher';
 
 export const userThunk = ({
   callApi,
@@ -57,22 +58,40 @@ export const userThunk = ({
   const connectExtension = ():CustomAction => async (dispatch) => {
     try {
       if (!extensionConnect) throw new Error('there is not web api');
-      await extensionConnect(dispatch);
-
-      await callApi(RC.subUnsub()); // subscribe to api events
-
-      await query<PKeyRes>(
+      const activeUser = await extensionConnect(dispatch);
+      const getContract = query<ContractsResp>(
+        dispatch,
+        RC.viewContracts(),
+        (output) => {
+          const found = output.contracts.find((el) => el.cid === CONFIG.CID);
+          if (!found) throw new Error(`no specified cid (${CONFIG.CID})`);
+          return found;
+        },
+        true
+      );
+      const getPkey = query<PKeyRes>(
         dispatch,
         RC.getPublicKey(),
-        (output) => {
-          query<IProfile>(
-            dispatch,
-            RC.getUser(output.key),
-            (profile) => [AC.setPublicKey(output.key), AC.setViewUser(profile)]
-          );
-          return [];
-        }
+        async (output) => query<IProfile>(
+          dispatch,
+          RC.getUser(output.key),
+          (profile) => ({ key: output.key, profile })
+        )
       );
+
+      const [isFound, { key, profile }] = await Promise.all([getContract, getPkey]);
+
+      batcher(
+        dispatch,
+        [
+          AC.setUsers(activeUser),
+          AC.setIsConnected(isFound),
+          AC.setPublicKey(key),
+          AC.setViewUser(profile)
+        ]
+      );
+
+      await callApi(RC.subUnsub()); // subscribe to api events
     } catch (error:any) {
       notification.error({
         message: error.message,
@@ -86,6 +105,12 @@ export const userThunk = ({
     try {
       if (!isWebHeadless || !setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
+      await query<ContractsResp>(dispatch, RC.viewContracts(), (output) => {
+        const found = output.contracts.find((el) => el.cid === CONFIG.CID);
+        if (!found) throw new Error(`no specified cid (${CONFIG.CID})`);
+        return [AC.setIsConnected(!!found)];
+      }, true);
+
       await axios({
         method: 'get',
         url: `${HOST}/user`,
@@ -99,21 +124,14 @@ export const userThunk = ({
           dispatch(AC.getAuthGitUser(res));
         })
         .catch((err) => (console.log(err)));
+
       await callApi(RC.subUnsub()); // subscribe to api events
 
-      if (isWebHeadless()) {
-        await query<PKeyRes>(
-          dispatch,
-          RC.getPublicKey(),
-          (output) => [AC.setPublicKey(output.key)]
-        );
-      } else {
-        notification.open({
-          message: ToastMessages.HEADLESS_CONNECTED,
-          placement: 'bottomRight' as NotificationPlacement,
-          style: { fontWeight: 600 }
-        });
-      }
+      notification.open({
+        message: ToastMessages.HEADLESS_CONNECTED,
+        placement: 'bottomRight' as NotificationPlacement,
+        style: { fontWeight: 600 }
+      });
     } catch (error) { thunkCatch(error, dispatch); }
   };
 
@@ -122,7 +140,8 @@ export const userThunk = ({
       if (!setIsConnected) throw new Error('there is not web api');
       await setIsConnected(dispatch);
 
-      await callApi(RC.subUnsub()); // subscribe to api events
+      await callApi(RC.subUnsub());
+      // subscribe to api events
     } catch (error) { thunkCatch(error, dispatch); }
   };
 

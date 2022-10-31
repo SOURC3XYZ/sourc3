@@ -69,19 +69,21 @@ export const contractCall = (callApi: CallBeamApi<RequestSchema['params']>) => {
     return outputParser<T extends ContractResp ? T : any>(res, dispatch);
   }
 
-  const contractQuery = async <T>(
+  const contractQuery = async <T, K = any>(
     dispatch: AppThunkDispatch,
     action: RequestSchema,
-    callback: (output: T) => ActionCreators[] | void,
+    callback: (output: T) => K,
     isContract = false
-  ) => {
+  ):Promise<K> => {
     try {
       const output = await getOutput<T>(action, dispatch, isContract);
       if (output) {
         const actions = callback(output as T);
-        if (actions?.length) batcher(dispatch, actions);
-      }
-    } catch (error) { thunkCatch(error, dispatch); }
+        const isArray = typeof actions === 'object' && actions instanceof Array && actions.length;
+        if (isArray) batcher(dispatch, actions);
+        return actions;
+      } throw new Error('contract error');
+    } catch (error) { return thunkCatch(error, dispatch); }
   };
 
   const contractMutation = async (dispatch: AppThunkDispatch, action: RequestSchema) => {

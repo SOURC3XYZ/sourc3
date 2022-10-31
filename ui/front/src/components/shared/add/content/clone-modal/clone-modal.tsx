@@ -51,7 +51,7 @@ function CloneModal({ handleOk, handleCancel, cloneRepo }: CloneModalProps) {
   );
   return (
     <Modal
-      visible
+      open
       onOk={onOk}
       onCancel={handleCancel}
       closable={false}

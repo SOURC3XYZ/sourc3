@@ -69,7 +69,7 @@ function AddButton() {
       <div className={styles.wrapper}>
         <Dropdown
           overlay={menu}
-          placement="bottomCenter"
+          placement="bottom"
           trigger={['click']}
           overlayClassName={styles.dropdown}
         >

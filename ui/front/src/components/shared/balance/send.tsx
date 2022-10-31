@@ -95,7 +95,7 @@ function Send({
   return (
     <Modal
       title="SEND SC3"
-      visible={visible}
+      open={visible}
       onCancel={handleClose}
       footer={[
         <Button key="back" onClick={handleClose}>

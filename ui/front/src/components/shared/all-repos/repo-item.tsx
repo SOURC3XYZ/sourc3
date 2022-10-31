@@ -18,7 +18,6 @@ import React, {
 } from 'react';
 import { SyncOutlined } from '@ant-design/icons';
 import { useCallApi } from '@libs/hooks/shared';
-import { RC } from '@libs/action-creators';
 import { useEntitiesAction } from '@libs/hooks/thunk';
 import styles from './list-item.module.scss';
 import PendingIndicator from './pending-indicator';

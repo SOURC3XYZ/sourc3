@@ -63,7 +63,7 @@ function Manager({ isDesk }: ManagerProps) {
       </div>
       <Modal
         title="SEND BEAM"
-        visible={visible}
+        open={visible}
         onCancel={handleCancel}
         footer={[
           <Button key="back" onClick={clear}>

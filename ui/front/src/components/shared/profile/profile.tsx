@@ -2,26 +2,27 @@ import {
   Button, Dropdown, Menu, Typography
 } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
-import DefaultAvatar from 'boring-avatars';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from '@libs/redux';
-import Avatar from '@components/shared/profiles-page/avatar/avatar';
+import { IpfsAvatars } from '@components/shared';
+import { AVATAR_COLORS } from '@libs/constants';
 import styles from './profile.module.scss';
 
-type profileType = {
+type ProfileProps = {
   pKey: string
 };
 
-function Profile({ pKey }:profileType) {
+function Profile({ pKey }:ProfileProps) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   // const showModal = () => {
   //   setVisible(true);
   // };
-  const { profileImage } = useSelector(((
+  const profileImage = useSelector(((
     state
-  ) => ({ profileImage: state.profile.user_avatar_ipfs_hash })));
+  ) => state.sc3Frofile.user_avatar_ipfs_hash));
+
   const handleCancel = () => setVisible(false);
   const handleOk = () => handleCancel();
   const logOut = () => navigate('/');
@@ -62,52 +63,34 @@ function Profile({ pKey }:profileType) {
     </Menu>
   );
 
+  const image = useMemo(() => pKey && (
+    <IpfsAvatars
+      colors={AVATAR_COLORS}
+      name={pKey}
+      size={36}
+      variant="beam"
+      ipfs={profileImage}
+    />
+  ), [profileImage, pKey]);
+
   return (
     <>
       <div className={styles.wrapper}>
         <Dropdown
           overlay={menu}
-          placement="bottomCenter"
+          placement="bottom"
           trigger={['click']}
           overlayClassName={styles.dropdown}
           overlayStyle={{ position: 'fixed' }}
         >
           <div>
-            {
-              profileImage ? (
-                <Avatar
-                  src={profileImage}
-                  small
-                />
-              )
-                : (
-                  <DefaultAvatar
-                    size={40}
-                    name={pKey}
-                    variant="beam"
-                    colors={[
-                      '#FF791F',
-                      '#3FD05A',
-                      '#000000',
-                      '#C271B4',
-                      '#4DA2E6',
-                      '#DDDDDD',
-                      '#92A1C6',
-                      '#146A7C',
-                      '#F0AB3D',
-                      '#C271B4',
-                      '#C20D90'
-                    ]}
-                  />
-                )
-            }
-
+            {image}
           </div>
         </Dropdown>
       </div>
       <Modal
         title="RECEIVE SC3"
-        visible={visible}
+        open={visible}
         onCancel={handleCancel}
         footer={[
           <Button key="back" onClick={handleCancel}>

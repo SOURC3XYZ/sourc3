@@ -1,5 +1,4 @@
 import { AllRepos, NavButton } from '@components/shared';
-import { thunks } from '@libs/action-creators';
 import { useObjectState } from '@libs/hooks/shared';
 import { AppThunkDispatch, RootState } from '@libs/redux';
 import { RepoListType, RepoType } from '@types';
@@ -60,7 +59,7 @@ function Repositories({
         )}
       </div>
       <Modal
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         closable={false}

@@ -54,12 +54,6 @@ function Header({ isOnLending, desktop }:HeaderPropsType) {
 
   const searchElement = useMemo(() => (
     <div className={styles.connect}>
-      {/* {isOnLending && ( */}
-      {/*  // <AutocompeteSearch */}
-      {/*  //   className={autoCompleteClassName} */}
-      {/*  //   placeholder="Search" */}
-      {/*  // /> */}
-      {/* )} */}
       { !desktop ? (
         <>
           {pkey && (

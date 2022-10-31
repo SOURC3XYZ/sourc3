@@ -1,6 +1,6 @@
 import { RequestSchema } from '@libs/action-creators';
 import { AppThunkDispatch } from '@libs/redux';
-import { CallApiProps, ResultObject } from '@types';
+import { CallApiProps, ResultObject, User } from '@types';
 
 export type ErrorHandler = (err: Error) => void;
 
@@ -20,12 +20,12 @@ export type CallIPCType = (
   url: string, method: IpcMethod, body?: {}, callId?: string
 ) => Promise<any>;
 
-export type ApiConnecting = (dispatch: AppThunkDispatch) => Promise<void>;
+export type ApiConnecting<T = void> = (dispatch: AppThunkDispatch) => Promise<T>;
 
 export interface BeamApiContext {
   setIsConnected?: ApiConnecting,
   callApi: CallBeamApi<RequestSchema['params']>,
-  connectExtension?: ApiConnecting,
+  connectExtension?: ApiConnecting<User[]>,
   isWebHeadless?: () => boolean,
   callIPC?: CallIPCType
 }
