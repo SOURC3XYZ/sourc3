@@ -74,6 +74,13 @@ static const ShaderID s_SID = {  // NOLINT
     0xf1, 0xe3, 0xaf, 0x0d, 0x7b, 0x67, 0x79, 0xb2, 0xbd, 0xe9, 0x1c,
     0xd6, 0xee, 0x7d, 0xeb, 0xdb, 0x74, 0xc0, 0xa6, 0x52, 0xcb};
 }  // namespace v5
+namespace v6 {
+// SID: 172829e4388872e8ab3abbf9d30555f89849de1241c64872d3c954e15290c706
+static const ShaderID s_SID = {  // NOLINT
+    0x17, 0x28, 0x29, 0xe4, 0x38, 0x88, 0x72, 0xe8, 0xab, 0x3a, 0xbb,
+    0xf9, 0xd3, 0x05, 0x55, 0xf8, 0x98, 0x49, 0xde, 0x12, 0x41, 0xc6,
+    0x48, 0x72, 0xd3, 0xc9, 0x54, 0xe1, 0x52, 0x90, 0xc7, 0x06};
+}  // namespace v6
 #include "contract_sid.i"
 }  // namespace sourc3
 
@@ -107,7 +114,7 @@ struct MyKeyID : public Env::KeyID {
 // Add new SID here after changing contract.cpp
 const ShaderID kSid[] = {
     sourc3::v0::s_SID, sourc3::v1::s_SID, sourc3::v2::s_SID, sourc3::v3::s_SID,
-    sourc3::v4::s_SID, sourc3::v5::s_SID, sourc3::s_SID};
+    sourc3::v4::s_SID, sourc3::v5::s_SID, sourc3::v6::s_SID, sourc3::s_SID};
 
 const Upgradable3::Manager::VerInfo kVerInfo = {kSid, _countof(kSid)};
 
