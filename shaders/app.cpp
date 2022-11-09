@@ -360,7 +360,18 @@ size_t GetOrganizationData(sourc3::OrganizationData& buf) {
     return cur_ptr - reinterpret_cast<char*>(&buf);
 }
 
-sourc3::Organization::NameId ReadOrganizationNameId() {
+template <class T>
+typename T::Id GetIdByName(const ContractID& cid,
+                           const typename T::NameId& name_id) {
+    Env::Key_T<typename sourc3::IdByName<T>::Key> key;
+    key.m_Prefix.m_Cid = cid;
+    key.m_KeyInContract.name_id = name_id;
+    typename T::Id obj_id{};
+    Env::VarReader::Read_T(key, obj_id);
+    return obj_id;
+}
+
+sourc3::Organization::NameId ReadOrganizationNameId(const ContractID& cid) {
     using sourc3::OrganizationData;
     char org_name[OrganizationData::kMaxNameLen];
     size_t org_name_len{};
@@ -372,7 +383,8 @@ sourc3::Organization::NameId ReadOrganizationNameId() {
     return {sourc3::GetNameHash(org_name, org_name_len)};
 }
 
-sourc3::Project::NameId ReadProjectNameId() {
+sourc3::Project::NameId ReadProjectNameId(const ContractID& cid) {
+    using sourc3::Organization;
     using sourc3::ProjectData;
     char proj_name[ProjectData::kMaxNameLen];
     size_t proj_name_len = 0;
@@ -381,11 +393,12 @@ sourc3::Project::NameId ReadProjectNameId() {
         OnError("no 'project_name'");
         return {};
     }
-    return {{ReadOrganizationNameId()},
+    return {GetIdByName<Organization>(cid, ReadOrganizationNameId(cid)),
             sourc3::GetNameHash(proj_name, proj_name_len)};
 }
 
-sourc3::Repo::NameId ReadRepoNameId() {
+sourc3::Repo::NameId ReadRepoNameId(const ContractID& cid) {
+    using sourc3::Project;
     using sourc3::Repo;
     char repo_name[Repo::kMaxNameSize];
     size_t repo_name_len = 0;
@@ -394,19 +407,9 @@ sourc3::Repo::NameId ReadRepoNameId() {
         OnError("no 'repo_name'");
         return {};
     }
-    return {{ReadProjectNameId()},
+    Project::NameId proj_name_id = ReadProjectNameId(cid);
+    return {proj_name_id.org_id, GetIdByName<Project>(cid, proj_name_id),
             sourc3::GetNameHash(repo_name, repo_name_len)};
-}
-
-template <class T>
-typename T::Id GetIdByName(const ContractID& cid,
-                           const typename T::NameId& name_id) {
-    Env::Key_T<typename sourc3::IdByName<T>::Key> key;
-    key.m_Prefix.m_Cid = cid;
-    key.m_KeyInContract.name_id = name_id;
-    typename T::Id obj_id{};
-    Env::VarReader::Read_T(key, obj_id);
-    return obj_id;
 }
 
 void PrintOrganization(std::unique_ptr<sourc3::Organization>& value) {
@@ -579,7 +582,7 @@ void OnActionCreateRepo(const ContractID& cid) {
     auto buf = std::make_unique<uint8_t[]>(args_size);
     auto* request = reinterpret_cast<CreateRepo*>(buf.get());
     Env::DocGetNum32("private", &request->is_private);
-    request->project_name_id = ReadProjectNameId();
+    request->project_name_id = ReadProjectNameId(cid);
     UserKey user_key(cid);
     user_key.Get(request->caller);
     request->name_len = name_len;
@@ -638,8 +641,9 @@ void OnActionModifyRepo(const ContractID& cid) {
         return OnError("no 'repo_old_name'");
     }
 
+    sourc3::Project::NameId proj_name_id = ReadProjectNameId(cid);
     request->repo_name_id = {
-        {ReadProjectNameId()},
+        proj_name_id.org_id, GetIdByName<sourc3::Project>(cid, proj_name_id),
         sourc3::GetNameHash(repo_old_name, repo_old_name_len)};
 
     UserKey user_key(cid);
@@ -687,7 +691,7 @@ void OnActionCreateProject(const ContractID& cid) {
     UserKey user_key(cid);
     user_key.Get(buf->caller);
 
-    buf->organization_name_id = ReadOrganizationNameId();
+    buf->organization_name_id = ReadOrganizationNameId(cid);
     SigRequest sig;
     user_key.FillSigRequest(sig);
 
@@ -755,7 +759,8 @@ void OnActionListProjectMembers(const ContractID& cid) {
     using MemberKey = Env::Key_T<Member<Project>::Key>;
 
     MemberKey start{.m_Prefix = {.m_Cid = cid}};
-    start.m_KeyInContract.id = GetIdByName<Project>(cid, ReadProjectNameId());
+    start.m_KeyInContract.id =
+        GetIdByName<Project>(cid, ReadProjectNameId(cid));
 
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
@@ -796,7 +801,7 @@ void OnActionModifyProject(const ContractID& cid) {
         return OnError("no 'old_name'");
     }
     buf->project_name_id = {
-        {ReadOrganizationNameId()},
+        GetIdByName<sourc3::Organization>(cid, ReadOrganizationNameId(cid)),
         sourc3::GetNameHash(proj_old_name, proj_old_name_len)};
 
     Env::DocGetText("logo_addr", buf->logo_addr.data(),
@@ -855,7 +860,7 @@ void OnActionListProjectRepos(const ContractID& cid) {
     using sourc3::Repo;
     using RepoKey = Env::Key_T<Repo::Key>;
 
-    Project::Id project_id{GetIdByName<Project>(cid, ReadProjectNameId())};
+    Project::Id project_id{GetIdByName<Project>(cid, ReadProjectNameId(cid))};
 
     RepoKey start, end;
     _POD_(start.m_Prefix.m_Cid) = cid;
@@ -995,7 +1000,7 @@ void OnActionListOrganizationMembers(const ContractID& cid) {
     MemberKey start{.m_Prefix = {.m_Cid = cid}};
 
     start.m_KeyInContract.id =
-        GetIdByName<Organization>(cid, ReadOrganizationNameId());
+        GetIdByName<Organization>(cid, ReadOrganizationNameId(cid));
     _POD_(start.m_KeyInContract.user).SetZero();
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
@@ -1017,7 +1022,7 @@ void OnActionListRepoMembers(const ContractID& cid) {
 
     MemberKey start{.m_Prefix = {.m_Cid = cid},
                     .m_KeyInContract = sourc3::Member<Repo>::Key{}};
-    start.m_KeyInContract.id = GetIdByName<Repo>(cid, ReadRepoNameId());
+    start.m_KeyInContract.id = GetIdByName<Repo>(cid, ReadRepoNameId(cid));
     MemberKey end = start;
     _POD_(end.m_KeyInContract.user).SetObject(0xFF);
 
@@ -1115,7 +1120,7 @@ void OnActionAddProjectMember(const ContractID& cid) {
     using sourc3::method::AddProjectMember;
 
     AddProjectMember request{};
-    request.project_name_id = ReadProjectNameId();
+    request.project_name_id = ReadProjectNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1153,7 +1158,7 @@ void OnActionModifyProjectMember(const ContractID& cid) {
     using sourc3::method::ModifyProjectMember;
 
     ModifyProjectMember request{};
-    request.project_name_id = ReadProjectNameId();
+    request.project_name_id = ReadProjectNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1191,7 +1196,7 @@ void OnActionRemoveProjectMember(const ContractID& cid) {
     using sourc3::method::RemoveProjectMember;
 
     RemoveProjectMember request{};
-    request.project_name_id = ReadProjectNameId();
+    request.project_name_id = ReadProjectNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1220,7 +1225,7 @@ void OnActionAddOrganizationMember(const ContractID& cid) {
     using sourc3::method::AddOrganizationMember;
 
     AddOrganizationMember request{};
-    request.organization_name_id = ReadOrganizationNameId();
+    request.organization_name_id = ReadOrganizationNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1258,7 +1263,7 @@ void OnActionModifyOrganizationMember(const ContractID& cid) {
     using sourc3::method::ModifyOrganizationMember;
 
     ModifyOrganizationMember request{};
-    request.organization_name_id = ReadOrganizationNameId();
+    request.organization_name_id = ReadOrganizationNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1296,7 +1301,7 @@ void OnActionRemoveOrganizationMember(const ContractID& cid) {
     using sourc3::method::RemoveOrganizationMember;
 
     RemoveOrganizationMember request{};
-    request.organization_name_id = ReadOrganizationNameId();
+    request.organization_name_id = ReadOrganizationNameId(cid);
     if (!Env::DocGet("member", request.member)) {
         return OnError("no 'member'");
     }
@@ -1405,7 +1410,7 @@ void OnActionAddRepoMember(const ContractID& cid) {
     using sourc3::Repo;
     using sourc3::method::AddRepoMember;
     AddRepoMember request;
-    request.repo_name_id = ReadRepoNameId();
+    request.repo_name_id = ReadRepoNameId(cid);
     Env::DocGet("member", request.member);
 
     uint32_t read_permissions;
@@ -1440,7 +1445,7 @@ void OnActionModifyRepoMember(const ContractID& cid) {
     using sourc3::Repo;
     using sourc3::method::ModifyRepoMember;
     ModifyRepoMember request;
-    request.repo_name_id = ReadRepoNameId();
+    request.repo_name_id = ReadRepoNameId(cid);
     Env::DocGet("member", request.member);
 
     uint32_t read_permissions;
@@ -1474,7 +1479,7 @@ void OnActionModifyRepoMember(const ContractID& cid) {
 void OnActionRemoveRepoMember(const ContractID& cid) {
     using sourc3::method::RemoveRepoMember;
     RemoveRepoMember request;
-    request.repo_name_id = ReadRepoNameId();
+    request.repo_name_id = ReadRepoNameId(cid);
     Env::DocGet("member", request.member);
 
     UserKey user_key(cid);
@@ -1501,7 +1506,7 @@ void OnActionPushObjects(const ContractID& cid) {
     using sourc3::method::PushRefs;
     auto data_len = Env::DocGetBlob("data", nullptr, 0);
 
-    sourc3::Repo::NameId repo_name_id{ReadRepoNameId()};
+    sourc3::Repo::NameId repo_name_id{ReadRepoNameId(cid)};
 
     UserKey user_key(cid);
     SigRequest sig;
@@ -1563,7 +1568,7 @@ void OnActionPushObjects(const ContractID& cid) {
     if (Env::DocGetBlob("data", p, data_len) != data_len) {
         return OnError("failed to read push data");
     }
-    params->repo_name_id = ReadRepoNameId();
+    params->repo_name_id = ReadRepoNameId(cid);
 
     // dump objects for debug
     Env::DocGroup gr("objects");
@@ -1606,7 +1611,7 @@ void OnActionListRefs(const ContractID& cid) {
     using sourc3::Repo;
     using Key = Env::Key_T<GitRef::Key>;
     Key start, end;
-    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
 
     start.m_KeyInContract.repo_id = Utils::FromBE(repo_id);
     _POD_(start.m_Prefix.m_Cid) = cid;
@@ -1645,7 +1650,7 @@ std::tuple<MetaKey, MetaKey, MetaKey> PrepareGetObject(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::Repo;
 
-    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
     MetaKey start{.m_KeyInContract = {repo_id, 0}};
     MetaKey end{.m_KeyInContract = {repo_id,
                                     std::numeric_limits<GitObject::Id>::max()}};
@@ -1674,7 +1679,7 @@ void OnActionGetRepoData(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
     GitOid hash;
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
@@ -1769,7 +1774,7 @@ void OnActionGetCommit(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
     GitOid hash;
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
@@ -1805,7 +1810,7 @@ void OnActionGetTree(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
-    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId())};
+    Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
     GitOid hash;
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
@@ -1853,7 +1858,8 @@ void OnActionGetTreeFromData(const ContractID&) {
 }
 
 void OnActionRepoGetId(const ContractID& cid) {
-    Env::DocAddNum("repo_id", GetIdByName<sourc3::Repo>(cid, ReadRepoNameId()));
+    Env::DocAddNum("repo_id",
+                   GetIdByName<sourc3::Repo>(cid, ReadRepoNameId(cid)));
 }
 
 void OnActionDeposit(const ContractID& cid) {
@@ -1966,6 +1972,25 @@ void OnActionGetCommits(const ContractID& cid) {
 
 void OnActionGetTrees(const ContractID& cid) {
     GetObjects(cid, sourc3::GitObject::Meta::kGitObjectTree);
+}
+
+void OnActionMigrateProjects(const ContractID& cid) {
+    MyKeyID kid;
+    sourc3::method::MigrateProjects args;
+    Env::DocGetNum64("from", &args.from);
+    Env::DocGetNum64("to", &args.to);
+    Amount charge = 10000000;
+    CompensateFee(cid, charge);
+    Env::GenerateKernel(/*pCid=*/&cid,
+                        /*iMethod=*/sourc3::method::MigrateProjects::kMethod,
+                        /*pArgs=*/&args,
+                        /*nArgs=*/sizeof(args),
+                        /*pFunds=*/nullptr,
+                        /*nFunds=*/0,
+                        /*pSig=*/&kid,
+                        /*nSig=*/1,
+                        /*szComment=*/"migrate projects",
+                        /*nCharge=*/charge);
 }
 
 void OnActionMigrateRepos(const ContractID& cid) {
@@ -2432,6 +2457,7 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"view_contracts", OnActionViewContracts},
         {"view_contract_params", OnActionViewContractParams},
         {"migrate_repos", OnActionMigrateRepos},
+        {"migrate_projects", OnActionMigrateProjects},
     };
 
     /* Add your new role's actions here */

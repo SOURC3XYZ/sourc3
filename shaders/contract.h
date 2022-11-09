@@ -166,7 +166,8 @@ struct ProjectData {
 struct Project {
     using Id = uint64_t;
 
-    struct NameId : Organization::NameId {
+    struct NameId {
+        Organization::Id org_id;
         Hash256 proj_name_hash;
     };
     struct Key {
@@ -209,7 +210,9 @@ struct Repo {
 
     static constexpr size_t kMaxNameSize = 100 + 1;
 
-    struct NameId : Project::NameId {
+    struct NameId {
+        Organization::Id org_Id;
+        Project::Id proj_id;
         Hash256 repo_name_hash;
     };
 
@@ -560,8 +563,14 @@ struct ModifyUser {
     UserData data;
 };
 
-struct MigrateRepos {
+struct MigrateProjects {
     static const uint32_t kMethod = 26;
+    Project::Id from;
+    Project::Id to;
+};
+
+struct MigrateRepos {
+    static const uint32_t kMethod = 27;
     Repo::Id from;
     Repo::Id to;
 };

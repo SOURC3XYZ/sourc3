@@ -316,8 +316,8 @@ BEAM_EXPORT void Method_8(const method::CreateRepo& params) {  // NOLINT
     Env::SaveVar_T(0, c_state);
 
     Env::Halt_if(Env::SaveVar_T(
-        RepoIdByNameKey{
-            {params.project_name_id, GetNameHash(repo->name, repo->name_len)}},
+        RepoIdByNameKey{{params.project_name_id.org_id, proj_id,
+                         GetNameHash(repo->name, repo->name_len)}},
         repo_id));
     Env::Halt_if(SaveVLObject(RepoKey{repo_id}, repo,
                               sizeof(Repo) + repo->name_len) != 0u);
@@ -352,11 +352,10 @@ BEAM_EXPORT void Method_9(const method::ModifyRepo& params) {  // NOLINT
     Env::Halt_if(SaveVLObject(RepoKey{repo_id}, new_repo,
                               sizeof(Repo) + new_repo->name_len) == 0u);
     Env::DelVar_T(RepoIdByNameKey{params.repo_name_id});
-    Env::Halt_if(Env::SaveVar_T(
-        RepoIdByNameKey{Repo::NameId{
-            {*dynamic_cast<const Project::NameId*>(&params.repo_name_id)},
-            GetNameHash(new_repo->name, new_repo->name_len)}},
-        repo_id));
+    Repo::NameId new_repo_name_id{
+        params.repo_name_id.org_Id, params.repo_name_id.proj_id,
+        GetNameHash(new_repo->name, new_repo->name_len)};
+    Env::Halt_if(Env::SaveVar_T(RepoIdByNameKey{new_repo_name_id}, repo_id));
 }
 
 BEAM_EXPORT void Method_10(const method::RemoveRepo& params) {  // NOLINT
@@ -404,7 +403,7 @@ BEAM_EXPORT void Method_11(const method::CreateProject& params) {  // NOLINT
 
     Env::Halt_if(Env::SaveVar_T(
         ProjIdByNameKey{
-            {{params.organization_name_id},
+            {project->organization_id,
              GetNameHash(project->data.data, project->data.name_len)}},
         proj_id));
     Env::Halt_if(SaveVLObject(ProjKey{proj_id}, project,
@@ -439,12 +438,10 @@ BEAM_EXPORT void Method_12(const method::ModifyProject& params) {  // NOLINT
     Env::Halt_if(SaveVLObject(ProjKey{proj_id}, new_project,
                               sizeof(Project) + total_len) == 0u);
     Env::DelVar_T(ProjIdByNameKey{params.project_name_id});
-    Env::Halt_if(Env::SaveVar_T(
-        ProjIdByNameKey{Project::NameId{
-            {*dynamic_cast<const Organization::NameId*>(
-                &params.project_name_id)},
-            GetNameHash(new_project->data.data, new_project->data.name_len)}},
-        proj_id));
+    Project::NameId new_project_name_id{
+        params.project_name_id.org_id,
+        GetNameHash(new_project->data.data, new_project->data.name_len)};
+    Env::Halt_if(Env::SaveVar_T(ProjIdByNameKey{new_project_name_id}, proj_id));
 }
 
 BEAM_EXPORT void Method_13(const method::RemoveProject& params) {  // NOLINT
@@ -535,44 +532,29 @@ BEAM_EXPORT void Method_25(const method::ModifyUser& params) {  // NOLINT
     Env::AddSig(params.id);
 }
 
-BEAM_EXPORT void Method_26(const method::MigrateRepos& params) {  // NOLINT
-#pragma pack(push, 1)
-    struct OldRepo {
-        Project::Id project_id;
-        size_t cur_objs_number;
-        PubKey owner;
-        uint32_t is_private;
-        size_t name_len;
-        char name[101];
-    } old_repo;
-#pragma pack(pop)
+BEAM_EXPORT void Method_26(const method::MigrateProjects& params) {  // NOLINT
+    for (Project::Id proj_id = params.from; proj_id < params.to; ++proj_id) {
+        std::unique_ptr<Project> proj{LoadVLObject<Project>(proj_id)};
+        Env::SaveVar_T(
+            IdByName<Project>::Key{
+                {proj->organization_id,
+                 GetNameHash(proj->data.data, proj->data.name_len)}},
+            proj_id);
+    }
+    Upgradable3::Settings stgs;
+    stgs.Load();
+    stgs.TestAdminSigs(1);
+}
 
+BEAM_EXPORT void Method_27(const method::MigrateRepos& params) {  // NOLINT
     for (Repo::Id repo_id = params.from; repo_id < params.to; ++repo_id) {
-        Env::LoadVar_T(Repo::Key{repo_id}, old_repo);
-        std::unique_ptr<Repo> repo(static_cast<Repo*>(
-            ::operator new(sizeof(Repo) + old_repo.name_len)));
-        repo->project_id = old_repo.project_id;
-        repo->cur_objs_number = old_repo.cur_objs_number;
-        repo->owner = old_repo.owner;
-        repo->is_private = old_repo.is_private;
-        repo->name_len = old_repo.name_len;
-        Env::Memcpy(repo->name, old_repo.name, old_repo.name_len);
-        repo->name[repo->name_len - 1] = '\0';
-
-        std::unique_ptr<Project> project =
-            LoadVLObject<Project>(repo->project_id);
-        std::unique_ptr<Organization> organization =
-            LoadVLObject<Organization>(project->organization_id);
-
-        auto name_hash = GetNameHash(repo->name, repo->name_len);
-        auto org_name_hash =
-            GetNameHash(organization->data.data, organization->data.name_len);
-        auto proj_name_hash =
-            GetNameHash(project->data.data, project->data.name_len);
-        auto key =
-            IdByName<Repo>::Key{{{{org_name_hash}, proj_name_hash}, name_hash}};
-        Env::SaveVar_T(key, repo_id);
-        SaveVLObject(Repo::Key{repo_id}, repo, sizeof(Repo) + repo->name_len);
+        std::unique_ptr<Repo> repo{LoadVLObject<Repo>(repo_id)};
+        std::unique_ptr<Project> project{
+            LoadVLObject<Project>(repo->project_id)};
+        Env::SaveVar_T(
+            IdByName<Repo>::Key{{project->organization_id, repo->project_id,
+                                 GetNameHash(repo->name, repo->name_len)}},
+            repo_id);
     }
 
     Upgradable3::Settings stgs;
