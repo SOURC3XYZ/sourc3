@@ -208,7 +208,7 @@ std::string SimpleWalletClient::InvokeShaderAsync(const std::string& args,
 }
 
 const char* SimpleWalletClient::GetCID() const {
-    return "e95c0ab0b2ccbd79f542ea307bf6aa6f1898dcc607a4faedf187e7309e8d38b9";
+    return "17885447b4c5f78b65ac01bfa5d63d6bc2dd7b239c6cd7ef57a918adba2071d3";
 }
 
 std::string SimpleWalletClient::CallAPI(std::string&& request) {
