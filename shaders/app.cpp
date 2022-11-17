@@ -1682,11 +1682,56 @@ void OnActionGetRepoMeta(const ContractID& cid) {
     }
 }
 
+void OnActionGetRepoMetaById(const ContractID& cid) {
+    using sourc3::GitObject;
+    using sourc3::Repo;
+
+    Repo::Id repo_id{};
+    Env::DocGet("repo_id", repo_id);
+    MetaKey start{.m_KeyInContract = {repo_id, 0}};
+    MetaKey end{.m_KeyInContract = {repo_id,
+                                    std::numeric_limits<GitObject::Id>::max()}};
+    start.m_Prefix.m_Cid = cid;
+    end.m_Prefix.m_Cid = cid;
+    MetaKey key{
+        .m_KeyInContract = {repo_id, 0}};  // dummy value to initialize reading
+    GitObject::Meta value;
+    Env::DocArray objects_array("objects");
+    for (Env::VarReader reader(start, end); reader.MoveNext_T(key, value);) {
+        Env::DocGroup obj("");
+        Env::DocAddBlob_T("object_hash", value.hash);
+        Env::DocAddNum("object_type", static_cast<uint32_t>(value.type));
+        Env::DocAddNum("object_size", value.data_size);
+    }
+}
+
 void OnActionGetRepoData(const ContractID& cid) {
     using sourc3::GitObject;
     using sourc3::GitOid;
     using sourc3::Repo;
     Repo::Id repo_id{GetIdByName<Repo>(cid, ReadRepoNameId(cid))};
+    GitOid hash;
+    Env::DocGetBlob("obj_id", &hash, sizeof(hash));
+    DataKey key{.m_KeyInContract = {repo_id, hash}};
+    key.m_Prefix.m_Cid = cid;
+    uint32_t value_len = 0, key_len = 0;
+    Env::VarReader reader(key, key);
+    if (reader.MoveNext(nullptr, key_len, nullptr, value_len, 0)) {
+        auto buf = std::make_unique<uint8_t[]>(value_len);
+        reader.MoveNext(nullptr, key_len, buf.get(), value_len, 1);
+        auto* value = reinterpret_cast<GitObject::Data*>(buf.get());
+        Env::DocAddBlob("object_data", value->data, value_len);
+    } else {
+        Env::DocAddBlob("object_data", nullptr, 0);
+    }
+}
+
+void OnActionGetRepoDataById(const ContractID& cid) {
+    using sourc3::GitObject;
+    using sourc3::GitOid;
+    using sourc3::Repo;
+    Repo::Id repo_id{};
+    Env::DocGet("repo_id", repo_id);
     GitOid hash;
     Env::DocGetBlob("obj_id", &hash, sizeof(hash));
     DataKey key{.m_KeyInContract = {repo_id, hash}};
@@ -2240,11 +2285,22 @@ BEAM_EXPORT void Method_0() {  // NOLINT
                 Env::DocAddText("obj_id", "Object hash");
             }
             {
+                Env::DocGroup gr_method("repo_get_data_by_id");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
+                Env::DocAddText("obj_id", "Object hash");
+            }
+            {
                 Env::DocGroup gr_method("repo_get_meta");
                 Env::DocAddText("cid", "ContractID");
                 Env::DocAddText("repo_name", "Name of repo");
                 Env::DocAddText("project_name", "Project name");
                 Env::DocAddText("organization_name", "Organization name");
+            }
+            {
+                Env::DocGroup gr_method("repo_get_meta_by_id");
+                Env::DocAddText("cid", "ContractID");
+                Env::DocAddText("repo_id", "Repo ID");
             }
             {
                 Env::DocGroup gr_method("repo_get_commit");
@@ -2430,7 +2486,9 @@ BEAM_EXPORT void Method_1() {  // NOLINT
         {"list_refs", OnActionListRefs},
         {"get_key", OnActionUserGetKey},
         {"repo_get_data", OnActionGetRepoData},
+        {"repo_get_data_by_id", OnActionGetRepoDataById},
         {"repo_get_meta", OnActionGetRepoMeta},
+        {"repo_get_meta_by_id", OnActionGetRepoMetaById},
         {"repo_get_commit", OnActionGetCommit},
         {"repo_get_commit_from_data", OnActionGetCommitFromData},
         {"repo_get_tree", OnActionGetTree},
