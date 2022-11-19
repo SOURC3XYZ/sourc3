@@ -155,7 +155,7 @@ export interface ISourceProfiles {
   user_linkedin: string,
   user_discord: string
 }
-export interface IProfile {
+export interface IProfileGit {
   names: string,
   avatar_addr: string,
   id: string,

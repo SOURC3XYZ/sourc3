@@ -18,7 +18,7 @@ export enum CONFIG {
   // https://cache.sourc3.xyz
   ASSET_ID = 0,
   IPFS_TIMEOUT = 20000,
-  BIN_REPO = '/repo/2&sourc3-binaries/branch/tree/master',
+  BIN_REPO = '/repo/SixStringer91&Sourc3_installation_files&Sourc3_web_extension/branch/tree/master',
   MAX_PIC_SIZE = 750000
 }
 // fda210a4af51fdd2ce1d2a1c0307734ce6fef30b3eec4c04c4d7494041f2dd10

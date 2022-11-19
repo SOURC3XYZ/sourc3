@@ -2,7 +2,7 @@ import { CONFIG } from '@libs/constants';
 import {
   IProfile, PropertiesType
 } from '@types';
-import { RepoObjIdType, RepoReqType } from './request-schemas-types';
+import { ModifyProject, RepoObjIdType, RepoReqType } from '../../types/request-schemas-types';
 
 export const RC = {
 
@@ -473,20 +473,7 @@ export const RC = {
       }
     }
   } as const),
-  setModifyProject: ({
-    organization_id,
-    project_id,
-    name,
-    logo_addr = '',
-    short_title = '',
-    website = '',
-    twitter = '',
-    linkedin = '',
-    instagram = '',
-    telegram = '',
-    discord = '',
-    pid = 0
-  }: any) => ({
+  setModifyProject: (params: ModifyProject) => ({
     callID: 'modify_project',
     method: 'invoke_contract',
     params: {
@@ -494,18 +481,7 @@ export const RC = {
       args: {
         role: 'user',
         action: 'modify_project',
-        organization_id,
-        project_id,
-        name,
-        logo_addr,
-        description: short_title,
-        website,
-        twitter,
-        linkedin,
-        instagram,
-        telegram,
-        discord,
-        pid
+        ...params
       }
     }
   } as const),
@@ -645,6 +621,7 @@ export const RC = {
     }
 
   } as const),
+  
   listRepoMembers: (repo_name:string, project_name:string, organization_name:string) => ({
     callID: 'list_repo_members',
     method: 'invoke_contract',

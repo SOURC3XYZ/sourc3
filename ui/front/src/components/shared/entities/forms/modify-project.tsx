@@ -28,7 +28,9 @@ function ModifyProject({
     linkedin: project.project_linkedin
   };
   const handleCreateProject = useCallback((state: typeof projectFields) => {
-    setModifyProject(state);
+    return setModifyProject({
+      ...state, old_name: project.project_name
+    });
   }, []);
 
   const labels = {

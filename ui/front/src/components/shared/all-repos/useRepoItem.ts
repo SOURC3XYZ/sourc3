@@ -31,12 +31,12 @@ export const useRepoItem = (item: RepoType) => {
   const [meta, setMeta] = useObjectState<Meta>(initial);
 
   const {
-    repo_name, repo_owner, organization_name, project_name
+    repo_name, organization_name, project_name
   } = item;
 
   const repoLink = useMemo(
-    () => `sourc3://${repo_owner}/${repo_name}`,
-    [organization_name, project_name]
+    () => `sourc3://${organization_name}/${project_name}/${repo_name}`,
+    [organization_name, project_name, repo_name]
   );
   const getLastMasterCommit = useCallback(async () => {
     if (initial.loading) return undefined;

@@ -8,6 +8,7 @@ import {
   RepoMeta,
   RepoMetaResp,
   RepoRefsResp,
+  RepoReqType,
   TreeElementOid,
   UpdateProps
 } from '@types';
@@ -15,7 +16,6 @@ import { AC } from '../action-creators';
 import batcher from '../batcher';
 import { contractCall } from '../helpers';
 import { RC } from '../request-schemas';
-import { RepoReqType } from '../request-schemas-types';
 
 const CASH_PREFIX = [CONFIG.NETWORK, CONFIG.CID].join('-');
 

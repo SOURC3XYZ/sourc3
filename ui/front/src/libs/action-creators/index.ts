@@ -3,4 +3,4 @@ export * from './error-handlers';
 export * from './request-schemas';
 // export * from './thunks';
 export * from './helpers';
-export * from './request-schemas-types';
+export * from '../../types/request-schemas-types';

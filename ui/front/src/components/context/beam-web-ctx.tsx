@@ -26,7 +26,7 @@ const messageBeam = {
   apiver: 'current',
   apivermin: '',
   appname: 'SOURC3',
-  is_reconnect: false
+  is_reconnect: !!window.BeamApi
 };
 
 export function BeamWebApi({ children }:BeamWebCtxProps) {

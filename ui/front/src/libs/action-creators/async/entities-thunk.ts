@@ -11,6 +11,7 @@ import {
 import { AC } from '../action-creators';
 import { contractCall } from '../helpers';
 import { RC, RequestSchema } from '../request-schemas';
+import { ModifyProject } from '../../../types/request-schemas-types';
 
 export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => {
   const [contractQuery, contractMutation, getOutput] = contractCall(callApi);
@@ -57,7 +58,9 @@ export const entitiesThunk = (callApi: CallBeamApi<RequestSchema['params']>) => 
     RC.setModifyOrganization({ ...state })
   );
 
-  const setModifyProject = (state:any):CustomAction => async (dispatch) => contractMutation(
+  const setModifyProject = (
+    state:ModifyProject
+  ):CustomAction => async (dispatch) => contractMutation(
     dispatch,
     RC.setModifyProject({ ...state })
   );

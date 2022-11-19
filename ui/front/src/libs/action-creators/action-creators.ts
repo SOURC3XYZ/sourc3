@@ -17,9 +17,11 @@ import {
   TxInfo,
   Organization,
   Project,
-  User, IProfile
+  User, 
+  IProfile, 
+  RepoReqType
 } from '@types';
-import { RepoReqType } from './request-schemas-types';
+
 
 export const AC = {
   setLocalRepoMap: (
